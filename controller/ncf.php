@@ -86,6 +86,9 @@ class ncf extends fs_controller {
             } else
                 $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
+        else if($_GET['delete']){
+            $this->new_message("Datos de la Solicitud ".$_GET['delete']." eliminados correctamente.");
+        }
     }
 
 }

@@ -1,9 +1,9 @@
 {include="header"}
 
 <script type="text/javascript">
-    function delete_almacen(url)
+    function delete_datos_solicitud(url)
     {
-        if (confirm("¿Realmente desea eliminar este almacén?"))
+        if (confirm("¿Realmente desea eliminar estos datos de la solicitud?"))
             window.location.href = url;
     }
     $(document).ready(function () {
@@ -62,7 +62,7 @@
                         <div class="container-fluid">
                             <div class="row">
 
-                                <div class="col-sm-2">
+                                <div class="col-sm-1">
                                     <div class="form-group">
                                         <a href="{$fsc->almacen->url()}">Almacen</a>
                                         <select name="scodpais" class="form-control">
@@ -146,25 +146,28 @@
                                         <input class="form-control" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
                                     </div>
                                 </div>
+                                <div class="col-sm-1">
+                                    <div class="form-group">
+                                        <br/>
+                                        {if="$fsc->allow_delete"}
+                                        {if="$value->correlativo>1"}
+                                        <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
+                                            <span class="glyphicon glyphicon-lock"></span>
+                                        </a>  &nbsp;
+                                        {else}
+                                        <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->codalmacen}-{$value->solicitud}-{$value->serie}')">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </a>  &nbsp;
+                                        {/if}
+                                        {/if}
+                                        <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
+                                           this.form.submit();">
+                                            <span class="glyphicon glyphicon-floppy-disk"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="panel-footer text-right">
-                        {if="$fsc->allow_delete"}
-                        {if="$value->codalmacen==$fsc->empresa->codalmacen"}
-                        <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar el almacén predeterminado de la empresa.')">
-                            <span class="glyphicon glyphicon-lock"></span> &nbsp; Eliminar
-                        </a>
-                        {else}
-                        <a class="btn btn-sm btn-danger pull-left" onclick="delete_almacen('{$fsc->url()}&delete={$value->codalmacen}')">
-                            <span class="glyphicon glyphicon-trash"></span> &nbsp; Eliminar
-                        </a>
-                        {/if}
-                        {/if}
-                        <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
-                          this.form.submit();">
-                            <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
-                        </button>
                     </div>
                 </div>
             </form>
