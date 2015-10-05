@@ -42,7 +42,7 @@ class ncf_rango extends fs_model
     public $estado;
     
     public function __construct($t = false) {
-        parent::__construct('ncf_rango', 'plugins/ncf/');
+        parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
         if($t)
         {
             $this->solicitud = $t['solicitud'];
@@ -203,5 +203,28 @@ class ncf_rango extends fs_model
                 
         }
         return $lista;
+    }
+    
+    public function generate($codalmacen, $tipo_comprobante)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT ".
+        "solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, ".
+        "secuencia_inicio, secuencia_fin, correlativo ".
+        "WHERE ".
+        "codalmacen = ".$this->var2str($codalmacen)." AND ".
+        "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+        
+        return $this->ncf_number($data);
+        
+    }
+    
+    protected function ncf_number($data){
+        $ncf_number = "";
+        $solicitud = new ncf_rango($data);
+        $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
+        $correlativo = str_pad($solicitud->correlativo+1,8,'0',STR_PAD_LEFT);
+        $ncf_number = $rango.$correlativo;
+        return $ncf_number;
     }
 }

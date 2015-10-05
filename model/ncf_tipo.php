@@ -28,9 +28,14 @@ class ncf_tipo extends fs_model
     public $tipo_comprobante;
     public $descripcion;
     public $estado;
-           
+    public $clase_movimiento;
+    public $ventas;
+    public $compras;
+    public $contribuyente;
+    
+    
     public function __construct($t = false) {
-        parent::__construct('ncf_tipo','plugins/ncf/');
+        parent::__construct('ncf_tipo','plugins/republica_dominicana/');
         if($t)
         {
             $this->tipo_comprobante = $t['tipo_comprobante'];
@@ -42,18 +47,23 @@ class ncf_tipo extends fs_model
             $this->tipo_comprobante = null;
             $this->descripcion = '';
             $this->estado = false;
+            $this->clase_movimiento = null;
+            $this->ventas = null;
+            $this->compras = null;
+            $this->contribuyente = null;
         }
     }
     
     protected function install() {
-        return "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado) VALUES ".
-            "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',true),".
-            "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',true),".
-            "('03','NOTAS DE DEBITO',true),('04','NOTAS DE CREDITO',true),".
-            "('11','REGISTROS DE PROVEEDORES INFORMALES',true),".
-            "('12','REGISTRO UNICO DE INGRESOS',true),('13','REGISTRO DE GASTOS MENORES',true),".
-            "('14','REGISTRO DE OPERACIONES PARA EMPRESAS ACOGIDAS A REGIMENES ESPECIALES DE TRIBUTACION',true),".
-            "('15','COMPROBANTES GUBERNAMENTALES',true);";
+        return "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente ) VALUES ".
+            "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',true, 'suma','X','X','X'),".
+            "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',true, 'suma','X',null,'X'),".
+            "('03','NOTAS DE DEBITO',true, 'suma','X','X',null),('04','NOTAS DE CREDITO',true, 'resta','X','X',null),".
+            "('11','REGISTROS DE PROVEEDORES INFORMALES',true, 'suma',null,'X','X'),".
+            "('12','REGISTRO UNICO DE INGRESOS',true, 'suma','X',null,null),".
+            "('13','REGISTRO DE GASTOS MENORES',true, 'suma',null,'X',null),".
+            "('14','REGISTRO DE OPERACIONES PARA EMPRESAS ACOGIDAS A REGIMENES ESPECIALES DE TRIBUTACION',true, 'suma','X','X','X'),".
+            "('15','COMPROBANTES GUBERNAMENTALES',true, 'suma','X','X','X');";
     }
     
     public function exists() {
@@ -71,8 +81,8 @@ class ncf_tipo extends fs_model
         if ($this->exists())
         {
             $sql = "UPDATE ncf_tipo SET ".
-                    "descripcion = ".$this->var2str($this->descripcion.", ".
-                    "estado = ".$this->str2bool($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+                    "descripcion = ".$this->var2str($this->descripcion).", ".
+                    "estado = ".$this->str2bool($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
             
             return $this->db->exec($sql);
         }
@@ -100,6 +110,40 @@ class ncf_tipo extends fs_model
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_tipo ORDER BY tipo_comprobante,descripcion");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_tipo($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function cliente()
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_tipo WHERE contribuyente = 'X' and ventas = 'X' ORDER BY tipo_comprobante,descripcion");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_tipo($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function proveedor()
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_tipo WHERE contribuyente = 'X' and compras = 'X' ORDER BY tipo_comprobante,descripcion");
         
         if($data)
         {

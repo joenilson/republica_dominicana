@@ -6,9 +6,24 @@
 -->
 <tabla>
     <columna>
+        <nombre>clase_movimiento</nombre>
+        <tipo>character varying(5)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>compras</nombre>
+        <tipo>character varying(1)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>contribuyente</nombre>
+        <tipo>character varying(1)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>descripcion</nombre>
         <tipo>character varying(180)</tipo>
-        <nulo>YES</nulo>
+        <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>estado</nombre>
@@ -19,6 +34,11 @@
         <nombre>tipo_comprobante</nombre>
         <tipo>character varying(2)</tipo>
         <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>ventas</nombre>
+        <tipo>character varying(1)</tipo>
+        <nulo>YES</nulo>
     </columna>
     <restriccion>
         <nombre>ncf_serie_pkey</nombre>
