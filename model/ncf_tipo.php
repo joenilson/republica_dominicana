@@ -96,4 +96,21 @@ class ncf_tipo extends fs_model
         return $this->db->exec("UPDATE ncf_tipo SET estado = ".$this->var2str($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
     }
     
+    public function all()
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_tipo ORDER BY tipo_comprobante,descripcion");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_tipo($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
 }

@@ -34,6 +34,7 @@ class ncf_rango extends fs_model
     public $tipo_comprobante;
     public $secuencia_inicio;
     public $secuencia_fin;
+    public $correlativo;
     public $usuario_creacion;
     public $fecha_creacion;
     public $usuario_modificacion;
@@ -53,11 +54,12 @@ class ncf_rango extends fs_model
             $this->tipo_comprobante = $t['tipo_comprobante'];
             $this->secuencia_inicio = $t['secuencia_inicio'];
             $this->secuencia_fin = $t['secuencia_fin'];
+            $this->correlativo = $t['correlativo'];
             $this->usuario_creacion = $t['usuario_creacion'];
             $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
-            $this->estado = $this->str2bool($t['estado']);
+            $this->estado = ($t['estado']);
         }
         else
         {
@@ -70,6 +72,7 @@ class ncf_rango extends fs_model
             $this->tipo_comprobante = null;
             $this->secuencia_inicio = null;
             $this->secuencia_fin = null;
+            $this->correlativo = null;
             $this->usuario_creacion = null;
             $this->fecha_creacion = Date('d-m-Y H:i');
             $this->usuario_modificacion = null;
@@ -93,7 +96,7 @@ class ncf_rango extends fs_model
         else
         {
             return $this->db->select("SELECT * FROM ncf_rango WHERE ".
-                    "solicitud = ".$this->var2str($this->solicitud)." AND ".
+                    "solicitud = ".$this->intval($this->solicitud)." AND ".
                     "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
                     "serie= ".$this->var2str($this->serie)." AND ".
                     "division= ".$this->var2str($this->division)." AND ".
@@ -106,7 +109,7 @@ class ncf_rango extends fs_model
     public function get($solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
-                    "solicitud = ".$this->var2str($solicitud)." AND ".
+                    "solicitud = ".$this->intval($solicitud)." AND ".
                     "codalmacen = ".$this->var2str($codalmacen)." AND ".
                     "serie= ".$this->var2str($serie)." AND ".
                     "division= ".$this->var2str($division)." AND ".
@@ -127,20 +130,21 @@ class ncf_rango extends fs_model
         if ($this->exists())
         {
             $sql = "UPDATE ncf_rango SET ".
-                    "solicitud = ".$this->var2str($this->solicitud).", ".
+                    "solicitud = ".$this->intval($this->solicitud).", ".
                     "codalmacen = ".$this->var2str($this->codalmacen).", ".
                     "serie= ".$this->var2str($this->serie).", ".
                     "division= ".$this->var2str($this->division).", ".
                     "punto_emision = ".$this->var2str($this->punto_emision).", ".
                     "area_impresion = ".$this->var2str($this->area_impresion).", ".
                     "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
-                    "secuencia_inicio = ".$this->var2str($this->secuencia_inicio).", ".
-                    "secuencia_fin = ".$this->var2str($this->secuencia_fin).", ".
+                    "secuencia_inicio = ".$this->intval($this->secuencia_inicio).", ".
+                    "secuencia_fin = ".$this->intval($this->secuencia_fin).", ".
+                    "correlativo = ".$this->intval($this->correlativo).", ".
                     "estado = ".$this->str2bool($this->estado).", ".
                     "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
                     "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
                     "WHERE ".
-                    "solicitud = ".$this->var2str($this->solicitud)." AND ".
+                    "solicitud = ".$this->intval($this->solicitud)." AND ".
                     "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
                     "serie= ".$this->var2str($this->serie)." AND ".
                     "division= ".$this->var2str($this->division)." AND ".
@@ -152,10 +156,25 @@ class ncf_rango extends fs_model
         }
         else
         {
-            $sql = "INSERT INTO ncf_rango (solicitud, ) VALUES ";
+            $sql = "INSERT INTO ncf_rango (solicitud,  codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, secuencia_inicio, secuencia_fin, correlativo, estado, usuario_creacion, fecha_creacion ) ".
+                    "VALUES ".
+                    "(".$this->intval($this->solicitud).", ".
+                    $this->var2str($this->codalmacen).", ".
+                    $this->var2str($this->serie).", ".
+                    $this->var2str($this->division).", ".
+                    $this->var2str($this->punto_emision).", ".
+                    $this->var2str($this->area_impresion).", ".
+                    $this->var2str($this->tipo_comprobante).", ".
+                    $this->intval($this->secuencia_inicio).", ".
+                    $this->intval($this->secuencia_fin).", ".
+                    $this->var2str($this->correlativo).", ".
+                    ($this->estado).", ".
+                    $this->var2str($this->usuario_creacion).", ".
+                    $this->var2str($this->fecha_creacion).
+                    ")";
             if($this->db->exec($sql))
             {
-                $this->solicitud = $this->db->lastval();
+                $this->solicitud = $this->solicitud;
                 return true;
             }
             else
@@ -183,5 +202,6 @@ class ncf_rango extends fs_model
             }
                 
         }
+        return $lista;
     }
 }
