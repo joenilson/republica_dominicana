@@ -1,0 +1,8 @@
+Plugin de adaptación de FacturaScripts a <b>República Dominicana</b>.
+<ul>
+<li>Agrega las monedas DOP, USD si no estan creadas.</li>
+<li>Contiene el módulo de administración NCF.</li>
+<li>Genera el Plan Contable en base al plan contable de Perú.</li>
+<li>Agrega el tipo de contribuyente al Maestro de Clientes/Proveedores.</li>
+<li>Genera la secuencia de NCF a usar para cada Factura de Ventas/Compra.</li>
+</ul>

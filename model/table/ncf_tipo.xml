@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : ncf_tipo.xml
+    Description:
+        Estructura de la tabla ncf_tipo.
+-->
+<tabla>
+    <columna>
+        <nombre>descripcion</nombre>
+        <tipo>character varying(180)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>estado</nombre>
+        <tipo>boolean</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>tipo_comprobante</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <restriccion>
+        <nombre>ncf_serie_pkey</nombre>
+        <consulta>PRIMARY KEY (tipo_comprobante)</consulta>
+    </restriccion>
+</tabla>
