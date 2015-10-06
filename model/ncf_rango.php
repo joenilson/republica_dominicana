@@ -25,6 +25,7 @@
  */
 class ncf_rango extends fs_model
 {
+    public $idempresa;
     public $solicitud;
     public $codalmacen;
     public $serie;
@@ -45,6 +46,7 @@ class ncf_rango extends fs_model
         parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
         if($t)
         {
+            $this->idempresa = $t['idempresa'];
             $this->solicitud = $t['solicitud'];
             $this->codalmacen = $t['codalmacen'];
             $this->serie = $t['serie'];
@@ -63,6 +65,7 @@ class ncf_rango extends fs_model
         }
         else
         {
+            $this->idempresa = null;
             $this->solicitud = null;
             $this->codalmacen = null;
             $this->serie = null;
@@ -89,13 +92,14 @@ class ncf_rango extends fs_model
     }
     
     public function exists() {
-        if(is_null($this->solicitud) AND is_null($this->codalmacen) AND is_null($this->serie) AND is_null($this->division) AND is_null($this->punto_emision) AND is_null($this->area_impresion) AND is_null($this->tipo_comprobante))
+        if(is_null($this->idempresa) AND is_null($this->solicitud) AND is_null($this->codalmacen) AND is_null($this->serie) AND is_null($this->division) AND is_null($this->punto_emision) AND is_null($this->area_impresion) AND is_null($this->tipo_comprobante))
         {
             return false;
         }
         else
         {
             return $this->db->select("SELECT * FROM ncf_rango WHERE ".
+                    "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "solicitud = ".$this->intval($this->solicitud)." AND ".
                     "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
                     "serie= ".$this->var2str($this->serie)." AND ".
@@ -106,9 +110,10 @@ class ncf_rango extends fs_model
         }
     }
 
-    public function get($solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante)
+    public function get($idempresa,$solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
+                    "idempresa = ".$this->intval($idempresa)." AND ".
                     "solicitud = ".$this->intval($solicitud)." AND ".
                     "codalmacen = ".$this->var2str($codalmacen)." AND ".
                     "serie= ".$this->var2str($serie)." AND ".
@@ -220,11 +225,10 @@ class ncf_rango extends fs_model
     }
     
     protected function ncf_number($data){
-        $ncf_number = "";
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
         $correlativo = str_pad($solicitud->correlativo+1,8,'0',STR_PAD_LEFT);
-        $ncf_number = $rango.$correlativo;
+        $ncf_number = ($correlativo === $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
         return $ncf_number;
     }
 }

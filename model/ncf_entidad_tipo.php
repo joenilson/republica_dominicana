@@ -25,6 +25,7 @@
  */
 class ncf_entidad_tipo extends fs_model
 {
+    public $idempresa;
     public $entidad;
     public $tipo_entidad;
     public $tipo_comprobante;
@@ -38,6 +39,7 @@ class ncf_entidad_tipo extends fs_model
         parent::__construct('ncf_entidad_tipo','plugins/republica_dominicana/');
         if($t)
         {
+            $this->idempresa = $t['idempresa'];
             $this->entidad = $t['entidad'];
             $this->tipo_entidad = $t['tipo_entidad'];
             $this->tipo_comprobante = $t['tipo_comprobante'];
@@ -49,6 +51,7 @@ class ncf_entidad_tipo extends fs_model
         }
         else
         {
+            $this->idempresa = null;
             $this->entidad = null;
             $this->tipo_entidad = null;
             $this->tipo_comprobante = null;
@@ -65,13 +68,14 @@ class ncf_entidad_tipo extends fs_model
     }
     
     public function exists() {
-        if(is_null($this->entidad) and is_null($this->tipo_entidad))
+        if(is_null($this->idempresa) and is_null($this->entidad) and is_null($this->tipo_entidad))
         {
             return false;
         }
         else
         {
             return $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE ".
+                    "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "entidad = ".$this->var2str($this->entidad)." AND ".
                     "tipo_entidad = ".$this->var2str($this->tipo_entidad).
                     ";");
@@ -87,6 +91,7 @@ class ncf_entidad_tipo extends fs_model
                     "fecha_modificacion = ".$this->var2str($this->fecha_modificacion).", ".
                     "estado = ".($this->estado).
                     " WHERE ".
+                    "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "entidad = ".$this->var2str($this->entidad)." AND ".
                     "tipo_entidad = ".$this->var2str($this->tipo_entidad).";";
             
@@ -94,8 +99,10 @@ class ncf_entidad_tipo extends fs_model
         }
         else
         {
-            $sql = "INSERT INTO ncf_entidad_tipo (entidad, tipo_entidad,tipo_comprobante, estado, usuario_creacion, fecha_creacion ) VALUES ".
-                    "(".$this->var2str($this->entidad).", ".
+            $sql = "INSERT INTO ncf_entidad_tipo (idempresa, entidad, tipo_entidad,tipo_comprobante, estado, usuario_creacion, fecha_creacion ) VALUES ".
+                    "(".
+                    $this->intval($this->idempresa).", ".
+                    $this->var2str($this->entidad).", ".
                     $this->var2str($this->tipo_entidad).", ".
                     $this->var2str($this->tipo_comprobante).", ".
                     ($this->estado).", ".
@@ -114,13 +121,50 @@ class ncf_entidad_tipo extends fs_model
     }
     
     public function delete() {
-        return $this->db->exec("UPDATE ncf_entidad_tipo SET estado = ".$this->var2str($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+        return $this->db->exec("UPDATE ncf_entidad_tipo SET estado = ".$this->var2str($this->estado)." WHERE ".
+                "idempresa = ".$this->intval($this->idempresa)." AND ".
+                "entidad = ".$this->var2str($this->entidad)." AND ".
+                "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
     }
     
-    public function all()
+    public function all($idempresa)
     {
         $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo ORDER BY tipo_comprobante,tipo_entidad,entidad");
+        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo where idempresa = ".$this->intval($idempresa)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_entidad_tipo($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function get($idempresa, $entidad, $tipo_entidad)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = ".$this->var2str($tipo_entidad)." AND ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "entidad = ".$this->var2str($entidad)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_entidad_tipo($d);
+            }
+        }
+        return $lista;
+    }
+    
+    public function cliente($idempresa)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'CLI'  AND idempresa= ".$this->intval($idempresa).
+                " ORDER BY tipo_comprobante,entidad");
         
         if($data)
         {
@@ -134,42 +178,11 @@ class ncf_entidad_tipo extends fs_model
         return $lista;
     }
     
-    public function get($entidad,$tipo_entidad)
+    public function proveedor($idempresa)
     {
         $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = ".$this->var2str($tipo_entidad)." AND entidad = ".$this->var2str($entidad)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
-        
-        if($data)
-        {
-            foreach($data as $d)
-            {
-                $lista[] = new ncf_entidad_tipo($d);
-            }
-        }
-        return $lista;
-    }
-    
-    public function cliente()
-    {
-        $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'CLI' ORDER BY tipo_comprobante,entidad");
-        
-        if($data)
-        {
-            foreach($data as $d)
-            {
-                $lista[] = new ncf_entidad_tipo($d);
-            }
-                
-        }
-        
-        return $lista;
-    }
-    
-    public function proveedor()
-    {
-        $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'PRO' ORDER BY tipo_comprobante,entidad");
+        $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'PRO' AND idempresa= ".$this->intval($idempresa).
+                " ORDER BY tipo_comprobante,entidad");
         
         if($data)
         {

@@ -62,10 +62,11 @@ class ncf extends fs_controller {
             $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
             $correlativo = \filter_input(INPUT_POST, 'correlativo');
             
-            $ncf0 = $this->ncf_rango->get($solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante);
+            $ncf0 = $this->ncf_rango->get($this->empresa->id,$solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante);
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }
+            $ncf0->idempresa = $this->empresa->id;
             $ncf0->solicitud = $solicitud;
             $ncf0->codalmacen = $codalmacen;
             $ncf0->serie = $serie;

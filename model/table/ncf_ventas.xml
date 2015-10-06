@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Document   : ncf_rango.xml
+    Document   : ncf_ventas.xml
     Description:
-        Estructura de la tabla ncf_rango.
+        Estructura de la tabla ncf_ventas.
 -->
 <tabla>
     <columna>
-        <nombre>area_impresion</nombre>
-        <tipo>character varying(3)</tipo>
+        <nombre>cifnif</nombre>
+        <tipo>character varying(20)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
@@ -16,59 +16,44 @@
         <nulo>NO</nulo>
     </columna>
     <columna>
-        <nombre>correlativo</nombre>
-        <tipo>integer</tipo>
+        <nombre>documento</nombre>
+        <tipo>character varying(20)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
-        <nombre>division</nombre>
-        <tipo>character varying(2)</tipo>
+        <nombre>entidad</nombre>
+        <tipo>character varying(6)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
-        <nombre>estado</nombre>
-        <tipo>boolean</tipo>
-        <nulo>YES</nulo>
+        <nombre>fecha</nombre>
+        <tipo>date</tipo>
+        <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>fecha_creacion</nombre>
-        <tipo>date</tipo>
+        <tipo>timestamp without time zone</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>fecha_modificacion</nombre>
-        <tipo>date</tipo>
+        <tipo>timestamp without time zone</tipo>
         <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>idempresa</nombre>
         <tipo>integer</tipo>
         <nulo>NO</nulo>
-    </columna>    
+    </columna>
     <columna>
-        <nombre>punto_emision</nombre>
-        <tipo>character varying(3)</tipo>
+        <nombre>ncf</nombre>
+        <tipo>character varying(19)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
-        <nombre>secuencia_fin</nombre>
-        <tipo>integer</tipo>
-        <nulo>NO</nulo>
-    </columna>
-    <columna>
-        <nombre>secuencia_inicio</nombre>
-        <tipo>integer</tipo>
-        <nulo>NO</nulo>
-    </columna>
-    <columna>
-        <nombre>serie</nombre>
-        <tipo>character varying(1)</tipo>
-        <nulo>NO</nulo>
-    </columna>
-    <columna>
-        <nombre>solicitud</nombre>
-        <tipo>integer</tipo>
-        <nulo>NO</nulo>
+        <nombre>ncf_modifica</nombre>
+        <tipo>character varying(19)</tipo>
+        <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>tipo_comprobante</nombre>
@@ -86,7 +71,7 @@
         <nulo>YES</nulo>
     </columna>
     <restriccion>
-        <nombre>ncf_pkey</nombre>
-        <consulta>PRIMARY KEY (idempresa, solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante)</consulta>
+        <nombre>ncf_ventas_pkey</nombre>
+        <consulta>PRIMARY KEY (idempresa, ncf)</consulta>
     </restriccion>
 </tabla>

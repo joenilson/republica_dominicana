@@ -26,6 +26,11 @@
         <nulo>YES</nulo>
     </columna>
     <columna>
+        <nombre>idempresa</nombre>
+        <tipo>integer</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
         <nombre>tipo_comprobante</nombre>
         <tipo>character varying(2)</tipo>
         <nulo>NO</nulo>
@@ -47,6 +52,6 @@
     </columna>
     <restriccion>
         <nombre>ncf_entidad_tipo_pkey</nombre>
-        <consulta>PRIMARY KEY (entidad,tipo_entidad)</consulta>
+        <consulta>PRIMARY KEY (idempresa, entidad,tipo_entidad)</consulta>
     </restriccion>
 </tabla>
