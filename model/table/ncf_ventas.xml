@@ -21,6 +21,11 @@
         <nulo>NO</nulo>
     </columna>
     <columna>
+        <nombre>documento_modifica</nombre>
+        <tipo>character varying(20)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>entidad</nombre>
         <tipo>character varying(6)</tipo>
         <nulo>NO</nulo>

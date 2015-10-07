@@ -68,10 +68,10 @@ class ventas_cliente extends fs_controller {
         $this->cliente = FALSE;
         if (isset($_POST['codcliente'])) {
             $this->cliente = $cliente->get($_POST['codcliente']);
-            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($_POST['codcliente'], 'CLI');
+            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_POST['codcliente'], 'CLI');
         } else if (isset($_GET['cod'])) {
             $this->cliente = $cliente->get($_GET['cod']);
-            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($_GET['cod'], 'CLI');
+            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_GET['cod'], 'CLI');
         }
 
         /// ¿Hay que hacer algo más?
@@ -165,6 +165,7 @@ class ventas_cliente extends fs_controller {
             }
             
             if(isset($_POST['tipo_comprobante'])){
+                $ncf_entidad_tipo->idempresa = $this->empresa->id;
                 $ncf_entidad_tipo->entidad = \filter_input(INPUT_POST, 'codcliente');
                 $ncf_entidad_tipo->tipo_entidad = 'CLI';
                 $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');

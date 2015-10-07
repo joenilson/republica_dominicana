@@ -49,7 +49,7 @@
             <br/>
         </div>
     </div>
-    {loop="$fsc->ncf_rango->all()"}
+    {loop="$fsc->ncf_rango->all($fsc->empresa->id)"}
     <div class="row">
         <div class="col-sm-12">
             <form class="form" role="form" action="{$fsc->url()}" method="post">
@@ -104,19 +104,19 @@
                                 </div>
                                 <div class="col-lg-1 col-md-1 col-sm-1">
                                     <div class="form-group">
-                                        Punto Emisión:
+                                        Pto Emi:
                                         <input class="form-control" type="number" name="punto_emision" min="1" max="999" value="{$value->punto_emision}" autocomplete="off"/>
                                     </div>
                                 </div>
                                 <div class="col-sm-1">
                                     <div class="form-group">
-                                        Area Impresión:
+                                        Area Imp:
                                         <input class="form-control" type="number" name="area_impresion" min="1" max="999" value="{$value->area_impresion}" autocomplete="off"/>
                                     </div>
                                 </div>
                                 <div class="col-sm-2">
                                     <div class="form-group">
-                                        Tipo Comprobante:
+                                        Tipo Comprob:
                                         <select name="tipo_comprobante" class="form-control">
                                             {loop="$fsc->ncf_tipo->all()"}
                                             {if="$value1->tipo_comprobante==$value2->tipo_comprobante"}
@@ -130,13 +130,13 @@
                                 </div>
                                 <div class="col-sm-1">
                                     <div class="form-group">
-                                        Secuencia Inicio:
+                                        Inicia:
                                         <input class="form-control" type="number" name="secuencia_inicio" min="1" max="99999999" value="{$value->secuencia_inicio}" autocomplete="off"/>
                                     </div>
                                 </div>
                                 <div class="col-sm-1">
                                     <div class="form-group">
-                                        Secuencia Fin:
+                                        Fin:
                                         <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" value="{$value->secuencia_fin}" autocomplete="off"/>
                                     </div>
                                 </div>
@@ -153,11 +153,11 @@
                                         {if="$value->correlativo>1"}
                                         <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
                                             <span class="glyphicon glyphicon-lock"></span>
-                                        </a>  &nbsp;
+                                        </a>  
                                         {else}
                                         <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->codalmacen}-{$value->solicitud}-{$value->serie}')">
                                             <span class="glyphicon glyphicon-trash"></span>
-                                        </a>  &nbsp;
+                                        </a>  
                                         {/if}
                                         {/if}
                                         <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;

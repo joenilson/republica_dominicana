@@ -160,6 +160,7 @@ class ventas_clientes extends fs_controller {
 
                     if (\filter_input(INPUT_POST, 'tipo_comprobante') != '') {
                         $ncf_entidad_tipo = new ncf_entidad_tipo();
+                        $ncf_entidad_tipo->idempresa = $this->empresa->id;
                         $ncf_entidad_tipo->entidad = $cliente->codcliente;
                         $ncf_entidad_tipo->tipo_entidad = 'CLI';
                         $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');

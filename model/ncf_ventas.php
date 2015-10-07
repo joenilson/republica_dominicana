@@ -29,6 +29,7 @@ class ncf_ventas extends fs_model {
     public $entidad;
     public $cifnif;
     public $documento;
+    public $documento_modifica;
     public $fecha;
     public $tipo_comprobante;
     public $ncf;
@@ -47,6 +48,7 @@ class ncf_ventas extends fs_model {
             $this->entidad = $t['entidad'];
             $this->cifnif = $t['cifnif'];
             $this->documento = $t['documento'];
+            $this->documento_modifica = $t['documento_modifica'];
             $this->fecha = $t['fecha'];
             $this->tipo_comprobante = $t['tipo_comprobante'];
             $this->ncf = $t['ncf'];
@@ -63,6 +65,7 @@ class ncf_ventas extends fs_model {
             $this->entidad = null;
             $this->cifnif = null;
             $this->documento = null;
+            $this->documento_modifica = null;
             $this->fecha = Date('d-m-Y');
             $this->tipo_comprobante = null;
             $this->ncf = null;
@@ -94,16 +97,21 @@ class ncf_ventas extends fs_model {
     public function save() {
         if ($this->exists())
         {
-            $sql = "UPDATE ncf_ventas SET ".
-                    "documento = ".$this->var2str($this->documento).", ".
-                    "ncf_modifica = ".$this->var2str($this->ncf_modifica).", ".
-                    "cifnif = ".$this->var2str($this->cifnif).
-                    " WHERE ".
-                    "idempresa = ".$this->intval($this->idempresa)." AND ".
-                    "ncf = ".$this->var2str($this->ncf)." AND ".
-                    "fecha = ".$this->var2str($this->fecha).";";
-            
-            return $this->db->exec($sql);
+            if(!is_null($this->ncf_modifica)){
+                $sql = "UPDATE ncf_ventas SET ".
+                        "documento_modifica = ".$this->var2str($this->documento).", ".
+                        "ncf_modifica = ".$this->var2str($this->ncf_modifica).", ".
+                        "cifnif = ".$this->var2str($this->cifnif).
+                        " WHERE ".
+                        "idempresa = ".$this->intval($this->idempresa)." AND ".
+                        "ncf = ".$this->var2str($this->ncf)." AND ".
+                        "documento = ".$this->var2str($this->documento)." AND ".
+                        "fecha = ".$this->var2str($this->fecha).";";
+
+                return $this->db->exec($sql);
+            }else{
+                return false;
+            }
         }
         else
         {

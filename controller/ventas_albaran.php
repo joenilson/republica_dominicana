@@ -38,6 +38,7 @@ require_model('subcuenta.php');
 require_model('ncf_rango.php');
 require_model('ncf_entidad_tipo.php');
 require_model('ncf_tipo.php');
+require_model('ncf_ventas.php');
 
 class ventas_albaran extends fs_controller {
 
@@ -58,6 +59,7 @@ class ventas_albaran extends fs_controller {
     public $ncf_rango;
     public $ncf_entidad_tipo;
     public $ncf_tipo;
+    public $ncf_ventas;
 
     public function __construct() {
         parent::__construct(__CLASS__, FS_ALBARAN . ' de cliente', 'ventas', FALSE, FALSE);
@@ -83,14 +85,15 @@ class ventas_albaran extends fs_controller {
         $this->ncf_rango = new ncf_rango();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_tipo = new ncf_tipo();
+        $this->ncf_ventas = new ncf_ventas();
 
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
 
         /**
-         * Comprobamos si el usuario tiene acceso a nueva_venta,
-         * necesario para poder añadir líneas.
-         */
+                * Comprobamos si el usuario tiene acceso a nueva_venta,
+                * necesario para poder añadir líneas.
+                */
         if ($this->user->have_access_to('nueva_venta', FALSE)) {
             $nuevoalbp = $this->page->get('nueva_venta');
             if ($nuevoalbp)
@@ -382,19 +385,20 @@ class ventas_albaran extends fs_controller {
 
     private function generar_factura() {
         /*
-         * Verificación de disponibilidad del Número de NCF para República Dominicana
-         */
+                * Verificación de disponibilidad del Número de NCF para República Dominicana
+                */
         //Obtenemos el tipo de comprobante a generar para el cliente
         $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->albaran->codcliente, 'CLI');
         $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
 
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
         $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante);
-        if ($numero_ncf == 'NO_DISPONIBLE')
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
         {
             $continuar = FALSE;
-            $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el documento '. FS_ALBARAN .' no será facturado.');
+            return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' no será facturado.');
         }
+        
         $factura = new factura_cliente();
         $factura->apartado = $this->albaran->apartado;
         $factura->cifnif = $this->albaran->cifnif;
@@ -449,46 +453,61 @@ class ventas_albaran extends fs_controller {
             $continuar = TRUE;
 
             /*
-             * Generación del Número de NCF para República Dominicana
-             */
-            //Obtenemos el tipo de comprobante a generar para el cliente
-            $tipo_comprobante_d = $this->ncf_entidad_tipo->get($factura->codcliente, 'CLI');
-            $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+                        * Generación del Número de NCF para República Dominicana
+                        */
 
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($factura->codalmacen, $tipo_comprobante);
-            if ($numero_ncf)
+            echo $factura->codalmacen;
+            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
+            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
             {
-                
+                $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', la factura '. $factura->idfactura .' se creo sin NCF.');
+            }else{
+                $ncf_factura = new ncf_ventas();
+                $ncf_factura->idempresa = $this->empresa->id;
+                $ncf_factura->codalmacen = $factura->codalmacen;
+                $ncf_factura->entidad = $factura->codcliente;
+                $ncf_factura->cifnif = $factura->cifnif;
+                $ncf_factura->documento = $factura->idfactura;
+                $ncf_factura->fecha = $factura->fecha;
+                $ncf_factura->tipo_comprobante = $tipo_comprobante;
+                $ncf_factura->ncf = $numero_ncf['NCF'];
+                $ncf_factura->usuario_creacion = $this->user->nick;
+                $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+                if(!$ncf_factura->save()){
+                    $this->new_error_msg('Ocurrió un error al grabar la factura '. $factura->idfactura .' con el NCF: '.$numero_ncf['NCF'].' Anule la factura e intentelo nuevamente.');
+                }else{
+                    $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
+                }
             }
                 
-                foreach ($this->albaran->get_lineas() as $l) {
-                    $n = new linea_factura_cliente();
-                    $n->idalbaran = $l->idalbaran;
-                    $n->idfactura = $factura->idfactura;
-                    $n->cantidad = $l->cantidad;
-                    $n->codimpuesto = $l->codimpuesto;
-                    $n->descripcion = $l->descripcion;
-                    $n->dtopor = $l->dtopor;
-                    $n->irpf = $l->irpf;
-                    $n->iva = $l->iva;
-                    $n->pvpsindto = $l->pvpsindto;
-                    $n->pvptotal = $l->pvptotal;
-                    $n->pvpunitario = $l->pvpunitario;
-                    $n->recargo = $l->recargo;
-                    $n->referencia = $l->referencia;
-                    if (!$n->save()) {
-                        $continuar = FALSE;
-                        $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                        break;
-                    }
+            foreach ($this->albaran->get_lineas() as $l) {
+                $n = new linea_factura_cliente();
+                $n->idalbaran = $l->idalbaran;
+                $n->idfactura = $factura->idfactura;
+                $n->cantidad = $l->cantidad;
+                $n->codimpuesto = $l->codimpuesto;
+                $n->descripcion = $l->descripcion;
+                $n->dtopor = $l->dtopor;
+                $n->irpf = $l->irpf;
+                $n->iva = $l->iva;
+                $n->pvpsindto = $l->pvpsindto;
+                $n->pvptotal = $l->pvptotal;
+                $n->pvpunitario = $l->pvpunitario;
+                $n->recargo = $l->recargo;
+                $n->referencia = $l->referencia;
+                if (!$n->save()) {
+                    $continuar = FALSE;
+                    $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                    break;
                 }
+            }
 
             if ($continuar) {
                 $this->albaran->idfactura = $factura->idfactura;
                 $this->albaran->ptefactura = FALSE;
                 if ($this->albaran->save()) {
-                    $this->generar_asiento($factura);
+                    $this->generar_asiento($factura,$numero_ncf);
                 } else {
                     $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva " . FS_FACTURA . "!");
                     if ($factura->delete()) {
@@ -507,11 +526,11 @@ class ventas_albaran extends fs_controller {
             $this->new_error_msg("¡Imposible guardar la " . FS_FACTURA . "!");
     }
 
-    private function generar_asiento(&$factura) {
+    private function generar_asiento(&$factura,$numero_ncf) {
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
             if ($asiento_factura->generar_asiento_venta($factura)) {
-                $this->new_message("<a href='" . $factura->url() . "'>" . ucfirst(FS_FACTURA) . "</a> generada correctamente.");
+                $this->new_message("<a href='" . $factura->url() . "'>" . ucfirst(FS_FACTURA) . "</a> generada correctamente con número de NCF: ".$numero_ncf['NCF']);
             }
 
             foreach ($asiento_factura->errors as $err) {
@@ -522,7 +541,7 @@ class ventas_albaran extends fs_controller {
                 $this->new_message($msg);
             }
         } else {
-            $this->new_message("<a href='" . $factura->url() . "'>" . ucfirst(FS_FACTURA) . "</a> generada correctamente.");
+            $this->new_message("<a href='" . $factura->url() . "'>" . ucfirst(FS_FACTURA) . "</a> generada correctamente con número de NCF: ".$numero_ncf['NCF']);
         }
 
         $this->new_change(ucfirst(FS_FACTURA) . ' ' . $factura->codigo, $factura->url(), TRUE);
