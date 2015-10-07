@@ -457,7 +457,6 @@ class ventas_albaran extends fs_controller {
                         */
 
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            echo $factura->codalmacen;
             $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
             if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
             {
