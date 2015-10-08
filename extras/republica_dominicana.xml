@@ -2,9 +2,113 @@
 <!--
     Document   : ejercicio_2015.xml
     Description:
-        Estructura de grupos de epígrafes, epígrafes, cuentas y subcuentas del ejercicio 2015.
+        Estructura de grupos de epígrafes, epígrafes, cuentas y subcuentas del ejercicio 2015 para República Dominicana.
 -->
 <ejercicio>
+    <cuenta_especial>
+        <idcuentaesp>IVAACR</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBhY3JlZWRvcmFzIGRlIElUQklTIGVuIGxhIHJlZ3VsYXJpemFjacOzbg==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>ACREED</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBhY3JlZWRvcmVz</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>CAJA</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBjYWph</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>CLIENT</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBjbGllbnRlcw==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>COMPRA</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBjb21wcmFz</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>CAMNEG</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBkaWZlcmVuY2lhcyBuZWdhdGl2YXMgZGUgY2FtYmlv</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>CAMPOS</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBkaWZlcmVuY2lhcyBwb3NpdGl2YXMgZGUgY2FtYmlv</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVASOP</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBJVEJJUyBDb21wcmFz</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVARXP</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBJVEJJUyBleHBvcnRhY2lvbmVz</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVASIM</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBJVEJJUyBpbXBvcnRhY2lvbmVz</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVAREX</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBJVEJJUyBwYXJhIGNsaWVudGVzIGV4ZW50b3M=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVAREP</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBJVEJJUyBWZW50YXM=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>PROVEE</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSBwcm92ZWVkb3Jlcw==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IRPF</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSByZXRlbmNpb25lcyBJVEY=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IRPFPR</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSByZXRlbmNpb25lcyBwYXJhIHByb3ZlZWRvcmVzIElSUEZQUg==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>IVADEU</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZXVkb3JhcyBkZSBJVkEgZW4gbGEgcmVndWxhcml6YWNpw7Nu</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>VENTAS</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBkZSB2ZW50YXM=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>EURNEG</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBwb3IgZGlmZXJlbmNpYXMgbmVnYXRpdmFzIGRlIGNvbnZlcnNpw7NuIGEgbGEgbW9uZWRhIGxvY2Fs</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>EURPOS</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBwb3IgZGlmZXJlbmNpYXMgcG9zaXRpdmFzIGRlIGNvbnZlcnNpw7NuIGEgbGEgbW9uZWRhIGxvY2Fs</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>DIVPOS</idcuentaesp>
+        <descripcion>Q3VlbnRhcyBwb3IgZGlmZXJlbmNpYXMgcG9zaXRpdmFzIGVuIGRpdmlzYSBleHRyYW5qZXJh</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>PREVIO</idcuentaesp>
+        <descripcion>Q3VlbnRhcyByZWxhdGl2YXMgYWwgZWplcmNpY2lvIHByZXZpbw==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>DEVCOM</idcuentaesp>
+        <descripcion>RGV2b2x1Y2lvbmVzIGRlIGNvbXByYXM=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>DEVVEN</idcuentaesp>
+        <descripcion>RGV2b2x1Y2lvbmVzIGRlIHZlbnRhcw==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>GTORF</idcuentaesp>
+        <descripcion>R2FzdG9zIHBvciByZWNhcmdvIGZpbmFuY2llcm8=</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>INGRF</idcuentaesp>
+        <descripcion>SW5ncmVzb3MgcG9yIHJlY2FyZ28gZmluYW5jaWVybw==</descripcion>
+    </cuenta_especial>
+    <cuenta_especial>
+        <idcuentaesp>PYG</idcuentaesp>
+        <descripcion>UMOpcmRpZGFzIHkgZ2FuYW5jaWFz</descripcion>
+    </cuenta_especial>
     <grupo_epigrafes>
         <codgrupo>CLA 0</codgrupo>
         <descripcion>QUNUSVZPIC0gUEFTSVZP</descripcion>
@@ -47,406 +151,487 @@
     </grupo_epigrafes>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>10</codepigrafe>
         <descripcion>RUZFQ1RJVk8gWSBFUVVJVkFMRU5URSBERSBFRkVDVElWTw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>11</codepigrafe>
         <descripcion>SU5WRVJTSU9ORVMgRklOQU5DSUVSQVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>12</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgQ09CUkFSIENPTUVSQ0lBTEVTLVRFUkNFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>13</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgQ09CUkFSIENPTUVSQ0lBTEVTLVJFTEFDSU9OQQ==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>14</codepigrafe>
         <descripcion>Q1RBUyBYIENCUiBQRVJTT05BTCAgQUNDSU9OSVNUQVMgRElSRUNUTw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>16</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgQ09CUkFSIERJVkVSU0FTLVRFUkNFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>17</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgQ09CUkFSIERJVkVSU0FTLVJFTEFDSU9OQURBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>18</codepigrafe>
         <descripcion>U0VSVklDSU9TIFkgT1RST1MgQ09OVFJBVEFET1MgUE9SIEFOVElDSVBBRE8=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 1</codgrupo>
+        <codpadre/>
         <codepigrafe>19</codepigrafe>
         <descripcion>RVNUSU1BQ0nDk04gREUgQ1VFTlRBUyBERSBDT0JSQU5aQSBEVURPU0E=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>20</codepigrafe>
         <descripcion>TUVSQ0FERVLDjUFT</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>21</codepigrafe>
         <descripcion>UFJPRFVDVE9TIFRFUk1JTkFET1M=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>22</codepigrafe>
         <descripcion>U1VCUFJPRFVDVE9TLCBERVNFQ0hPUyBZIERFU1BFUkRJQ0lPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>23</codepigrafe>
         <descripcion>UFJPRFVDVE9TIEVOIFBST0NFU08=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>24</codepigrafe>
         <descripcion>TUFURVJJQVMgUFJJTUFT</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>25</codepigrafe>
         <descripcion>TUFURVJJQUxFUyBBVVhJTElBUkVTLCBTVU1JTklTVFJPUyBZIFJFUFVFU1RPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>26</codepigrafe>
         <descripcion>RU5WQVNFUyBZIEVNQkFMQUpFUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>27</codepigrafe>
         <descripcion>QUNUSVZPUyBOTyBDT1JSSUVOVEVTIE1BTlRFTklET1MgUEFSQSBMQSBWRU5UQQ==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>28</codepigrafe>
         <descripcion>RVhJU1RFTkNJQVMgUE9SIFJFQ0lCSVI=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 2</codgrupo>
+        <codpadre/>
         <codepigrafe>29</codepigrafe>
         <descripcion>REVTVkFMT1JJWkFDScOTTiBERSBFWElTVEVOQ0lBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>30</codepigrafe>
         <descripcion>SU5WRVJTSU9ORVMgTU9CSUxJQVJJQVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>31</codepigrafe>
         <descripcion>SU5WRVJTSU9ORVMgSU5NT0JJTElBUklBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>32</codepigrafe>
         <descripcion>QUNUSVZPUyBBRFFVSVJJRE9TIEVOIEFSUkVOREFNSUVOVE8gRklOQU5DSUVSTw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>33</codepigrafe>
         <descripcion>SU5NVUVCTEVTLCBNQVFVSU5BUklBIFkgRVFVSVBP</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>34</codepigrafe>
         <descripcion>SU5UQU5HSUJMRVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>35</codepigrafe>
         <descripcion>QUNUSVZPUyBCSU9Mw5NHSUNPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>36</codepigrafe>
         <descripcion>REVTVkFMT1JJWkFDScOTTiBERSBBQ1RJVk8gSU5NT1ZJTElaQURP</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>37</codepigrafe>
         <descripcion>QUNUSVZPIERJRkVSSURP</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>38</codepigrafe>
         <descripcion>T1RST1MgQUNUSVZPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 3</codgrupo>
+        <codpadre/>
         <codepigrafe>39</codepigrafe>
         <descripcion>REVQUkVDSUFDScOTTiwgQU1PUlRJWkFDScOTTiBZIEFHT1RBTUlFTlRPIEFDVU1VTEFET1M=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>40</codepigrafe>
         <descripcion>VFJJQlVUT1MgWSBBUE9SVEVTIEFMIFNJU1RFTUEgREUgUEVOU0lPTkVTIFkgREUgU0FMVUQgUE9SIFBBR0FS</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>41</codepigrafe>
         <descripcion>UkVNVU5FUkFDSU9ORVMgWSBQQVJUSUNJUEFDSU9ORVMgUE9SIFBBR0FS</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>42</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgUEFHQVIgQ09NRVJDSUFMRVMg4oCTIFRFUkNFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>43</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgUEFHQVIgQ09NRVJDSUFMRVMg4oCTIFJFTEFDSU9OQURBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>44</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgUEFHQVIgQSBMT1MgQUNDSU9OSVNUQVMsIERJUkVDVE9SRVMgWSBHRVJFTlRFUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>45</codepigrafe>
         <descripcion>T0JMSUdBQ0lPTkVTIEZJTkFOQ0lFUkFT</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>46</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgUEFHQVIgRElWRVJTQVMg4oCTIFRFUkNFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>47</codepigrafe>
         <descripcion>Q1VFTlRBUyBQT1IgUEFHQVIgRElWRVJTQVMg4oCTIFJFTEFDSU9OQURBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>48</codepigrafe>
         <descripcion>UFJPVklTSU9ORVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 4</codgrupo>
+        <codpadre/>
         <codepigrafe>49</codepigrafe>
         <descripcion>UEFTSVZPIERJRkVSSURP</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>50</codepigrafe>
         <descripcion>Q0FQSVRBTA==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>51</codepigrafe>
         <descripcion>QUNDSU9ORVMgREUgSU5WRVJTScOTTg==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>52</codepigrafe>
         <descripcion>Q0FQSVRBTCBBRElDSU9OQUw=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>56</codepigrafe>
         <descripcion>UkVTVUxUQURPUyBOTyBSRUFMSVpBRE9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>57</codepigrafe>
         <descripcion>RVhDRURFTlRFIERFIFJFVkFMVUFDScOTTg==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>58</codepigrafe>
         <descripcion>UkVTRVJWQVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 5</codgrupo>
+        <codpadre/>
         <codepigrafe>59</codepigrafe>
         <descripcion>UkVTVUxUQURPUyBBQ1VNVUxBRE9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>60</codepigrafe>
         <descripcion>Q09NUFJBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>61</codepigrafe>
         <descripcion>VkFSSUFDScOTTiBERSBFWElTVEVOQ0lBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>62</codepigrafe>
         <descripcion>R0FTVE9TIERFIFBFUlNPTkFMLCBESVJFQ1RPUkVTIFkgR0VSRU5URVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>63</codepigrafe>
         <descripcion>R0FTVE9TIERFIFNFUlZJQ0lPUyBQUkVTVEFET1MgUE9SIFRFUkNFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>64</codepigrafe>
         <descripcion>R0FTVE9TIFBPUiBUUklCVVRPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>65</codepigrafe>
         <descripcion>T1RST1MgR0FTVE9TIERFIEdFU1RJw5NO</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>66</codepigrafe>
         <descripcion>UMOJUkRJREEgUE9SIE1FRElDScOTTiBERSBBQ1RJVk9TIE5PIEZJTkFOQ0lFUk9TIEFMIFZBTE9SIFJBWk9OQUJMRQ==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>67</codepigrafe>
         <descripcion>R0FTVE9TIEZJTkFOQ0lFUk9T</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>68</codepigrafe>
         <descripcion>VkFMVUFDScOTTiBZIERFVEVSSU9STyBERSBBQ1RJVk9TIFkgUFJPVklTSU9ORVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 6</codgrupo>
+        <codpadre/>
         <codepigrafe>69</codepigrafe>
         <descripcion>Q09TVE8gREUgVkVOVEFT</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>70</codepigrafe>
         <descripcion>VkVOVEFT</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>71</codepigrafe>
         <descripcion>VkFSSUFDScOTTiBERSBMQSBQUk9EVUNDScOTTiBBTE1BQ0VOQURB</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>72</codepigrafe>
         <descripcion>UFJPRFVDQ0nDk04gREUgQUNUSVZPIElOTU9WSUxJWkFETw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>73</codepigrafe>
         <descripcion>REVTQ1VFTlRPUywgUkVCQUpBUyBZIEJPTklGSUNBQ0lPTkVTIE9CVEVOSURPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>74</codepigrafe>
         <descripcion>REVTQ1VFTlRPUywgUkVCQUpBUyBZIEJPTklGSUNBQ0lPTkVTIENPTkNFRElET1M=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>75</codepigrafe>
         <descripcion>T1RST1MgSU5HUkVTT1MgREUgR0VTVEnDk04=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>76</codepigrafe>
         <descripcion>R0FOQU5DSUEgUE9SIE1FRElDScOTTiBERSBBQ1RJVk9TIE5PIEZJTkFOQ0lFUk9TIEFMIFZBTE9SIFJBWk9OQUJMRQ==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>77</codepigrafe>
         <descripcion>SU5HUkVTT1MgRklOQU5DSUVST1M=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>78</codepigrafe>
         <descripcion>Q0FSR0FTIENVQklFUlRBUyBQT1IgUFJPVklTSU9ORVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 7</codgrupo>
+        <codpadre/>
         <codepigrafe>79</codepigrafe>
         <descripcion>Q0FSR0FTIElNUFVUQUJMRVMgQSBDVUVOVEFTIERFIENPU1RPUyBZIEdBU1RPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>80</codepigrafe>
         <descripcion>TUFSR0VOIENPTUVSQ0lBTA==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>81</codepigrafe>
         <descripcion>UFJPRFVDQ0nDk04gREVMIEVKRVJDSUNJTw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>82</codepigrafe>
         <descripcion>VkFMT1IgQUdSRUdBRE8=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>83</codepigrafe>
         <descripcion>RVhDRURFTlRFIEJSVVRPIChJTlNVRklDSUVOQ0lBIEJSVVRBKSBERSBFWFBMT1RBQ0nDk04=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>84</codepigrafe>
         <descripcion>UkVTVUxUQURPIERFIEVYUExPVEFDScOTTg==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>85</codepigrafe>
         <descripcion>UkVTVUxUQURPIEFOVEVTIERFIFBBUlRJQ0lQQUNJT05FUyBFIElNUFVFU1RPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>87</codepigrafe>
         <descripcion>UEFSVElDSVBBQ0lPTkVTIERFIExPUyBUUkFCQUpBRE9SRVM=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>88</codepigrafe>
         <descripcion>SU1QVUVTVE8gQSBMQSBSRU5UQQ==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 8</codgrupo>
+        <codpadre/>
         <codepigrafe>89</codepigrafe>
         <descripcion>REVURVJNSU5BQ0nDk04gREVMIFJFU1VMVEFETyBERUwgRUpFUkNJQ0lP</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>91</codepigrafe>
         <descripcion>Q09TVE9TIFBPUiBESVNUUklCVUlS</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>92</codepigrafe>
         <descripcion>Q09TVE9TIERFIFBST0RVQ0NJw5NO</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>93</codepigrafe>
         <descripcion>Q0VOVFJPUyBERSBDT1NUT1M=</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>94</codepigrafe>
         <descripcion>R0FTVE9TIEFETUlOSVNUUkFUSVZPUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>95</codepigrafe>
         <descripcion>R0FTVE9TIERFIFZFTlRBUw==</descripcion>
     </epigrafe>
     <epigrafe>
         <codgrupo>CLA 9</codgrupo>
+        <codpadre/>
         <codepigrafe>96</codepigrafe>
         <descripcion>R0FTVE9TIEZJTkFOQ0lFUk9T</descripcion>
     </epigrafe>
@@ -454,7 +639,7 @@
         <codepigrafe>10</codepigrafe>
         <codcuenta>101</codcuenta>
         <descripcion>Q0FKQQ==</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>CAJA</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>10</codepigrafe>
@@ -514,7 +699,7 @@
         <codepigrafe>12</codepigrafe>
         <codcuenta>121</codcuenta>
         <descripcion>RkFDVFVSQVMsIEJPTEVUQVMgWSBPVFJPUyBDT01QUk9CQU5URVMgUE9SIENPQlJBUg==</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>CLIENT</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>12</codepigrafe>
@@ -724,19 +909,19 @@
         <codepigrafe>20</codepigrafe>
         <codcuenta>201</codcuenta>
         <descripcion>TUVSQ0FERVLDjUFTIE1BTlVGQUNUVVJBREFT</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>20</codepigrafe>
         <codcuenta>202</codcuenta>
         <descripcion>TUVSQ0FERVLDjUFTIERFIEVYVFJBQ0NJw5NO</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>20</codepigrafe>
         <codcuenta>203</codcuenta>
         <descripcion>TUVSQ0FERVLDjUFTIEFHUk9QRUNVQVJJQVMgWSBQSVNDw41DT0xBUw==</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>20</codepigrafe>
@@ -748,7 +933,7 @@
         <codepigrafe>20</codepigrafe>
         <codcuenta>208</codcuenta>
         <descripcion>T1RSQVMgTUVSQ0FERVLDjUFT</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>21</codepigrafe>
@@ -927,25 +1112,25 @@
     <cuenta>
         <codepigrafe>27</codepigrafe>
         <codcuenta>275</codcuenta>
-        <descripcion>REVQUkVDSUFJT04gQUNVTVVMQURBIC0gSU5WRVJTSU9OIElOTU9CSUxJQVJJQSA=</descripcion>
+        <descripcion>REVQUkVDSUFJT04gQUNVTVVMQURBIC0gSU5WRVJTSU9OIElOTU9CSUxJQVJJQQ==</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
         <codepigrafe>27</codepigrafe>
         <codcuenta>276</codcuenta>
-        <descripcion>REVQUkVDSUFJT04gQUNVTVVMQURBIC0gSU5NVUVCTEUgIE1BUVVJTkFSSUEgWSBFUVVJUE8g</descripcion>
+        <descripcion>REVQUkVDSUFJT04gQUNVTVVMQURBIC0gSU5NVUVCTEUgIE1BUVVJTkFSSUEgWSBFUVVJUE8=</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
         <codepigrafe>27</codepigrafe>
         <codcuenta>277</codcuenta>
-        <descripcion>QU1PUlRJWkFDSU9OIEFDVU1VTEFEQSAtIElOVEFOR0lCTEVTIA==</descripcion>
+        <descripcion>QU1PUlRJWkFDSU9OIEFDVU1VTEFEQSAtIElOVEFOR0lCTEVT</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
         <codepigrafe>27</codepigrafe>
         <codcuenta>278</codcuenta>
-        <descripcion>REVQUkVDSUFDSU9OIEFDVU1VTEFEQSAtIEFDVElWT1MgQklPTE9HSUNPUyA=</descripcion>
+        <descripcion>REVQUkVDSUFDSU9OIEFDVU1VTEFEQSAtIEFDVElWT1MgQklPTE9HSUNPUw==</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1185,7 +1370,7 @@
     <cuenta>
         <codepigrafe>36</codepigrafe>
         <codcuenta>361</codcuenta>
-        <descripcion>IERFU1ZBTE9SSVpBQ0lPTiBERSBJTlZFUlNJT05FUyBJTk1PQklMSUFSSUFT</descripcion>
+        <descripcion>REVTVkFMT1JJWkFDSU9OIERFIElOVkVSU0lPTkVTIElOTU9CSUxJQVJJQVM=</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1209,7 +1394,7 @@
     <cuenta>
         <codepigrafe>36</codepigrafe>
         <codcuenta>366</codcuenta>
-        <descripcion>REVTVkFMT1JJWkFDSU9OIERFIElOVkVSU0lPTkVTIElOTU9CT0xJQVJJQVMg</descripcion>
+        <descripcion>REVTVkFMT1JJWkFDSU9OIERFIElOVkVSU0lPTkVTIElOTU9CT0xJQVJJQVM=</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1221,7 +1406,7 @@
     <cuenta>
         <codepigrafe>37</codepigrafe>
         <codcuenta>372</codcuenta>
-        <descripcion>UEFSVElDSVBBQ0lPTkVTIERFIExPUyBUUkFCQUpBRE9SRVMgRElGRVJJREFTIA==</descripcion>
+        <descripcion>UEFSVElDSVBBQ0lPTkVTIERFIExPUyBUUkFCQUpBRE9SRVMgRElGRVJJREFT</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1264,7 +1449,7 @@
         <codepigrafe>40</codepigrafe>
         <codcuenta>401</codcuenta>
         <descripcion>R09CSUVSTk8gQ0VOVFJBTA==</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>IVAREP</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>40</codepigrafe>
@@ -1336,13 +1521,13 @@
         <codepigrafe>42</codepigrafe>
         <codcuenta>421</codcuenta>
         <descripcion>RkFDVFVSQVMsIEJPTEVUQVMgWSBPVFJPUyBDT01QUk9CQU5URVMgUE9SIFBBR0FS</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>42</codepigrafe>
         <codcuenta>422</codcuenta>
         <descripcion>QU5USUNJUE9TIEEgUFJPVkVFRE9SRVM=</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>42</codepigrafe>
@@ -1720,7 +1905,7 @@
         <codepigrafe>60</codepigrafe>
         <codcuenta>601</codcuenta>
         <descripcion>TUVSQ0FERVLDjUFT</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>COMPRA</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>60</codepigrafe>
@@ -1744,7 +1929,7 @@
         <codepigrafe>60</codepigrafe>
         <codcuenta>609</codcuenta>
         <descripcion>Q09TVE9TIFZJTkNVTEFET1MgQ09OIExBUyBDT01QUkFT</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>ACREED</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>61</codepigrafe>
@@ -1809,7 +1994,7 @@
     <cuenta>
         <codepigrafe>62</codepigrafe>
         <codcuenta>627</codcuenta>
-        <descripcion>U0VHVVJJREFEIFkgUFJFVklTScOTTiBTT0NJQUwgWSBPVFJBUyBDT05UUklCVUNJT05FUyA=</descripcion>
+        <descripcion>U0VHVVJJREFEIFkgUFJFVklTScOTTiBTT0NJQUwgWSBPVFJBUyBDT05UUklCVUNJT05FUw==</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1887,7 +2072,7 @@
     <cuenta>
         <codepigrafe>64</codepigrafe>
         <codcuenta>642</codcuenta>
-        <descripcion>R09CSUVSTk8gUkVHSU9OQUwg</descripcion>
+        <descripcion>R09CSUVSTk8gUkVHSU9OQUw=</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -1899,7 +2084,7 @@
     <cuenta>
         <codepigrafe>64</codepigrafe>
         <codcuenta>644</codcuenta>
-        <descripcion>T1RST1MgR0FTVE9TIFBPUiBUUklCVVRPUyA=</descripcion>
+        <descripcion>T1RST1MgR0FTVE9TIFBPUiBUUklCVVRPUw==</descripcion>
         <idcuentaesp/>
     </cuenta>
     <cuenta>
@@ -2068,7 +2253,7 @@
         <codepigrafe>70</codepigrafe>
         <codcuenta>701</codcuenta>
         <descripcion>TUVSQ0FERVLDjUFT</descripcion>
-        <idcuentaesp/>
+        <idcuentaesp>VENTAS</idcuentaesp>
     </cuenta>
     <cuenta>
         <codepigrafe>70</codepigrafe>
@@ -2619,7 +2804,7 @@
     <subcuenta>
         <codcuenta>121</codcuenta>
         <codsubcuenta>1211</codsubcuenta>
-        <descripcion>Tk8gRU1JVElEQVM=</descripcion>
+        <descripcion>RkFDVFVSQVMgUE9SIENPQlJBUg==</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -2668,18 +2853,6 @@
         <codcuenta>123</codcuenta>
         <codsubcuenta>1233</codsubcuenta>
         <descripcion>RU4gREVTQ1VFTlRP</descripcion>
-        <coddivisa>DOP</coddivisa>
-    </subcuenta>
-    <subcuenta>
-        <codcuenta>129</codcuenta>
-        <codsubcuenta>1291</codsubcuenta>
-        <descripcion>RkFDVFVSQVMgQk9MRVRBUyBZIE9UUk9TIENPTVBST0JBTlRFUyBQTw==</descripcion>
-        <coddivisa>DOP</coddivisa>
-    </subcuenta>
-    <subcuenta>
-        <codcuenta>129</codcuenta>
-        <codsubcuenta>1293</codsubcuenta>
-        <descripcion>TEVUUkFTIFBPUiBDT0JSQVI=</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -2950,12 +3123,6 @@
         <codcuenta>168</codcuenta>
         <codsubcuenta>1682</codsubcuenta>
         <descripcion>T1RSQVMgQ1VFTlRBUyBQT1IgQ09CUkFSIERJVkVSU0FT</descripcion>
-        <coddivisa>DOP</coddivisa>
-    </subcuenta>
-    <subcuenta>
-        <codcuenta>169</codcuenta>
-        <codsubcuenta>1691</codsubcuenta>
-        <descripcion>Q09CUkFOWkEgRFVET1NBIFBSRVNUQU1PUw==</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -3855,7 +4022,7 @@
     <subcuenta>
         <codcuenta>401</codcuenta>
         <codsubcuenta>4011</codsubcuenta>
-        <descripcion>SU1QVUVTVE8gR0VORVJBTCBBIExBUyBWRU5UQVM=</descripcion>
+        <descripcion>SVRCSVM=</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -4570,12 +4737,6 @@
         <codcuenta>485</codcuenta>
         <codsubcuenta>4851</codsubcuenta>
         <descripcion>UFJPVklTScOTTiBQQVJBIEdBU1RPUyBERSBSRVNQT05TQUJJTElEQUQ=</descripcion>
-        <coddivisa>DOP</coddivisa>
-    </subcuenta>
-    <subcuenta>
-        <codcuenta>486</codcuenta>
-        <codsubcuenta>4861</codsubcuenta>
-        <descripcion>UFJPVklTScOTTiBQQVJBIEdBUkFOVMONQVM=</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -5607,7 +5768,7 @@
     <subcuenta>
         <codcuenta>701</codcuenta>
         <codsubcuenta>7011</codsubcuenta>
-        <descripcion>TUVSQ0FERVLDjUFTIE1BTlVGQUNUVVJBREFT</descripcion>
+        <descripcion>TUVSQ0FERVLDjUFT</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -5836,12 +5997,6 @@
         <codcuenta>773</codcuenta>
         <codsubcuenta>7731</codsubcuenta>
         <descripcion>RElWSURFTkRPUw==</descripcion>
-        <coddivisa>DOP</coddivisa>
-    </subcuenta>
-    <subcuenta>
-        <codcuenta>774</codcuenta>
-        <codsubcuenta>7741</codsubcuenta>
-        <descripcion>SU5HUkVTT1MgRU4gT1BFUkFDSU9ORVMgREUgRkFDVE9SQUpFIChGQQ==</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>

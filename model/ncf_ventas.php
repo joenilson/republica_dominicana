@@ -143,16 +143,18 @@ class ncf_ventas extends fs_model {
         return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
     }
     
-    public function all()
+    public function all($idempresa)
     {
         $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_ventas ORDER BY idempresa, ncf, fecha");
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." ".
+                "ORDER BY idempresa, ncf, fecha");
         
         if($data)
         {
             foreach($data as $d)
             {
-                $lista[] = new ncf_entidad_tipo($d);
+                $lista[] = new ncf_ventas($d);
             }
                 
         }
@@ -164,8 +166,40 @@ class ncf_ventas extends fs_model {
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
-                "idempresa = ".$this->intval($idempresa).", ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
                 "ncf = ".$this->var2str($ncf)." ".
+                "ORDER BY idempresa, ncf, fecha");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $lista[] = new ncf_ventas($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function get_ncf($idempresa, $documento, $entidad, $fecha)
+    {
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "documento = ".$this->var2str($documento)." AND ".
+                "entidad = ".$this->var2str($entidad)." AND ".
+                "fecha = ".$this->var2str($fecha).";");
+        
+        return new ncf_ventas($data[0]);
+    }
+    
+    public function get_tipo($idempresa, $tipo_comprobante, $codalmacen)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "codalmacen = ".$this->var2str($codalmacen)." AND ".
+                "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
                 "ORDER BY idempresa, ncf, fecha");
         
         if($data)

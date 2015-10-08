@@ -65,7 +65,7 @@
                                 <div class="col-sm-1">
                                     <div class="form-group">
                                         <a href="{$fsc->almacen->url()}">Almacen</a>
-                                        <select name="scodpais" class="form-control">
+                                        <select name="codalmacen" class="form-control">
                                             {loop="$fsc->almacen->all()"}
                                             {if="$value1->codalmacen==$value2->codalmacen"}
                                             <option value="{$value2->codalmacen}" selected="">{$value2->nombre}</option>
@@ -76,12 +76,6 @@
                                         </select>
                                     </div>
                                 </div> 
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Solicitud:
-                                        <input class="form-control" type="text" name="solicitud" value="{$value->solicitud}" autocomplete="off"/>
-                                    </div>
-                                </div>
                                 <div class="col-sm-1">
                                     <div class="form-group">
                                         Serie:

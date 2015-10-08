@@ -145,7 +145,7 @@ class ncf_rango extends fs_model
                     "secuencia_inicio = ".$this->intval($this->secuencia_inicio).", ".
                     "secuencia_fin = ".$this->intval($this->secuencia_fin).", ".
                     "correlativo = ".$this->intval($this->correlativo).", ".
-                    "estado = ".$this->str2bool($this->estado).", ".
+                    "estado = ".($this->estado).", ".
                     "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
                     "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
                     "WHERE ".
@@ -242,7 +242,7 @@ class ncf_rango extends fs_model
     protected function ncf_number($data){
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
-        $correlativo = str_pad($solicitud->correlativo+1,8,'0',STR_PAD_LEFT);
+        $correlativo = str_pad($solicitud->correlativo,8,'0',STR_PAD_LEFT);
         $ncf_number = ($correlativo === $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
         return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
     }
@@ -251,7 +251,7 @@ class ncf_rango extends fs_model
         
         $sql = "UPDATE ncf_rango SET ".
             
-            "correlativo = ".$this->intval((\substr($ncf, 11, 18))+0).", ".
+            "correlativo = ".$this->intval((\substr($ncf, 11, 18))+1).", ".
             "usuario_modificacion = ".$this->var2str($usuario).", ".
             "fecha_modificacion = ".$this->var2str(Date('d-m-Y H:i:s'))." ".
             "WHERE ".

@@ -36,6 +36,7 @@ require_model('tarifa.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
+require_model('ncf_ventas.php');
 
 class nueva_venta extends fs_controller
 {
@@ -57,6 +58,8 @@ class nueva_venta extends fs_controller
    public $serie;
    public $tipo;
    public $ncf_tipo;
+   public $ncf_rango;
+   public $ncf_ventas;
    public $ncf_entidad_tipo;
    
    public function __construct()
@@ -76,7 +79,9 @@ class nueva_venta extends fs_controller
       $this->grupo = new grupo_clientes();
       $this->pais = new pais();
       $this->ncf_tipo = new ncf_tipo();
+      $this->ncf_rango = new ncf_rango();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
+      $this->ncf_ventas = new ncf_ventas();
       
       /// cargamos la configuración
       $fsvar = new fs_var();
@@ -759,6 +764,21 @@ class nueva_venta extends fs_controller
          $continuar = FALSE;
       }
       
+      /*
+        * Verificación de disponibilidad del Número de NCF para República Dominicana
+        */
+        //Obtenemos el tipo de comprobante a generar para el cliente
+        $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
+        $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+
+        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante);
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
+        {
+            $continuar = FALSE;
+            return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');
+        }
+      
       if($continuar)
       {
          $factura->fecha = $_POST['fecha'];
@@ -799,6 +819,15 @@ class nueva_venta extends fs_controller
          
          if( $factura->save() )
          {
+             /*
+            * Grabación del Número de NCF para República Dominicana
+            */
+            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
+            
+            $this->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
+             
+             
             $art0 = new articulo();
             $n = floatval($_POST['numlineas']);
             for($i = 0; $i <= $n; $i++)
@@ -877,7 +906,7 @@ class nueva_venta extends fs_controller
                else if( $factura->save() )
                {
                   $this->generar_asiento($factura);
-                  $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente.");
+                  $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
                   $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
                   
                   if($_POST['redir'] == 'TRUE')
@@ -898,6 +927,30 @@ class nueva_venta extends fs_controller
          else
             $this->new_error_msg("¡Imposible guardar la Factura!");
       }
+   }
+   
+   private function guardar_ncf($idempresa,$factura,$tipo_comprobante,$numero_ncf){
+
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
+            return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', la factura '. $factura->idfactura .' se creo sin NCF.');
+        }else{
+            $ncf_factura = new ncf_ventas();
+            $ncf_factura->idempresa = $idempresa;
+            $ncf_factura->codalmacen = $factura->codalmacen;
+            $ncf_factura->entidad = $factura->codcliente;
+            $ncf_factura->cifnif = $factura->cifnif;
+            $ncf_factura->documento = $factura->idfactura;
+            $ncf_factura->fecha = $factura->fecha;
+            $ncf_factura->tipo_comprobante = $tipo_comprobante;
+            $ncf_factura->ncf = $numero_ncf['NCF'];
+            $ncf_factura->usuario_creacion = $this->user->nick;
+            $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+            if(!$ncf_factura->save()){
+                return $this->new_error_msg('Ocurrió un error al grabar la factura '. $factura->idfactura .' con el NCF: '.$numero_ncf['NCF'].' Anule la factura e intentelo nuevamente.');
+            }else{
+                $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
+            }
+        }
    }
    
    private function generar_asiento($factura)
