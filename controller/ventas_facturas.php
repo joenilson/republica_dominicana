@@ -141,6 +141,10 @@ class ventas_facturas extends fs_controller
          {
             $this->delete_factura();
          }
+         elseif( isset($_GET['anular']) )
+         {
+            $this->anular_factura();
+         }
          else
          {
             if( !isset($_GET['mostrar']) AND (isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente'])) )
@@ -460,6 +464,43 @@ class ventas_facturas extends fs_controller
          }
          else
             $this->new_error_msg("¡Imposible eliminar la factura!");
+      }
+      else
+         $this->new_error_msg("Factura no encontrada.");
+   }
+   
+   private function anular_factura()
+   {
+      $fact = $this->factura->get($_GET['anular']);
+      if($fact)
+      {
+         /// Generamos la nota de crédito por cada item
+         $art0 = new articulo();
+         foreach($fact->get_lineas() as $linea)
+         {
+            if( is_null($linea->idalbaran) )
+            {
+               $articulo = $art0->get($linea->referencia);
+               if($articulo)
+               {
+                  $articulo->sum_stock($fact->codalmacen, $linea->cantidad);
+               }
+            }
+         }
+         
+         if( $fact->save() )
+         {
+            $asiento_factura = new asiento_factura();
+            $asiento_factura->soloasiento = TRUE;
+            if( $asiento_factura->generar_asiento_venta($fact, 'inverso') )
+            {
+               $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
+               $this->new_change('Nota de Crédito '.$fact->codigo, $fact->url());
+            }
+            $this->new_message("Factura anulada correctamente, se generó la nota de crédito correspondiente.");
+         }
+         else
+            $this->new_error_msg("¡Imposible anular la factura!");
       }
       else
          $this->new_error_msg("Factura no encontrada.");
