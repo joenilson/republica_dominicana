@@ -157,4 +157,11 @@ class ncf_tipo extends fs_model
         return $lista;
     }
     
+    public function get($tipo_comprobante)
+    {
+        $data = $this->db->select("SELECT * FROM ncf_tipo WHERE tipo_comprobante = ".$this->var2str($tipo_comprobante).";");
+        
+        return new ncf_tipo($data[0]);
+    }
+    
 }

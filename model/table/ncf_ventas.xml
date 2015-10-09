@@ -17,12 +17,12 @@
     </columna>
     <columna>
         <nombre>documento</nombre>
-        <tipo>character varying(20)</tipo>
+        <tipo>integer</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>documento_modifica</nombre>
-        <tipo>character varying(20)</tipo>
+        <tipo>integer</tipo>
         <nulo>YES</nulo>
     </columna>
     <columna>

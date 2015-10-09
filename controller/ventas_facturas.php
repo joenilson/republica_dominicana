@@ -46,6 +46,7 @@ class ventas_facturas extends fs_controller
    public $total_resultados_comision;
    public $total_resultados_txt;
    public $ncf_ventas;
+   public $ncf_resultados;
    
    public function __construct()
    {
@@ -187,7 +188,9 @@ class ventas_facturas extends fs_controller
          
          if($this->mostrar == 'sinpagar')
          {
-            $this->resultados = $this->factura->all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+            $listado_resultante = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+            $this->resultados = $listado_resultante['facturas'];
+            $this->ncf_resultados = $listado_resultante['ncf'];
             
             if($this->offset == 0)
             {
@@ -204,7 +207,11 @@ class ventas_facturas extends fs_controller
             $this->buscar($order2);
          }
          else
-            $this->resultados = $this->factura->all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+         {
+            $listado_resultante = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+            $this->resultados = $listado_resultante['facturas'];
+            $this->ncf_resultados = $listado_resultante['ncf'];
+         }
       }
    }
    
@@ -343,10 +350,11 @@ class ventas_facturas extends fs_controller
    private function buscar($order2)
    {
       $this->resultados = array();
+      $this->ncf_resultados = array();
       $this->num_resultados = 0;
       $query = $this->agente->no_html( strtolower($this->query) );
-      $sql = " FROM facturascli,ncf_ventas ";
-      $where = 'WHERE idfactura = documento AND ';
+      $sql = " FROM facturascli, ncf_ventas WHERE idfactura = documento AND entidad = codcliente ";
+      $where = 'AND ';
       
       if($this->query != '')
       {
@@ -399,13 +407,11 @@ class ventas_facturas extends fs_controller
          $this->num_resultados = intval($data[0]['total']);
          
          $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY ".$this->order.$order2, FS_ITEM_LIMIT, $this->offset);
-         echo "Este ".$data2;
          if($data2)
          {
             foreach($data2 as $d)
             {
                $this->resultados[] = new factura_cliente($d);
-               echo "esto: ".$d['idfactura'];
                $this->ncf_resultados[$d['idfactura']] = new ncf_ventas($d);
             }
          }
@@ -458,4 +464,40 @@ class ventas_facturas extends fs_controller
       else
          $this->new_error_msg("Factura no encontrada.");
    }
+   
+    private function factura_all_sin_pagar($offset=0, $limit=FS_ITEM_LIMIT, $order='vencimiento ASC, codigo ASC')
+    {
+       $faclist = array();
+       $ncflist = array();
+       $sql = "SELECT * FROM facturascli, ncf_ventas WHERE idfactura = documento AND pagada = false ORDER BY ".$order;
+
+       $data = $this->db->select_limit($sql, $limit, $offset);
+       if($data)
+       {
+          foreach($data as $f){
+             $faclist[] = new factura_cliente($f);
+             $ncflist[$f['idfactura']] = new ncf_ventas($f);
+          }
+       }
+
+       return array('facturas'=>$faclist,'ncf'=>$ncflist);
+    }
+    
+    private function factura_all($offset=0, $limit=FS_ITEM_LIMIT, $order='facturascli.fecha DESC, codigo DESC')
+    {
+      $faclist = array();
+        $ncflist = array();
+      $data = $this->db->select_limit("SELECT * FROM facturascli, ncf_ventas WHERE idfactura = documento ORDER BY ".$order, $limit, $offset);
+      if($data)
+      {
+         foreach($data as $f){
+            $faclist[] = new factura_cliente($f);
+            $ncflist[$f['idfactura']] = new ncf_ventas($f);
+         }
+      }
+
+      return array('facturas'=>$faclist,'ncf'=>$ncflist);
+    }
+
+
 }
