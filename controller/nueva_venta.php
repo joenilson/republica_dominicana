@@ -764,7 +764,7 @@ class nueva_venta extends fs_controller
          $continuar = FALSE;
       }
       
-      /*
+        /*
         * Verificación de disponibilidad del Número de NCF para República Dominicana
         */
         //Obtenemos el tipo de comprobante a generar para el cliente

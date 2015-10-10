@@ -242,12 +242,12 @@ class asiento_factura {
      * @param type $factura
      * @param type $tipo
      */
-    public function generar_asiento_venta(&$factura, &$tipo) {
+    public function generar_asiento_venta(&$factura, $tipo = null) {
         $ok = FALSE;
         $this->asiento = FALSE;
         $cliente0 = new cliente();
         $subcuenta_cli = FALSE;
-        $concepto = ($tipo == null) ? "Factura de venta " : "Nota de Crédito";
+        $concepto = ($tipo == null) ? "Factura de venta " : "Nota de Crédito ";
         $cliente = $cliente0->get($factura->codcliente);
         if ($cliente) {
             $subcuenta_cli = $cliente->get_subcuenta($factura->codejercicio);

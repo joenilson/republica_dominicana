@@ -21,6 +21,7 @@ require_model('agente.php');
 require_model('articulo.php');
 require_model('cliente.php');
 require_model('factura_cliente.php');
+require_model('asiento_factura.php');
 require_model('ncf_ventas.php');
 
 class ventas_facturas extends fs_controller
@@ -474,6 +475,10 @@ class ventas_facturas extends fs_controller
       $fact = $this->factura->get($_GET['anular']);
       if($fact)
       {
+        $fact->deabono = TRUE;
+        $fact->idfacturarect = $fact->idfactura;
+        $fact->codigorect = $fact->codigo;
+        
          /// Generamos la nota de crédito por cada item
          $art0 = new articulo();
          foreach($fact->get_lineas() as $linea)
