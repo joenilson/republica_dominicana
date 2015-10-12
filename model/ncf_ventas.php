@@ -95,33 +95,16 @@ class ncf_ventas extends fs_model {
     }
     
     public function save() {
-        if ($this->exists())
+        if (!$this->exists())
         {
-            if(!is_null($this->ncf_modifica)){
-                $sql = "UPDATE ncf_ventas SET ".
-                        "documento_modifica = ".$this->var2str($this->documento).", ".
-                        "ncf_modifica = ".$this->var2str($this->ncf_modifica).", ".
-                        "cifnif = ".$this->var2str($this->cifnif).
-                        " WHERE ".
-                        "idempresa = ".$this->intval($this->idempresa)." AND ".
-                        "ncf = ".$this->var2str($this->ncf)." AND ".
-                        "documento = ".$this->var2str($this->documento)." AND ".
-                        "fecha = ".$this->var2str($this->fecha).";";
-
-                return $this->db->exec($sql);
-            }else{
-                return false;
-            }
-        }
-        else
-        {
-            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, fecha, tipo_comprobante, ncf, ncf_modifica, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, ncf, ncf_modifica, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
                     $this->var2str($this->codalmacen).", ".
                     $this->var2str($this->entidad).", ".
                     $this->var2str($this->cifnif).", ".
-                    $this->var2str($this->documento).", ".
+                    $this->intval($this->documento).", ".
+                    $this->var2str($this->documento_modifica).", ".
                     $this->var2str($this->fecha).", ".
                     $this->var2str($this->tipo_comprobante).", ".
                     $this->var2str($this->ncf).", ".
@@ -182,13 +165,12 @@ class ncf_ventas extends fs_model {
         return $lista;
     }
     
-    public function get_ncf($idempresa, $documento, $entidad, $fecha)
+    public function get_ncf($idempresa, $documento, $entidad)
     {
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
-                "documento = ".$this->var2str($documento)." AND ".
-                "entidad = ".$this->var2str($entidad)." AND ".
-                "fecha = ".$this->var2str($fecha).";");
+                "documento = ".$this->intval($documento)." AND ".
+                "entidad = ".$this->var2str($entidad).";");
         
         return new ncf_ventas($data[0]);
     }

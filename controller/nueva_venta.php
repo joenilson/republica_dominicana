@@ -819,14 +819,6 @@ class nueva_venta extends fs_controller
          
          if( $factura->save() )
          {
-             /*
-            * Grabación del Número de NCF para República Dominicana
-            */
-            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
-            
-            $this->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
-             
              
             $art0 = new articulo();
             $n = floatval($_POST['numlineas']);
@@ -905,6 +897,13 @@ class nueva_venta extends fs_controller
                }
                else if( $factura->save() )
                {
+                /*
+                * Grabación del Número de NCF para República Dominicana
+                */
+                //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
+                $this->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
+            
                   $this->generar_asiento($factura);
                   $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
                   $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
@@ -940,9 +939,11 @@ class nueva_venta extends fs_controller
             $ncf_factura->entidad = $factura->codcliente;
             $ncf_factura->cifnif = $factura->cifnif;
             $ncf_factura->documento = $factura->idfactura;
+            $ncf_factura->documento_modifica = NULL;
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->ncf = $numero_ncf['NCF'];
+            $ncf_factura->ncf_modifica = NULL;
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
             if(!$ncf_factura->save()){

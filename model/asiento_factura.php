@@ -270,7 +270,7 @@ class asiento_factura {
             $asiento->editable = FALSE;
             $asiento->fecha = $factura->fecha;
             $asiento->importe = $factura->total;
-            $asiento->tipodocumento = $concepto . 'de cliente';
+            $asiento->tipodocumento = $concepto . 'cliente';
             if ($asiento->save()) {
                 $asiento_correcto = TRUE;
                 $subcuenta = new subcuenta();
