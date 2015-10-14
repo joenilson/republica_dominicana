@@ -510,7 +510,7 @@ class ventas_facturas extends fs_controller {
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->ncf = $numero_ncf['NCF'];
-            $ncf_factura->ncf = NULL;
+            $ncf_factura->ncf_modifica = NULL;
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
             if($factura->deabono){
