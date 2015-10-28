@@ -413,7 +413,11 @@ class nueva_venta extends fs_controller
    {
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
-      
+
+      $fsvar = new fs_var();
+      $multi_almacen = $fsvar->simple_get('multi_almacen');
+      $stock = new stock();
+        
       $articulo = new articulo();
       $codfamilia = '';
       if( isset($_REQUEST['codfamilia']) )
@@ -434,6 +438,13 @@ class nueva_venta extends fs_controller
          $this->results[$i]->query = $this->query;
          $this->results[$i]->dtopor = 0;
          $this->results[$i]->cantidad = 1;
+
+         $this->results[$i]->stockalm = $this->results[$i]->stockfis;
+         if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
+         {
+            $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
+         }
+
       }
       
       /// ejecutamos las funciones de las extensiones
