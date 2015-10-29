@@ -202,7 +202,6 @@ class ncf_rango extends fs_model
             "division= ".$this->var2str($this->division)." AND ".
             "punto_emision = ".$this->var2str($this->punto_emision)." AND ".
             "area_impresion = ".$this->var2str($this->area_impresion)." AND ".
-            "estado = ".($this->area_impresion)." AND ".
             "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
     }
     

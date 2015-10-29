@@ -149,13 +149,12 @@
                                             <span class="glyphicon glyphicon-lock"></span>
                                         </a>  
                                         {else}
-                                        <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->codalmacen}-{$value->solicitud}-{$value->serie}')">
+                                        <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->solicitud}-{$value->codalmacen}-{$value->serie}-{$value->division}-{$value->punto_emision}-{$value->area_impresion}-{$value->tipo_comprobante}-{$value->secuencia_inicio}-{$value->correlativo}')">
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </a>  
                                         {/if}
                                         {/if}
-                                        <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
-                                           this.form.submit();">
+                                        <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
                                             <span class="glyphicon glyphicon-floppy-disk"></span>
                                         </button>
                                     </div>

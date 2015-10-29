@@ -96,7 +96,26 @@ class ncf extends fs_controller {
                 $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
         elseif ($_GET['delete']) {
-            $this->new_message("Datos de la Solicitud " . $_GET['delete'] . " eliminados correctamente.");
+            $ncf_array = explode("-", filter_input(INPUT_GET, 'delete'));
+            if($ncf_array[7] == $ncf_array[8]){
+                $ncf0 = new ncf_rango();
+                $ncf0->idempresa = $this->empresa->id;
+                $ncf0->solicitud = $ncf_array[0];
+                $ncf0->codalmacen = $ncf_array[1];
+                $ncf0->serie = $ncf_array[2];
+                $ncf0->division = $ncf_array[3];
+                $ncf0->punto_emision = $ncf_array[4];
+                $ncf0->area_impresion = $ncf_array[5];
+                $ncf0->tipo_comprobante = $ncf_array[6];
+                $ncf0->secuencia_inicio = $ncf_array[7];
+                if($ncf0->delete()){
+                    $this->new_message("Datos de la Solicitud " . $ncf_array[0] . " con tipo de comprobante ".$ncf_array[6]." eliminados correctamente.");
+                }else{
+                    $this->new_error_msg("¡Ocurrió un error, por favor revise la información enviada!");
+                }
+            }else{
+                $this->new_error_msg("¡Existen " . $ncf_array[8] . " NCF generados, no se puede eliminar esta secuencia!");
+            }
         }
     }
 
