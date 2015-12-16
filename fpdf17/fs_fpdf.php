@@ -127,6 +127,7 @@ class PDF_MC_Table extends FPDF
 
         // Forma de Pago de la Factura
         $this->addPago(utf8_decode($this->fdf_epago));
+        $this->addTransporte(utf8_decode($this->fdf_transporte));
 
         // Divisa de la Factura
         //$this->addDivisa(utf8_decode($this->fdf_divisa));
@@ -642,6 +643,24 @@ class PDF_MC_Table extends FPDF
         $this->MultiCell( 87, 4, $adresse);
     }
 
+    // Transporte Asociado
+    function addTransporte( $mode )
+    {
+        $r1  = 150;
+        $r2  = $r1 + 50;
+        $y1  = 65;
+        $y2  = $y1+10;
+        $mid = $y1 + (($y2-$y1) / 2);
+        $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
+        $this->Line( $r1, $mid, $r2, $mid);
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1+1 );
+        $this->SetFont( "Arial", "B", 9);
+        $this->Cell(10,4, "CONDUCE", 0, 0, "C");
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1 + 5 );
+        $this->SetFont( "Arial", "", 9);
+        $this->Cell(10,5,$mode, 0,0, "C");
+    }
+    
     // Forma de Pago
     function addPago( $mode )
     {

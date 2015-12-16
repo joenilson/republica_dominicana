@@ -30,6 +30,12 @@ require_model('forma_pago.php');
 require_model('ncf_ventas.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
+
+$dirname = 'plugins/distribucion/';
+if(is_dir($dirname)){
+    require_model('distribucion_ordenescarga_facturas.php');
+}
+
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 
@@ -38,6 +44,8 @@ class factura_ncf extends fs_controller {
    public $cliente;
    public $factura;
    public $ncf_ventas;
+   public $distrib_transporte;
+   public $idtransporte;
 
    public function __construct() {
       parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
@@ -52,12 +60,15 @@ class factura_ncf extends fs_controller {
       {
          $factura = new factura_cliente();
          $this->factura = $factura->get($_GET['id']);
+         $this->distrib_transporte = new distribucion_ordenescarga_facturas;
          $ncf_datos = new ncf_ventas();
          $valores = $ncf_datos->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
          $ncf_tipo = new ncf_tipo();
          $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
          $this->factura->ncf = $valores->ncf;
          $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
+         $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
+         $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
       }
       
       if ($this->factura)
@@ -170,6 +181,9 @@ class factura_ncf extends fs_controller {
 
       $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
 
+      // Conduce asociado
+      $pdf_doc->fdf_transporte = $this->idtransporte;
+      
       // Forma de Pago de la Factura
       $pago = new forma_pago();
       $epago = $pago->get($this->factura->codpago);
