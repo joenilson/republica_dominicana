@@ -67,8 +67,11 @@ class factura_ncf extends fs_controller {
          $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
          $this->factura->ncf = $valores->ncf;
          $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
-         $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
-         $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
+         $dirname = 'plugins/distribucion/';
+         if(is_dir($dirname)){
+           $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
+           $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
+         }
       }
       
       if ($this->factura)

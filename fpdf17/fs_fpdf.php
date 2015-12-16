@@ -127,7 +127,9 @@ class PDF_MC_Table extends FPDF
 
         // Forma de Pago de la Factura
         $this->addPago(utf8_decode($this->fdf_epago));
-        $this->addTransporte(utf8_decode($this->fdf_transporte));
+        if(!empty($this->fdf_transporte)){
+            $this->addTransporte(utf8_decode($this->fdf_transporte));
+        }
 
         // Divisa de la Factura
         //$this->addDivisa(utf8_decode($this->fdf_divisa));
