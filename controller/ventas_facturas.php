@@ -512,13 +512,15 @@ class ventas_facturas extends fs_controller {
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {
+            $ncf_orig = new ncf_ventas();
+            $val_ncf = $ncf_orig->get_ncf($this->empresa->id, $factura->idfacturarect, $factura->codcliente);
             $ncf_factura = new ncf_ventas();
             $ncf_factura->idempresa = $idempresa;
             $ncf_factura->codalmacen = $factura->codalmacen;
             $ncf_factura->entidad = $factura->codcliente;
             $ncf_factura->cifnif = $factura->cifnif;
             $ncf_factura->documento = $factura->idfactura;
-            $ncf_factura->documento_modifica = NULL;
+            $ncf_factura->documento_modifica = $val_ncf->ncf;
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->ncf = $numero_ncf['NCF'];

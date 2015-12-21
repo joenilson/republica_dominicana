@@ -155,6 +155,9 @@
             {if="$fsc->ncf->estado=='f'"}
             <p><b>Anulada por:</b> {$fsc->ncf->motivo}</p>
             {/if}
+             {if="$fsc->ncf->tipo_comprobante=='04'"}
+             <p><b>Afecta a la Factura:</b> <a href="index.php?page=ventas_factura&id={$fsc->ncf->documento_modifica}">{$fsc->ncf->documento_modifica} - {$fsc->ncf->ncf_modifica}</a></p>
+             {/if}
          </div>
       </div>
       
