@@ -208,7 +208,7 @@ class ncf_rango extends fs_model
     public function all($idempresa)
     {
         $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_rango WHERE idempresa = ".$this->intval($idempresa)." ORDER BY codalmacen,solicitud");
+        $data = $this->db->select("SELECT * FROM ncf_rango WHERE idempresa = ".$this->intval($idempresa)." ORDER BY codalmacen,tipo_comprobante, division, solicitud");
         
         if($data)
         {
@@ -221,14 +221,16 @@ class ncf_rango extends fs_model
         return $lista;
     }
     
-    public function generate($idempresa, $codalmacen, $tipo_comprobante)
+    public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
+        $division = ($codpago == 'CONT')?"01":"02";
         $data = $this->db->select("SELECT ".
         "solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, ".
         "secuencia_inicio, secuencia_fin, correlativo FROM ncf_rango ".
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
+        "division = ".$this->var2str($division)." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
         if($data){
             return $this->ncf_number($data[0]);

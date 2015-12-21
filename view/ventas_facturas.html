@@ -1,8 +1,9 @@
 {include="header"}
-<style>
+<style type="text/css">
     .factura-abono {
         color: red;
     }
+  .tachado{text-decoration:line-through;}    
 </style>
 <script type="text/javascript">
    function buscar_lineas()
@@ -276,7 +277,7 @@
          </tr>
       </thead>
       {loop="$fsc->resultados"}
-      <tr class="clickableRow{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->deabono"}factura-abono{/if}" href="{$value->url()}">
+      <tr class="{if="$fsc->ncf_resultados[$value->idfactura]->estado=='f'"}tachado{/if} clickableRow{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->deabono"}factura-abono{/if}" href="{$value->url()}">
          <td class="text-center">
             {if="$value->pagada"}
             <span class="glyphicon glyphicon-ok" title="La {#FS_FACTURA#} está pagada"></span>

@@ -392,7 +392,7 @@ class ventas_albaran extends fs_controller {
         $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
 
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante);
+        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante, $this->albaran->codpago);
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
         {
             $continuar = FALSE;
@@ -456,7 +456,7 @@ class ventas_albaran extends fs_controller {
             * Grabación del Número de NCF para República Dominicana
             */
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
+            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
             $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
                 
             foreach ($this->albaran->get_lineas() as $l) {

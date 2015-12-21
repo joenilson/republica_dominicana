@@ -374,7 +374,9 @@ class ventas_facturas extends fs_controller {
     }
 
     private function delete_factura() {
-        $fact = $this->factura->get($_GET['delete']);
+        $delete = \filter_input(INPUT_GET, 'delete');
+        $fact = $this->factura->get($delete);
+        $motivo = \filter_input(INPUT_GET, 'motivo');
         if ($fact) {
             /// ¿Sumamos stock?
             $art0 = new articulo();
@@ -386,9 +388,19 @@ class ventas_facturas extends fs_controller {
                     }
                 }
             }
-
-            if ($fact->delete()) {
-                $this->new_message("Factura eliminada correctamente.");
+            $ncf0 = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
+            $ncf0->motivo = $motivo;
+            $ncf0->estado = FALSE;
+            $ncf0->usuario_modificacion = $this->user->nick;
+            $ncf0->fecha_modificacion = Date('d-m-Y H:i');
+            if ($ncf0->anular()) {
+                $asiento_factura = new asiento_factura();
+                $asiento_factura->soloasiento = TRUE;
+                $tipo = ($ncf0->tipo_comprobante == '04')?null:'inverso';
+                if ($asiento_factura->generar_asiento_venta($fact, $tipo)) {
+                    $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> reversado correctamente.");
+                }
+                $this->new_message("<a href='".$fact->url()."'>Factura</a> cambiada a estado anulada por error correctamente.");
             } else
                 $this->new_error_msg("¡Imposible eliminar la factura!");
         } else
@@ -406,7 +418,7 @@ class ventas_facturas extends fs_controller {
          */
         $tipo_comprobante = '04';
         $this->ncf_rango = new ncf_rango();
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $fact->codalmacen, $tipo_comprobante);
+        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $fact->codalmacen, $tipo_comprobante, $fact->codpago);
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             $continuar = FALSE;
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
@@ -456,7 +468,7 @@ class ventas_facturas extends fs_controller {
                  * Luego de que todo este correcto generamos el NCF la Nota de Credito 
                  */
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $fact->codalmacen, $tipo_comprobante);
+                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $fact->codalmacen, $tipo_comprobante, $fact->codpago);
                 $this->guardar_ncf($this->empresa->id, $fact, $tipo_comprobante, $numero_ncf);
                 
                 $this->new_message("Factura anulada correctamente, se generó la nota de crédito: ".$numero_ncf['NCF']);

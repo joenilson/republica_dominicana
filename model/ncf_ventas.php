@@ -38,6 +38,8 @@ class ncf_ventas extends fs_model {
     public $fecha_creacion;
     public $usuario_modificacion;
     public $fecha_modificacion;
+    public $estado;
+    public $motivo;
     
     public function __construct($t = false) {
         parent::__construct('ncf_ventas','plugins/republica_dominicana/');
@@ -57,6 +59,8 @@ class ncf_ventas extends fs_model {
             $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
+            $this->estado = $t['estado'];
+            $this->motivo = $t['motivo'];
         }
         else
         {
@@ -74,6 +78,8 @@ class ncf_ventas extends fs_model {
             $this->fecha_creacion = Date('d-m-Y H:i');
             $this->usuario_modificacion = null;
             $this->fecha_modificacion = null;
+            $this->estado = true;
+            $this->motivo = null;
         }
     }
     
@@ -97,7 +103,7 @@ class ncf_ventas extends fs_model {
     public function save() {
         if (!$this->exists())
         {
-            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, ncf, ncf_modifica, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
                     $this->var2str($this->codalmacen).", ".
@@ -109,6 +115,7 @@ class ncf_ventas extends fs_model {
                     $this->var2str($this->tipo_comprobante).", ".
                     $this->var2str($this->ncf).", ".
                     $this->var2str($this->ncf_modifica).", ".
+                    $this->var2str($this->estado).", ".
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).");";
             if($this->db->exec($sql))
@@ -119,6 +126,22 @@ class ncf_ventas extends fs_model {
             {
                 return false;
             }
+        }
+    }
+    
+    public function anular(){
+        $sql = "UPDATE ncf_ventas SET ".
+                "estado = false, motivo = ".$this->var2str($this->estado).", ".
+                "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
+                "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
+                "WHERE ".
+                "ncf = ".$this->var2str($this->ncf). " AND ".
+                "idempresa = ".$this->intval($this->idempresa). " AND ".
+                "codalmacen = ".$this->var2str($this->codalmacen). "; ";
+        if($this->db->exec($sql)){
+            return true;
+        }else{
+            return false;
         }
     }
     

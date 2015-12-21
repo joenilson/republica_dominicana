@@ -413,14 +413,9 @@
                <a href="https://www.facturascripts.com/store/producto/plugin-editar-facturas/" target="_blank">editar facturas</a>.
             </p>
          </div>
-         {if="$fsc->factura->idasiento"}
          <div class="modal-body bg-warning">
-            Hay asociado un asiento contable que será eliminado junto con la {#FS_FACTURA#}.
-            <br/>
-            Además, si no hay asociado un {#FS_ALBARAN#} o {#FS_ALBARANES#},
-            se restaurará el stock de los artículos.
+             Se va a anular la factura y se va regresar el stock de productos al almacén.
          </div>
-         {/if}
          <div class="modal-footer">
             <a class="btn btn-sm btn-danger" href="{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}">
                <span class="glyphicon glyphicon-trash"></span> &nbsp; Eliminar

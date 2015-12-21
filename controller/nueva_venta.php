@@ -783,7 +783,7 @@ class nueva_venta extends fs_controller
         $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
 
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante);
+        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
         {
             $continuar = FALSE;
@@ -912,7 +912,7 @@ class nueva_venta extends fs_controller
                 * Grabación del Número de NCF para República Dominicana
                 */
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante);
+                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
                 $this->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
             
                   $this->generar_asiento($factura);
