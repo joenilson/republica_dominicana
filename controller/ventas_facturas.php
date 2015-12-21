@@ -376,7 +376,7 @@ class ventas_facturas extends fs_controller {
     private function delete_factura() {
         $delete = \filter_input(INPUT_GET, 'delete');
         $fact = $this->factura->get($delete);
-        $motivo = \filter_input(INPUT_GET, 'motivo');
+        $motivo = \filter_input(INPUT_POST, 'motivo');
         if ($fact) {
             /// ¿Sumamos stock?
             $art0 = new articulo();

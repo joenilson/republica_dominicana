@@ -131,7 +131,7 @@ class ncf_ventas extends fs_model {
     
     public function anular(){
         $sql = "UPDATE ncf_ventas SET ".
-                "estado = false, motivo = ".$this->var2str($this->estado).", ".
+                "estado = false, motivo = ".$this->var2str($this->motivo).", ".
                 "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
                 "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
                 "WHERE ".

@@ -110,20 +110,26 @@
          </div>
          <div class="col-xs-4 text-right">
             <div class="btn-group">
-               {if="$fsc->allow_delete"}
-               <a id="b_anular" class="btn btn-sm btn-warning" href="#">
-                  <span class="glyphicon glyphicon-minus-sign"></span>
-                  <span class="hidden-sm hidden-xs">&nbsp; Anular</span>
-               </a>
-               <a id="b_eliminar" class="btn btn-sm btn-danger" href="#">
-                  <span class="glyphicon glyphicon-trash"></span>
-                  <span class="hidden-sm hidden-xs">&nbsp; Eliminar</span>
-               </a>
-               {/if}
-               <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
-                  <span class="glyphicon glyphicon-floppy-disk"></span>
-                  <span class="hidden-xs">&nbsp; Guardar</span>
-               </button>
+            {if="$fsc->ncf->estado=='t'"}
+                {if="!$fsc->factura->pagada"}
+                    {if="$fsc->allow_delete"}
+                         {if="$fsc->ncf->tipo_comprobante!='04'"}
+                         <a id="b_anular" class="btn btn-sm btn-warning" href="#">
+                            <span class="glyphicon glyphicon-minus-sign"></span>
+                            <span class="hidden-sm hidden-xs">&nbsp; Anular</span>
+                         </a>
+                         {/if}
+                     <a id="b_eliminar" class="btn btn-sm btn-danger" href="#">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        <span class="hidden-sm hidden-xs">&nbsp; Eliminar</span>
+                     </a>
+                     {/if}
+                    <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
+                       <span class="glyphicon glyphicon-floppy-disk"></span>
+                       <span class="hidden-xs">&nbsp; Guardar</span>
+                    </button>
+                {/if}
+             {/if}
             </div>
          </div>
       </div>
@@ -145,6 +151,9 @@
             <p>Factura creada por <a href="{$fsc->agente->url()}">{$fsc->agente->get_fullname()}</a>.</p>
             {else}
             <p>Sin datos de qué empleado ha creado esta factura.</p>
+            {/if}
+            {if="$fsc->ncf->estado=='f'"}
+            <p><b>Anulada por:</b> {$fsc->ncf->motivo}</p>
             {/if}
          </div>
       </div>
@@ -414,12 +423,26 @@
             </p>
          </div>
          <div class="modal-body bg-warning">
-             Se va a anular la factura y se va regresar el stock de productos al almacén.
-         </div>
-         <div class="modal-footer">
-            <a class="btn btn-sm btn-danger" href="{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}">
-               <span class="glyphicon glyphicon-trash"></span> &nbsp; Eliminar
-            </a>
+             <form class="form-horizontal" method="POST" action='{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}'>
+                <div class='form-group text-center'>
+                    Se va a eliminar la factura y se va regresar el stock de productos al almacén.<br />
+                </div>
+                <div class="form-group">
+                    <div class='col-sm-4'>
+                    <label for="motivo" class="control-label"><b>Motivo de la eliminaci&oacute;n</b></label>
+                    </div>
+                    <div class='col-sm-8'>
+                    <input type="text" class="form-control" id="motivo" required name='motivo' placeholder="Motivo de la eliminaci&oacute;n">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <span class="glyphicon glyphicon-trash"></span> &nbsp; Eliminar
+                        </button>
+                    </div>
+                </div>
+            </form>
          </div>
       </div>
    </div>
