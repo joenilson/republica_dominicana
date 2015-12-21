@@ -223,7 +223,7 @@ class ncf_rango extends fs_model
     
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
-        $division = ($codpago == 'CONT')?"01":"02";
+        $division = ($codpago == 'CONT')?"03":"02";
         $data = $this->db->select("SELECT ".
         "solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, ".
         "secuencia_inicio, secuencia_fin, correlativo FROM ncf_rango ".
