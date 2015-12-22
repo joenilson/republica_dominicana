@@ -46,6 +46,7 @@ class ncf_rango extends fs_model
         parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
         if($t)
         {
+            $this->id = $t['id'];
             $this->idempresa = $t['idempresa'];
             $this->solicitud = $t['solicitud'];
             $this->codalmacen = $t['codalmacen'];
@@ -62,9 +63,11 @@ class ncf_rango extends fs_model
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = ($t['estado']);
+            $this->contado = ($t['contado']);
         }
         else
         {
+            $this->id = null;
             $this->idempresa = null;
             $this->solicitud = null;
             $this->codalmacen = null;
@@ -81,6 +84,7 @@ class ncf_rango extends fs_model
             $this->usuario_modificacion = null;
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = false;
+            $this->contado = false;
         }
     }
     
@@ -92,7 +96,7 @@ class ncf_rango extends fs_model
     }
     
     public function exists() {
-        if(is_null($this->idempresa) AND is_null($this->solicitud) AND is_null($this->codalmacen) AND is_null($this->serie) AND is_null($this->division) AND is_null($this->punto_emision) AND is_null($this->area_impresion) AND is_null($this->tipo_comprobante))
+        if(is_null($this->id))
         {
             return false;
         }
@@ -130,6 +134,21 @@ class ncf_rango extends fs_model
             return false;
         }
     }
+    
+    public function get_by_id($idempresa,$id)
+    {
+        $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
+                    "idempresa = ".$this->intval($idempresa)." AND ".
+                    "id = ".$this->intval($id).";");
+        if($data)
+        {
+            return new ncf_rango($data[0]);
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     public function save() {
         if ($this->exists())
@@ -145,24 +164,19 @@ class ncf_rango extends fs_model
                     "secuencia_inicio = ".$this->intval($this->secuencia_inicio).", ".
                     "secuencia_fin = ".$this->intval($this->secuencia_fin).", ".
                     "correlativo = ".$this->intval($this->correlativo).", ".
-                    "estado = ".($this->estado).", ".
+                    "estado = ".$this->var2str($this->estado).", ".
+                    "contado = ".$this->var2str($this->contado).", ".
                     "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
                     "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
                     "WHERE ".
-                    "idempresa = ".$this->intval($this->idempresa)." AND ".
-                    "solicitud = ".$this->intval($this->solicitud)." AND ".
-                    "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
-                    "serie= ".$this->var2str($this->serie)." AND ".
-                    "division= ".$this->var2str($this->division)." AND ".
-                    "punto_emision = ".$this->var2str($this->punto_emision)." AND ".
-                    "area_impresion = ".$this->var2str($this->area_impresion)." AND ".
-                    "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
+                    "id = ".$this->intval($this->id)." AND ".
+                    "idempresa = ".$this->intval($this->idempresa).";";
             
             return $this->db->exec($sql);
         }
         else
         {
-            $sql = "INSERT INTO ncf_rango (idempresa, solicitud,  codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, secuencia_inicio, secuencia_fin, correlativo, estado, usuario_creacion, fecha_creacion ) ".
+            $sql = "INSERT INTO ncf_rango (idempresa, solicitud,  codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, secuencia_inicio, secuencia_fin, correlativo, estado, contado, usuario_creacion, fecha_creacion ) ".
                     "VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
@@ -176,7 +190,8 @@ class ncf_rango extends fs_model
                     $this->intval($this->secuencia_inicio).", ".
                     $this->intval($this->secuencia_fin).", ".
                     $this->var2str($this->correlativo).", ".
-                    ($this->estado).", ".
+                    $this->var2str($this->estado).", ".
+                    $this->var2str($this->contado).", ".
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).
                     ")";
@@ -195,14 +210,8 @@ class ncf_rango extends fs_model
     public function delete() 
     {
         return $this->db->exec("DELETE FROM ncf_rango WHERE ".
-            "idempresa = ".$this->intval($this->idempresa)." AND ".
-            "solicitud = ".$this->intval($this->solicitud)." AND ".
-            "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
-            "serie= ".$this->var2str($this->serie)." AND ".
-            "division= ".$this->var2str($this->division)." AND ".
-            "punto_emision = ".$this->var2str($this->punto_emision)." AND ".
-            "area_impresion = ".$this->var2str($this->area_impresion)." AND ".
-            "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+            "id = ".$this->intval($this->id)." AND ".
+            "idempresa = ".$this->intval($this->idempresa).";");
     }
     
     public function all($idempresa)
@@ -223,14 +232,14 @@ class ncf_rango extends fs_model
     
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
-        $division = ($codpago == 'CONT')?"03":"02";
+        $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
         $data = $this->db->select("SELECT ".
         "solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, ".
         "secuencia_inicio, secuencia_fin, correlativo FROM ncf_rango ".
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
-        "division = ".$this->var2str($division)." AND ".
+        "contado = ".$this->var2str($contado)." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
         if($data){
             return $this->ncf_number($data[0]);

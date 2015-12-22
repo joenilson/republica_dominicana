@@ -44,128 +44,104 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <br/>
-        </div>
-    </div>
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th style="width: 280px;"><a href="{$fsc->almacen->url()}">Almac&eacute;n</a></th>
+                <th>Serie</th>
+                <th style="width: 80px;">Divisi&oacute;n</th>
+                <th style="width: 80px;">Punto Emi.</th>
+                <th style="width: 80px;">Area Imp.</th>
+                <th style="width: 300px;">Tipo Comprobante</th>
+                <th style="width: 180px;">Inicia</th>
+                <th style="width: 180px;">Fin</th>
+                <th style="width: 180px;">Correlativo</th>
+                <th>Contado</th>
+                <th>Activo</th>
+            </tr>
+        </thead>
     {loop="$fsc->ncf_rango->all($fsc->empresa->id)"}
-    <div class="row">
-        <div class="col-sm-12">
-            <form class="form" role="form" action="{$fsc->url()}" method="post">
-                <input type="hidden" name="solicitud" value="{$value->solicitud}"/>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Solicitud: {$value->solicitud}</h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="container-fluid">
-                            <div class="row">
-
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        <a href="{$fsc->almacen->url()}">Almacen</a>
-                                        <select name="codalmacen" class="form-control">
-                                            {loop="$fsc->almacen->all()"}
-                                            {if="$value1->codalmacen==$value2->codalmacen"}
-                                            <option value="{$value2->codalmacen}" selected="">{$value2->nombre}</option>
-                                            {else}
-                                            <option value="{$value2->codalmacen}">{$value2->nombre}</option>
-                                            {/if}
-                                            {/loop}
-                                        </select>
-                                    </div>
-                                </div> 
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Serie:
-                                        <select name="serie" class="form-control">
-                                            {loop="$fsc->array_series"}
-                                            {if="$value1->serie==$value2[0]"}
-                                            <option value="{$value2[0]}" selected="">{$value2[0]}</option>
-                                            {else}
-                                            <option value="{$value2[0]}">{$value2[0]}</option>
-                                            {/if}
-                                            {/loop}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        División:
-                                        <input class="form-control" type="number" name="division" min="1" max="999" value="{$value->division}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-lg-1 col-md-1 col-sm-1">
-                                    <div class="form-group">
-                                        Pto Emi:
-                                        <input class="form-control" type="number" name="punto_emision" min="1" max="999" value="{$value->punto_emision}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Area Imp:
-                                        <input class="form-control" type="number" name="area_impresion" min="1" max="999" value="{$value->area_impresion}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-2">
-                                    <div class="form-group">
-                                        Tipo Comprob:
-                                        <select name="tipo_comprobante" class="form-control">
-                                            {loop="$fsc->ncf_tipo->all()"}
-                                            {if="$value1->tipo_comprobante==$value2->tipo_comprobante"}
-                                            <option value="{$value2->tipo_comprobante}" selected="">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
-                                            {else}
-                                            <option value="{$value2->tipo_comprobante}">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
-                                            {/if}
-                                            {/loop}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Inicia:
-                                        <input class="form-control" type="number" name="secuencia_inicio" min="1" max="99999999" value="{$value->secuencia_inicio}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Fin:
-                                        <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" value="{$value->secuencia_fin}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        Correlativo:
-                                        <input class="form-control" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-1">
-                                    <div class="form-group">
-                                        <br/>
-                                        {if="$fsc->allow_delete"}
-                                        {if="$value->correlativo>1"}
-                                        <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
-                                            <span class="glyphicon glyphicon-lock"></span>
-                                        </a>  
-                                        {else}
-                                        <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->solicitud}-{$value->codalmacen}-{$value->serie}-{$value->division}-{$value->punto_emision}-{$value->area_impresion}-{$value->tipo_comprobante}-{$value->secuencia_inicio}-{$value->correlativo}')">
-                                            <span class="glyphicon glyphicon-trash"></span>
-                                        </a>  
-                                        {/if}
-                                        {/if}
-                                        <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
-                                            <span class="glyphicon glyphicon-floppy-disk"></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    <form class="form" role="form" action="{$fsc->url()}" method="POST">
+        <input type="hidden" name="id" value="{$value->id}"/>
+        <input type="hidden" name="solicitud" value="{$value->solicitud}"/>
+    <tr>
+        <td>
+            <select name="codalmacen" class="form-control">
+                {loop="$fsc->almacen->all()"}
+                {if="$value1->codalmacen==$value2->codalmacen"}
+                <option value="{$value2->codalmacen}" selected="">{$value2->nombre}</option>
+                {else}
+                <option value="{$value2->codalmacen}">{$value2->nombre}</option>
+                {/if}
+                {/loop}
+            </select>
+        </td>
+        <td>
+            <select name="serie" class="form-control">
+                {loop="$fsc->array_series"}
+                {if="$value1->serie==$value2[0]"}
+                <option value="{$value2[0]}" selected="">{$value2[0]}</option>
+                {else}
+                <option value="{$value2[0]}">{$value2[0]}</option>
+                {/if}
+                {/loop}
+            </select>
+        </td>
+        <td>
+            <input class="form-control" type="number" name="division" min="1" max="999" value="{$value->division}" autocomplete="off"/>
+        </td>
+        <td>
+            <input class="form-control" type="number" name="punto_emision" min="1" max="999" value="{$value->punto_emision}" autocomplete="off"/>
+        </td>
+        <td>
+            <input class="form-control" type="number" name="area_impresion" min="1" max="999" value="{$value->area_impresion}" autocomplete="off"/>
+        </td>
+        <td>
+            <select name="tipo_comprobante" class="form-control">
+                {loop="$fsc->ncf_tipo->all()"}
+                {if="$value1->tipo_comprobante==$value2->tipo_comprobante"}
+                <option value="{$value2->tipo_comprobante}" selected="">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
+                {else}
+                <option value="{$value2->tipo_comprobante}">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
+                {/if}
+                {/loop}
+            </select>
+        </td>
+        <td>
+            <input class="form-control text-right" type="number" name="secuencia_inicio" min="1" max="99999999" value="{$value->secuencia_inicio}" autocomplete="off"/>
+        </td>
+        <td>
+            <input class="form-control text-right" type="number" name="secuencia_fin" min="1" max="99999999" value="{$value->secuencia_fin}" autocomplete="off"/>
+        </td>
+        <td>
+            <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
+        </td>
+        <td>
+            <input type="checkbox" name="contado" value="TRUE" {if="$value->contado"}checked=""{/if}/>
+        </td>
+        <td>
+            <input type="checkbox" name="estado" value="TRUE" {if="$value->estado"}checked=""{/if}/>
+        </td>
+        <td>
+            <div class="form-group">
+                {if="$fsc->allow_delete"}
+                {if="$value->correlativo>$value->secuencia_inicio"}
+                <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
+                    <span class="glyphicon glyphicon-lock"></span>
+                </a>  
+                {else}
+                <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->id}')">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>  
+                {/if}
+                {/if}
+                <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
+                    <span class="glyphicon glyphicon-floppy-disk"></span>
+                </button>
+            </div>
+        </td>
+    </tr>
+    </form>
     {else}
     <div class="row">
         <div class="col-sm-12">
@@ -173,6 +149,7 @@
         </div>
     </div>
     {/loop}
+    </table>
 </div>
 
 <div class="modal" id="modal_nueva_solicitud">
@@ -250,6 +227,12 @@
                         <label class="col-sm-4 control-label">Secuencia Fin:</label>
                         <div class="col-sm-8">
                             <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Aplica a registros al <b>Contado</b>?:</label>
+                        <div class="col-sm-8 text-left">
+                            <input class="form-control" type="checkbox" name="contado" value="TRUE"/>
                         </div>
                     </div>
                 </div>

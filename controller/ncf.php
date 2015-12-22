@@ -52,6 +52,7 @@ class ncf extends fs_controller {
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         if (isset($_POST['solicitud']) AND isset($_POST['codalmacen']) AND isset($_POST['serie']) AND isset($_POST['division']) AND isset($_POST['punto_emision']) AND isset($_POST['area_impresion']) AND isset($_POST['tipo_comprobante']) AND isset($_POST['secuencia_inicio']) AND isset($_POST['secuencia_fin'])) {
+            $id = \filter_input(INPUT_POST, 'id');
             $solicitud = \filter_input(INPUT_POST, 'solicitud');
             $codalmacen = \filter_input(INPUT_POST, 'codalmacen');
             $serie = \filter_input(INPUT_POST, 'serie');
@@ -62,19 +63,21 @@ class ncf extends fs_controller {
             $secuencia_inicio = \filter_input(INPUT_POST, 'secuencia_inicio');
             $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
             $correlativo = \filter_input(INPUT_POST, 'correlativo');
-
+            $contado_val = \filter_input(INPUT_POST, 'contado');
+            $contado = ($contado_val == "TRUE")?TRUE:FALSE;
             $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
 
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }
             
-            $verificacion = $this->verifica_correlativo($ncf0);
+            $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
             if ($verificacion) {
                 return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, no se puede retroceder el correlativo!");
             }
 
             $ncf0->idempresa = $this->empresa->id;
+            $ncf0->id = $id;
             $ncf0->solicitud = $solicitud;
             $ncf0->codalmacen = $codalmacen;
             $ncf0->serie = $serie;
@@ -89,38 +92,33 @@ class ncf extends fs_controller {
             $ncf0->fecha_creacion = \date('d-m-Y H:i');
             $ncf0->usuario_modificacion = $this->user->nick;
             $ncf0->fecha_modificacion = \date('d-m-Y H:i');
-            $ncf0->estado = "true";
+            $ncf0->estado = TRUE;
+            $ncf0->contado = $contado;
             if ($ncf0->save()) {
                 $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
             } else
                 $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
         elseif ($_GET['delete']) {
-            $ncf_array = explode("-", filter_input(INPUT_GET, 'delete'));
-            if($ncf_array[7] == $ncf_array[8]){
+            $id = \filter_input(INPUT_GET, 'delete');
+            if(!is_null($id)){
+                $data_borrar = $this->ncf_rango->get_by_id($this->empresa->id, $id);
                 $ncf0 = new ncf_rango();
                 $ncf0->idempresa = $this->empresa->id;
-                $ncf0->solicitud = $ncf_array[0];
-                $ncf0->codalmacen = $ncf_array[1];
-                $ncf0->serie = $ncf_array[2];
-                $ncf0->division = $ncf_array[3];
-                $ncf0->punto_emision = $ncf_array[4];
-                $ncf0->area_impresion = $ncf_array[5];
-                $ncf0->tipo_comprobante = $ncf_array[6];
-                $ncf0->secuencia_inicio = $ncf_array[7];
+                $ncf0->id = $id;
                 if($ncf0->delete()){
-                    $this->new_message("Datos de la Solicitud " . $ncf_array[0] . " con tipo de comprobante ".$ncf_array[6]." eliminados correctamente.");
+                    $this->new_message("Datos de la Solicitud " . $data_borrar->solicitud . " con tipo de comprobante ".$data_borrar->tipo_comprobante." eliminados correctamente.");
                 }else{
                     $this->new_error_msg("¡Ocurrió un error, por favor revise la información enviada!");
                 }
             }else{
-                $this->new_error_msg("¡Existen " . $ncf_array[8] . " NCF generados, no se puede eliminar esta secuencia!");
+                $this->new_error_msg("¡Existen " . ($data_borrar->correlativo-$data_borrar->secuencia_inicio) . " NCF generados, no se puede eliminar esta secuencia!");
             }
         }
     }
 
-    protected function verifica_correlativo($ncf) {
-        if ($ncf->correlativo > 1) {
+    protected function verifica_correlativo($ncf, $correlativo) {
+        if (($ncf->correlativo != $correlativo) AND ($ncf->correlativo > $ncf->secuencia_inicio)) {
             $this->ncf_ventas = new ncf_ventas();
             $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen);
             if ($facturas) {
