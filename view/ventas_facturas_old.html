@@ -1,16 +1,11 @@
 {include="header"}
-
+<style type="text/css">
+    .factura-abono {
+        color: red;
+    }
+  .tachado{text-decoration:line-through;}    
+</style>
 <script type="text/javascript">
-   function fs_marcar_todo()
-   {
-       $('input:checkbox').prop('checked', true);
-   }
-    
-   function fs_marcar_nada()
-   {
-       $('input:checkbox').prop('checked', false);
-   }
-   
    function buscar_lineas()
    {
       if(document.f_buscar_lineas.buscar_lineas.value == '')
@@ -76,28 +71,6 @@
             }
          }
       });
-      $('#b_imprimir').click(function(event) {
-        event.preventDefault();
-        var checkboxValues = [];
-        var seguir = true;
-        $('input[name=imprimir]:checked').map(function() {
-            checkboxValues.push($(this).val());
-        });
-        console.log(checkboxValues.length);
-        if(checkboxValues.length === 0){
-            seguir = false;
-            alert('Debe elegir una factura como minimo para Imprimir');
-        }
-        if(seguir){
-            $('#modal_impresion_facturas').modal('show');
-            $("#imprimir_facturas").detach();
-            $("<iframe id='imprimir_facturas' />")
-              .attr('src', 'index.php?page=factura_ncf&id='+checkboxValues)
-              .attr('width', '100%')
-              .attr('height', '500')
-              .appendTo('#modal_body_impresion_facturas');
-        }
-      });
    });
 </script>
 
@@ -128,9 +101,6 @@
                <span class="glyphicon glyphicon-exclamation-sign"></span> &nbsp; Huecos
             </button>
             {/if}
-            <button class="btn btn-sm btn-default" data-toggle="modal" id="b_imprimir">
-               <span class="glyphicon glyphicon-print"></span> &nbsp; Imprimir
-            </button>
             {loop="$fsc->extensions"}
                {if="$value->type=='button'"}
                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
@@ -291,18 +261,10 @@
    <table class="table table-hover">
       <thead>
          <tr>
-             <th colspan="2">
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-default" type="button" onclick="fs_marcar_todo()" title="Marcar todo">
-                       <span class="glyphicon glyphicon-check"></span>
-                    </button>
-                    <button class="btn btn-sm btn-default" type="button" onclick="fs_marcar_nada()" title="Desmarcar todo">
-                       <span class="glyphicon glyphicon-unchecked"></span>
-                    </button>
-                </div>
-             </th>
+            <th></th>
             <th></th>
             <th class="text-left">Código + {#FS_NUMERO2#}</th>
+            <th class="text-left">NCF</th>
             <th class="text-left">Cliente</th>
             <th class="text-left">Observaciones</th>
             <th class="text-right">Total</th>
@@ -315,11 +277,8 @@
          </tr>
       </thead>
       {loop="$fsc->resultados"}
-      <tr class="clickableRow{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if}" href="{$value->url()}">
-        <td class="text-center">
-             <input type="checkbox" name="imprimir" value="{$value->idfactura}" class="check-mark"/>
-        </td> 
-        <td class="text-center">
+      <tr class="{if="$fsc->ncf_resultados[$value->idfactura]->estado=='f'"}tachado{/if} clickableRow{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->idfacturarect"}factura-abono{/if}" href="{$value->url()}">
+         <td class="text-center">
             {if="$value->pagada"}
             <span class="glyphicon glyphicon-ok" title="La {#FS_FACTURA#} está pagada"></span>
             {/if}
@@ -329,14 +288,8 @@
             <span class="glyphicon glyphicon-paperclip" title="La {#FS_FACTURA#} tiene vinculado un asiento contable"></span>
             {/if}
          </td>
-         <td>
-            <a href="{$value->url()}">{$value->codigo}</a> {$value->numero2}
-            {if="$value->idfacturarect"}
-            <span class="label label-danger" title="{#FS_FACTURA_RECTIFICATIVA#} de {$value->codigorect}">
-               <span class="glyphicon glyphicon-flag"></span>
-            </span>
-            {/if}
-         </td>
+         <td><a href="{$value->url()}">{$value->codigo}</a> {$value->numero2}</td>
+         <td>{$fsc->ncf_resultados[$value->idfactura]->ncf}</td>
          <td>
             {$value->nombrecliente}
             <a href="{$fsc->url()}&codcliente={$value->codcliente}" class="cancel_clickable" title="Ver más {#FS_FACTURAS#} de {$value->nombrecliente}">[+]</a>
@@ -355,10 +308,10 @@
          <td class="text-right">{$value->vencimiento}</td>
       </tr>
       {else}
-      <tr class="warning">
+      <tr class="bg-warning">
          <td></td>
          <td></td>
-         <td colspan="6">Ninguna {#FS_FACTURA#} encontrada. Pulsa <b>Nueva</b> para crear una.</td>
+         <td colspan="7">Ninguna {#FS_FACTURA#} encontrada. Pulsa <b>Nueva</b> para crear una.</td>
          {if="$fsc->codagente!==''"}
          <td></td>
          <td></td>
@@ -367,7 +320,7 @@
       {/loop}
       {if="$fsc->total_resultados!==''"}
       <tr>
-         <td colspan="6" class="text-right">
+         <td colspan="7" class="text-right">
             {$fsc->total_resultados_txt} &nbsp; <b>{$fsc->show_precio($fsc->total_resultados)}</b>
          </td>
          {if="$fsc->codagente!==''"}
@@ -380,19 +333,22 @@
    </table>
 </div>
 
-<div class="container-fluid">
-   <div class="row">
-      <div class="col-sm-12 text-center">
-         <ul class="pagination">
-            {loop="$fsc->paginas()"}
-            <li{if="$value['actual']"} class="active"{/if}>
-               <a href="{$value['url']}">{$value['num']}</a>
-            </li>
-            {/loop}
-         </ul>
-      </div>
-   </div>
-</div>
+<ul class="pager">
+   {if="$fsc->anterior_url()!=''"}
+   <li class="previous">
+      <a href="{$fsc->anterior_url()}">
+         <span class="glyphicon glyphicon-chevron-left"></span> &nbsp; Anteriores
+      </a>
+   </li>
+   {/if}
+   {if="$fsc->siguiente_url()!=''"}
+   <li class="next">
+      <a href="{$fsc->siguiente_url()}">
+         Siguientes &nbsp; <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+   </li>
+   {/if}
+</ul>
 
 <div class="modal fade" id="modal_huecos">
    <div class="modal-dialog">
@@ -404,7 +360,9 @@
                &nbsp; Huecos en la facturación
             </h4>
             <p class="help-block">
-               Si hay huecos en la facturación es debido a que faltan facturas.
+               Si hay huecos en la facturación es debido a que faltan facturas o bien a una
+               incorrecta configuración del <b>nº de la primera factura de venta</b>,
+               en la pestaña avanzado del panel de control.
             </p>
          </div>
          <div class="table-responsive">
@@ -484,16 +442,5 @@
       </div>
    </div>
 </form>
-<div class="modal" id="modal_impresion_facturas">
-    <div class="modal-dialog" style="width: 99%; max-width: 950px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            </div>
-            <div class="modal-body" id='modal_body_impresion_facturas'>
-                
-            </div>
-        </div>
-    </div>
-</div>
+
 {include="footer"}

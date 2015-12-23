@@ -17,25 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_model('articulo.php');
 require_model('asiento.php');
 require_model('asiento_factura.php');
 require_model('cliente.php');
+require_model('cuenta_banco_cliente.php');
+require_model('divisa.php');
 require_model('ejercicio.php');
 require_model('factura_cliente.php');
 require_model('forma_pago.php');
+require_model('pais.php');
 require_model('partida.php');
+require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_ventas.php');
 
 class ventas_factura extends fs_controller
 {
    public $agente;
+   public $agentes;
    public $allow_delete;
    public $cliente;
+   public $divisa;
    public $ejercicio;
    public $factura;
    public $forma_pago;
    public $mostrar_boton_pagada;
+   public $pais;
+   public $rectificada;
+   public $rectificativa;
+   public $serie;
    public $ncf_ventas;
    public $ncf;
    
@@ -46,17 +57,23 @@ class ventas_factura extends fs_controller
    
    protected function private_core()
    {
+      /// ¿El usuario tiene permiso para eliminar en esta página?
+      $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
+      
       $this->ppage = $this->page->get('ventas_facturas');
       $this->ejercicio = new ejercicio();
       $this->agente = FALSE;
+      $this->agentes = array();
       $this->cliente = FALSE;
+      $this->divisa = new divisa();
       $factura = new factura_cliente();
       $this->factura = FALSE;
       $this->forma_pago = new forma_pago();
+      $this->pais = new pais();
+      $this->rectificada = FALSE;
+      $this->rectificativa = FALSE;
+      $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
-      
-      /// ¿El usuario tiene permiso para eliminar en esta página?
-      $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
       
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
@@ -78,44 +95,7 @@ class ventas_factura extends fs_controller
       if( isset($_POST['idfactura']) )
       {
          $this->factura = $factura->get($_POST['idfactura']);
-         $this->factura->observaciones = $_POST['observaciones'];
-         $this->factura->numero2 = $_POST['numero2'];
-         
-         /// obtenemos el ejercicio para poder acotar la fecha
-         $eje0 = $this->ejercicio->get( $this->factura->codejercicio );
-         if( $eje0 )
-         {
-            $this->factura->fecha = $eje0->get_best_fecha($_POST['fecha'], TRUE);
-            $this->factura->hora = $_POST['hora'];
-         }
-         else
-            $this->new_error_msg('No se encuentra el ejercicio asociado a la factura.');
-         
-         /// ¿cambiamos la forma de pago?
-         if($this->factura->codpago != $_POST['forma_pago'])
-         {
-            $this->factura->codpago = $_POST['forma_pago'];
-            $this->factura->vencimiento = $this->nuevo_vencimiento($this->factura->fecha, $this->factura->codpago);
-         }
-         else
-         {
-            $this->factura->vencimiento = $_POST['vencimiento'];
-         }
-         
-         if( $this->factura->save() )
-         {
-            $asiento = $this->factura->get_asiento();
-            if($asiento)
-            {
-               $asiento->fecha = $this->factura->fecha;
-               if( !$asiento->save() )
-                  $this->new_error_msg("Imposible modificar la fecha del asiento.");
-            }
-            $this->new_message("Factura modificada correctamente.");
-            $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());
-         }
-         else
-            $this->new_error_msg("¡Imposible modificar la factura!");
+         $this->modificar();
       }
       else if( isset($_GET['id']) )
       {
@@ -127,17 +107,17 @@ class ventas_factura extends fs_controller
          $this->page->title = $this->factura->codigo;
          
          /// cargamos el agente
+         $agente = new agente();
          if( !is_null($this->factura->codagente) )
          {
-            $agente = new agente();
             $this->agente = $agente->get($this->factura->codagente);
          }
+         $this->agentes = $agente->all();
          
          /// cargamos el cliente
          $cliente = new cliente();
          $this->cliente = $cliente->get($this->factura->codcliente);
-         
-         
+
          //Obtenemos el NCF asociado
          $this->ncf = $this->ncf_ventas->get_ncf($this->empresa->id,$this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
          
@@ -148,7 +128,9 @@ class ventas_factura extends fs_controller
                $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
             }
             else
-               $this->generar_asiento();
+            {
+               $this->generar_asiento($this->factura);
+            }
          }
          else if( isset($_GET['updatedir']) )
          {
@@ -163,6 +145,19 @@ class ventas_factura extends fs_controller
             }
             else
                $this->new_error_msg("¡Imposible modificar la factura!");
+         }
+         else if( isset($_POST['anular']) )
+         {
+            $this->anular_factura();
+         }
+         
+         if($this->factura->idfacturarect)
+         {
+            $this->rectificada = $factura->get($this->factura->idfacturarect);
+         }
+         else
+         {
+            $this->get_factura_rectificativa();
          }
          
          /// comprobamos la factura
@@ -184,6 +179,66 @@ class ventas_factura extends fs_controller
       }
       else
          return $this->ppage->url();
+   }
+   
+   private function modificar()
+   {
+      $this->factura->observaciones = $_POST['observaciones'];
+      //No permitimos cambiar el numero 2 ya que lo utilizamos para NCF
+      //$this->factura->numero2 = $_POST['numero2'];
+      $this->factura->nombrecliente = $_POST['nombrecliente'];
+      $this->factura->cifnif = $_POST['cifnif'];
+      $this->factura->codpais = $_POST['codpais'];
+      $this->factura->provincia = $_POST['provincia'];
+      $this->factura->ciudad = $_POST['ciudad'];
+      $this->factura->codpostal = $_POST['codpostal'];
+      $this->factura->direccion = $_POST['direccion'];
+      
+      $this->factura->codagente = NULL;
+      $this->factura->porcomision = 0;
+      if($_POST['codagente'] != '')
+      {
+         $this->factura->codagente = $_POST['codagente'];
+         $this->factura->porcomision = floatval($_POST['porcomision']);
+      }
+      
+      /// obtenemos el ejercicio para poder acotar la fecha
+      $eje0 = $this->ejercicio->get( $this->factura->codejercicio );
+      if($eje0)
+      {
+         $this->factura->fecha = $eje0->get_best_fecha($_POST['fecha'], TRUE);
+         $this->factura->hora = $_POST['hora'];
+      }
+      else
+         $this->new_error_msg('No se encuentra el ejercicio asociado a la factura.');
+      
+      /// ¿cambiamos la forma de pago?
+      if($this->factura->codpago != $_POST['forma_pago'])
+      {
+         $this->factura->codpago = $_POST['forma_pago'];
+         $this->factura->vencimiento = $this->nuevo_vencimiento($this->factura->fecha, $this->factura->codpago);
+      }
+      else
+      {
+         $this->factura->vencimiento = $_POST['vencimiento'];
+      }
+      
+      if( $this->factura->save() )
+      {
+         $asiento = $this->factura->get_asiento();
+         if($asiento)
+         {
+            $asiento->fecha = $this->factura->fecha;
+            if( !$asiento->save() )
+            {
+               $this->new_error_msg("Imposible modificar la fecha del asiento.");
+            }
+         }
+         $this->new_message("Factura modificada correctamente.");
+         $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());
+      }
+      else
+         $this->new_error_msg("¡Imposible modificar la factura!");
    }
    
    private function actualizar_direccion()
@@ -215,9 +270,9 @@ class ventas_factura extends fs_controller
       }
    }
    
-   private function generar_asiento()
+   private function generar_asiento(&$factura)
    {
-      if( $this->factura->get_asiento() )
+      if( $factura->get_asiento() )
       {
          $this->new_error_msg('Ya hay un asiento asociado a esta factura.');
       }
@@ -225,10 +280,9 @@ class ventas_factura extends fs_controller
       {
          $asiento_factura = new asiento_factura();
          $asiento_factura->soloasiento = TRUE;
-         if( $asiento_factura->generar_asiento_venta($this->factura) )
+         if( $asiento_factura->generar_asiento_venta($factura) )
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
-            $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());
          }
          
          foreach($asiento_factura->errors as $err)
@@ -254,5 +308,111 @@ class ventas_factura extends fs_controller
       }
       
       return $vencimiento;
+   }
+   
+   private function anular_factura()
+   {
+      /*
+      * Verificación de disponibilidad del Número de NCF para Notas de Crédito
+      */
+      $tipo_comprobante = '04';
+      $this->ncf_rango = new ncf_rango();
+      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
+      if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+          return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
+      }
+      /// generamos una factura rectificativa a partir de la actual
+      $factura = clone $this->factura;
+      $factura->idfactura = NULL;
+      $factura->numero = NULL;
+      $factura->numero2 = $numero_ncf['NCF'];
+      $factura->codigo = NULL;
+      $factura->idasiento = NULL;
+      
+      $factura->idfacturarect = $this->factura->idfactura;
+      $factura->codigorect = $this->factura->codigo;
+      $factura->codserie = $_POST['codserie'];
+      $factura->fecha = $this->today();
+      $factura->hora = $this->hour();
+      $factura->observaciones = $_POST['motivo'];
+      $factura->neto = 0 - $factura->neto;
+      $factura->totalirpf = 0 - $factura->totalirpf;
+      $factura->totaliva = 0 - $factura->totaliva;
+      $factura->totalrecargo = 0 - $factura->totalrecargo;
+      $factura->total = $factura->neto + $factura->totaliva + $factura->totalrecargo - $factura->totalirpf;
+      
+      if( $factura->save() )
+      {
+         $articulo = new articulo();
+         $error = FALSE;
+         
+         /// copiamos las líneas en negativo
+         foreach($this->factura->get_lineas() as $lin)
+         {
+            /// actualizamos el stock
+            $art = $articulo->get($lin->referencia);
+            if($art)
+            {
+               $art->sum_stock($factura->codalmacen, $lin->cantidad);
+            }
+            
+            $lin->idlinea = NULL;
+            $lin->idalbaran = NULL;
+            $lin->idfactura = $factura->idfactura;
+            $lin->cantidad = 0 - $lin->cantidad;
+            $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
+            $lin->pvptotal = $lin->pvpunitario * (100 - $lin->dtopor)/100 * $lin->cantidad;
+            
+            if( !$lin->save() )
+            {
+               $error = TRUE;
+            }
+         }
+         
+         if($error)
+         {
+            $factura->delete();
+            $this->new_error_msg('Se han producido errores al crear la '.FS_FACTURA_RECTIFICATIVA);
+         }
+         else
+         {
+             /*
+            * Luego de que todo este correcto generamos el NCF la Nota de Credito 
+            */
+            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+            $ncf_controller = new ncf();
+            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+            $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
+            $this->generar_asiento($factura);
+         }
+      }
+      else
+      {
+         $this->new_error_msg('Error al anular la factura.');
+      }
+   }
+   
+   private function get_factura_rectificativa()
+   {
+      $sql = "SELECT * FROM facturascli WHERE idfacturarect = ".$this->factura->var2str($this->factura->idfactura);
+      
+      $data = $this->db->select($sql);
+      if($data)
+      {
+         $this->rectificativa = new factura_cliente($data[0]);
+      }
+   }
+   
+   public function get_cuentas_bancarias()
+   {
+      $cuentas = array();
+      
+      $cbc0 = new cuenta_banco_cliente();
+      foreach($cbc0->all_from_cliente($this->factura->codcliente) as $cuenta)
+      {
+         $cuentas[] = $cuenta;
+      }
+      
+      return $cuentas;
    }
 }

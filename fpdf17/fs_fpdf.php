@@ -30,7 +30,12 @@ class PDF_MC_Table extends FPDF
     var $angle=0;
     var $lineaactual = 0;
     var $piepagina = false;	
-
+    //Adición de grupos de páginas
+    //Origen: http://fpdf.de/downloads/addons/57/
+    var $NewPageGroup;   // variable indicating whether a new group was requested
+    var $PageGroups;     // variable containing the number of pages of the groups
+    var $CurrPageGroup;  // variable containing the alias of the current page group
+    
     function Setdatoscab($v)
     {
         //Set the array
@@ -105,12 +110,12 @@ class PDF_MC_Table extends FPDF
         }		
 
         // Tipo de Documento y Numero
-        $this->fact_dev($this->fdf_tipodocumento, $this->fdf_codigo);
+        $this->fact_dev($this->fdf_tipodocumento, $this->fdf_codigo, $this->fdf_estado);
 
         // Fecha factura y Codigo Cliente
         $this->addDate($this->fdf_fecha);
         $this->addClient($this->fdf_codcliente);
-        $this->addPageNumber($this->PageNo().'/{nb}');
+        $this->addPageNumber($this->GroupPageNo().'/'.$this->PageGroupAlias());
 
         // Datos del Cliente
         $cliente  = $this->fdf_nombrecliente . "\n";		
@@ -549,8 +554,8 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    // Nombre y numero de la factura
-    function fact_dev( $libelle, $num )
+    // Nombre, numero y estado de la factura
+    function fact_dev( $libelle, $num, $estado )
     {
         $r1  = $this->w - 100;
         $r2  = $r1 + 90;
@@ -580,6 +585,8 @@ class PDF_MC_Table extends FPDF
         $this->SetFont( "Arial", "B", 9 );
         $this->SetXY( $r1+1, $y1+7);
         $this->MultiCell( $r2-$r1-1,3, $tipo_comprobante, 0, "C");
+        $this->SetXY( $r1+1, $y1+7);
+        $this->MultiCell( $r2-$r1-1,3, $estado, 0, "C");
         //$this->Cell($r2-$r1 -1,5, $tipo_comprobante, 0, 0, "C" );
     }
 
@@ -1013,6 +1020,57 @@ class PDF_MC_Table extends FPDF
         return $xsub;
     }
 
-    // END FUNCTION	
+    // END FUNCTION
+    
+    // create a new page group; call this before calling AddPage()
+    function StartPageGroup()
+    {
+        $this->NewPageGroup=true;
+    }
+
+    // current page in the group
+    function GroupPageNo()
+    {
+        return $this->PageGroups[$this->CurrPageGroup];
+    }
+
+    // alias of the current page group -- will be replaced by the total number of pages in this group
+    function PageGroupAlias()
+    {
+        return $this->CurrPageGroup;
+    }
+
+    function _beginpage($orientation)
+    {
+        parent::_beginpage($orientation);
+        if($this->NewPageGroup)
+        {
+            // start a new group
+            $n = sizeof($this->PageGroups)+1;
+            $alias = "{nb$n}";
+            $this->PageGroups[$alias] = 1;
+            $this->CurrPageGroup = $alias;
+            $this->NewPageGroup=false;
+        }
+        elseif($this->CurrPageGroup)
+            $this->PageGroups[$this->CurrPageGroup]++;
+    }
+
+    function _putpages()
+    {
+        $nb = $this->page;
+        if (!empty($this->PageGroups))
+        {
+            // do page number replacement
+            foreach ($this->PageGroups as $k => $v)
+            {
+                for ($n = 1; $n <= $nb; $n++)
+                {
+                    $this->pages[$n]=str_replace($k, $v, $this->pages[$n]);
+                }
+            }
+        }
+        parent::_putpages();
+    }
 }
 ?>

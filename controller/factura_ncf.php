@@ -31,10 +31,9 @@ require_model('ncf_ventas.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 
-$dirname = 'plugins/distribucion/';
-if(is_dir($dirname)){
+//if(class_exists('distrib_creacion')){
     require_model('distribucion_ordenescarga_facturas.php');
-}
+//}
 
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
@@ -53,36 +52,65 @@ class factura_ncf extends fs_controller {
 
    protected function private_core()
    {
+      $this->template = false;
       $this->share_extensions();
-      
       $this->factura = FALSE;
-      if (isset($_GET['id']))
-      {
-         $factura = new factura_cliente();
-         $this->factura = $factura->get($_GET['id']);
-         $this->distrib_transporte = new distribucion_ordenescarga_facturas;
-         $ncf_datos = new ncf_ventas();
-         $valores = $ncf_datos->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
-         $ncf_tipo = new ncf_tipo();
-         $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
-         $this->factura->ncf = $valores->ncf;
-         $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
-         $dirname = 'plugins/distribucion/';
-         if(is_dir($dirname)){
-           $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
-           $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
-         }
-      }
-      
-      if ($this->factura)
-      {
-         $cliente = new cliente();
-         $this->cliente = $cliente->get($this->factura->codcliente);
-         $this->generar_pdf();
-      }
-      else
-      {
-         $this->new_error_msg("¡Factura de cliente no encontrada!");
+      $val_id = \filter_input(INPUT_GET, 'id');
+      $valores_id = explode(',', $val_id);
+      $this->distrib_transporte = new distribucion_ordenescarga_facturas();
+      if(!empty($valores_id)){
+        ob_end_clean();
+        $pdf_doc = new PDF_MC_Table('P', 'mm', 'letter');
+        /*
+        $pdf_doc->SetTitle('Factura: ' . $this->factura->codigo . " " . $this->factura->numero2 ." ". $this->factura->ncf );
+        $pdf_doc->SetSubject('Factura del cliente: ' . $this->factura->nombrecliente);
+        $pdf_doc->SetAuthor($this->empresa->nombre);
+        $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
+         * 
+         */
+        $pdf_doc->SetTitle('Facturas de Venta' );
+        $pdf_doc->SetSubject('Facturas de Venta para clientes');
+        $pdf_doc->SetAuthor($this->empresa->nombre);
+        $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
+        //
+        $archivo = FALSE;
+        $contador = 0;
+        foreach($valores_id as $id)
+        {
+          $factura = new factura_cliente();
+          $this->factura = $factura->get($id);
+          if($this->factura){
+              $ncf_datos = new ncf_ventas();
+              $valores = $ncf_datos->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
+              $ncf_tipo = new ncf_tipo();
+              $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
+              $this->factura->ncf = $valores->ncf;
+              $this->factura->estado = $valores->estado;
+              $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
+              if(class_exists('distribucion_ordenescarga_facturas')){
+                $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
+                $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
+              }
+              $cliente = new cliente();
+              $this->cliente = $cliente->get($this->factura->codcliente);
+              $this->generar_pdf($pdf_doc);
+              $contador++;
+          }
+        }
+        // Damos salida al archivo PDF
+        if ($archivo){
+             if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')){
+                mkdir('tmp/' . FS_TMP_NAME . 'enviar');
+             }
+             $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
+          }else{
+             $pdf_doc->Output();
+          }
+
+        if (!$this->factura)
+        {
+           $this->new_error_msg("¡Factura de cliente no encontrada!");
+        }
       }
    }
 
@@ -105,20 +133,14 @@ class factura_ncf extends fs_controller {
       return $mostrar;
    }
 
-   public function generar_pdf($archivo = FALSE)
+   public function generar_pdf($pdf_doc)
    {
       ///// INICIO - Factura Detallada
       /// Creamos el PDF y escribimos sus metadatos
-      ob_end_clean();
-      $pdf_doc = new PDF_MC_Table('P', 'mm', 'letter');
+      
       define('EEURO', chr(128));
-
-      $pdf_doc->SetTitle('Factura: ' . $this->factura->codigo . " " . $this->factura->numero2 ." ". $this->factura->ncf );
-      $pdf_doc->SetSubject('Factura del cliente: ' . $this->factura->nombrecliente);
-      $pdf_doc->SetAuthor($this->empresa->nombre);
-      $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
-
-      $pdf_doc->Open();
+      //$pdf_doc->open();
+      $pdf_doc->StartPageGroup();
       $pdf_doc->AliasNbPages();
       $pdf_doc->SetAutoPageBreak(true, 40);
 
@@ -163,6 +185,7 @@ class factura_ncf extends fs_controller {
       // Tipo de Documento
       $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
       $pdf_doc->fdf_codigo = $this->factura->ncf;
+      $pdf_doc->fdf_estado = ($this->factura->estado)?"":"DOCUMENTO ANULADO";
 
       // Fecha, Codigo Cliente y observaciones de la factura
       $pdf_doc->fdf_fecha = $this->factura->fecha;
@@ -290,34 +313,19 @@ class factura_ncf extends fs_controller {
          }
          $pdf_doc->piepagina = true;
       }
-
-      // Damos salida al archivo PDF
-      if ($archivo)
-      {
-         if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar'))
-         {
-            mkdir('tmp/' . FS_TMP_NAME . 'enviar');
-         }
-         
-         $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
-      }
-      else
-      {
-         $pdf_doc->Output();
-      }
    }
    
    private function share_extensions()
    {
       $fsext = new fs_extension(
-              array(
-                  'name' => 'factura_ncf',
-                  'page_from' => __CLASS__,
-                  'page_to' => 'ventas_factura',
-                  'type' => 'pdf',
-                  'text' => 'Factura con NCF',
-                  'params' => ''
-              )
+        array(
+            'name' => 'factura_ncf',
+            'page_from' => __CLASS__,
+            'page_to' => 'ventas_factura',
+            'type' => 'pdf',
+            'text' => 'Factura con NCF',
+            'params' => ''
+        )
       );
       $fsext->save();
    }

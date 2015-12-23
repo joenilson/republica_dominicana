@@ -429,7 +429,6 @@ class ventas_imprimir extends fs_controller
       $pdf_doc->pdf->addInfo('Title', ucfirst(FS_FACTURA).' '.$this->factura->codigo);
       $pdf_doc->pdf->addInfo('Subject', ucfirst(FS_FACTURA).' '.$this->factura->codigo);
       $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
-      
       $lineas = $this->factura->get_lineas();
       $lineas_iva = $this->factura->get_lineas_iva();
       if($lineas)
