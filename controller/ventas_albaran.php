@@ -34,6 +34,11 @@ require_model('partida.php');
 require_model('regularizacion_iva.php');
 require_model('serie.php');
 require_model('subcuenta.php');
+require_model('ncf_entidad_tipo.php');
+require_model('ncf_tipo.php');
+require_model('ncf_ventas.php');
+require_model('ncf_rango.php');
+require_once 'ncf.php';
 
 class ventas_albaran extends fs_controller
 {
@@ -51,6 +56,10 @@ class ventas_albaran extends fs_controller
    public $nuevo_albaran_url;
    public $pais;
    public $serie;
+   public $ncf_rango;
+   public $ncf_entidad_tipo;
+   public $ncf_tipo;
+   public $ncf_ventas;
    
    public function __construct()
    {
@@ -75,6 +84,10 @@ class ventas_albaran extends fs_controller
       $this->nuevo_albaran_url = FALSE;
       $this->pais = new pais();
       $this->serie = new serie();
+      $this->ncf_rango = new ncf_rango();
+      $this->ncf_entidad_tipo = new ncf_entidad_tipo();
+      $this->ncf_tipo = new ncf_tipo();
+      $this->ncf_ventas = new ncf_ventas();      
       
       /// ¿El usuario tiene permiso para eliminar en esta página?
       $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
@@ -442,6 +455,21 @@ class ventas_albaran extends fs_controller
    
    private function generar_factura()
    {
+      /*
+      * Verificación de disponibilidad del Número de NCF para República Dominicana
+      */
+      //Obtenemos el tipo de comprobante a generar para el cliente
+      $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->albaran->codcliente, 'CLI');
+      $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+      if(strlen($this->albaran->cifnif)<9 AND $tipo_comprobante == '01'){
+         return $this->new_error_msg('El cliente tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
+      }
+      //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante, $this->albaran->codpago);
+      if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
+      {
+          return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' no será facturado.');
+      }
       $factura = new factura_cliente();
       $factura->apartado = $this->albaran->apartado;
       $factura->cifnif = $this->albaran->cifnif;
@@ -465,7 +493,7 @@ class ventas_albaran extends fs_controller
       $factura->provincia = $this->albaran->provincia;
       $factura->total = $this->albaran->total;
       $factura->totaliva = $this->albaran->totaliva;
-      $factura->numero2 = $this->albaran->numero2;
+      $factura->numero2 = $numero_ncf['NCF'];
       $factura->irpf = $this->albaran->irpf;
       $factura->totalirpf = $this->albaran->totalirpf;
       $factura->totalrecargo = $this->albaran->totalrecargo;
@@ -502,6 +530,8 @@ class ventas_albaran extends fs_controller
       else if( $factura->save() )
       {
          $continuar = TRUE;
+         $ncf_controller = new ncf();
+         $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
          foreach($this->albaran->get_lineas() as $l)
          {
             $n = new linea_factura_cliente();

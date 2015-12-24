@@ -512,4 +512,29 @@ class ventas_pedido extends fs_controller
       else
          $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
    }
+   
+   public function get_lineas_stock()
+   {
+      $lineas = array();
+      
+      $sql = "select l.referencia,l.cantidad,s.cantidad as stock,s.ubicacion from lineaspedidoscli l, stocks s"
+              ." where l.idpedido = ".$this->pedido->var2str($this->pedido->idpedido)
+              ." AND l.referencia = s.referencia "
+              . "AND s.codalmacen = ".$this->pedido->var2str($this->pedido->codalmacen).";";
+      $data = $this->db->select($sql);
+      if($data)
+      {
+         foreach($data as $d)
+         {
+            $lineas[] = array(
+                'referencia' => $d['referencia'],
+                'cantidad' => floatval($d['cantidad']),
+                'stock' => floatval($d['stock']),
+                'ubicacion' => $d['ubicacion']
+            );
+         }
+      }
+      
+      return $lineas;
+   }
 }

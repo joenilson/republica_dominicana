@@ -31,6 +31,7 @@ require_model('partida.php');
 require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_ventas.php');
+require_once 'ncf.php';
 
 class ventas_factura extends fs_controller
 {

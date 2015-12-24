@@ -16,6 +16,11 @@
         <nulo>NO</nulo>
     </columna>
     <columna>
+        <nombre>contado</nombre>
+        <tipo>boolean</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>correlativo</nombre>
         <tipo>integer</tipo>
         <nulo>NO</nulo>
@@ -41,10 +46,16 @@
         <nulo>YES</nulo>
     </columna>
     <columna>
+        <nombre>id</nombre>
+        <tipo>serial</tipo>
+        <nulo>NO</nulo>
+        <defecto>nextval('ncf_rango_id_seq'::regclass)</defecto>
+    </columna>
+    <columna>
         <nombre>idempresa</nombre>
         <tipo>integer</tipo>
         <nulo>NO</nulo>
-    </columna>    
+    </columna>
     <columna>
         <nombre>punto_emision</nombre>
         <tipo>character varying(3)</tipo>
@@ -87,6 +98,6 @@
     </columna>
     <restriccion>
         <nombre>ncf_pkey</nombre>
-        <consulta>PRIMARY KEY (idempresa, solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante)</consulta>
+        <consulta>PRIMARY KEY (id)</consulta>
     </restriccion>
 </tabla>

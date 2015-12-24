@@ -131,7 +131,7 @@ class ncf extends fs_controller {
         }
     }
     
-    private function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf) {
+    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf) {
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {

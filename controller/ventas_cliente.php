@@ -58,21 +58,20 @@ class ventas_cliente extends fs_controller {
         $this->serie = new serie();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-
+        /// cargamos el cliente
+        $cliente = new cliente();
+        $this->cliente = FALSE;        
+        if (isset($_POST['codcliente'])) {
+            $this->cliente = $cliente->get($_POST['codcliente']);
+            //$this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_POST['codcliente'], 'CLI');
+        } else if (isset($_GET['cod'])) {
+            $this->cliente = $cliente->get($_GET['cod']);
+            //$this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_GET['cod'], 'CLI');
+        }
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
 
-        /// cargamos el cliente
-        $cliente = new cliente();
-        $ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->cliente = FALSE;
-        if (isset($_POST['codcliente'])) {
-            $this->cliente = $cliente->get($_POST['codcliente']);
-            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_POST['codcliente'], 'CLI');
-        } else if (isset($_GET['cod'])) {
-            $this->cliente = $cliente->get($_GET['cod']);
-            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_GET['cod'], 'CLI');
-        }
+
 
         /// ¿Hay que hacer algo más?
         if (isset($_GET['delete_cuenta'])) { /// eliminar cuenta bancaria
@@ -165,19 +164,24 @@ class ventas_cliente extends fs_controller {
             }
             
             if(isset($_POST['tipo_comprobante'])){
-                $ncf_entidad_tipo->idempresa = $this->empresa->id;
-                $ncf_entidad_tipo->entidad = \filter_input(INPUT_POST, 'codcliente');
-                $ncf_entidad_tipo->tipo_entidad = 'CLI';
-                $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
-                $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
-                $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i');
-                $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
-                $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i');
-                $ncf_entidad_tipo->estado = 'true';
-                if (!$ncf_entidad_tipo->save()) {
-                    $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
+                $continue = TRUE;
+                $tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
+                if($tipo_comprobante == '01' AND strlen($this->cliente->cifnif)<9){
+                    $this->new_error_msg("¡Imposible actualizar información de NCF para el cliente, por favor corrija primero la Cédula o RNC asignados!");
                 }else{
-                    $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get(\filter_input(INPUT_POST, 'codcliente'), 'CLI');
+                    $ncf_entidad_tipo = new ncf_entidad_tipo();
+                    $ncf_entidad_tipo->idempresa = $this->empresa->id;
+                    $ncf_entidad_tipo->entidad = \filter_input(INPUT_POST, 'codcliente');
+                    $ncf_entidad_tipo->tipo_entidad = 'CLI';
+                    $ncf_entidad_tipo->tipo_comprobante = $tipo_comprobante;
+                    $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
+                    $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i');
+                    $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
+                    $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i');
+                    $ncf_entidad_tipo->estado = 'true';
+                    if (!$ncf_entidad_tipo->save()) {
+                        $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
+                    }
                 }
             }
             
@@ -190,8 +194,10 @@ class ventas_cliente extends fs_controller {
 
         if ($this->cliente) {
             $this->page->title = $this->cliente->codcliente;
-        } else
+            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente->codcliente, 'CLI');
+        } else {
             $this->new_error_msg("¡Cliente no encontrado!");
+        }
     }
 
     public function url() {

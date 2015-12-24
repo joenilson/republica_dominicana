@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) 2015 Joe Nilson <joenilson@gmail.com>
  *
@@ -25,6 +24,7 @@
  */
 class ncf_rango extends fs_model
 {
+    public $id;
     public $idempresa;
     public $solicitud;
     public $codalmacen;
@@ -41,6 +41,7 @@ class ncf_rango extends fs_model
     public $usuario_modificacion;
     public $fecha_modificacion;
     public $estado;
+    public $contado;
     
     public function __construct($t = false) {
         parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
