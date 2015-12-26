@@ -240,6 +240,7 @@ class factura_ncf extends fs_controller {
         /// Definimos todos los datos del PIE de la factura
         /// Lineas de IVA
         $lineas_iva = $this->factura->get_lineas_iva();
+        $negativo = (empty($this->factura->idfacturarect))?-1:1;
         if( count($lineas_iva) > 3 )
         {
            $pdf_doc->fdf_lineasiva = $lineas_iva;
@@ -251,31 +252,31 @@ class factura_ncf extends fs_controller {
            foreach($lineas_iva as $li)
            {
               $i++;
-              $filaiva[$i][0] = ($li->iva) ? FS_IVA . $li->iva : '';
-              $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro($li->neto) : '';
+              $filaiva[$i][0] = ($li->iva) ? FS_IVA . ($li->iva * $negativo) : '';
+              $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $negativo)) : '';
               $filaiva[$i][2] = ($li->iva) ? $li->iva . "%" : '';
-              $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro($li->totaliva) : '';
+              $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $negativo)) : '';
               $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
-              $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro($li->totalrecargo) : '';
+              $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $negativo)) : '';
               $filaiva[$i][6] = ''; //// POR CREARRRRRR
               $filaiva[$i][7] = ''; //// POR CREARRRRRR
-              $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro($li->totallinea) : '';
+              $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $negativo)) : '';
            }
 
            if($filaiva)
            {
               $filaiva[1][6] = $this->factura->irpf.' %';
-              $filaiva[1][7] = $this->ckeckEuro(0 - $this->factura->totalirpf);
+              $filaiva[1][7] = $this->ckeckEuro(0 - ($this->factura->totalirpf * $negativo));
            }
 
            $pdf_doc->fdf_lineasiva = $filaiva;
         }
 
         // Total factura numerico
-        $pdf_doc->fdf_numtotal = $this->ckeckEuro($this->factura->total);
+        $pdf_doc->fdf_numtotal = $this->ckeckEuro(($this->factura->total * $negativo));
 
         // Total factura numeros a texto
-        $pdf_doc->fdf_textotal = $this->factura->total;
+        $pdf_doc->fdf_textotal = ($this->factura->total * $negativo);
 
         /// Agregamos la pagina inicial de la factura
         $pdf_doc->AddPage();
@@ -286,7 +287,7 @@ class factura_ncf extends fs_controller {
         if ($lineas) {
            $neto = 0;
            for ($i = 0; $i < count($lineas); $i++) {
-              $neto += $lineas[$i]->pvptotal;
+              $neto += ($lineas[$i]->pvptotal * $negativo);
               $pdf_doc->neto = $this->ckeckEuro($neto);
 
               $articulo = new articulo();
@@ -302,12 +303,12 @@ class factura_ncf extends fs_controller {
                   // '0' => utf8_decode($lineas[$i]->albaran_codigo() . '-' . $lineas[$i]->albaran_numero()),
                   '0' => utf8_decode($lineas[$i]->albaran_numero()),
                   '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
-                  '2' => utf8_decode($lineas[$i]->cantidad),
+                  '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
                   '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
                   '4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
-                  '5' => utf8_decode($this->show_numero($lineas[$i]->iva, 0) . " %"),
+                  '5' => utf8_decode($this->show_numero(($lineas[$i]->iva * $negativo), 0) . " %"),
                   // '6' => $this->ckeckEuro($lineas[$i]->pvptotal), // Importe con Descuentos aplicados
-                  '6' => $this->ckeckEuro($lineas[$i]->total_iva())
+                  '6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
               );
               $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
            }

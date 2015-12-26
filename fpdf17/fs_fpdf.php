@@ -868,6 +868,7 @@ class PDF_MC_Table extends FPDF
                 100 => "CIENTO", 200 => "DOSCIENTOS", 300 => "TRESCIENTOS", 400 => "CUATROCIENTOS", 500 => "QUINIENTOS", 600 => "SEISCIENTOS", 700 => "SETECIENTOS", 800 => "OCHOCIENTOS", 900 => "NOVECIENTOS"
         );
     //
+        $xcifra = ($xcifra<0)?($xcifra*-1):$xcifra;
         $xcifra = trim($xcifra);
         $xlength = strlen($xcifra);
         $xpos_punto = strpos($xcifra, ".");

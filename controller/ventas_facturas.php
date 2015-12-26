@@ -502,15 +502,10 @@ class ventas_facturas extends fs_controller
             $asiento_factura = new asiento_factura();
             $asiento_factura->soloasiento = TRUE;
             $fact_rectifica = $fact->idfacturarect;
-            $fact->idfacturarect = ($ncf0->tipo_comprobante == '04')?null:$fact->idfacturarect;
+            $factrectifica = (!empty($fact->idfacturarect))?$fact_rectifica:'NULL';
+            $fact->idfacturarect = ($ncf0->tipo_comprobante == '04')?null:$fact->idfactura;
             if ($asiento_factura->generar_asiento_venta($fact)) {
-                $fact->total = 0;
-                $fact->totalirpf = 0;
-                $fact->totaliva = 0;
-                $fact->totalrecargo= 0;
-                $fact->motivo = $fact->motivo." Eliminada por: ".$motivo;
-                $fact->idfacturarect = $fact_rectifica;
-                $fact->save();
+                $this->db->exec("UPDATE facturascli set pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = ".$factrectifica." where idfactura = ".$fact->idfactura.";");
                 $fact_lineas = new linea_factura_cliente();
                 $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
                 foreach($lineas_fact as $linea)

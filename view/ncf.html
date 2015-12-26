@@ -47,15 +47,15 @@
     <table class="table table-responsive">
         <thead>
             <tr>
-                <th style="width: 280px;"><a href="{$fsc->almacen->url()}">Almac&eacute;n</a></th>
-                <th>Serie</th>
+                <th style="width: 180px;"><a href="{$fsc->almacen->url()}">Almac&eacute;n</a></th>
+                <th style="width: 80px;">Serie</th>
                 <th style="width: 80px;">Divisi&oacute;n</th>
                 <th style="width: 80px;">Punto Emi.</th>
                 <th style="width: 80px;">Area Imp.</th>
-                <th style="width: 300px;">Tipo Comprobante</th>
-                <th style="width: 180px;">Inicia</th>
-                <th style="width: 180px;">Fin</th>
-                <th style="width: 180px;">Correlativo</th>
+                <th style="width: 260px;">Tipo Comprobante</th>
+                <th style="width: 120px;">Inicia</th>
+                <th style="width: 140px;">Fin</th>
+                <th style="width: 120px;">Correlativo</th>
                 <th>Contado</th>
                 <th>Activo</th>
             </tr>
@@ -116,10 +116,10 @@
         <td>
             <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
         </td>
-        <td>
+        <td class="text-center">
             <input type="checkbox" name="contado" value="TRUE" {if="$value->contado"}checked=""{/if}/>
         </td>
-        <td>
+        <td class="text-center">
             <input type="checkbox" name="estado" value="TRUE" {if="$value->estado"}checked=""{/if}/>
         </td>
         <td>

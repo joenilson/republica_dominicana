@@ -1,6 +1,6 @@
 {include="header"}
 <style type="text/css">
-  .tachada{text-decoration:line-through;}    
+  .tachada{ text-decoration:line-through; }    
 </style>
 <script type="text/javascript">
    function fs_marcar_todo()
@@ -317,7 +317,7 @@
          </tr>
       </thead>
       {loop="$fsc->resultados"}
-      <tr class="{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{elseif="$value->estado=='f'"} tachada{/if}">
+      <tr class="{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->estado=='f'"}tachada{/if}">
         <td class="text-center">
            {if="$value->estado=='t'"}
             <input type="checkbox" name="imprimir" value="{$value->idfactura}" class="check-mark"/>
