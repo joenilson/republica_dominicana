@@ -1,0 +1,52 @@
+{include="header"}
+<!--
+Copyright (C) 2015 darkniisan
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="container-fluid" style="margin-top: -10px;">
+    <div class="row">
+        <div class="col-sm-12 text-right">
+            <h2>Informes Fiscales DGII</h2>
+            <hr />
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2 col-md-2 col-sm-3">
+         <div id="lista_reportes" class="list-group">
+            <a id="b_generales" href="#" class="list-group-item" onclick="mostrar_seccion('')">
+               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
+            </a>
+            <a id="b_cuentasb" href="#cuentasb" class="list-group-item" onclick="mostrar_seccion('cuentasb')">
+               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
+            </a>
+            <a id="b_direcciones" href="#direcciones" class="list-group-item" onclick="mostrar_seccion('direcciones')">
+               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 606
+            </a>
+            <a id="b_subcuentas" href="#subcuentas" class="list-group-item" onclick="mostrar_seccion('subcuentas')">
+               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 607
+            </a>
+            <a href="index.php?page=ventas_albaranes&amp;codcliente=000051" class="list-group-item">
+               <span class="glyphicon glyphicon-book" aria-hidden="true"></span> &nbsp; Reporte 608
+            </a>
+         </div>
+      </div>
+      <div class="col-lg-10 col-md-10 col-sm-9">
+      Aqui va el contenido   
+      </div>
+    </div>
+</div>
+{include="footer"}
