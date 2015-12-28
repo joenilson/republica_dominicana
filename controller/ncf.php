@@ -148,6 +148,7 @@ class ncf extends fs_controller {
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+            $ncf_factura->estado = TRUE;
             if($factura->idfacturarect){
                 $ncf_orig = new ncf_ventas();
                 $val_ncf = $ncf_orig->get_ncf($this->empresa->id, $factura->idfacturarect, $factura->codcliente);
