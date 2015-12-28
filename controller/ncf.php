@@ -63,8 +63,10 @@ class ncf extends fs_controller {
             $secuencia_inicio = \filter_input(INPUT_POST, 'secuencia_inicio');
             $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
             $correlativo = \filter_input(INPUT_POST, 'correlativo');
+            $estado_val = \filter_input(INPUT_POST, 'estado');
+            $estado = (isset($estado_val))?"true":"false";
             $contado_val = \filter_input(INPUT_POST, 'contado');
-            $contado = ($contado_val == "TRUE")?TRUE:FALSE;
+            $contado = (isset($contado_val))?"true":"false";
             $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
 
             if (!$ncf0) {
@@ -92,10 +94,10 @@ class ncf extends fs_controller {
             $ncf0->fecha_creacion = \date('d-m-Y H:i');
             $ncf0->usuario_modificacion = $this->user->nick;
             $ncf0->fecha_modificacion = \date('d-m-Y H:i');
-            $ncf0->estado = TRUE;
+            $ncf0->estado = $estado;
             $ncf0->contado = $contado;
             if ($ncf0->save()) {
-                $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
+                $this->new_message("Datos de la Solicitud {$ncf0->contado} " . $ncf0->solicitud . " guardados correctamente.");
             } else
                 $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }

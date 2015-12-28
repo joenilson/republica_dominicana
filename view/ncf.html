@@ -117,10 +117,10 @@
             <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
         </td>
         <td class="text-center">
-            <input type="checkbox" name="contado" value="TRUE" {if="$value->contado"}checked=""{/if}/>
+            <input type="checkbox" name="contado" value="TRUE" {if="$value->contado=='t'"}checked=""{/if}/>
         </td>
         <td class="text-center">
-            <input type="checkbox" name="estado" value="TRUE" {if="$value->estado"}checked=""{/if}/>
+            <input type="checkbox" name="estado" value="TRUE" {if="$value->estado=='t'"}checked=""{/if}/>
         </td>
         <td>
             <div class="form-group">
