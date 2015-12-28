@@ -240,7 +240,7 @@ class factura_ncf extends fs_controller {
         /// Definimos todos los datos del PIE de la factura
         /// Lineas de IVA
         $lineas_iva = $this->factura->get_lineas_iva();
-        $negativo = (empty($this->factura->idfacturarect))?-1:1;
+        $negativo = (!empty($this->factura->idfacturarect))?-1:1;
         if( count($lineas_iva) > 3 )
         {
            $pdf_doc->fdf_lineasiva = $lineas_iva;
