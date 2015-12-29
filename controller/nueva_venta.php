@@ -37,7 +37,7 @@ require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
-
+require_once 'helper_ncf.php';
 class nueva_venta extends fs_controller
 {
    public $agente;
@@ -915,7 +915,7 @@ class nueva_venta extends fs_controller
                 */
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                 $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-                $ncf = new ncf();
+                $ncf = new helper_ncf();
                 $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
             
                   $this->generar_asiento($factura);

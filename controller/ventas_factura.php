@@ -31,7 +31,7 @@ require_model('partida.php');
 require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_ventas.php');
-require_once 'ncf.php';
+require_once 'helper_ncf.php';
 
 class ventas_factura extends fs_controller
 {
@@ -381,7 +381,7 @@ class ventas_factura extends fs_controller
             * Luego de que todo este correcto generamos el NCF la Nota de Credito 
             */
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $ncf_controller = new ncf();
+            $ncf_controller = new helper_ncf();
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);

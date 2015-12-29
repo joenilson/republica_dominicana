@@ -38,7 +38,7 @@ require_model('ncf_entidad_tipo.php');
 require_model('ncf_tipo.php');
 require_model('ncf_ventas.php');
 require_model('ncf_rango.php');
-require_once 'ncf.php';
+require_once 'helper_ncf.php';
 
 class ventas_albaran extends fs_controller
 {
@@ -530,7 +530,7 @@ class ventas_albaran extends fs_controller
       else if( $factura->save() )
       {
          $continuar = TRUE;
-         $ncf_controller = new ncf();
+         $ncf_controller = new helper_ncf();
          $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
          foreach($this->albaran->get_lineas() as $l)
          {

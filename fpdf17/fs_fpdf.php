@@ -135,6 +135,9 @@ class PDF_MC_Table extends FPDF
         if(!empty($this->fdf_transporte)){
             $this->addTransporte(utf8_decode($this->fdf_transporte));
         }
+        if(!empty($this->fdf_codigorect)){
+            $this->addDocumentoRectifica(utf8_decode($this->fdf_codigorect));
+        }
 
         // Divisa de la Factura
         //$this->addDivisa(utf8_decode($this->fdf_divisa));
@@ -167,16 +170,35 @@ class PDF_MC_Table extends FPDF
 
         $this->SetDrawColor(0,0,0);		
         $this->SetTextColor(0);
+        //El marco que se dibujara de items
+        $totalItems = 120;
         for($i=0;$i<count($this->datoscab);$i++)
         {	
-            $this->RoundedRect($aquiX, $aquiY, $this->widths[$i], 145, 1, 'D');
+            $this->RoundedRect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 1, 'D');
             $aquiX += $this->widths[$i];
         }
     }
-
+    
+    function Firmas()
+    {
+        //Posicion: a 3 cm del final
+        $this->SetY(-40);
+        $this->SetLineWidth(0.1);		
+        $this->SetTextColor(0);
+        $this->SetFont('Arial','',8);
+        $this->SetFont( "Arial", "I", 8);
+        $length = 80;
+        $this->Line(10, $this->h - 15, 80, $this->h - 15);
+        $this->SetXY( 10, $this->h - 13 );
+        $this->Cell($length,4, str_pad("Firma Cliente",$length, " ",STR_PAD_BOTH));
+        $this->Line(120, $this->h - 15, 200, $this->h - 15);
+        $this->SetXY( 120, $this->h - 13 );
+        $this->Cell($length,4, str_pad("Firma Emisor",$length, " ",STR_PAD_BOTH));
+    }
     //Pie de pagina
     function Footer()
     {
+        $this->Firmas();
         //Posicion: a 3 cm del final
         $this->SetY(-30);
         $this->SetLineWidth(0.1);		
@@ -242,7 +264,7 @@ class PDF_MC_Table extends FPDF
 
         // Calcular la altura MAXIMA de la fila e ir a la siguiente línea
         $nb = 0;
-        $totalLineas = 31;
+        $totalLineas = 24;
         for($i=0;$i<count($data);$i++)
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
@@ -256,7 +278,7 @@ class PDF_MC_Table extends FPDF
             if (($this->lineaactual + $nb) == $totalLineas) // Pagina completa
             {
                 $this->AddPage($this->CurOrientation);
-                $this->lineaactual = 1;				
+                $this->lineaactual = 0;				
             } else {
                 $this->lineaactual = $this->lineaactual + $nb; // Una sola Pagina
             }
@@ -669,6 +691,24 @@ class PDF_MC_Table extends FPDF
         $this->SetFont( "Arial", "", 9);
         $this->Cell(10,5,$mode, 0,0, "C");
     }
+
+    // Transporte Asociado
+    function addDocumentoRectifica( $mode )
+    {
+        $r1  = 150;
+        $r2  = $r1 + 50;
+        $y1  = 65;
+        $y2  = $y1+10;
+        $mid = $y1 + (($y2-$y1) / 2);
+        $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
+        $this->Line( $r1, $mid, $r2, $mid);
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1+1 );
+        $this->SetFont( "Arial", "B", 9);
+        $this->Cell(10,4, "AFECTA AL DOCUMENTO", 0, 0, "C");
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1 + 5 );
+        $this->SetFont( "Arial", "", 9);
+        $this->Cell(10,5,$mode, 0,0, "C");
+    }
     
     // Forma de Pago
     function addPago( $mode )
@@ -729,7 +769,7 @@ class PDF_MC_Table extends FPDF
     {
         $this->SetFont( "Arial", "I", 8);
         $length = $this->GetStringWidth( "Observaciones: " . $observa );
-        $this->SetXY( 10, $this->h - 37.5 );
+        $this->SetXY( 10, $this->h - 57.5 );
         $this->Cell($length,4, "Observaciones: " . $observa);
     }
 
@@ -737,7 +777,7 @@ class PDF_MC_Table extends FPDF
     function addLineasIva($datos)
     {
         $r1  = 10;
-        $y1  = $this->h - 30;
+        $y1  = $this->h - 50;
 
         if ($datos) 
         {
@@ -752,6 +792,7 @@ class PDF_MC_Table extends FPDF
             } else {
                 for ($i=1; $i <= count($datos); $i++)
                 {
+                    $datos[$i][1]=($datos[$i][1]>0)?$datos[$i][1]*-1:$datos[$i][1];
                     if ($i == 1) { $y2  = $y1 + 6; }
                     if ($i == 2) { $y2  = $y1 + 10; }
                     if ($i == 3) { $y2  = $y1 + 14; }		
@@ -776,7 +817,7 @@ class PDF_MC_Table extends FPDF
     {
         $r1  = $this->w - 70;
         $r2  = $r1 + 60;
-        $y1  = $this->h - 30;
+        $y1  = $this->h - 50;
         $y2  = $y1+20;
         $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 1.5, 'D');
         $this->Line( $r1+15,  $y1, $r1+15, $y2);
@@ -804,7 +845,7 @@ class PDF_MC_Table extends FPDF
         $this->SetFont( "Arial", "B", 8);
         $r1  = 10;
         $r2  = $r1 + 125;
-        $y1  = $this->h - 30;
+        $y1  = $this->h - 50;
         $y2  = $y1+20;
         $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 1.5, 'D');
         $this->Line( $r1, $y1+4, $r2, $y1+4);
@@ -829,7 +870,7 @@ class PDF_MC_Table extends FPDF
 
         $r1  = $this->w - 70;
         $r2  = $r1 + 60;
-        $y1  = $this->h - 30;
+        $y1  = $this->h - 50;
         $y2  = $y1+20;
         $this->SetLineWidth(0.15);		
         $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 1.5, 'D');

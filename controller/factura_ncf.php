@@ -54,7 +54,6 @@ class factura_ncf extends fs_controller {
    {
       $this->template = false;
       $this->share_extensions();
-      $this->factura = FALSE;
       $val_id = \filter_input(INPUT_GET, 'id');
       $valores_id = explode(',', $val_id);
       $this->distrib_transporte = new distribucion_ordenescarga_facturas();
@@ -93,6 +92,7 @@ class factura_ncf extends fs_controller {
             //
             $archivo = FALSE;
             $contador = 0;
+            $this->factura = FALSE;
             foreach($valores_id as $id)
             {
               $factura = new factura_cliente();
@@ -108,7 +108,7 @@ class factura_ncf extends fs_controller {
                   $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
                   if(class_exists('distribucion_ordenescarga_facturas')){
                     $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
-                    $this->idtransporte = str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT);
+                    $this->idtransporte = ($transporte[0]->idtransporte)?str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT):false;
                   }
                   $cliente = new cliente();
                   $this->cliente = $cliente->get($this->factura->codcliente);
@@ -145,6 +145,7 @@ class factura_ncf extends fs_controller {
         $pdf_doc->SetAutoPageBreak(true, 40);
         $pdf_doc->lineaactual = 0;
         $pdf_doc->fdf_observaciones = "";
+
         // Definimos el color de relleno (gris, rojo, verde, azul)
         $pdf_doc->SetColorRelleno('gris');
         /// Definimos todos los datos de la cabecera de la factura
@@ -185,6 +186,7 @@ class factura_ncf extends fs_controller {
         // Tipo de Documento
         $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
         $pdf_doc->fdf_codigo = $this->factura->ncf;
+        $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
         $pdf_doc->fdf_estado = ($this->factura->estado)?"":"DOCUMENTO ANULADO";
 
         // Fecha, Codigo Cliente y observaciones de la factura
@@ -236,6 +238,8 @@ class factura_ncf extends fs_controller {
         $pdf_doc->SetWidths(array(16, 102, 10, 20, 10, 10, 22));
         $pdf_doc->SetAligns(array('C', 'L', 'R', 'R', 'R', 'R', 'R'));
         $pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
+        /// Agregamos la pagina inicial de la factura
+        $pdf_doc->AddPage();
 
         /// Definimos todos los datos del PIE de la factura
         /// Lineas de IVA
@@ -254,7 +258,7 @@ class factura_ncf extends fs_controller {
               $i++;
               $filaiva[$i][0] = ($li->iva) ? FS_IVA . ($li->iva * $negativo) : '';
               $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $negativo)) : '';
-              $filaiva[$i][2] = ($li->iva) ? $li->iva . "%" : '';
+              $filaiva[$i][2] = ($li->iva) ? ($li->iva * $negativo) . "%" : '';
               $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $negativo)) : '';
               $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
               $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $negativo)) : '';
@@ -278,12 +282,10 @@ class factura_ncf extends fs_controller {
         // Total factura numeros a texto
         $pdf_doc->fdf_textotal = ($this->factura->total * $negativo);
 
-        /// Agregamos la pagina inicial de la factura
-        $pdf_doc->AddPage();
+        
 
         // Lineas de la Factura
         $lineas = $this->factura->get_lineas();
-        //$lafila = array();
         if ($lineas) {
            $neto = 0;
            for ($i = 0; $i < count($lineas); $i++) {
@@ -306,7 +308,7 @@ class factura_ncf extends fs_controller {
                   '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
                   '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
                   '4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
-                  '5' => utf8_decode($this->show_numero(($lineas[$i]->iva * $negativo), 0) . " %"),
+                  '5' => utf8_decode($this->show_numero(($lineas[$i]->iva), 0) . " %"),
                   // '6' => $this->ckeckEuro($lineas[$i]->pvptotal), // Importe con Descuentos aplicados
                   '6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
               );

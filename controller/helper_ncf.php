@@ -26,12 +26,52 @@ require_model('ncf_ventas.php');
  * @author joenilson
  */
 class helper_ncf extends fs_controller {
+    public $ncf_rango;
+    public $ncf_tipo;
+    public $ncf_ventas;
+    public $allow_delete;
+    public $almacen;
+    public $pais;
+    public $array_series;
     
     public function __construct() {
-        parent::__construct(__CLASS__, 'Helper de NCF', 'plugins/republica_dominicana', FALSE, FALSE);
+        parent::__construct(__CLASS__, 'Helper de NCF', 'contabilidad', FALSE, FALSE);
     }
     
     protected function private_core() {
-        
+        $this->pais = new pais();
+        $this->ncf_rango = new ncf_rango();
+        $this->ncf_tipo = new ncf_tipo();
+        $this->array_series = \range('A', 'U');
+    }
+    
+    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf) {
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
+        } else {
+            $ncf_factura = new ncf_ventas();
+            $ncf_factura->idempresa = $idempresa;
+            $ncf_factura->codalmacen = $factura->codalmacen;
+            $ncf_factura->entidad = $factura->codcliente;
+            $ncf_factura->cifnif = $factura->cifnif;
+            $ncf_factura->documento = $factura->idfactura;
+            $ncf_factura->fecha = $factura->fecha;
+            $ncf_factura->tipo_comprobante = $tipo_comprobante;
+            $ncf_factura->ncf = $numero_ncf['NCF'];
+            $ncf_factura->usuario_creacion = $this->user->nick;
+            $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+            $ncf_factura->estado = TRUE;
+            if($factura->idfacturarect){
+                $ncf_orig = new ncf_ventas();
+                $val_ncf = $ncf_orig->get_ncf($this->empresa->id, $factura->idfacturarect, $factura->codcliente);
+                $ncf_factura->documento_modifica = $factura->idfacturarect;
+                $ncf_factura->ncf_modifica = $val_ncf->ncf;
+            }
+            if (!$ncf_factura->save()) {
+                return $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->idfactura . ' con el NCF: ' . $numero_ncf['NCF'] . ' Anule la factura e intentelo nuevamente.');
+            } else {
+                $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
+            }
+        }
     }
 }
