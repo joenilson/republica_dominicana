@@ -20,6 +20,7 @@
 
 require_model('almacen.php');
 require_model('articulo.php');
+require_model('articulo_combinacion.php');
 require_model('asiento_factura.php');
 require_model('cliente.php');
 require_model('divisa.php');
@@ -38,6 +39,7 @@ require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
+
 class nueva_venta extends fs_controller
 {
    public $agente;
@@ -64,7 +66,7 @@ class nueva_venta extends fs_controller
    
    public function __construct()
    {
-      parent::__construct(__CLASS__, 'nueva venta', 'ventas', FALSE, FALSE);
+      parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
    }
    
    protected function private_core()
@@ -140,6 +142,10 @@ class nueva_venta extends fs_controller
       {
          $this->get_precios_articulo();
       }
+      else if( isset($_POST['referencia4combi']) )
+      {
+         $this->get_combinaciones_articulo();
+      }
       else if( isset($_POST['cliente']) )
       {
          $this->cliente_s = $this->cliente->get($_POST['cliente']);
@@ -188,7 +194,7 @@ class nueva_venta extends fs_controller
                   
                   if( $this->cliente_s->save() )
                   {
-                    if(isset($_POST['tipo_comprobante'])){
+                     if(isset($_POST['tipo_comprobante'])){
                         $ncf_entidad_tipo = new ncf_entidad_tipo();
                         $ncf_entidad_tipo->idempresa = $this->empresa->id;
                         $ncf_entidad_tipo->entidad = $this->cliente_s->codcliente;
@@ -204,9 +210,7 @@ class nueva_venta extends fs_controller
                         }else{
                             $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get(\filter_input(INPUT_POST, 'codcliente'), 'CLI');
                         }
-                    } 
-                      
-                   
+                     } 
                      $dircliente = new direccion_cliente();
                      $dircliente->codcliente = $this->cliente_s->codcliente;
                      $dircliente->codpais = $this->empresa->codpais;
@@ -413,11 +417,11 @@ class nueva_venta extends fs_controller
    {
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
-
+      
       $fsvar = new fs_var();
       $multi_almacen = $fsvar->simple_get('multi_almacen');
       $stock = new stock();
-        
+      
       $articulo = new articulo();
       $codfamilia = '';
       if( isset($_REQUEST['codfamilia']) )
@@ -432,19 +436,18 @@ class nueva_venta extends fs_controller
       $con_stock = isset($_REQUEST['con_stock']);
       $this->results = $articulo->search($this->query, 0, $codfamilia, $con_stock, $codfabricante);
       
-      /// añadimos la busqueda, el descuento y la cantidad
+      /// añadimos la busqueda, el descuento, la cantidad, etc...
       foreach($this->results as $i => $value)
       {
          $this->results[$i]->query = $this->query;
          $this->results[$i]->dtopor = 0;
          $this->results[$i]->cantidad = 1;
-
+         
          $this->results[$i]->stockalm = $this->results[$i]->stockfis;
          if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
          {
             $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
          }
-
       }
       
       /// ejecutamos las funciones de las extensiones
@@ -461,18 +464,21 @@ class nueva_venta extends fs_controller
       if( isset($_REQUEST['codcliente']) )
       {
          $cliente = $this->cliente->get($_REQUEST['codcliente']);
-         if($cliente->codgrupo)
+         if($cliente)
          {
-            $grupo0 = new grupo_clientes();
-            $tarifa0 = new tarifa();
-            
-            $grupo = $grupo0->get($cliente->codgrupo);
-            if($grupo)
+            if($cliente->codgrupo)
             {
-               $tarifa = $tarifa0->get($grupo->codtarifa);
-               if($tarifa)
+               $grupo0 = new grupo_clientes();
+               $tarifa0 = new tarifa();
+               
+               $grupo = $grupo0->get($cliente->codgrupo);
+               if($grupo)
                {
-                  $tarifa->set_precios($this->results);
+                  $tarifa = $tarifa0->get($grupo->codtarifa);
+                  if($tarifa)
+                  {
+                     $tarifa->set_precios($this->results);
+                  }
                }
             }
          }
@@ -489,6 +495,35 @@ class nueva_venta extends fs_controller
       
       $articulo = new articulo();
       $this->articulo = $articulo->get($_POST['referencia4precios']);
+   }
+   
+   private function get_combinaciones_articulo()
+   {
+      /// cambiamos la plantilla HTML
+      $this->template = 'ajax/nueva_venta_combinaciones';
+      
+      $this->results = array();
+      $comb1 = new articulo_combinacion();
+      foreach($comb1->all_from_ref($_POST['referencia4combi']) as $com)
+      {
+         if( isset($this->results[$com->codigo]) )
+         {
+            $this->results[$com->codigo]['desc'] .= ', '.$com->nombreatributo.' - '.$com->valor;
+            $this->results[$com->codigo]['txt'] .= ', '.$com->nombreatributo.' - '.$com->valor;
+         }
+         else
+         {
+            $this->results[$com->codigo] = array(
+                'ref' => $_POST['referencia4combi'],
+                'desc' => base64_decode($_POST['desc'])."\n".$com->nombreatributo.' - '.$com->valor,
+                'pvp' => floatval($_POST['pvp']) + $com->impactoprecio,
+                'dto' => floatval($_POST['dto']),
+                'codimpuesto' => $_POST['codimpuesto'],
+                'cantidad' => floatval($_POST['cantidad']),
+                'txt' => $com->nombreatributo.' - '.$com->valor
+            );
+         }
+      }
    }
    
    public function get_tarifas_articulo($ref)
@@ -775,20 +810,20 @@ class nueva_venta extends fs_controller
          $continuar = FALSE;
       }
       
-        /*
-        * Verificación de disponibilidad del Número de NCF para República Dominicana
-        */
-        //Obtenemos el tipo de comprobante a generar para el cliente
-        $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
-        $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+      /*
+      * Verificación de disponibilidad del Número de NCF para República Dominicana
+      */
+      //Obtenemos el tipo de comprobante a generar para el cliente
+      $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
+      $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
 
-        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
-        {
-            $continuar = FALSE;
-            return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');
-        }
+      //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
+      if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
+      {
+          $continuar = FALSE;
+          return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');
+      }
       
       if($continuar)
       {
@@ -832,7 +867,6 @@ class nueva_venta extends fs_controller
          
          if( $factura->save() )
          {
-             
             $art0 = new articulo();
             $n = floatval($_POST['numlineas']);
             for($i = 0; $i <= $n; $i++)
@@ -910,14 +944,14 @@ class nueva_venta extends fs_controller
                }
                else if( $factura->save() )
                {
-                /*
-                * Grabación del Número de NCF para República Dominicana
-                */
-                //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-                $ncf = new helper_ncf();
-                $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
-            
+                  /*
+                  * Grabación del Número de NCF para República Dominicana
+                  */
+                  //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
+                  $ncf = new helper_ncf();
+                  $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
+                  
                   $this->generar_asiento($factura);
                   $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
                   $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
@@ -1029,13 +1063,21 @@ class nueva_venta extends fs_controller
       if($continuar)
       {
          $presupuesto->fecha = $_POST['fecha'];
-         $presupuesto->finoferta = date("Y-m-d", strtotime($_POST['fecha']." +1 month"));
          $presupuesto->codalmacen = $almacen->codalmacen;
          $presupuesto->codejercicio = $ejercicio->codejercicio;
          $presupuesto->codserie = $serie->codserie;
          $presupuesto->codpago = $forma_pago->codpago;
          $presupuesto->coddivisa = $divisa->coddivisa;
          $presupuesto->tasaconv = $divisa->tasaconv;
+         
+         /// establecemos la fecha de finoferta
+         $presupuesto->finoferta = date("Y-m-d", strtotime($_POST['fecha']." +1 month"));
+         $fsvar = new fs_var();
+         $dias = $fsvar->simple_get('presu_validez');
+         if($dias)
+         {
+            $presupuesto->finoferta = date("Y-m-d", strtotime($_POST['fecha']." +".intval($dias)." days"));
+         }
          
          if($_POST['tasaconv'] != '')
          {

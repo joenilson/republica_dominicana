@@ -49,9 +49,6 @@
       document.f_custom_search.query.focus();
       {/if}
       
-      $('#b_huecos').click(function() {
-         $('#modal_huecos').modal('show');
-      });
       $('#b_buscar_lineas').click(function(event) {
          event.preventDefault();
          $('#modal_buscar_lineas').modal('show');
@@ -121,15 +118,6 @@
             {/if}
          </div>
          <div class="btn-group">
-            <a class="btn btn-sm btn-success" href="index.php?page=nueva_venta&tipo=factura">
-               <span class="glyphicon glyphicon-plus"></span>
-               <span class="hidden-xs">&nbsp; Nueva</span>
-            </a>
-            {if="$fsc->huecos"}
-            <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal_huecos">
-               <span class="glyphicon glyphicon-exclamation-sign"></span> &nbsp; Huecos
-            </button>
-            {/if}
             <button class="btn btn-sm btn-default" data-toggle="modal" id="b_imprimir">
                <span class="glyphicon glyphicon-print"></span> &nbsp; Imprimir
             </button>
@@ -189,13 +177,6 @@
          Todas las {#FS_FACTURAS#}
       </a>
    </li>
-   <li{if="$fsc->mostrar=='sinpagar'"} class="active"{/if}>
-      <a href="{$fsc->url()}&mostrar=sinpagar">
-         <span class="glyphicon glyphicon-pushpin"></span>
-         <span class="hidden-xs">&nbsp; Sin pagar</span>
-         <span class="hidden-xs badge">{$fsc->total_sinpagar()}</span>
-      </a>
-   </li>
    <li{if="$fsc->mostrar=='buscar'"} class="active"{/if}>
       <a href="{$fsc->url()}&mostrar=buscar" title="Buscar">
          <span class="glyphicon glyphicon-search"></span>
@@ -205,7 +186,6 @@
       </a>
    </li>
 </ul>
-
 {if="$fsc->mostrar=='buscar'"}
 <br/>
 <form name="f_custom_search" action="{$fsc->url()}" method="post" class="form">
@@ -394,43 +374,6 @@
             </li>
             {/loop}
          </ul>
-      </div>
-   </div>
-</div>
-
-<div class="modal fade" id="modal_huecos">
-   <div class="modal-dialog">
-      <div class="modal-content">
-         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">
-               <span class="glyphicon glyphicon-exclamation-sign"></span>
-               &nbsp; Huecos en la facturación
-            </h4>
-            <p class="help-block">
-               Si hay huecos en la facturación es debido a que faltan facturas.
-            </p>
-         </div>
-         <div class="table-responsive">
-            <table class="table table-hover">
-               <thead>
-                  <tr>
-                     <th class="text-center">Código</th>
-                     <th class="text-center">Fecha y hora</th>
-                  </tr>
-               </thead>
-               {loop="$fsc->huecos"}
-               <tr class="warning">
-                  <td class="text-center">{$value.codigo}</td>
-                  <td class="text-center">{$value.fecha} {$value.hora}</td>
-               </tr>
-               {else}
-               <tr class="success">
-                  <td colspan="2">No hay huecos en la numeración de {#FS_FACTURAS#}. Eso es bueno ;-)</td>
-               </tr>
-               {/loop}
-            </table>
-         </div>
       </div>
    </div>
 </div>
