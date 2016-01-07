@@ -26,26 +26,92 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-2 col-md-2 col-sm-3">
-         <div id="lista_reportes" class="list-group">
-            <a id="b_generales" href="#" class="list-group-item" onclick="mostrar_seccion('')">
-               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
-            </a>
-            <a id="b_cuentasb" href="#cuentasb" class="list-group-item" onclick="mostrar_seccion('cuentasb')">
-               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
-            </a>
-            <a id="b_direcciones" href="#direcciones" class="list-group-item" onclick="mostrar_seccion('direcciones')">
-               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 606
-            </a>
-            <a id="b_subcuentas" href="#subcuentas" class="list-group-item" onclick="mostrar_seccion('subcuentas')">
-               <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 607
-            </a>
-            <a href="index.php?page=ventas_albaranes&amp;codcliente=000051" class="list-group-item">
-               <span class="glyphicon glyphicon-book" aria-hidden="true"></span> &nbsp; Reporte 608
-            </a>
-         </div>
+            <ul class="nav nav-pills nav-stacked" role="tablist">
+                <li role="presentation">
+                    <a href="#reporte-ventas" aria-controls="reporte-ventas" role="tab" data-toggle="tab">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#reporte-compras" aria-controls="reporte-compras" role="tab" data-toggle="tab">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#reporte-606" aria-controls="reporte-606" role="tab" data-toggle="tab">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 606
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#reporte-607" aria-controls="reporte-607" role="tab" data-toggle="tab">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 607
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#reporte-608" aria-controls="reporte-608" role="tab" data-toggle="tab">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 608
+                    </a>
+                </li>
+            </ul>
       </div>
       <div class="col-lg-10 col-md-10 col-sm-9">
-      Aqui va el contenido   
+          <div class="row">
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane" id="reporte-ventas">
+                    <table class="table table-responsive">
+                        <thead>
+                          <tr>
+                              <th>Fecha</th>
+                              <th>Cliente</th>
+                              <th>RNC</th>
+                              <th>NCF</th>
+                              <th>Tipo</th>
+                              <th>Base Imponible</th>
+                              <th>Itbis</th>
+                              <th>Total</th>
+                          </tr>
+                        </thead>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="reporte-compras">
+                    <table class="table table-responsive">
+                        <thead>
+                          <tr>
+                              <th>Fecha</th>
+                              <th>Proveedor</th>
+                              <th>RNC</th>
+                              <th>NCF</th>
+                              <th>Tipo</th>
+                              <th>Base Imponible</th>
+                              <th>Itbis</th>
+                              <th>Total</th>
+                          </tr>
+                        </thead>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="reporte-606">
+                    <table class="table table-responsive">
+                        <thead>
+                            <tr>
+                                <th colspan="8" class="text-center">Reporte DGII 606</th>
+                            </tr>
+                          <tr>
+                              <th>Fecha</th>
+                              <th>Cliente</th>
+                              <th>RNC</th>
+                              <th>NCF</th>
+                              <th>Tipo</th>
+                              <th>Base Imponible</th>
+                              <th>Itbis</th>
+                              <th>Total</th>
+                          </tr>
+                        </thead>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="reporte-607">...</div>
+                <div role="tabpanel" class="tab-pane" id="reporte-608">...</div>
+            </div>
+          </div>
       </div>
     </div>
 </div>
