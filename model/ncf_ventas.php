@@ -17,7 +17,8 @@
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-
+require_model('factura_cliente.php');
+require_model('ncf_tipo.php');
 /**
  * Description of ncf_ventas
  *
@@ -41,6 +42,8 @@ class ncf_ventas extends fs_model {
     public $estado;
     public $motivo;
     
+    public $ncf_tipo;
+    public $factura_cliente;
     public function __construct($t = false) {
         parent::__construct('ncf_ventas','plugins/republica_dominicana/');
         if($t)
@@ -81,6 +84,9 @@ class ncf_ventas extends fs_model {
             $this->estado = true;
             $this->motivo = null;
         }
+        
+        $this->factura_cliente = new factura_cliente();
+        $this->ncf_tipo = new ncf_tipo();
     }
     
     protected function install() {
@@ -212,6 +218,39 @@ class ncf_ventas extends fs_model {
             foreach($data as $d)
             {
                 $lista[] = new ncf_ventas($d);
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function info_factura($idfactura){
+        $datos_adicionales = $this->factura_cliente->get($idfactura);
+        return $datos_adicionales;
+    }
+    
+    public function all_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." ".
+                "ORDER BY idempresa, fecha, ncf");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $datos = new ncf_ventas($d);
+                $otros_datos = $this->info_factura($datos->documento);
+                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
+                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
+                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
+                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
+                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
+                $lista[] = $datos;
             }
                 
         }

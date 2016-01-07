@@ -27,55 +27,94 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div class="row">
         <div class="col-lg-2 col-md-2 col-sm-3">
             <ul class="nav nav-pills nav-stacked" role="tablist">
-                <li role="presentation">
-                    <a href="#reporte-ventas" aria-controls="reporte-ventas" role="tab" data-toggle="tab">
+                <li role="presentation" {if="$fsc->reporte=='reporte-ventas'"}class="active"{/if}>
+                    <a href="#reporte-ventas" aria-controls="reporte-ventas" role="tab" data-toggle="tab" onclick="seleccionar('reporte-ventas');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
                     </a>
                 </li>
-                <li role="presentation">
-                    <a href="#reporte-compras" aria-controls="reporte-compras" role="tab" data-toggle="tab">
+                <li role="presentation" {if="$fsc->reporte=='reporte-compras'"}class="active"{/if}>
+                    <a href="#reporte-compras" aria-controls="reporte-compras" role="tab" data-toggle="tab" onclick="seleccionar('reporte-compras');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
                     </a>
                 </li>
-                <li role="presentation">
-                    <a href="#reporte-606" aria-controls="reporte-606" role="tab" data-toggle="tab">
+                <li role="presentation" {if="$fsc->reporte=='reporte-606'"}class="active"{/if}>
+                    <a href="#reporte-606" aria-controls="reporte-606" role="tab" data-toggle="tab" onclick="seleccionar('reporte-606');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 606
                     </a>
                 </li>
-                <li role="presentation">
-                    <a href="#reporte-607" aria-controls="reporte-607" role="tab" data-toggle="tab">
+                <li role="presentation" {if="$fsc->reporte=='reporte-607'"}class="active"{/if}>
+                    <a href="#reporte-607" aria-controls="reporte-607" role="tab" data-toggle="tab" onclick="seleccionar('reporte-607');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 607
                     </a>
                 </li>
-                <li role="presentation">
-                    <a href="#reporte-608" aria-controls="reporte-608" role="tab" data-toggle="tab">
+                <li role="presentation" {if="$fsc->reporte=='reporte-608'"}class="active"{/if}>
+                    <a href="#reporte-608" aria-controls="reporte-608" role="tab" data-toggle="tab" onclick="seleccionar('reporte-608');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 608
                     </a>
                 </li>
             </ul>
       </div>
+        <div class="col-lg-10 col-md-10 col-sm-9">
+            <form class="form-inline" method="POST" action='{$fsc->url()}'>
+                <input type="hidden" name="tipo-reporte" id="tipo-reporte" value='{$fsc->reporte}'>
+                <label for='inicio'><b>Fecha Inicio</b></label>
+                <input type="text" class="form-control datepicker" name='inicio' id="inicio">
+                <label for='fin'><b>Fecha Fin</b></label>
+                <input type="text" class="form-control datepicker" name="fin" id="fin">
+                <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
+            </form>
+        </div>
       <div class="col-lg-10 col-md-10 col-sm-9">
           <div class="row">
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane" id="reporte-ventas">
-                    <table class="table table-responsive">
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-ventas'"}active{/if}" id="reporte-ventas">
+                    <table id="table-reporte-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
-                          <tr>
-                              <th>Fecha</th>
-                              <th>Cliente</th>
-                              <th>RNC</th>
-                              <th>NCF</th>
-                              <th>Tipo</th>
-                              <th>Base Imponible</th>
-                              <th>Itbis</th>
-                              <th>Total</th>
+                          <tr class="text-center">
+                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true" data-footer-formatter="totalFormatter">Cliente</th>
+                              <th data-sortable="true">RNC</th>
+                              <th data-sortable="true">NCF</th>
+                              <th data-sortable="true">Tipo</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
+                              <th data-sortable="true">Estado</th>
                           </tr>
                         </thead>
+                        <tbody>
+                          {$lineas=1}
+                          {if="$fsc->total_resultados_ventas!=0"}
+                            {loop="$fsc->resultados_ventas"}
+                            <tr id="tr-id-{$lineas}" {if="$value->estado=='f'"}class="danger"{/if}>
+                                <td id="td-id-{$lineas}">{$value->fecha}</td>
+                                <td>{$value->nombrecliente}</td>
+                                <td>{$value->cifnif}</td>
+                                <td>{$value->ncf}</td>
+                                <td>{$value->tipo_comprobante}</td>
+                                <td class="text-right">{$value->neto}</td>
+                                <td class="text-right">{$value->totaliva}</td>
+                                <td class="text-right">{$value->total}</td>
+                                <td class="text-center">{$value->condicion}</td>
+                            </tr>
+                            {$lineas=$lineas+1}
+                            {/loop}
+                          {else}
+                            <tr>
+                                <td colspan="9" class="alert alert-danger text-center">
+                                    <span>No hay registros con las fechas seleccionadas</span>
+                                </td>
+                            </tr>
+                           {/if}
+                        </tbody>
                       </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="reporte-compras">
-                    <table class="table table-responsive">
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-compras'"}active{/if}" id="reporte-compras">
+                    <table id="table-reporte-compras" class="table table-responsive">
                         <thead>
+                            <tr>
+                                <th colspan="8" class="text-center">Reporte de Compras</th>
+                            </tr>
                           <tr>
                               <th>Fecha</th>
                               <th>Proveedor</th>
@@ -89,8 +128,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </thead>
                       </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="reporte-606">
-                    <table class="table table-responsive">
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-606'"}active{/if}" id="reporte-606">
+                    <table id="table-reporte-606" class="table table-responsive">
                         <thead>
                             <tr>
                                 <th colspan="8" class="text-center">Reporte DGII 606</th>
@@ -108,11 +147,87 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </thead>
                       </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="reporte-607">...</div>
-                <div role="tabpanel" class="tab-pane" id="reporte-608">...</div>
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-607'"}active{/if}" id="reporte-607">
+                    <table id="table-reporte-607" class="table table-responsive">
+                        <thead>
+                            <tr>
+                                <th colspan="8" class="text-center">Reporte DGII 607</th>
+                            </tr>
+                          <tr>
+                              <th>Fecha</th>
+                              <th>Cliente</th>
+                              <th>RNC</th>
+                              <th>NCF</th>
+                              <th>Tipo</th>
+                              <th>Base Imponible</th>
+                              <th>Itbis</th>
+                              <th>Total</th>
+                          </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-608'"}active{/if}" id="reporte-608">
+                    <table id="table-reporte-608" class="table table-responsive">
+                      <thead>
+                          <tr>
+                              <th colspan="8" class="text-center">Reporte DGII 608</th>
+                          </tr>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>RNC</th>
+                            <th>NCF</th>
+                            <th>Tipo</th>
+                            <th>Base Imponible</th>
+                            <th>Itbis</th>
+                            <th>Total</th>
+                        </tr>
+                      </thead>
+                    </table>
+                </div>
             </div>
           </div>
       </div>
     </div>
 </div>
+<script>
+    function runningFormatter(value, row, index) {
+        return index;
+    }
+    
+    function totalFormatter(data) {
+        return data.length + ' Documentos';
+    }
+    
+    function totalTextFormatter(data) {
+        return 'Total';
+    }
+    
+    function numberFormatter(value, row, index) {
+        return parseFloat(value).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
+    
+    function sumFormatter(data) {
+        field = this.field;
+        return parseFloat(data.reduce(function(sum, row) { 
+            return sum + (+row[field]);
+        }, 0)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
+    
+    function seleccionar(reporte){
+        $('#tipo-reporte').val(reporte);
+    }
+    
+    $(window).resize(function() {
+        $('#table-{$fsc->reporte}').bootstrapTable('resetView');
+    });
+    
+    var $table = $('#table-{$fsc->reporte}');
+    $table.bootstrapTable('refreshOptions', {
+        exportDataType: 'all'
+    });
+
+    $('#inicio').datepicker('update', '{$fsc->fecha_inicio}');
+    $('#fin').datepicker('update', '{$fsc->fecha_fin}');
+</script>
 {include="footer"}
