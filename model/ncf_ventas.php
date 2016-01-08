@@ -249,6 +249,76 @@ class ncf_ventas extends fs_model {
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
                 $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
                 $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->cifnif_len = strlen($datos->cifnif);
+                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
+                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
+                $lista[] = $datos;
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function all_activo_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." AND estado = TRUE ".
+                "ORDER BY idempresa, fecha, ncf");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $datos = new ncf_ventas($d);
+                $otros_datos = $this->info_factura($datos->documento);
+                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
+                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
+                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
+                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
+                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->cifnif_len = strlen($datos->cifnif);
+                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
+                $datos->fecha = str_replace("-", "", $datos->fecha);
+                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
+                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
+                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;                
+                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
+                $lista[] = $datos;
+            }
+                
+        }
+        
+        return $lista;
+    }
+    
+    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." and estado = FALSE ".
+                "ORDER BY idempresa, fecha, ncf");
+        
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $datos = new ncf_ventas($d);
+                $otros_datos = $this->info_factura($datos->documento);
+                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
+                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
+                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
+                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
+                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->cifnif_len = strlen($datos->cifnif);
+                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
+                $datos->fecha = str_replace("-", "", $datos->fecha);
+                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
+                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
+                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }

@@ -92,16 +92,24 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_ventas = count($this->resultados_ventas);
     }
     public function compras(){
-        
+        $facturas = new factura_proveedor();
+        $this->resultados_compras = $facturas->all_desde($this->fecha_inicio, $this->fecha_fin);
+        $this->total_resultados_compras = count($this->resultados_compras);
     }
     public function dgii606(){
-        
+        $facturas = new factura_proveedor();
+        $this->resultados_606 = $facturas->all_desde($this->fecha_inicio, $this->fecha_fin);
+        $this->total_resultados_606 = count($this->resultados_606);
     }
     public function dgii607(){
-        
+        $facturas = new ncf_ventas();
+        $this->resultados_607 = $facturas->all_activo_desde_hasta($this->empresa->id, $this->fecha_inicio, $this->fecha_fin);
+        $this->total_resultados_607 = count($this->resultados_607);
     }
     public function dgii608(){
-        
+        $facturas = new ncf_ventas();
+        $this->resultados_608 = $facturas->all_anulado_desde_hasta($this->empresa->id, $this->fecha_inicio, $this->fecha_fin);
+        $this->total_resultados_608 = count($this->resultados_608);
     }
     
     private function share_extensions() {
