@@ -509,9 +509,9 @@ class ventas_facturas extends fs_controller
                 $fact_lineas = new linea_factura_cliente();
                 $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
                 foreach($lineas_fact as $linea)
-         {
+                {
                     $linea->delete();
-         }
+                }
                 $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> reversado correctamente.");
             }
             $this->new_message("<a href='".$fact->url()."'>Factura</a> cambiada a estado anulada por error correctamente.");
@@ -535,7 +535,7 @@ class ventas_facturas extends fs_controller
                 $values->ncf_modifica = $f['ncf_modifica'];
                 $values->estado = $f['estado'];
                 $faclist[] = $values;
-}
+            }
         }
 
         return $faclist;

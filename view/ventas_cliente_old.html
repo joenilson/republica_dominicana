@@ -48,7 +48,7 @@
       }
       else if(id == 'stats')
       {
-         $("#panel_stats").show();
+         $("#chart_albaranes_month").show();
          $("#b_stats").addClass('active');
       }
       else
@@ -113,9 +113,6 @@
          <h2 style="margin-top: 0px;">Editar cliente {$fsc->cliente->codcliente}</h2>
       </div>
       <div class="col-sm-2 col-xs-2 text-right">
-         <a class="btn btn-sm btn-success" href="index.php?page=ventas_clientes#nuevo" title="Nuevo cliente">
-            <span class="glyphicon glyphicon-plus"></span>
-         </a>
          {if="$fsc->allow_delete"}
             {if="$fsc->cliente->debaja"}
             <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal_debaja">
@@ -627,25 +624,7 @@
             {/if}
          {/loop}
          
-         <div id="panel_stats" class="pseudotab_cli">
-            <div class="panel panel-primary">
-               <div class="panel-heading">
-                  <h3 class="panel-title">Estadísticas</h3>
-               </div>
-               <div class="panel-body">
-                  <div id="chart_albaranes_month" style="height: 400px;"></div>
-               </div>
-               <div class="panel-footer">
-                  <p class="help-block">
-                     Estas son las estadísticas de {#FS_ALBARANES#} y facturas del cliente
-                     de los últimos años. Los valores son netos.
-                  </p>
-                  <p class="help-block">
-                     Puedes consultar informes de ventas más detallados en <b>Informes &gt; Facturas</b>.
-                  </p>
-               </div>
-            </div>
-         </div>
+         <div id="chart_albaranes_month" class="pseudotab_cli" style="height: 400px;"></div>
       </div>
    </div>
 </div>
@@ -665,7 +644,7 @@
             <div class="modal-body">
                <div class="form-group">
                   Descripción:
-                  <input class="form-control" type="text" name="descripcion" placeholder="Banco XXX" autocomplete="off" required=""/>
+                  <input class="form-control" type="text" name="descripcion" placeholder="Banco XXX" autocomplete="off"/>
                   <label>
                      <input type="checkbox" name="principal" value="TRUE" checked=""/>
                      Principal
@@ -681,7 +660,7 @@
                </div>
             </div>
             <div class="modal-footer">
-               <button class="btn btn-sm btn-primary" type="submit">
+               <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
                   <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
                </button>
             </div>

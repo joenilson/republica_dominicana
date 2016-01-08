@@ -67,6 +67,7 @@ class ventas_factura extends fs_controller
       $this->agentes = array();
       $this->cliente = FALSE;
       $this->divisa = new divisa();
+      $factura = new factura_cliente();
       $this->factura = FALSE;
       $this->forma_pago = new forma_pago();
       $this->pais = new pais();
@@ -92,7 +93,6 @@ class ventas_factura extends fs_controller
       /**
        * ¿Modificamos la factura?
        */
-      $factura = new factura_cliente();
       if( isset($_POST['idfactura']) )
       {
          $this->factura = $factura->get($_POST['idfactura']);
@@ -118,7 +118,7 @@ class ventas_factura extends fs_controller
          /// cargamos el cliente
          $cliente = new cliente();
          $this->cliente = $cliente->get($this->factura->codcliente);
-         
+
          //Obtenemos el NCF asociado
          $this->ncf = $this->ncf_ventas->get_ncf($this->empresa->id,$this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
          
@@ -139,7 +139,13 @@ class ventas_factura extends fs_controller
          }
          else if( isset($_REQUEST['pagada']) )
          {
-            $this->pagar( ($_REQUEST['pagada'] == 'TRUE') );
+            $this->factura->pagada = ($_REQUEST['pagada'] == 'TRUE');
+            if( $this->factura->save() )
+            {
+               $this->new_message("Factura modificada correctamente.");
+            }
+            else
+               $this->new_error_msg("¡Imposible modificar la factura!");
          }
          else if( isset($_POST['anular']) )
          {
@@ -292,63 +298,6 @@ class ventas_factura extends fs_controller
       }
    }
    
-   private function pagar($pagada = TRUE)
-   {
-      /// ¿Hay asiento?
-      if( is_null($this->factura->idasiento) )
-      {
-         $this->factura->pagada = $pagada;
-         $this->factura->save();
-      }
-      else if(!$pagada AND $this->factura->pagada)
-      {
-         /// marcar como impagada
-         $this->factura->pagada = FALSE;
-         
-         /// ¿Eliminamos el asiento de pago?
-         $as1 = new asiento();
-         $asiento = $as1->get($this->factura->idasientop);
-         if($asiento)
-         {
-            $asiento->delete();
-            $this->new_message('Asiento de pago eliminado.');
-         }
-         
-         $this->factura->idasientop = NULL;
-         if( $this->factura->save() )
-         {
-            $this->new_message('Factura marcada como impagada.');
-         }
-         else
-         {
-            $this->new_error_msg('Error al modificar la factura.');
-         }
-      }
-      else if($pagada AND !$this->factura->pagada)
-      {
-         /// marcar como pagada
-         $asiento = $this->factura->get_asiento();
-         if($asiento)
-         {
-            $asiento_factura = new asiento_factura();
-            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento);
-            $this->factura->pagada = TRUE;
-            if( $this->factura->save() )
-            {
-               $this->new_message('Asiento de pago generado.');
-            }
-            else
-            {
-               $this->new_error_msg('Error al marcar la factura como pagada.');
-            }
-         }
-         else
-         {
-            $this->new_error_msg('No se ha encontrado el asiento de la factura.');
-         }
-      }
-   }
-   
    private function nuevo_vencimiento($fecha, $codpago)
    {
       $vencimiento = $fecha;
@@ -436,9 +385,6 @@ class ventas_factura extends fs_controller
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);
-            
-            $this->factura->anulada = TRUE;
-            $this->factura->save();
          }
       }
       else

@@ -122,7 +122,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
                               <th data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
                               <th data-sortable="true">RNC</th>
-                              <th data-sortable="true">NCF</th>
+                              <th data-sortable="true">Factura - NCF</th>
                               <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
                               <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
                               <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
@@ -136,7 +136,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td id="td-id-{$lineas}">{$value->fecha}</td>
                                 <td>{$value->nombre}</td>
                                 <td>{$value->cifnif}</td>
-                                <td>{$value->idfactura} - {$value->numero2}</td>
+                                <td>{$value->idfactura} - {$value->numproveedor}</td>
                                 <td class="text-right">{$value->neto}</td>
                                 <td class="text-right">{$value->totaliva}</td>
                                 <td class="text-right">{$value->total}</td>
@@ -183,7 +183,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td id="td-id-{$lineas}">{$value->cifnif}</td>
                                 <td>1</td>
                                 <td>Proveedor</td>
-                                <td>{$value->idfactura} - {$value->numproveedor}</td>
+                                <td>{$value->numproveedor}</td>
                                 <td>{$value->idfacturarect}</td>
                                 <td>{$value->fecha|substr:6,4}{$value->fecha|substr:3,2}</td>
                                 <td>{$value->fecha|substr:0,2}</td>

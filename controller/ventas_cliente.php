@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of FacturaSctipts
  * Copyright (C) 2013-2015  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -30,8 +29,8 @@ require_model('serie.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 
-class ventas_cliente extends fs_controller {
-
+class ventas_cliente extends fs_controller 
+{
     public $agente;
     public $allow_delete;
     public $cliente;
@@ -43,11 +42,13 @@ class ventas_cliente extends fs_controller {
     public $serie;
     public $ncf_tipo;
 
-    public function __construct() {
+    public function __construct() 
+    {
         parent::__construct(__CLASS__, 'Cliente', 'ventas', FALSE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core() 
+    {
         $this->ppage = $this->page->get('ventas_clientes');
         $this->agente = new agente();
         $this->cuenta_banco = new cuenta_banco_cliente();
@@ -58,46 +59,59 @@ class ventas_cliente extends fs_controller {
         $this->serie = new serie();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        /// cargamos el cliente
-        $cliente = new cliente();
-        $this->cliente = FALSE;        
-        if (isset($_POST['codcliente'])) {
-            $this->cliente = $cliente->get($_POST['codcliente']);
-            //$this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_POST['codcliente'], 'CLI');
-        } else if (isset($_GET['cod'])) {
-            $this->cliente = $cliente->get($_GET['cod']);
-            //$this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$_GET['cod'], 'CLI');
-        }
+        
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
-
-
+        
+        /// cargamos el cliente
+        $cliente = new cliente();
+        $this->cliente = FALSE;
+        if( isset($_POST['codcliente']) ) 
+        {
+            $this->cliente = $cliente->get( $_POST['codcliente'] );
+        } 
+        else if( isset($_GET['cod']) ) 
+        {
+            $this->cliente = $cliente->get($_GET['cod']);
+        }
 
         /// ¿Hay que hacer algo más?
-        if (isset($_GET['delete_cuenta'])) { /// eliminar cuenta bancaria
+        if( isset($_GET['delete_cuenta']) ) /// eliminar cuenta bancaria
+        { 
             $cuenta = $this->cuenta_banco->get($_GET['delete_cuenta']);
-            if ($cuenta) {
-                if ($cuenta->delete()) {
+            if($cuenta) 
+            {
+                if( $cuenta->delete() ) 
+                {
                     $this->new_message('Cuenta bancaria eliminada correctamente.');
-                } else
+                } 
+                else
                     $this->new_error_msg('Imposible eliminar la cuenta bancaria.');
-            } else
+            } 
+            else
                 $this->new_error_msg('Cuenta bancaria no encontrada.');
         }
-        else if (isset($_GET['delete_dir'])) { /// eliminar dirección
+        else if( isset($_GET['delete_dir']) ) /// eliminar dirección
+        {
             $dir = new direccion_cliente();
             $dir0 = $dir->get($_GET['delete_dir']);
-            if ($dir0) {
-                if ($dir0->delete()) {
+            if($dir0)
+            {
+                if( $dir0->delete() ) 
+                {
                     $this->new_message('Dirección eliminada correctamente.');
-                } else
+                } 
+                else
                     $this->new_error_msg('Imposible eliminar la dirección.');
-            } else
+            } 
+            else
                 $this->new_error_msg('Dirección no encontrada.');
         }
-        else if (isset($_POST['coddir'])) { /// añadir/modificar dirección
+        else if(isset($_POST['coddir'])) /// añadir/modificar dirección
+        {
             $dir = new direccion_cliente();
-            if ($_POST['coddir'] != '') {
+            if($_POST['coddir'] != '') 
+            {
                 $dir = $dir->get($_POST['coddir']);
             }
             $dir->apartado = $_POST['apartado'];
@@ -110,33 +124,39 @@ class ventas_cliente extends fs_controller {
             $dir->domenvio = isset($_POST['direnvio']);
             $dir->domfacturacion = isset($_POST['dirfact']);
             $dir->provincia = $_POST['provincia'];
-            if ($dir->save()) {
+            if( $dir->save() )
+            {
                 $this->new_message("Dirección guardada correctamente.");
-            } else
+            } 
+            else
                 $this->new_message("¡Imposible guardar la dirección!");
         }
-        else if (isset($_POST['iban'])) { /// añadir/modificar dirección
-            if (isset($_POST['codcuenta'])) {
+        else if( isset($_POST['iban']) ) /// añadir/modificar dirección
+        {
+            if( isset($_POST['codcuenta']) ) 
+            {
                 $cuentab = $this->cuenta_banco->get($_POST['codcuenta']);
-            } else {
+            } 
+            else 
+            {
                 $cuentab = new cuenta_banco_cliente();
                 $cuentab->codcliente = $_POST['codcliente'];
             }
+
             $cuentab->descripcion = $_POST['descripcion'];
-
-            if ($_POST['ciban'] != '') {
-                $cuentab->iban = $this->calcular_iban($_POST['ciban']);
-            } else
-                $cuentab->iban = $_POST['iban'];
-
+            $cuentab->iban = $_POST['iban'];
             $cuentab->swift = $_POST['swift'];
+            $cuentab->principal = isset($_POST['principal']);
 
-            if ($cuentab->save()) {
+            if( $cuentab->save() ) 
+            {
                 $this->new_message('Cuenta bancaria guardada correctamente.');
-            } else
+            } 
+            else
                 $this->new_error_msg('Imposible guardar la cuenta bancaria.');
         }
-        else if (isset($_POST['codcliente'])) { /// modificar cliente
+        else if( isset($_POST['codcliente']) ) /// modificar cliente
+        {
             $this->cliente->nombre = $_POST['nombre'];
             $this->cliente->razonsocial = $_POST['razonsocial'];
             $this->cliente->cifnif = $_POST['cifnif'];
@@ -154,21 +174,24 @@ class ventas_cliente extends fs_controller {
             $this->cliente->debaja = isset($_POST['debaja']);
 
             $this->cliente->codagente = NULL;
-            if ($_POST['codagente'] != '---') {
+            if($_POST['codagente'] != '---') 
+            {
                 $this->cliente->codagente = $_POST['codagente'];
             }
 
             $this->cliente->codgrupo = NULL;
-            if ($_POST['codgrupo'] != '---') {
+            if($_POST['codgrupo'] != '---') 
+            {
                 $this->cliente->codgrupo = $_POST['codgrupo'];
             }
-            
-            if(isset($_POST['tipo_comprobante'])){
+
+            if( isset($_POST['tipo_comprobante']) ) 
+            {
                 $continue = TRUE;
                 $tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
-                if($tipo_comprobante == '01' AND strlen($this->cliente->cifnif)<9){
+                if ($tipo_comprobante == '01' AND strlen($this->cliente->cifnif) < 9) {
                     $this->new_error_msg("¡Imposible actualizar información de NCF para el cliente, por favor corrija primero la Cédula o RNC asignados!");
-                }else{
+                } else {
                     $ncf_entidad_tipo = new ncf_entidad_tipo();
                     $ncf_entidad_tipo->idempresa = $this->empresa->id;
                     $ncf_entidad_tipo->entidad = \filter_input(INPUT_POST, 'codcliente');
@@ -180,129 +203,132 @@ class ventas_cliente extends fs_controller {
                     $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i');
                     $ncf_entidad_tipo->estado = 'true';
                     if (!$ncf_entidad_tipo->save()) {
-                        $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
+                        $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente " . $ncf_entidad_tipo->entidad . "!");
                     }
                 }
             }
-            
 
-            if ($this->cliente->save()) {
+            if( $this->cliente->save() ) 
+            {
                 $this->new_message("Datos del cliente modificados correctamente.");
-            } else
+            } 
+            else
                 $this->new_error_msg("¡Imposible modificar los datos del cliente!");
         }
 
-        if ($this->cliente) {
+        if($this->cliente) 
+        {
             $this->page->title = $this->cliente->codcliente;
-            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente->codcliente, 'CLI');
-        } else {
+        } 
+        else
             $this->new_error_msg("¡Cliente no encontrado!");
-        }
     }
 
-    public function url() {
-        if (!isset($this->cliente)) {
+    public function url() 
+    {
+        if( !isset($this->cliente) ) 
+        {
             return parent::url();
-        } else if ($this->cliente) {
+        } 
+        else if($this->cliente) 
+        {
             return $this->cliente->url();
-        } else
+        } 
+        else
             return $this->ppage->url();
     }
 
-    public function this_year($previous = 0) {
+    public function this_year($previous = 0) 
+    {
         return intval(Date('Y')) - $previous;
-    }
-
-    private function calcular_iban($ccc) {
-        $codpais = substr($this->empresa->codpais, 0, 2);
-
-        foreach ($this->cliente->get_direcciones() as $dir) {
-            if ($dir->domfacturacion) {
-                $codpais = substr($dir->codpais, 0, 2);
-                break;
-            }
-        }
-
-        $pesos = array('A' => '10', 'B' => '11', 'C' => '12', 'D' => '13', 'E' => '14', 'F' => '15',
-            'G' => '16', 'H' => '17', 'I' => '18', 'J' => '19', 'K' => '20', 'L' => '21', 'M' => '22',
-            'N' => '23', 'O' => '24', 'P' => '25', 'Q' => '26', 'R' => '27', 'S' => '28', 'T' => '29',
-            'U' => '30', 'V' => '31', 'W' => '32', 'X' => '33', 'Y' => '34', 'Z' => '35'
-        );
-
-        $dividendo = $ccc . $pesos[substr($codpais, 0, 1)] . $pesos[substr($codpais, 1, 1)] . '00';
-        $digitoControl = 98 - bcmod($dividendo, '97');
-
-        if (strlen($digitoControl) == 1)
-            $digitoControl = '0' . $digitoControl;
-
-        return $codpais . $digitoControl . $ccc;
     }
 
     /*
      * Devuelve un array con los datos estadísticos de las compras del cliente
      * en los cinco últimos años.
      */
-
-    public function stats_from_cli() {
+    public function stats_from_cli() 
+    {
         $stats = array();
         $years = array();
-        for ($i = 4; $i >= 0; $i--)
+        for($i=4; $i>=0; $i--) 
+        {
             $years[] = intval(Date('Y')) - $i;
+        }
 
         $meses = array('Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
 
-        foreach ($years as $year) {
-            for ($i = 1; $i <= 12; $i++) {
-                $stats[$year . '-' . $i]['mes'] = $meses[$i - 1] . ' ' . $year;
-                $stats[$year . '-' . $i]['albaranes'] = 0;
-                $stats[$year . '-' . $i]['facturas'] = 0;
+        foreach($years as $year) 
+        {
+            for($i = 1; $i <= 12; $i++)
+            {
+                $stats[$year.'-'.$i]['mes'] = $meses[$i-1].' '.$year;
+                $stats[$year.'-'.$i]['albaranes'] = 0;
+                $stats[$year.'-'.$i]['facturas'] = 0;
             }
 
-            if (strtolower(FS_DB_TYPE) == 'postgresql')
+            if( strtolower(FS_DB_TYPE) == 'postgresql') 
+            {
                 $sql_aux = "to_char(fecha,'FMMM')";
+            } 
             else
                 $sql_aux = "DATE_FORMAT(fecha, '%m')";
 
-            $data = $this->db->select("SELECT " . $sql_aux . " as mes, sum(total) as total
-            FROM albaranescli WHERE fecha >= " . $this->empresa->var2str(Date('1-1-' . $year)) . "
-            AND fecha <= " . $this->empresa->var2str(Date('31-12-' . $year)) . " AND codcliente = " . $this->empresa->var2str($this->cliente->codcliente) . "
-            GROUP BY " . $sql_aux . " ORDER BY mes ASC;");
-            if ($data) {
-                foreach ($data as $d)
-                    $stats[$year . '-' . intval($d['mes'])]['albaranes'] = number_format($d['total'], FS_NF0, '.', '');
+            $sql = "SELECT ".$sql_aux." as mes, sum(neto) as total FROM albaranescli"
+                    ." WHERE fecha >= ".$this->empresa->var2str(Date('1-1-'.$year))
+                    ." AND fecha <= ".$this->empresa->var2str(Date('31-12-'.$year))
+                    ." AND codcliente = ".$this->empresa->var2str($this->cliente->codcliente)
+                    ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
+
+            $data = $this->db->select($sql);
+            if($data) 
+            {
+                foreach($data as $d) 
+                {
+                    $stats[$year.'-'.intval($d['mes'])]['albaranes'] = number_format($d['total'], FS_NF0, '.', '');
+                }
             }
 
-            $data = $this->db->select("SELECT " . $sql_aux . " as mes, sum(total) as total
-            FROM facturascli WHERE fecha >= " . $this->empresa->var2str(Date('1-1-' . $year)) . "
-            AND fecha <= " . $this->empresa->var2str(Date('31-12-' . $year)) . " AND codcliente = " . $this->empresa->var2str($this->cliente->codcliente) . "
-            GROUP BY " . $sql_aux . " ORDER BY mes ASC;");
-            if ($data) {
-                foreach ($data as $d)
-                    $stats[$year . '-' . intval($d['mes'])]['facturas'] = number_format($d['total'], FS_NF0, '.', '');
+            $sql = "SELECT ".$sql_aux." as mes, sum(neto) as total FROM facturascli"
+                    ." WHERE fecha >= ".$this->empresa->var2str(Date('1-1-'.$year))
+                    ." AND fecha <= ".$this->empresa->var2str(Date('31-12-'.$year))
+                    ." AND codcliente = ".$this->empresa->var2str($this->cliente->codcliente)
+                    ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
+            $data = $this->db->select($sql);
+            if($data) 
+            {
+                foreach($data as $d) 
+                {
+                    $stats[$year.'-'.intval($d['mes'])]['facturas'] = number_format($d['total'], FS_NF0, '.', '');
+                }
             }
         }
 
         return $stats;
     }
 
-    public function tiene_facturas() {
+    public function tiene_facturas() 
+    {
         $tiene = FALSE;
 
-        if ($this->db->table_exists('facturascli')) {
-            $data = $this->db->select_limit("SELECT * FROM facturascli WHERE codcliente = '" . $this->cliente->codcliente . "'", 5, 0);
-            if ($data) {
+        if( $this->db->table_exists('facturascli') ) 
+        {
+            $data = $this->db->select_limit("SELECT * FROM facturascli WHERE codcliente = '".$this->cliente->codcliente."'", 5, 0);
+            if($data) 
+            {
                 $tiene = TRUE;
             }
         }
 
-        if (!$tiene AND $this->db->table_exists('albaranescli')) {
-            $data = $this->db->select_limit("SELECT * FROM albaranescli WHERE codcliente = '" . $this->cliente->codcliente . "'", 5, 0);
-            if ($data) {
+        if( !$tiene AND $this->db->table_exists('albaranescli') ) 
+        {
+            $data = $this->db->select_limit("SELECT * FROM albaranescli WHERE codcliente = '".$this->cliente->codcliente."'", 5, 0);
+            if($data) 
+            {
                 $tiene = TRUE;
             }
         }
 
         return $tiene;
     }
-
 }
