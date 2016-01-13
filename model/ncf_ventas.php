@@ -244,6 +244,7 @@ class ncf_ventas extends fs_model {
             {
                 $datos = new ncf_ventas($d);
                 $otros_datos = $this->info_factura($datos->documento);
+                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:FALSE;
                 $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
                 $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;

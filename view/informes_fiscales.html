@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div class="row">
         <div class="col-sm-12 text-right">
             <h2>Informes Fiscales DGII</h2>
+            <p align="right">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
             <hr />
         </div>
     </div>
@@ -27,6 +28,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div class="row">
         <div class="col-lg-2 col-md-2 col-sm-3">
             <ul class="nav nav-pills nav-stacked" role="tablist">
+                <li role="presentation" {if="$fsc->reporte=='reporte-consolidado'"}class="active"{/if}>
+                    <a href="#reporte-consolidado" aria-controls="reporte-consolidado" role="tab" data-toggle="tab" onclick="seleccionar('reporte-consolidado');">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte Consolidado
+                    </a>
+                </li>
                 <li role="presentation" {if="$fsc->reporte=='reporte-ventas'"}class="active"{/if}>
                     <a href="#reporte-ventas" aria-controls="reporte-ventas" role="tab" data-toggle="tab" onclick="seleccionar('reporte-ventas');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
@@ -67,6 +73,92 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       <div class="col-lg-10 col-md-10 col-sm-9">
           <div class="row">
             <div class="tab-content">
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-consolidado'"}active{/if}" id="reporte-consolidado">
+                    <div class='col-sm-3'>
+                        <table class="table table-responsive" style="margin-top: 30px;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class='text-center'>Resumen de Ingresos y Salidas</th>
+                                </tr>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ventas Realizadas</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->sumaVentas)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Compras Realizadas</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->sumaCompras)}</td>
+                                </tr>
+                                <tr style="font-weight: bold;">
+                                    <td>Saldo del Periodo</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->saldoConsolidado)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Ventas Cobradas</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->sumaVentasPagadas)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Compras Pagadas</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->sumaComprasPagadas)}</td>
+                                </tr>
+                                <tr style="font-weight: bold;">
+                                    <td>Saldo Neto del Periodo</td>
+                                    <td class="text-right">{$fsc->show_numero($fsc->saldoConsolidadoPagadas)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class='col-sm-9'>
+                        <table id="table-reporte-consolidado" data-toggle="table" data-height="450" data-show-footer="false" data-show-export="true">
+                            <thead>
+                              <tr>
+                                  <th colspan="9" class="text-center">Reporte Consolidado</th>
+                              </tr>
+                              <tr class="text-center">
+                                  <th data-sortable="true">Tipo</th>
+                                  <th data-sortable="true">Fecha</th>
+                                  <th data-sortable="true">Entidad</th>
+                                  <th data-sortable="true">NCF</th>
+                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">Neto</th>
+                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">{#FS_IVA#}</th>
+                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">Total</th>
+                                  <th data-sortable="true">Pagada</th>
+                                  <th data-sortable="true">Estado</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {$lineas=1}
+                              {if="$fsc->total_resultados_consolidado!=0"}
+                                {loop="$fsc->resultados_consolidado"}
+                                <tr id="tr-id-{$lineas}" {if="$value->condicion=='Anulado'"}class="danger"{/if}>
+                                    <td id="td-id-{$lineas}">{$value->tipo}</td>
+                                    <td>{$value->fecha}</td>
+                                    <td>{$value->nombre}</td>
+                                    <td>{$value->ncf}</td>
+                                    <td class="text-right">{$value->neto}</td>
+                                    <td class="text-right">{$value->totaliva}</td>
+                                    <td class="text-right">{$value->total}</td>
+                                    <td class="text-center">{$value->pagada}</td>
+                                    <td class="text-left">{$value->condicion}</td>
+                                </tr>
+                                {$lineas=$lineas+1}
+                                {/loop}
+                              {else}
+                                <tr>
+                                    <td colspan="9" class="alert alert-danger text-center">
+                                        <span>No hay registros con las fechas seleccionadas</span>
+                                    </td>
+                                </tr>
+                               {/if}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-ventas'"}active{/if}" id="reporte-ventas">
                     <table id="table-reporte-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>

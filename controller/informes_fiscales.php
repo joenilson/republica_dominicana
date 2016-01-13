@@ -29,16 +29,24 @@ class informes_fiscales extends fs_controller {
     public $fecha_inicio;
     public $fecha_fin;
     public $reporte;
+    public $resultados_consolidado;
     public $resultados_ventas;
     public $resultados_compras;
     public $resultados_606;
     public $resultados_607;
     public $resultados_608;
+    public $total_resultados_consolidado;
     public $total_resultados_ventas;
     public $total_resultados_compras;
     public $total_resultados_606;
     public $total_resultados_607;
     public $total_resultados_608;
+    public $sumaVentas;
+    public $sumaVentasPagadas;
+    public $sumaCompras;
+    public $sumaComprasPagadas;
+    public $saldoConsolidado;
+    public $saldoConsolidadoPagadas;
     public function __construct() {
         parent::__construct(__CLASS__, 'Informes Fiscales', 'informes', FALSE, TRUE, FALSE);
     }
@@ -52,6 +60,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_606 = '';
         $this->resultados_607 = '';
         $this->resultados_608 = '';
+        $this->total_resultados_consolidado = 0;
         $this->total_resultados_ventas = 0;
         $this->total_resultados_compras = 0;
         $this->total_resultados_606 = 0;
@@ -65,6 +74,9 @@ class informes_fiscales extends fs_controller {
             $this->fecha_fin = $fin;
             $this->reporte = $tiporeporte;
             switch ($tiporeporte){
+                case 'reporte-consolidado':
+                    $this->consolidado();
+                    break;
                 case 'reporte-ventas':
                     $this->ventas();
                     break;
@@ -84,6 +96,52 @@ class informes_fiscales extends fs_controller {
                     break;
             }
         }
+    }
+    
+    public function consolidado(){
+        $this->sumaVentas = 0;
+        $this->sumaCompras = 0;
+        $this->saldoConsolidado = 0;
+        $this->sumaVentasPagadas = 0;
+        $this->sumaComprasPagadas = 0;
+        $this->saldoConsolidadoPagadas = 0;
+        $facturas_ventas = new ncf_ventas();
+        $lista_facturas_ventas = $facturas_ventas->all_desde_hasta($this->empresa->id, $this->fecha_inicio, $this->fecha_fin);
+        $nueva_lista_ventas = array();
+        foreach($lista_facturas_ventas as $linea){
+            $nueva_linea = clone $linea;
+            $nueva_linea->tipo = "Venta";
+            $nueva_linea->nombre = $linea->nombrecliente;
+            $nueva_linea->condicion = $linea->condicion;
+            $nueva_linea->pagada = ($linea->pagada== 't')?"Si":"No";
+            $this->sumaVentas += $linea->total;
+            if($linea->pagada){
+                $this->sumaVentasPagadas += $linea->total;
+            }
+            $nueva_lista_ventas[] = $nueva_linea;
+        }
+        $this->total_resultados_ingresos = count($nueva_lista_ventas);
+        $facturas_compras = new factura_proveedor();
+        $lista_facturas_compras = $facturas_compras->all_desde($this->fecha_inicio, $this->fecha_fin);
+        $nueva_lista_compras = array();
+        foreach($lista_facturas_compras as $linea){
+            $nueva_linea->tipo = "Compra";
+            $nueva_linea->nombre = $linea->nombre;
+            $nueva_linea->condicion = (!$linea->anulada)?"Activo":"Anulado";
+            $nueva_linea->pagada = ($linea->pagada== 't')?"Si":"No";
+            $nueva_linea->ncf = $linea->numproveedor;
+            $nueva_linea->tipo_comprobante = substr($linea->numproveedor,9,2);
+            $this->sumaCompras += $linea->total;
+            if($linea->pagada){
+                $this->sumaComprasPagadas += $linea->total;
+            }
+            $nueva_lista_compras[] = $nueva_linea;
+        }
+        $this->resultados_consolidado = array_merge($nueva_lista_ventas, $nueva_lista_compras);
+        $this->total_resultados_egresos = count($lista_facturas_compras);
+        $this->total_resultados_consolidado = $this->total_resultados_ingresos + $this->total_resultados_egresos;
+        $this->saldoConsolidado = $this->sumaVentas - $this->sumaCompras;
+        $this->saldoConsolidadoPagadas = $this->sumaVentasPagadas - $this->sumaComprasPagadas;
     }
     
     public function ventas(){
