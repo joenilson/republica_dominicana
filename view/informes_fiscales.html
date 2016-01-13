@@ -18,9 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <div class="container-fluid" style="margin-top: -10px;">
     <div class="row">
         <div class="col-sm-12 text-right">
-            <h2>Informes Fiscales DGII</h2>
-            <p align="right">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
-            <hr />
+            <div class="col-sm-10 text-left">
+                <h2>Informes Fiscales DGII</h2>
+                <p align="left">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
+                <hr />
+            </div>
+            <div class="col-sm-2 text-right">
+                <button id="ayuda-informes-fiscales" type="button" class="btn btn-info"><i class="fa fa-question-circle fa-lg"></i></button>
+            </div>
+            
         </div>
     </div>
 </div>
@@ -117,7 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <table id="table-reporte-consolidado" data-toggle="table" data-height="450" data-show-footer="false" data-show-export="true">
                             <thead>
                               <tr>
-                                  <th colspan="9" class="text-center">Reporte Consolidado</th>
+                                  <th colspan="9" class="text-center">Reporte Consolidado del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                               </tr>
                               <tr class="text-center">
                                   <th data-sortable="true">Tipo</th>
@@ -163,7 +169,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Reporte de Ventas</th>
+                                <th colspan="9" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
@@ -208,7 +214,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-compras" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
-                                <th colspan="8" class="text-center">Reporte de Compras</th>
+                                <th colspan="8" class="text-center">Reporte de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
@@ -249,7 +255,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-606" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
-                                <th colspan="13" class="text-center">Reporte DGII 606</th>
+                                <th colspan="13" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
@@ -301,7 +307,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-607" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Reporte DGII 607</th>
+                                <th colspan="9" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr>
                               <th data-footer-formatter="totalTextFormatter">Item</th>
@@ -346,7 +352,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-608" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                       <thead>
                           <tr>
-                              <th colspan="8" class="text-center">Reporte DGII 608</th>
+                              <th colspan="8" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                           </tr>
                         <tr>
                             <th data-footer-formatter="totalTextFormatter">NCF</th>
@@ -382,6 +388,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
     </div>
 </div>
+<div id="modal_ayuda" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Ayuda de Informes Fiscales</h4>
+      </div>
+      <div class="modal-body">
+        <p>En esta ventana se generan los distintos reportes contables necesarios para presentar a impuestos internos</p>
+        <div class="media">
+            <div class="media-left">
+                <img class="media-object" src="plugins/republica_dominicana/view/ayuda/lista_reportes.png" alt="Lista de Reportes">
+            </div>
+            <div class="media-body">
+              <h4 class="media-heading">Lista de Reportes</h4>
+              <p align="justify">
+                  Al lado izquiero de la pantalla tenemos el listado de reportes que se pueden generar.<br />
+                  Cada reporte genera informaci&oacute;n que muestra distintos campos dependiendo si son reportes de caracter legal para 
+                  entregar a la DGII o si son reportes de caracter verificador como los Reportes de Ventas, Reportes de Compras y Reporte Consolidado.<br />
+                  El uso de estos reportes es de la siguiente manera:<br />
+              <ol>
+                  <li>Seleccionar dando un click al reporte elegido.</li>
+                  <li>Escoger el rango de fechas para obtener la informaci&oacute;n.</li>
+                  <li>Darle click al boton <b>Generar Informaci&oacute;n</b></li>
+                  <li>Cuando recargue la página, si necesitamos descargar el reporte, al inicio del mismo al lado derecho hay un boton al que si le damos click
+                  nos indicará los distintos formatos en los que podemos descargar el mismo.</li>
+                  <li>Para generar otro reporte, debemos repetir los pasos anteriores.</li>
+              </ol>
+              </p>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar Ventana</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 <script>
     function runningFormatter(value, row, index) {
         return index;
@@ -421,6 +465,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         $('#table-{$fsc->reporte}').bootstrapTable('resetView');
     });
     
+    $('#ayuda-informes-fiscales').click(function(event) {
+        event.preventDefault();
+        $('#modal_ayuda').modal('show');
+     });
+      
     var $table = $('#table-{$fsc->reporte}');
     $table.bootstrapTable('refreshOptions', {
         exportDataType: 'all'

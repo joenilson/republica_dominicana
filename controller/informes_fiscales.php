@@ -375,5 +375,17 @@ class informes_fiscales extends fs_controller {
             )
         );
         $fsext17->save();
+        
+        $fsext18 = new fs_extension(
+            array(
+                'name' => 'informes_fiscales_css20',
+                'page_from' => __CLASS__,
+                'page_to' => 'informes_fiscales',
+                'type' => 'head',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/font-awesome/css/font-awesome.min.css"/>',
+                'params' => ''
+            )
+        );
+      $fsext18->save();
     }
 }
