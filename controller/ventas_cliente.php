@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,7 +29,7 @@ require_model('serie.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 
-class ventas_cliente extends fs_controller 
+class ventas_cliente extends fs_controller
 {
     public $agente;
     public $allow_delete;
@@ -41,13 +41,14 @@ class ventas_cliente extends fs_controller
     public $pais;
     public $serie;
     public $ncf_tipo;
+    public $ncf_cliente_tipo;
 
-    public function __construct() 
+    public function __construct()
     {
         parent::__construct(__CLASS__, 'Cliente', 'ventas', FALSE, FALSE);
     }
 
-    protected function private_core() 
+    protected function private_core()
     {
         $this->ppage = $this->page->get('ventas_clientes');
         $this->agente = new agente();
@@ -59,35 +60,36 @@ class ventas_cliente extends fs_controller
         $this->serie = new serie();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        
+
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
-        
+
         /// cargamos el cliente
         $cliente = new cliente();
         $this->cliente = FALSE;
-        if( isset($_POST['codcliente']) ) 
+        if( isset($_POST['codcliente']) )
         {
             $this->cliente = $cliente->get( $_POST['codcliente'] );
-        } 
-        else if( isset($_GET['cod']) ) 
+        }
+        else if( isset($_GET['cod']) )
         {
             $this->cliente = $cliente->get($_GET['cod']);
         }
+        $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente->codcliente, 'CLI');
 
         /// ¿Hay que hacer algo más?
         if( isset($_GET['delete_cuenta']) ) /// eliminar cuenta bancaria
-        { 
+        {
             $cuenta = $this->cuenta_banco->get($_GET['delete_cuenta']);
-            if($cuenta) 
+            if($cuenta)
             {
-                if( $cuenta->delete() ) 
+                if( $cuenta->delete() )
                 {
                     $this->new_message('Cuenta bancaria eliminada correctamente.');
-                } 
+                }
                 else
                     $this->new_error_msg('Imposible eliminar la cuenta bancaria.');
-            } 
+            }
             else
                 $this->new_error_msg('Cuenta bancaria no encontrada.');
         }
@@ -97,20 +99,20 @@ class ventas_cliente extends fs_controller
             $dir0 = $dir->get($_GET['delete_dir']);
             if($dir0)
             {
-                if( $dir0->delete() ) 
+                if( $dir0->delete() )
                 {
                     $this->new_message('Dirección eliminada correctamente.');
-                } 
+                }
                 else
                     $this->new_error_msg('Imposible eliminar la dirección.');
-            } 
+            }
             else
                 $this->new_error_msg('Dirección no encontrada.');
         }
         else if(isset($_POST['coddir'])) /// añadir/modificar dirección
         {
             $dir = new direccion_cliente();
-            if($_POST['coddir'] != '') 
+            if($_POST['coddir'] != '')
             {
                 $dir = $dir->get($_POST['coddir']);
             }
@@ -127,17 +129,17 @@ class ventas_cliente extends fs_controller
             if( $dir->save() )
             {
                 $this->new_message("Dirección guardada correctamente.");
-            } 
+            }
             else
                 $this->new_message("¡Imposible guardar la dirección!");
         }
         else if( isset($_POST['iban']) ) /// añadir/modificar dirección
         {
-            if( isset($_POST['codcuenta']) ) 
+            if( isset($_POST['codcuenta']) )
             {
                 $cuentab = $this->cuenta_banco->get($_POST['codcuenta']);
-            } 
-            else 
+            }
+            else
             {
                 $cuentab = new cuenta_banco_cliente();
                 $cuentab->codcliente = $_POST['codcliente'];
@@ -148,10 +150,10 @@ class ventas_cliente extends fs_controller
             $cuentab->swift = $_POST['swift'];
             $cuentab->principal = isset($_POST['principal']);
 
-            if( $cuentab->save() ) 
+            if( $cuentab->save() )
             {
                 $this->new_message('Cuenta bancaria guardada correctamente.');
-            } 
+            }
             else
                 $this->new_error_msg('Imposible guardar la cuenta bancaria.');
         }
@@ -174,18 +176,18 @@ class ventas_cliente extends fs_controller
             $this->cliente->debaja = isset($_POST['debaja']);
 
             $this->cliente->codagente = NULL;
-            if($_POST['codagente'] != '---') 
+            if($_POST['codagente'] != '---')
             {
                 $this->cliente->codagente = $_POST['codagente'];
             }
 
             $this->cliente->codgrupo = NULL;
-            if($_POST['codgrupo'] != '---') 
+            if($_POST['codgrupo'] != '---')
             {
                 $this->cliente->codgrupo = $_POST['codgrupo'];
             }
 
-            if( isset($_POST['tipo_comprobante']) ) 
+            if( isset($_POST['tipo_comprobante']) )
             {
                 $continue = TRUE;
                 $tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
@@ -204,41 +206,43 @@ class ventas_cliente extends fs_controller
                     $ncf_entidad_tipo->estado = 'true';
                     if (!$ncf_entidad_tipo->save()) {
                         $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente " . $ncf_entidad_tipo->entidad . "!");
+                    }else{
+                       $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,\filter_input(INPUT_POST, 'codcliente'), 'CLI');
                     }
                 }
             }
 
-            if( $this->cliente->save() ) 
+            if( $this->cliente->save() )
             {
                 $this->new_message("Datos del cliente modificados correctamente.");
-            } 
+            }
             else
                 $this->new_error_msg("¡Imposible modificar los datos del cliente!");
         }
 
-        if($this->cliente) 
+        if($this->cliente)
         {
             $this->page->title = $this->cliente->codcliente;
-        } 
+        }
         else
             $this->new_error_msg("¡Cliente no encontrado!");
     }
 
-    public function url() 
+    public function url()
     {
-        if( !isset($this->cliente) ) 
+        if( !isset($this->cliente) )
         {
             return parent::url();
-        } 
-        else if($this->cliente) 
+        }
+        else if($this->cliente)
         {
             return $this->cliente->url();
-        } 
+        }
         else
             return $this->ppage->url();
     }
 
-    public function this_year($previous = 0) 
+    public function this_year($previous = 0)
     {
         return intval(Date('Y')) - $previous;
     }
@@ -247,18 +251,18 @@ class ventas_cliente extends fs_controller
      * Devuelve un array con los datos estadísticos de las compras del cliente
      * en los cinco últimos años.
      */
-    public function stats_from_cli() 
+    public function stats_from_cli()
     {
         $stats = array();
         $years = array();
-        for($i=4; $i>=0; $i--) 
+        for($i=4; $i>=0; $i--)
         {
             $years[] = intval(Date('Y')) - $i;
         }
 
         $meses = array('Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
 
-        foreach($years as $year) 
+        foreach($years as $year)
         {
             for($i = 1; $i <= 12; $i++)
             {
@@ -267,10 +271,10 @@ class ventas_cliente extends fs_controller
                 $stats[$year.'-'.$i]['facturas'] = 0;
             }
 
-            if( strtolower(FS_DB_TYPE) == 'postgresql') 
+            if( strtolower(FS_DB_TYPE) == 'postgresql')
             {
                 $sql_aux = "to_char(fecha,'FMMM')";
-            } 
+            }
             else
                 $sql_aux = "DATE_FORMAT(fecha, '%m')";
 
@@ -281,9 +285,9 @@ class ventas_cliente extends fs_controller
                     ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
 
             $data = $this->db->select($sql);
-            if($data) 
+            if($data)
             {
-                foreach($data as $d) 
+                foreach($data as $d)
                 {
                     $stats[$year.'-'.intval($d['mes'])]['albaranes'] = number_format($d['total'], FS_NF0, '.', '');
                 }
@@ -295,9 +299,9 @@ class ventas_cliente extends fs_controller
                     ." AND codcliente = ".$this->empresa->var2str($this->cliente->codcliente)
                     ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
             $data = $this->db->select($sql);
-            if($data) 
+            if($data)
             {
-                foreach($data as $d) 
+                foreach($data as $d)
                 {
                     $stats[$year.'-'.intval($d['mes'])]['facturas'] = number_format($d['total'], FS_NF0, '.', '');
                 }
@@ -307,23 +311,23 @@ class ventas_cliente extends fs_controller
         return $stats;
     }
 
-    public function tiene_facturas() 
+    public function tiene_facturas()
     {
         $tiene = FALSE;
 
-        if( $this->db->table_exists('facturascli') ) 
+        if( $this->db->table_exists('facturascli') )
         {
             $data = $this->db->select_limit("SELECT * FROM facturascli WHERE codcliente = '".$this->cliente->codcliente."'", 5, 0);
-            if($data) 
+            if($data)
             {
                 $tiene = TRUE;
             }
         }
 
-        if( !$tiene AND $this->db->table_exists('albaranescli') ) 
+        if( !$tiene AND $this->db->table_exists('albaranescli') )
         {
             $data = $this->db->select_limit("SELECT * FROM albaranescli WHERE codcliente = '".$this->cliente->codcliente."'", 5, 0);
-            if($data) 
+            if($data)
             {
                 $tiene = TRUE;
             }

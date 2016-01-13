@@ -11,7 +11,7 @@
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th * e
  *  * GNU Affero General Public License for more details.
- *  * 
+ *  *
  *  * You should have received a copy of the GNU Affero General Public License
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -42,7 +42,7 @@ class ncf_rango extends fs_model
     public $fecha_modificacion;
     public $estado;
     public $contado;
-    
+
     public function __construct($t = false) {
         parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
         if($t)
@@ -88,14 +88,14 @@ class ncf_rango extends fs_model
             $this->contado = false;
         }
     }
-    
+
     protected function install() {
         /*
          * se puede insertar datos en formato SQL
          */
         return '';
     }
-    
+
     public function exists() {
         if(is_null($this->id))
         {
@@ -135,7 +135,7 @@ class ncf_rango extends fs_model
             return false;
         }
     }
-    
+
     public function get_by_id($idempresa,$id)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
@@ -172,7 +172,7 @@ class ncf_rango extends fs_model
                     "WHERE ".
                     "id = ".$this->intval($this->id)." AND ".
                     "idempresa = ".$this->intval($this->idempresa).";";
-            
+
             return $this->db->exec($sql);
         }
         else
@@ -207,36 +207,36 @@ class ncf_rango extends fs_model
             }
         }
     }
-    
-    public function delete() 
+
+    public function delete()
     {
         return $this->db->exec("DELETE FROM ncf_rango WHERE ".
             "id = ".$this->intval($this->id)." AND ".
             "idempresa = ".$this->intval($this->idempresa).";");
     }
-    
+
     public function all($idempresa)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE idempresa = ".$this->intval($idempresa)." ORDER BY codalmacen,tipo_comprobante, division, solicitud");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_rango($d);
             }
-                
+
         }
         return $lista;
     }
-    
+
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
         $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
         $data = $this->db->select("SELECT ".
-        "solicitud, codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, ".
-        "secuencia_inicio, secuencia_fin, correlativo FROM ncf_rango ".
+        "* ".
+        "FROM ncf_rango ".
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
@@ -247,9 +247,9 @@ class ncf_rango extends fs_model
         }else{
             return array('NCF'=>"NO_DISPONIBLE");
         }
-        
+
     }
-    
+
     protected function ncf_number($data){
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
@@ -257,11 +257,11 @@ class ncf_rango extends fs_model
         $ncf_number = ($correlativo === $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
         return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
     }
-    
+
     public function update($idempresa, $codalmacen, $solicitud, $ncf, $usuario){
-        
+
         $sql = "UPDATE ncf_rango SET ".
-            
+
             "correlativo = ".$this->intval((\substr($ncf, 11, 18))+1).", ".
             "usuario_modificacion = ".$this->var2str($usuario).", ".
             "fecha_modificacion = ".$this->var2str(Date('d-m-Y H:i:s'))." ".
