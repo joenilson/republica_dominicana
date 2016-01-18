@@ -29,8 +29,8 @@ require_model('ncf_rango.php');
 require_model('albaran_cliente.php');
 require_model('linea_albaran_cliente.php');
 
-class ventas_facturas extends fs_controller {
-
+class ventas_facturas extends fs_controller
+{
    public $agente;
    public $articulo;
    public $buscar_lineas;
@@ -54,51 +54,72 @@ class ventas_facturas extends fs_controller {
    public $ncf_ventas;
    public $albaran;
 
-   public function __construct() {
-      parent::__construct(__CLASS__, ucfirst(FS_FACTURAS) . ' de cliente', 'ventas');
+   public function __construct()
+   {
+      parent::__construct(__CLASS__, ucfirst(FS_FACTURAS).' de cliente', 'ventas');
    }
 
-   protected function private_core() {
+   protected function private_core()
+   {
       $this->agente = new agente();
       $this->factura = new factura_cliente();
       $this->huecos = array();
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
       $this->mostrar = 'todo';
-      if (isset($_GET['mostrar'])) {
+      if( isset($_GET['mostrar']) )
+      {
          $this->mostrar = $_GET['mostrar'];
-         setcookie('ventas_fac_mostrar', $this->mostrar, time() + FS_COOKIES_EXPIRE);
-      } else if (isset($_COOKIE['ventas_fac_mostrar'])) {
+         setcookie('ventas_fac_mostrar', $this->mostrar, time()+FS_COOKIES_EXPIRE);
+      }
+      else if( isset($_COOKIE['ventas_fac_mostrar']) )
+      {
          $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
       }
 
       $this->offset = 0;
-      if (isset($_REQUEST['offset'])) {
+      if( isset($_REQUEST['offset']) )
+      {
          $this->offset = intval($_REQUEST['offset']);
       }
 
       $this->order = 'facturascli.fecha DESC';
-      if (isset($_GET['order'])) {
-         if ($_GET['order'] == 'fecha_desc') {
+      if ( isset($_GET['order']) ) 
+         {
+         if($_GET['order'] == 'fecha_desc') 
+         {
             $this->order = 'facturascli.fecha DESC';
-         } else if ($_GET['order'] == 'fecha_asc') {
+         } 
+         else if($_GET['order'] == 'fecha_asc') 
+         {
             $this->order = 'facturascli.fecha ASC';
-         } else if ($_GET['order'] == 'vencimiento_desc') {
+         } 
+         else if($_GET['order'] == 'vencimiento_desc') 
+         {
             $this->order = 'vencimiento DESC';
-         } else if ($_GET['order'] == 'vencimiento_asc') {
+         } 
+         else if($_GET['order'] == 'vencimiento_asc') 
+         {
             $this->order = 'vencimiento ASC';
          }
 
-         setcookie('ventas_fac_order', $this->order, time() + FS_COOKIES_EXPIRE);
-      } else if (isset($_COOKIE['ventas_fac_order'])) {
+         setcookie('ventas_fac_order', $this->order, time()+FS_COOKIES_EXPIRE);
+      } 
+      else if( isset($_COOKIE['ventas_fac_order']) )
+      {
          $this->order = $_COOKIE['ventas_fac_order'];
       }
 
-      if (isset($_POST['buscar_lineas'])) {
+      if( isset($_POST['buscar_lineas']) )
+      {
          $this->buscar_lineas();
-      } else if (isset($_REQUEST['buscar_cliente'])) {
+      } 
+      else if( isset($_REQUEST['buscar_cliente']) ) 
+      {
          $this->buscar_cliente();
-      } else if (isset($_GET['ref'])) {
+      } 
+      else if( isset($_GET['ref']) ) 
+      {
          $this->template = 'extension/ventas_facturas_articulo';
 
          $articulo = new articulo();
@@ -106,7 +127,9 @@ class ventas_facturas extends fs_controller {
 
          $linea = new linea_factura_cliente();
          $this->resultados = $linea->all_from_articulo($_GET['ref'], $this->offset);
-      } else {
+      } 
+      else 
+      {
          $this->share_extension();
          $this->huecos = $this->factura->huecos();
          $this->cliente = FALSE;
@@ -119,10 +142,14 @@ class ventas_facturas extends fs_controller {
          $this->total_resultados_comision = 0;
          $this->total_resultados_txt = '';
 
-         if (isset($_GET['delete'])) {
+         if( isset($_GET['delete']) ) 
+         {
             $this->delete_factura();
-         } else {
-            if (!isset($_GET['mostrar']) AND ( isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie']))) {
+         } 
+         else 
+         {
+            if( !isset($_GET['mostrar']) AND (isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie'])) ) 
+            {
                /**
                 * si obtenermos un codagente, un codcliente o un codserie pasamos direcatemente
                 * a la pestaña de búsqueda, a menos que tengamos un mostrar, que
@@ -131,22 +158,27 @@ class ventas_facturas extends fs_controller {
                $this->mostrar = 'buscar';
             }
 
-            if (isset($_REQUEST['codcliente'])) {
-               if ($_REQUEST['codcliente'] != '') {
+            if( isset($_REQUEST['codcliente']) ) 
+            {
+               if($_REQUEST['codcliente'] != '') 
+               {
                   $cli0 = new cliente();
                   $this->cliente = $cli0->get($_REQUEST['codcliente']);
                }
             }
 
-            if (isset($_REQUEST['codagente'])) {
+            if( isset($_REQUEST['codagente']) )
+            {
                $this->codagente = $_REQUEST['codagente'];
             }
 
-            if (isset($_REQUEST['codserie'])) {
+            if( isset($_REQUEST['codserie']) ) 
+            {
                $this->codserie = $_REQUEST['codserie'];
             }
 
-            if (isset($_REQUEST['desde'])) {
+            if( isset($_REQUEST['desde']) )
+            {
                $this->desde = $_REQUEST['desde'];
                $this->hasta = $_REQUEST['hasta'];
             }
@@ -154,25 +186,34 @@ class ventas_facturas extends fs_controller {
 
          /// añadimos segundo nivel de ordenación
          $order2 = '';
-         if (substr($this->order, -4) == 'DESC') {
-            $order2 = ', codigo DESC';
-         } else {
-            $order2 = ', codigo ASC';
+         if( substr($this->order, -4) == 'DESC' ) 
+         {
+            $order2 = ', hora DESC';
+         } 
+         else 
+         {
+            $order2 = ', hora ASC';
          }
 
-         if ($this->mostrar == 'sinpagar') {
+         if($this->mostrar == 'sinpagar') 
+         {
             $this->resultados = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
 
-            if ($this->offset == 0) {
+            if($this->offset == 0) 
+            {
                $this->total_resultados = 0;
                $this->total_resultados_txt = 'Suma total de esta página:';
-               foreach ($this->resultados as $fac) {
+               foreach($this->resultados as $fac) 
+               {
                   $this->total_resultados += $fac->total;
                }
             }
-         } else if ($this->mostrar == 'buscar') {
+         } 
+         else if($this->mostrar == 'buscar') 
+         {
             $this->buscar($order2);
-         } else
+         } 
+         else
             $this->resultados = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
       }
    }
@@ -183,50 +224,60 @@ class ventas_facturas extends fs_controller {
 
       $cli0 = new cliente();
       $json = array();
-      foreach ($cli0->search($_REQUEST['buscar_cliente']) as $cli) {
+      foreach($cli0->search($_REQUEST['buscar_cliente']) as $cli) 
+      {
          $json[] = array('value' => $cli->nombre, 'data' => $cli->codcliente);
       }
 
       header('Content-Type: application/json');
-      echo json_encode(array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json));
+      echo json_encode( array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json) );
    }
 
-   public function paginas() {
+   public function paginas() 
+   {
       $codcliente = '';
-      if ($this->cliente) {
+      if($this->cliente) 
+      {
          $codcliente = $this->cliente->codcliente;
       }
 
-      $url = $this->url() . "&mostrar=" . $this->mostrar
-              . "&query=" . $this->query
-              . "&codserie=" . $this->codserie
-              . "&codagente=" . $this->codagente
-              . "&codcliente=" . $codcliente
-              . "&desde=" . $this->desde
-              . "&hasta=" . $this->hasta;
+      $url = $this->url()."&mostrar=".$this->mostrar
+              ."&query=".$this->query
+              ."&codserie=".$this->codserie
+              ."&codagente=".$this->codagente
+              ."&codcliente=".$codcliente
+              ."&desde=".$this->desde
+              ."&hasta=".$this->hasta;
 
       $paginas = array();
       $i = 0;
       $num = 0;
       $actual = 1;
 
-      if ($this->mostrar == 'sinpagar') {
+      if($this->mostrar == 'sinpagar') 
+      {
          $total = $this->total_sinpagar();
-      } else if ($this->mostrar == 'buscar') {
+      }
+      else if($this->mostrar == 'buscar') 
+      {
          $total = $this->num_resultados;
-      } else {
+      } 
+      else 
+      {
          $total = $this->total_registros();
       }
 
       /// añadimos todas la página
-      while ($num < $total) {
+      while($num < $total) 
+      {
          $paginas[$i] = array(
-            'url' => $url . "&offset=" . ($i * FS_ITEM_LIMIT),
+            'url' => $url."&offset=".($i*FS_ITEM_LIMIT),
             'num' => $i + 1,
             'actual' => ($num == $this->offset)
          );
 
-         if ($num == $this->offset) {
+         if($num == $this->offset) 
+         {
             $actual = $i;
          }
 
@@ -235,40 +286,50 @@ class ventas_facturas extends fs_controller {
       }
 
       /// ahora descartamos
-      foreach ($paginas as $j => $value) {
-         $enmedio = intval($i / 2);
+      foreach($paginas as $j => $value) 
+      {
+         $enmedio = intval($i/2);
 
          /**
           * descartamos todo excepto la primera, la última, la de enmedio,
           * la actual, las 5 anteriores y las 5 siguientes
           */
-         if (($j > 1 AND $j < $actual - 5 AND $j != $enmedio) OR ( $j > $actual + 5 AND $j < $i - 1 AND $j != $enmedio)) {
+         if( ($j>1 AND $j<$actual-5 AND $j!=$enmedio) OR ($j>$actual+5 AND $j<$i-1 AND $j!=$enmedio) )
+         {
             unset($paginas[$j]);
          }
       }
 
-      if (count($paginas) > 1) {
+      if( count($paginas) > 1 )
+      {
          return $paginas;
-      } else {
+      }
+      else
+      {
          return array();
       }
    }
 
-   public function buscar_lineas() {
+   public function buscar_lineas() 
+   {
       /// cambiamos la plantilla HTML
       $this->template = 'ajax/ventas_lineas_facturas';
 
       $this->buscar_lineas = $_POST['buscar_lineas'];
       $linea = new linea_factura_cliente();
 
-      if (isset($_POST['codcliente'])) {
+      if( isset($_POST['codcliente']) )
+      {
          $this->lineas = $linea->search_from_cliente2($_POST['codcliente'], $this->buscar_lineas, $_POST['buscar_lineas_o']);
-      } else {
+      } 
+      else 
+      {
          $this->lineas = $linea->search($this->buscar_lineas);
       }
    }
 
-   private function share_extension() {
+   private function share_extension() 
+   {
       /// añadimos las extensiones para clientes, agentes y artículos
       $extensiones = array(
          array(
@@ -296,115 +357,146 @@ class ventas_facturas extends fs_controller {
             'params' => ''
          ),
       );
-      foreach ($extensiones as $ext) {
+      foreach($extensiones as $ext) 
+      {
          $fsext0 = new fs_extension($ext);
-         if (!$fsext0->save()) {
-            $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
+         if( !$fsext0->save() ) 
+         {
+            $this->new_error_msg('Imposible guardar los datos de la extensión '.$ext['name'].'.');
          }
       }
    }
 
-   public function total_sinpagar() {
+   public function total_sinpagar() 
+   {
       $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli WHERE pagada = false;");
-      if ($data) {
+      if($data) 
+      {
          return intval($data[0]['total']);
-      } else
+      } 
+      else
          return 0;
    }
 
-   private function total_registros() {
+   private function total_registros() 
+   {
       $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli;");
-      if ($data) {
+      if($data) 
+      {
          return intval($data[0]['total']);
-      } else
+      } 
+      else
          return 0;
    }
 
-   private function buscar($order2) {
+   private function buscar($order2) 
+   {
       $this->resultados = array();
       $this->num_resultados = 0;
-      $query = $this->agente->no_html(strtolower($this->query));
+      $query = $this->agente->no_html( strtolower($this->query) );
       $sql = " FROM facturascli ";
       $where = 'WHERE ';
 
-      if ($this->query != '') {
+      if($this->query != '') 
+      {
          $sql .= $where;
-         if (is_numeric($query)) {
-            $sql .= "(codigo LIKE '%" . $query . "%' OR numero2 LIKE '%" . $query . "%' OR observaciones LIKE '%" . $query . "%')";
-         } else {
-            $sql .= "(lower(codigo) LIKE '%" . $query . "%' OR lower(numero2) LIKE '%" . $query . "%' "
-                    . "OR lower(observaciones) LIKE '%" . str_replace(' ', '%', $query) . "%')";
+         if( is_numeric($query) ) 
+         {
+            $sql .= "(codigo LIKE '%".$query."%' OR numero2 LIKE '%".$query."%' OR observaciones LIKE '%".$query."%')";
+         } 
+         else 
+         {
+            $sql .= "(lower(codigo) LIKE '%".$query."%' OR lower(numero2) LIKE '%".$query."%' "
+                    . "OR lower(observaciones) LIKE '%".str_replace(' ', '%', $query)."%')";
          }
          $where = ' AND ';
       }
 
-      if ($this->codagente != '') {
-         $sql .= $where . "codagente = " . $this->agente->var2str($this->codagente);
+      if($this->codagente != '') 
+      {
+         $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
          $where = ' AND ';
       }
 
-      if ($this->cliente) {
-         $sql .= $where . "codcliente = " . $this->agente->var2str($this->cliente->codcliente);
+      if($this->cliente) 
+      {
+         $sql .= $where."codcliente = ".$this->agente->var2str($this->cliente->codcliente);
          $where = ' AND ';
       }
 
-      if ($this->codserie != '') {
-         $sql .= $where . "codserie = " . $this->agente->var2str($this->codserie);
+      if($this->codserie != '') 
+      {
+         $sql .= $where."codserie = ".$this->agente->var2str($this->codserie);
          $where = ' AND ';
       }
 
-      if ($this->desde != '') {
-         $sql .= $where . "fecha >= " . $this->agente->var2str($this->desde);
+      if($this->desde != '') 
+      {
+         $sql .= $where."fecha >= ".$this->agente->var2str($this->desde);
          $where = ' AND ';
       }
 
-      if ($this->hasta != '') {
-         $sql .= $where . "fecha <= " . $this->agente->var2str($this->hasta);
+      if($this->hasta != '') 
+      { 
+         $sql .= $where."fecha <= ".$this->agente->var2str($this->hasta);
          $where = ' AND ';
       }
 
-      $data = $this->db->select("SELECT COUNT(idfactura) as total" . $sql);
-      if ($data) {
+      $data = $this->db->select("SELECT COUNT(idfactura) as total".$sql);
+      if($data) 
+      {
          $this->num_resultados = intval($data[0]['total']);
 
-         $data2 = $this->db->select_limit("SELECT *" . $sql . " ORDER BY " . $this->order . $order2, FS_ITEM_LIMIT, $this->offset);
-         if ($data2) {
-            foreach ($data2 as $d) {
+         $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY ".$this->order.$order2, FS_ITEM_LIMIT, $this->offset);
+         if($data2) 
+         {
+            foreach($data2 as $d) 
+            {
                $this->resultados[] = new factura_cliente($d);
             }
          }
 
-         $data2 = $this->db->select("SELECT SUM(total) as total" . $sql);
-         if ($data2) {
+         $data2 = $this->db->select("SELECT SUM(total) as total".$sql);
+         if($data2) 
+         {
             $this->total_resultados = floatval($data2[0]['total']);
             $this->total_resultados_txt = 'Suma total de los resultados:';
          }
 
-         if ($this->codagente !== '') {
+         if($this->codagente !== '') 
+         {
             /// calculamos la comisión del empleado
-            $data2 = $this->db->select("SELECT SUM(neto*porcomision/100) as total" . $sql);
-            if ($data2) {
+            $data2 = $this->db->select("SELECT SUM(neto*porcomision/100) as total".$sql);
+            if($data2) 
+            {
                $this->total_resultados_comision = floatval($data2[0]['total']);
             }
          }
       }
    }
 
-   private function delete_factura() {
+   private function delete_factura() 
+   {
       $delete = \filter_input(INPUT_GET, 'delete');
       $fact = $this->factura->get($delete);
       $motivo = \filter_input(INPUT_POST, 'motivo');
-      if ($fact) {
+      if ($fact) 
+      {
          $albaranes = new albaran_cliente();
          /// ¿Sumamos stock?
          $art0 = new articulo();
-         foreach ($fact->get_lineas() as $linea) {
-            if (is_null($linea->idalbaran)) {
+         foreach($fact->get_lineas() as $linea) 
+         {
+            if( is_null($linea->idalbaran) ) 
+            {
                $articulo = $art0->get($linea->referencia);
-               if ($articulo) {
+               if($articulo) 
+               {
                   $articulo->sum_stock($fact->codalmacen, $linea->cantidad);
                }
-            } else {
+            } 
+            else 
+            {
                $idalbaran = $linea->idalbaran;
             }
          }
@@ -420,7 +512,8 @@ class ventas_facturas extends fs_controller {
             $new_albaran->totaliva = $new_albaran->totaliva*-1;
             $new_albaran->hora = \date('H:i:s');
 
-            if($new_albaran->save()){
+            if($new_albaran->save())
+            {
                $linea0 = new linea_albaran_cliente();
                $new_albaran_lineas = $linea0->all_from_albaran($idalbaran);
                foreach($new_albaran_lineas as $linea) {
