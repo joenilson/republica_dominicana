@@ -12,7 +12,7 @@
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th * e
  *  * GNU Affero General Public License for more details.
- *  * 
+ *  *
  *  * You should have received a copy of the GNU Affero General Public License
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -64,15 +64,16 @@ class ncf extends fs_controller {
             $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
             $correlativo = \filter_input(INPUT_POST, 'correlativo');
             $estado_val = \filter_input(INPUT_POST, 'estado');
-            $estado = (isset($estado_val))?"true":"false";
+            $estado = (isset($estado_val))?TRUE:FALSE;
+            $estado = (isset($id))?$estado:TRUE;
             $contado_val = \filter_input(INPUT_POST, 'contado');
-            $contado = (isset($contado_val))?"true":"false";
+            $contado = (isset($contado_val))?TRUE:FALSE;
             $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
 
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }
-            
+
             $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
             if ($verificacion) {
                 return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, no se puede retroceder el correlativo!");
@@ -91,9 +92,9 @@ class ncf extends fs_controller {
             $ncf0->secuencia_fin = $secuencia_fin;
             $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
             $ncf0->usuario_creacion = $this->user->nick;
-            $ncf0->fecha_creacion = \date('d-m-Y H:i');
+            $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
             $ncf0->usuario_modificacion = $this->user->nick;
-            $ncf0->fecha_modificacion = \date('d-m-Y H:i');
+            $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
             $ncf0->estado = $estado;
             $ncf0->contado = $contado;
             if ($ncf0->save()) {

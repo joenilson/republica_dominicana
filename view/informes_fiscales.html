@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <div class="col-sm-2 text-right">
                 <button id="ayuda-informes-fiscales" type="button" class="btn btn-info"><i class="fa fa-question-circle fa-lg"></i></button>
             </div>
-            
+
         </div>
     </div>
 </div>
@@ -187,7 +187,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           {$lineas=1}
                           {if="$fsc->total_resultados_ventas!=0"}
                             {loop="$fsc->resultados_ventas"}
-                            <tr id="tr-id-{$lineas}" {if="$value->estado=='f'"}class="danger"{/if}>
+                            <tr id="tr-id-{$lineas}" {if="!$value->estado"}class="danger"{/if}>
                                 <td id="td-id-{$lineas}">{$value->fecha}</td>
                                 <td>{$value->nombrecliente}</td>
                                 <td>{$value->cifnif}</td>
@@ -356,7 +356,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           </tr>
                         <tr>
                             <th data-footer-formatter="totalTextFormatter">NCF</th>
-                            <th data-footer-formatter="totalFormatter">Fecha</th>                            
+                            <th data-footer-formatter="totalFormatter">Fecha</th>
                             <th>Tipo de Anulación</th>
                             <th>Estado</th>
                         </tr>
@@ -405,7 +405,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
               <h4 class="media-heading">Lista de Reportes</h4>
               <p align="justify">
                   Al lado izquiero de la pantalla tenemos el listado de reportes que se pueden generar.<br />
-                  Cada reporte genera informaci&oacute;n que muestra distintos campos dependiendo si son reportes de caracter legal para 
+                  Cada reporte genera informaci&oacute;n que muestra distintos campos dependiendo si son reportes de caracter legal para
                   entregar a la DGII o si son reportes de caracter verificador como los Reportes de Ventas, Reportes de Compras y Reporte Consolidado.<br />
                   El uso de estos reportes es de la siguiente manera:<br />
               <ol>
@@ -430,46 +430,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     function runningFormatter(value, row, index) {
         return index;
     }
-    
+
     function totalFormatter(data) {
         return data.length + ' Documentos';
     }
-    
+
     function totalTextFormatter(data) {
         return 'Total';
     }
-    
+
     function numberFormatter(value, row, index) {
         return parseFloat(value).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
     }
-    
+
     function sumFormatter(data) {
         field = this.field;
-        return parseFloat(data.reduce(function(sum, row) { 
+        return parseFloat(data.reduce(function(sum, row) {
             return sum + (+row[field]);
         }, 0)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
     }
-    
+
     function sumNormalFormatter(data) {
         field = this.field;
-        return parseFloat(data.reduce(function(sum, row) { 
+        return parseFloat(data.reduce(function(sum, row) {
             return sum + (+row[field]);
         }, 0)).toFixed(2);
     }
-    
+
     function seleccionar(reporte){
         $('#tipo-reporte').val(reporte);
     }
-    
+
     $(window).resize(function() {
         $('#table-{$fsc->reporte}').bootstrapTable('resetView');
     });
-    
+
     $('#ayuda-informes-fiscales').click(function(event) {
         event.preventDefault();
         $('#modal_ayuda').modal('show');
      });
-      
+
     var $table = $('#table-{$fsc->reporte}');
     $table.bootstrapTable('refreshOptions', {
         exportDataType: 'all'

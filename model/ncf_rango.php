@@ -63,8 +63,8 @@ class ncf_rango extends fs_model
             $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
-            $this->estado = ($t['estado']);
-            $this->contado = ($t['contado']);
+            $this->estado = $this->str2bool($t['estado']);
+            $this->contado = $this->str2bool($t['contado']);
         }
         else
         {
@@ -196,6 +196,7 @@ class ncf_rango extends fs_model
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).
                     ")";
+
             if($this->db->exec($sql))
             {
                 $this->solicitud = $this->solicitud;
@@ -240,7 +241,7 @@ class ncf_rango extends fs_model
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
-        "contado = ".$this->var2str($contado)." AND ".
+        "contado = ".$contado." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
         if($data){
             return $this->ncf_number($data[0]);

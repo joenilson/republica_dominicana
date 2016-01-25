@@ -12,7 +12,7 @@
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th * e
  *  * GNU Affero General Public License for more details.
- *  * 
+ *  *
  *  * You should have received a copy of the GNU Affero General Public License
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@ class ncf_entidad_tipo extends fs_model
     public $fecha_creacion;
     public $usuario_modificacion;
     public $fecha_modificacion;
-    
+
     public function __construct($t = false) {
         parent::__construct('ncf_entidad_tipo','plugins/republica_dominicana/');
         if($t)
@@ -47,7 +47,7 @@ class ncf_entidad_tipo extends fs_model
             $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
-            $this->estado = ($t['estado']);
+            $this->estado = $this->str2bool($t['estado']);
         }
         else
         {
@@ -62,11 +62,11 @@ class ncf_entidad_tipo extends fs_model
             $this->estado = false;
         }
     }
-    
+
     protected function install() {
         return "";
     }
-    
+
     public function exists() {
         if(is_null($this->idempresa) and is_null($this->entidad) and is_null($this->tipo_entidad))
         {
@@ -81,7 +81,7 @@ class ncf_entidad_tipo extends fs_model
                     ";");
         }
     }
-    
+
     public function save() {
         if ($this->exists())
         {
@@ -94,7 +94,7 @@ class ncf_entidad_tipo extends fs_model
                     "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "entidad = ".$this->var2str($this->entidad)." AND ".
                     "tipo_entidad = ".$this->var2str($this->tipo_entidad).";";
-            
+
             return $this->db->exec($sql);
         }
         else
@@ -105,7 +105,7 @@ class ncf_entidad_tipo extends fs_model
                     $this->var2str($this->entidad).", ".
                     $this->var2str($this->tipo_entidad).", ".
                     $this->var2str($this->tipo_comprobante).", ".
-                    ($this->estado).", ".
+                    $this->var2str($this->estado).", ".
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).");";
             if($this->db->exec($sql))
@@ -119,14 +119,14 @@ class ncf_entidad_tipo extends fs_model
             }
         }
     }
-    
+
     public function delete() {
         return $this->db->exec("UPDATE ncf_entidad_tipo SET estado = ".$this->var2str($this->estado)." WHERE ".
                 "idempresa = ".$this->intval($this->idempresa)." AND ".
                 "entidad = ".$this->var2str($this->entidad)." AND ".
                 "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
     }
-    
+
     public function all($idempresa)
     {
         $lista = array();
@@ -137,19 +137,19 @@ class ncf_entidad_tipo extends fs_model
             {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function get($idempresa, $entidad, $tipo_entidad)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = ".$this->var2str($tipo_entidad)." AND ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "entidad = ".$this->var2str($entidad)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
-        
+
         if($data)
         {
             foreach($data as $d)
@@ -159,41 +159,41 @@ class ncf_entidad_tipo extends fs_model
         }
         return $lista;
     }
-    
+
     public function cliente($idempresa)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'CLI'  AND idempresa= ".$this->intval($idempresa).
                 " ORDER BY tipo_comprobante,entidad");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function proveedor($idempresa)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'PRO' AND idempresa= ".$this->intval($idempresa).
                 " ORDER BY tipo_comprobante,entidad");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
 }

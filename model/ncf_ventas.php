@@ -12,7 +12,7 @@
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th * e
  *  * GNU Affero General Public License for more details.
- *  * 
+ *  *
  *  * You should have received a copy of the GNU Affero General Public License
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -41,7 +41,7 @@ class ncf_ventas extends fs_model {
     public $fecha_modificacion;
     public $estado;
     public $motivo;
-    
+
     public $ncf_tipo;
     public $factura_cliente;
     public function __construct($t = false) {
@@ -62,7 +62,7 @@ class ncf_ventas extends fs_model {
             $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
-            $this->estado = $t['estado'];
+            $this->estado = $this->str2bool($t['estado']);
             $this->motivo = $t['motivo'];
         }
         else
@@ -84,15 +84,15 @@ class ncf_ventas extends fs_model {
             $this->estado = true;
             $this->motivo = null;
         }
-        
+
         $this->factura_cliente = new factura_cliente();
         $this->ncf_tipo = new ncf_tipo();
     }
-    
+
     protected function install() {
         return "";
     }
-    
+
     public function exists() {
         if(is_null($this->idempresa) AND is_null($this->ncf))
         {
@@ -105,7 +105,7 @@ class ncf_ventas extends fs_model {
                 "ncf = ".$this->var2str($this->ncf).";");
         }
     }
-    
+
     public function save() {
         if (!$this->exists())
         {
@@ -134,7 +134,7 @@ class ncf_ventas extends fs_model {
             }
         }
     }
-    
+
     public function anular(){
         $sql = "UPDATE ncf_ventas SET ".
                 "estado = false, motivo = ".$this->var2str($this->motivo).", ".
@@ -150,30 +150,30 @@ class ncf_ventas extends fs_model {
             return false;
         }
     }
-    
+
     public function delete() {
         return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
     }
-    
+
     public function all($idempresa)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." ".
                 "ORDER BY idempresa, ncf, fecha");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_ventas($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function get($idempresa, $ncf)
     {
         $lista = array();
@@ -181,29 +181,29 @@ class ncf_ventas extends fs_model {
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "ncf = ".$this->var2str($ncf)." ".
                 "ORDER BY idempresa, ncf, fecha");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_ventas($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function get_ncf($idempresa, $documento, $entidad)
     {
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "documento = ".$this->intval($documento)." AND ".
                 "entidad = ".$this->var2str($entidad).";");
-        
+
         return new ncf_ventas($data[0]);
     }
-    
+
     public function get_tipo($idempresa, $tipo_comprobante, $codalmacen)
     {
         $lista = array();
@@ -212,24 +212,24 @@ class ncf_ventas extends fs_model {
                 "codalmacen = ".$this->var2str($codalmacen)." AND ".
                 "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
                 "ORDER BY idempresa, ncf, fecha");
-        
+
         if($data)
         {
             foreach($data as $d)
             {
                 $lista[] = new ncf_ventas($d);
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function info_factura($idfactura){
         $datos_adicionales = $this->factura_cliente->get($idfactura);
         return $datos_adicionales;
     }
-    
+
     public function all_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
     {
         $lista = array();
@@ -237,7 +237,7 @@ class ncf_ventas extends fs_model {
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." ".
                 "ORDER BY idempresa, fecha, ncf");
-        
+
         if($data)
         {
             foreach($data as $d)
@@ -249,18 +249,18 @@ class ncf_ventas extends fs_model {
                 $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
                 $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
-                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->condicion = ($datos->estado)?"Activo":"Anulado";
                 $datos->cifnif_len = strlen($datos->cifnif);
                 $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-                
+
         }
-        
+
         return $lista;
     }
-    
+
     public function all_activo_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
     {
         $lista = array();
@@ -268,7 +268,7 @@ class ncf_ventas extends fs_model {
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." AND estado = TRUE ".
                 "ORDER BY idempresa, fecha, ncf");
-        
+
         if($data)
         {
             foreach($data as $d)
@@ -279,41 +279,7 @@ class ncf_ventas extends fs_model {
                 $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
                 $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
-                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
-                $datos->cifnif_len = strlen($datos->cifnif);
-                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
-                $datos->fecha = str_replace("-", "", $datos->fecha);
-                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
-                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
-                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;                
-                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
-                $lista[] = $datos;
-            }
-                
-        }
-        
-        return $lista;
-    }
-    
-    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
-    {
-        $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
-                "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." and estado = FALSE ".
-                "ORDER BY idempresa, fecha, ncf");
-        
-        if($data)
-        {
-            foreach($data as $d)
-            {
-                $datos = new ncf_ventas($d);
-                $otros_datos = $this->info_factura($datos->documento);
-                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
-                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
-                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
-                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
-                $datos->condicion = ($datos->estado == 't')?"Activo":"Anulado";
+                $datos->condicion = ($datos->estado)?"Activo":"Anulado";
                 $datos->cifnif_len = strlen($datos->cifnif);
                 $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
                 $datos->fecha = str_replace("-", "", $datos->fecha);
@@ -323,9 +289,43 @@ class ncf_ventas extends fs_model {
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-                
+
         }
-        
+
+        return $lista;
+    }
+
+    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." and estado = FALSE ".
+                "ORDER BY idempresa, fecha, ncf");
+
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $datos = new ncf_ventas($d);
+                $otros_datos = $this->info_factura($datos->documento);
+                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
+                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
+                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
+                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
+                $datos->condicion = ($datos->estado)?"Activo":"Anulado";
+                $datos->cifnif_len = strlen($datos->cifnif);
+                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
+                $datos->fecha = str_replace("-", "", $datos->fecha);
+                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
+                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
+                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;
+                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
+                $lista[] = $datos;
+            }
+
+        }
+
         return $lista;
     }
 }

@@ -56,7 +56,9 @@ class factura_ncf extends fs_controller {
       $this->share_extensions();
       $val_id = \filter_input(INPUT_GET, 'id');
       $valores_id = explode(',', $val_id);
-      $this->distrib_transporte = new distribucion_ordenescarga_facturas();
+      if(class_exists('distribucion_ordenescarga_facturas')){
+        $this->distrib_transporte = new distribucion_ordenescarga_facturas();
+      }
       if(!empty($valores_id[0])){
         $this->procesar_facturas($valores_id);
       }
@@ -80,7 +82,7 @@ class factura_ncf extends fs_controller {
       }
       return $mostrar;
    }
-   
+
    public function procesar_facturas($valores_id){
         if(!empty($valores_id)){
             ob_end_clean();
@@ -282,7 +284,7 @@ class factura_ncf extends fs_controller {
         // Total factura numeros a texto
         $pdf_doc->fdf_textotal = ($this->factura->total * $negativo);
 
-        
+
 
         // Lineas de la Factura
         $lineas = $this->factura->get_lineas();
@@ -318,7 +320,7 @@ class factura_ncf extends fs_controller {
         }
        }
    }
-   
+
    private function share_extensions()
    {
       $fsext = new fs_extension(
@@ -333,7 +335,7 @@ class factura_ncf extends fs_controller {
       );
       $fsext->save();
    }
-   
+
    private function fix_html($txt)
    {
       $newt = str_replace('&lt;', '<', $txt);

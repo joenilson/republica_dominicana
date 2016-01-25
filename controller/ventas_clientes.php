@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -45,17 +45,17 @@ class ventas_clientes extends fs_controller
    public $total_resultados;
    public $ncf_tipo;
    public $ncf_entidad_tipo;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Clientes', 'ventas', FALSE, TRUE);
    }
-   
+
    protected function private_core()
    {
       /// ¿El usuario tiene permiso para eliminar en esta página?
       $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
-      
+
       $this->cliente = new cliente();
       $this->grupo = new grupo_clientes();
       $this->pais = new pais();
@@ -87,7 +87,7 @@ class ventas_clientes extends fs_controller
          ),
          FALSE
       );
-      
+
       if( isset($_GET['delete_grupo']) ) /// eliminar un grupo
       {
          $grupo = $this->grupo->get($_GET['delete_grupo']);
@@ -112,13 +112,13 @@ class ventas_clientes extends fs_controller
             $grupo->codgrupo = $_POST['codgrupo'];
          }
          $grupo->nombre = $_POST['nombre'];
-         
+
          $grupo->codtarifa = NULL;
          if($_POST['codtarifa'] != '---')
          {
             $grupo->codtarifa = $_POST['codtarifa'];
          }
-         
+
          if( $grupo->save() )
          {
             $this->new_message('Grupo guardado correctamente.');
@@ -157,7 +157,7 @@ class ventas_clientes extends fs_controller
                $this->query = $_POST['cifnif'];
             }
          }
-         
+
          if(!$cliente)
          {
             $cliente = new cliente();
@@ -165,22 +165,22 @@ class ventas_clientes extends fs_controller
             $cliente->nombre = $_POST['nombre'];
             $cliente->razonsocial = $_POST['nombre'];
             $cliente->cifnif = $_POST['cifnif'];
-            
+
             if($_POST['scodgrupo'] != '')
             {
                $cliente->codgrupo = $_POST['scodgrupo'];
             }
-            
+
             if( isset($_POST['telefono1']) )
             {
                $cliente->telefono1 = $_POST['telefono1'];
             }
-            
+
             if( isset($_POST['telefono2']) )
             {
                $cliente->telefono2 = $_POST['telefono2'];
             }
-            
+
             if( $cliente->save() )
             {
                if (\filter_input(INPUT_POST, 'tipo_comprobante') != '') {
@@ -191,7 +191,7 @@ class ventas_clientes extends fs_controller
                   $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
                   $ncf_entidad_tipo->estado = 'true';
                   $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
-                  $ncf_entidad_tipo->fecha_creacion = Date('d-m-Y H:i');
+                  $ncf_entidad_tipo->fecha_creacion = Date('d-m-Y H:i:s');
                   $ncf_entidad_tipo->save();
                }
                $dircliente = new direccion_cliente();
@@ -200,32 +200,32 @@ class ventas_clientes extends fs_controller
                $dircliente->provincia = $this->empresa->provincia;
                $dircliente->ciudad = $this->empresa->ciudad;
                $dircliente->descripcion = 'Principal';
-               
+
                if( isset($_POST['pais']) )
                {
                   $dircliente->codpais = $_POST['pais'];
                }
-               
+
                if( isset($_POST['provincia']) )
                {
                   $dircliente->provincia = $_POST['provincia'];
                }
-               
+
                if( isset($_POST['ciudad']) )
                {
                   $dircliente->ciudad = $_POST['ciudad'];
                }
-               
+
                if( isset($_POST['codpostal']) )
                {
                   $dircliente->codpostal = $_POST['codpostal'];
                }
-               
+
                if( isset($_POST['direccion']) )
                {
                   $dircliente->direccion = $_POST['direccion'];
                }
-               
+
                if( $dircliente->save() )
                {
                   header('location: '.$cliente->url());
@@ -237,41 +237,41 @@ class ventas_clientes extends fs_controller
                $this->new_error_msg("¡Imposible guardar los datos del cliente!");
          }
       }
-      
+
       $this->offset = 0;
       if( isset($_GET['offset']) )
       {
          $this->offset = intval($_GET['offset']);
       }
-      
+
       $this->ciudad = '';
       if( isset($_REQUEST['ciudad']) )
       {
          $this->ciudad = $_REQUEST['ciudad'];
       }
-      
+
       $this->provincia = '';
       if( isset($_REQUEST['provincia']) )
       {
          $this->provincia = $_REQUEST['provincia'];
       }
-      
+
       $this->codpais = '';
       if( isset($_POST['codpais']) )
       {
          $this->codpais = $_POST['codpais'];
       }
-      
+
       $this->codgrupo = '';
       if( isset($_POST['bcodgrupo']) )
       {
          $this->codgrupo = $_POST['bcodgrupo'];
       }
-      
+
       $this->buscar();
       $this->grupos = $this->grupo->all();
    }
-   
+
    public function paginas()
    {
       $url = $this->url()."&query=".$this->query
@@ -280,12 +280,12 @@ class ventas_clientes extends fs_controller
                  ."&codpais=".$this->codpais
                  ."&codgrupo=".$this->codgrupo
                  ."&offset=".($this->offset+FS_ITEM_LIMIT);
-      
+
       $paginas = array();
       $i = 0;
       $num = 0;
       $actual = 1;
-      
+
       /// añadimos todas la página
       while($num < $this->total_resultados)
       {
@@ -294,21 +294,21 @@ class ventas_clientes extends fs_controller
              'num' => $i + 1,
              'actual' => ($num == $this->offset)
          );
-         
+
          if($num == $this->offset)
          {
             $actual = $i;
          }
-         
+
          $i++;
          $num += FS_ITEM_LIMIT;
       }
-      
+
       /// ahora descartamos
       foreach($paginas as $j => $value)
       {
          $enmedio = intval($i/2);
-         
+
          /**
           * descartamos todo excepto la primera, la última, la de enmedio,
           * la actual, las 5 anteriores y las 5 siguientes
@@ -318,7 +318,7 @@ class ventas_clientes extends fs_controller
             unset($paginas[$j]);
          }
       }
-      
+
       if( count($paginas) > 1 )
       {
          return $paginas;
@@ -328,11 +328,11 @@ class ventas_clientes extends fs_controller
          return array();
       }
    }
-   
+
    public function nombre_grupo($cod)
    {
       $nombre = '-';
-      
+
       foreach($this->grupos as $g)
       {
          if($g->codgrupo == $cod)
@@ -341,14 +341,14 @@ class ventas_clientes extends fs_controller
             break;
          }
       }
-      
+
       return $nombre;
    }
-   
+
    public function ciudades()
    {
       $final = array();
-      
+
       $ciudades = array();
       $sql = "SELECT DISTINCT ciudad FROM dirclientes ORDER BY ciudad ASC;";
       if($this->provincia != '')
@@ -362,7 +362,7 @@ class ventas_clientes extends fs_controller
          foreach($data as $d)
             $ciudades[] = $d['ciudad'];
       }
-      
+
       /// usamos las minúsculas para filtrar
       foreach($ciudades as $ciu)
       {
@@ -371,14 +371,14 @@ class ventas_clientes extends fs_controller
             $final[ mb_strtolower($ciu, 'UTF8') ] = $ciu;
          }
       }
-      
+
       return $final;
    }
-   
+
    public function provincias()
    {
       $final = array();
-      
+
       $provincias = array();
       $sql = "SELECT DISTINCT provincia FROM dirclientes ORDER BY provincia ASC;";
       if($this->codpais != '')
@@ -392,7 +392,7 @@ class ventas_clientes extends fs_controller
          foreach($data as $d)
             $provincias[] = $d['provincia'];
       }
-      
+
       foreach($provincias as $pro)
       {
          if($pro != '')
@@ -400,17 +400,17 @@ class ventas_clientes extends fs_controller
             $final[ mb_strtolower($pro, 'UTF8') ] = $pro;
          }
       }
-      
+
       return $final;
    }
-   
+
    private function buscar()
    {
       $this->total_resultados = 0;
       $query = mb_strtolower( $this->cliente->no_html($this->query), 'UTF8' );
       $sql = " FROM clientes";
       $and = ' WHERE ';
-      
+
       if( is_numeric($query) )
       {
          $sql .= $and."(codcliente LIKE '%".$query."%' OR cifnif LIKE '%".$query."%'"
@@ -426,43 +426,43 @@ class ventas_clientes extends fs_controller
                  . " OR lower(email) LIKE '%".$buscar."%')";
          $and = ' AND ';
       }
-      
+
       if($this->ciudad != '' OR $this->provincia != '' OR $this->codpais != '')
       {
          $sql .= $and." codcliente IN (SELECT codcliente FROM dirclientes WHERE ";
          $and2 = '';
-         
+
          if($this->ciudad != '')
          {
             $sql .= "lower(ciudad) = '".mb_strtolower($this->ciudad, 'UTF8')."'";
             $and2 = ' AND ';
          }
-         
+
          if($this->provincia != '')
          {
             $sql .= $and2."lower(provincia) = '".mb_strtolower($this->provincia, 'UTF8')."'";
             $and2 = ' AND ';
          }
-         
+
          if($this->codpais != '')
          {
             $sql .= $and2."codpais = '".$this->codpais."'";
          }
-         
+
          $sql .= ")";
          $and = ' AND ';
       }
-      
+
       if($this->codgrupo != '')
       {
          $sql .= $and."codgrupo = '".$this->codgrupo."'";
       }
-      
+
       $data = $this->db->select("SELECT COUNT(codcliente) as total".$sql);
       if($data)
       {
          $this->total_resultados = intval($data[0]['total']);
-         
+
          $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY nombre ASC", FS_ITEM_LIMIT, $this->offset);
          if($data2)
          {

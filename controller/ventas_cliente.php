@@ -71,7 +71,7 @@ class ventas_cliente extends fs_controller
       if( isset($_POST['codcliente']) )
       {
          $this->cliente = $cliente->get( $_POST['codcliente'] );
-      } 
+      }
       else if( isset($_GET['cod']) )
       {
          $this->cliente = $cliente->get($_GET['cod']);
@@ -87,10 +87,10 @@ class ventas_cliente extends fs_controller
             if( $cuenta->delete() )
             {
                $this->new_message('Cuenta bancaria eliminada correctamente.');
-            } 
+            }
             else
                $this->new_error_msg('Imposible eliminar la cuenta bancaria.');
-         } 
+         }
          else
             $this->new_error_msg('Cuenta bancaria no encontrada.');
       }
@@ -103,10 +103,10 @@ class ventas_cliente extends fs_controller
             if( $dir0->delete() )
             {
                $this->new_message('Dirección eliminada correctamente.');
-            } 
+            }
             else
                $this->new_error_msg('Imposible eliminar la dirección.');
-         } 
+         }
          else
             $this->new_error_msg('Dirección no encontrada.');
       }
@@ -130,7 +130,7 @@ class ventas_cliente extends fs_controller
          if( $dir->save() )
          {
             $this->new_message("Dirección guardada correctamente.");
-         } 
+         }
          else
             $this->new_message("¡Imposible guardar la dirección!");
       }
@@ -139,7 +139,7 @@ class ventas_cliente extends fs_controller
          if( isset($_POST['codcuenta']) )
          {
             $cuentab = $this->cuenta_banco->get($_POST['codcuenta']);
-         } 
+         }
          else
          {
             $cuentab = new cuenta_banco_cliente();
@@ -203,9 +203,9 @@ class ventas_cliente extends fs_controller
                $ncf_entidad_tipo->tipo_entidad = 'CLI';
                $ncf_entidad_tipo->tipo_comprobante = $tipo_comprobante;
                $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
-               $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i');
+               $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i:s');
                $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
-               $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i');
+               $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i:s');
                $ncf_entidad_tipo->estado = 'true';
                if( !$ncf_entidad_tipo->save() )
                {
@@ -227,7 +227,7 @@ class ventas_cliente extends fs_controller
       if($this->cliente)
       {
          $this->page->title = $this->cliente->codcliente;
-      } 
+      }
       else
          $this->new_error_msg("¡Cliente no encontrado!");
    }
@@ -237,11 +237,11 @@ class ventas_cliente extends fs_controller
       if( !isset($this->cliente) )
       {
          return parent::url();
-      } 
+      }
       else if($this->cliente)
       {
          return $this->cliente->url();
-      } 
+      }
       else
          return $this->ppage->url();
    }
@@ -277,7 +277,7 @@ class ventas_cliente extends fs_controller
                $stats[$year.'-'.$i]['albaranes'] = 0;
                $stats[$year.'-'.$i]['facturas'] = 0;
             }
-         } 
+         }
          else
          {
             /// años anteriores
@@ -292,7 +292,7 @@ class ventas_cliente extends fs_controller
          if( strtolower(FS_DB_TYPE) == 'postgresql')
          {
             $sql_aux = "to_char(fecha,'FMMM')";
-         } 
+         }
          else
             $sql_aux = "DATE_FORMAT(fecha, '%m')";
 
