@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -50,7 +50,7 @@ class ventas_factura extends fs_controller
    public $serie;
    public $ncf_ventas;
    public $ncf;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Factura de cliente', 'ventas', FALSE, FALSE);
@@ -60,7 +60,7 @@ class ventas_factura extends fs_controller
    {
       /// ¿El usuario tiene permiso para eliminar en esta página?
       $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
-      
+
       $this->ppage = $this->page->get('ventas_facturas');
       $this->ejercicio = new ejercicio();
       $this->agente = FALSE;
@@ -74,7 +74,7 @@ class ventas_factura extends fs_controller
       $this->rectificativa = FALSE;
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
-      
+
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
        * desactivamos el botón de pagada/sin pagar.
@@ -88,7 +88,7 @@ class ventas_factura extends fs_controller
             break;
          }
       }
-      
+
       /**
        * ¿Modificamos la factura?
        */
@@ -102,11 +102,11 @@ class ventas_factura extends fs_controller
       {
          $this->factura = $factura->get($_GET['id']);
       }
-      
+
       if($this->factura)
       {
          $this->page->title = $this->factura->codigo;
-         
+
          /// cargamos el agente
          $agente = new agente();
          if( !is_null($this->factura->codagente) )
@@ -114,14 +114,14 @@ class ventas_factura extends fs_controller
             $this->agente = $agente->get($this->factura->codagente);
          }
          $this->agentes = $agente->all();
-         
+
          /// cargamos el cliente
          $cliente = new cliente();
          $this->cliente = $cliente->get($this->factura->codcliente);
-         
+
          //Obtenemos el NCF asociado
          $this->ncf = $this->ncf_ventas->get_ncf($this->empresa->id,$this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
-         
+
          if( isset($_GET['gen_asiento']) AND isset($_GET['petid']) )
          {
             if( $this->duplicated_petition($_GET['petid']) )
@@ -145,7 +145,7 @@ class ventas_factura extends fs_controller
          {
             $this->anular_factura();
          }
-         
+
          if($this->factura->idfacturarect)
          {
             $this->rectificada = $factura->get($this->factura->idfacturarect);
@@ -154,14 +154,14 @@ class ventas_factura extends fs_controller
          {
             $this->get_factura_rectificativa();
          }
-         
+
          /// comprobamos la factura
          $this->factura->full_test();
       }
       else
          $this->new_error_msg("¡Factura de cliente no encontrada!");
    }
-   
+
    public function url()
    {
       if( !isset($this->factura) )
@@ -175,7 +175,7 @@ class ventas_factura extends fs_controller
       else
          return $this->ppage->url();
    }
-   
+
    private function modificar()
    {
       $this->factura->observaciones = $_POST['observaciones'];
@@ -188,7 +188,7 @@ class ventas_factura extends fs_controller
       $this->factura->ciudad = $_POST['ciudad'];
       $this->factura->codpostal = $_POST['codpostal'];
       $this->factura->direccion = $_POST['direccion'];
-      
+
       $this->factura->codagente = NULL;
       $this->factura->porcomision = 0;
       if($_POST['codagente'] != '')
@@ -196,7 +196,7 @@ class ventas_factura extends fs_controller
          $this->factura->codagente = $_POST['codagente'];
          $this->factura->porcomision = floatval($_POST['porcomision']);
       }
-      
+
       /// obtenemos el ejercicio para poder acotar la fecha
       $eje0 = $this->ejercicio->get( $this->factura->codejercicio );
       if($eje0)
@@ -206,7 +206,7 @@ class ventas_factura extends fs_controller
       }
       else
          $this->new_error_msg('No se encuentra el ejercicio asociado a la factura.');
-      
+
       /// ¿cambiamos la forma de pago?
       if($this->factura->codpago != $_POST['forma_pago'])
       {
@@ -217,7 +217,7 @@ class ventas_factura extends fs_controller
       {
          $this->factura->vencimiento = $_POST['vencimiento'];
       }
-      
+
       if( $this->factura->save() )
       {
          $asiento = $this->factura->get_asiento();
@@ -235,7 +235,7 @@ class ventas_factura extends fs_controller
       else
          $this->new_error_msg("¡Imposible modificar la factura!");
    }
-   
+
    private function actualizar_direccion()
    {
       foreach($this->cliente->get_direcciones() as $dir)
@@ -244,7 +244,7 @@ class ventas_factura extends fs_controller
          {
             $this->factura->cifnif = $this->cliente->cifnif;
             $this->factura->nombrecliente = $this->cliente->razonsocial;
-            
+
             $this->factura->apartado = $dir->apartado;
             $this->factura->ciudad = $dir->ciudad;
             $this->factura->coddir = $dir->id;
@@ -252,19 +252,19 @@ class ventas_factura extends fs_controller
             $this->factura->codpostal = $dir->codpostal;
             $this->factura->direccion = $dir->direccion;
             $this->factura->provincia = $dir->provincia;
-            
+
             if( $this->factura->save() )
             {
                $this->new_message('Dirección actualizada correctamente.');
             }
             else
                $this->new_error_msg('Imposible actualizar la dirección de la factura.');
-            
+
             break;
          }
       }
    }
-   
+
    private function generar_asiento(&$factura)
    {
       if( $factura->get_asiento() )
@@ -279,19 +279,19 @@ class ventas_factura extends fs_controller
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
          }
-         
+
          foreach($asiento_factura->errors as $err)
          {
             $this->new_error_msg($err);
          }
-         
+
          foreach($asiento_factura->messages as $msg)
          {
             $this->new_message($msg);
          }
       }
    }
-   
+
    private function pagar($pagada = TRUE)
    {
       /// ¿Hay asiento?
@@ -304,7 +304,7 @@ class ventas_factura extends fs_controller
       {
          /// marcar como impagada
          $this->factura->pagada = FALSE;
-         
+
          /// ¿Eliminamos el asiento de pago?
          $as1 = new asiento();
          $asiento = $as1->get($this->factura->idasientop);
@@ -313,7 +313,7 @@ class ventas_factura extends fs_controller
             $asiento->delete();
             $this->new_message('Asiento de pago eliminado.');
          }
-         
+
          $this->factura->idasientop = NULL;
          if( $this->factura->save() )
          {
@@ -331,24 +331,28 @@ class ventas_factura extends fs_controller
          if($asiento)
          {
             /// nos aseguramos que el cliente tenga subcuenta en el ejercicio actual
+            $subcli = FALSE;
             $eje = $this->ejercicio->get_by_fecha( $this->today() );
             if($eje)
             {
-               $this->cliente->get_subcuenta($eje->codejercicio);
+               $subcli = $this->cliente->get_subcuenta($eje->codejercicio);
             }
-            
+
             $asiento_factura = new asiento_factura();
-            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago);
-            $this->factura->pagada = TRUE;
-            if( $this->factura->save() )
+            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subcli);
+            if($this->factura->idasientop)
             {
-               $this->new_message('Asiento de pago generado.');
+                $this->factura->pagada = TRUE;
+                if( $this->factura->save() )
+                {
+                      $this->new_message('<a href="'.$this->factura->asiento_pago_url().'">Asiento de pago</a> generado.');
+                }
+                else
+                {
+                   $this->new_error_msg('Error al marcar la factura como pagada.');
+                }
             }
-            else
-            {
-               $this->new_error_msg('Error al marcar la factura como pagada.');
-            }
-            
+
             foreach($asiento_factura->errors as $err)
             {
                $this->new_error_msg($err);
@@ -360,20 +364,20 @@ class ventas_factura extends fs_controller
          }
       }
    }
-   
+
    private function nuevo_vencimiento($fecha, $codpago)
    {
       $vencimiento = $fecha;
-      
+
       $formap = $this->forma_pago->get($codpago);
       if($formap)
       {
          $vencimiento = Date('d-m-Y', strtotime($fecha.' '.$formap->vencimiento));
       }
-      
+
       return $vencimiento;
    }
-   
+
    private function anular_factura()
    {
       /*
@@ -392,7 +396,7 @@ class ventas_factura extends fs_controller
       $factura->numero2 = $numero_ncf['NCF'];
       $factura->codigo = NULL;
       $factura->idasiento = NULL;
-      
+
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
       $factura->codserie = $_POST['codserie'];
@@ -404,12 +408,12 @@ class ventas_factura extends fs_controller
       $factura->totaliva = 0 - $factura->totaliva;
       $factura->totalrecargo = 0 - $factura->totalrecargo;
       $factura->total = $factura->neto + $factura->totaliva + $factura->totalrecargo - $factura->totalirpf;
-      
+
       if( $factura->save() )
       {
          $articulo = new articulo();
          $error = FALSE;
-         
+
          /// copiamos las líneas en negativo
          foreach($this->factura->get_lineas() as $lin)
          {
@@ -419,20 +423,20 @@ class ventas_factura extends fs_controller
             {
                $art->sum_stock($factura->codalmacen, $lin->cantidad);
             }
-            
+
             $lin->idlinea = NULL;
             $lin->idalbaran = NULL;
             $lin->idfactura = $factura->idfactura;
             $lin->cantidad = 0 - $lin->cantidad;
             $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
             $lin->pvptotal = $lin->pvpunitario * (100 - $lin->dtopor)/100 * $lin->cantidad;
-            
+
             if( !$lin->save() )
             {
                $error = TRUE;
             }
          }
-         
+
          if($error)
          {
             $factura->delete();
@@ -441,14 +445,14 @@ class ventas_factura extends fs_controller
          else
          {
              /*
-            * Luego de que todo este correcto generamos el NCF la Nota de Credito 
+            * Luego de que todo este correcto generamos el NCF la Nota de Credito
             */
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
             $ncf_controller = new helper_ncf();
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);
-            
+
             $this->factura->anulada = TRUE;
             $this->factura->save();
          }
@@ -458,28 +462,28 @@ class ventas_factura extends fs_controller
          $this->new_error_msg('Error al anular la factura.');
       }
    }
-   
+
    private function get_factura_rectificativa()
    {
       $sql = "SELECT * FROM facturascli WHERE idfacturarect = ".$this->factura->var2str($this->factura->idfactura);
-      
+
       $data = $this->db->select($sql);
       if($data)
       {
          $this->rectificativa = new factura_cliente($data[0]);
       }
    }
-   
+
    public function get_cuentas_bancarias()
    {
       $cuentas = array();
-      
+
       $cbc0 = new cuenta_banco_cliente();
       foreach($cbc0->all_from_cliente($this->factura->codcliente) as $cuenta)
       {
          $cuentas[] = $cuenta;
       }
-      
+
       return $cuentas;
    }
 }

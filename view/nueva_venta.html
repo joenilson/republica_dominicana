@@ -10,7 +10,7 @@
    cliente = {function="json_encode($fsc->cliente_s)"};
    nueva_venta_url = '{$fsc->url()}';
    kiwimaru_url = '{#FS_COMMUNITY_URL#}/index.php?page=kiwimaru';
-   
+
    $(document).ready(function() {
       usar_serie();
       usar_almacen();
@@ -58,7 +58,7 @@
          </div>
       </div>
    </div>
-   
+
    <div role="tabpanel">
       <ul class="nav nav-tabs" role="tablist">
          <li role="presentation" class="active">
@@ -105,7 +105,7 @@
                         <td colspan="2">
                            <div class="form-control text-right">Totales</div>
                         </td>
-                        <td>  
+                        <td>
                            <div id="aneto" class="form-control text-right" style="font-weight: bold;">{$fsc->show_numero(0)}</div>
                         </td>
                         <td>
@@ -254,7 +254,7 @@
          </div>
       </div>
    </div>
-   
+
    <div class="container-fluid" style="margin-top: 10px;">
       <div class="row">
          <div class="col-sm-6">
@@ -269,15 +269,37 @@
          </div>
       </div>
       <div class="row">
-         <div class="col-sm-12" style="margin-top: 20px;">
+         <div class="col-sm-12">
+            <br/>
+         </div>
+      </div>
+      <div class="row">
+         <div class="col-sm-6">
             <div class="form-group">
                Observaciones:
                <textarea class="form-control" name="observaciones" rows="3"></textarea>
             </div>
          </div>
+         <div class="col-sm-6">
+            <p class="help-block">
+               Ajusta los precios fácilmente introduciendo primero la cantidad
+               y luego el total, se calculará el precio automaticamente.
+               También puedes ajustar el total de cada línea en cualquier momento,
+               se recalcula el descuento para ajustarse al precio final de la línea.
+            </p>
+            <p class="help-block">
+               <b>{#FS_IRPF#}</b>: si quieres añadir {#FS_IRPF#} a un {#FS_PRESUPUESTO#},
+               {#FS_PEDIDO#}, {#FS_ALBARAN#} o factura, usa una serie que tenga {#FS_IRPF#}.
+            </p>
+            <p class="help-block">
+               <b>RE</b>: si quieres añadir recargo de equivalencia a un {#FS_PRESUPUESTO#},
+               {#FS_PEDIDO#}, {#FS_ALBARAN#} o factura de venta, debes activar el recargo de
+               equivalencia en ese cliente.
+            </p>
       </div>
    </div>
-   
+   </div>
+
    <div class="modal fade" id="modal_guardar">
       <div class="modal-dialog">
          <div class="modal-content">
@@ -507,7 +529,7 @@
    $(document).ready(function() {
       $("#modal_cliente").modal('show');
       document.f_nueva_venta.ac_cliente.focus();
-      
+
       $("#ac_cliente").autocomplete({
          serviceUrl: '{$fsc->url()}',
          paramName: 'buscar_cliente',

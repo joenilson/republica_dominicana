@@ -62,10 +62,10 @@
     {
         $(".pseudotab_cli").hide();
         $("#lista_botones_cli a").removeClass('active');
-        
+
         $("#ext_"+name).show();
         $("#b_ext_"+name).addClass('active');
-        
+
         return false;
     }
     function delete_cuenta(id)
@@ -143,10 +143,10 @@
 <script type="text/javascript">
     // Load the Visualization API and the piechart package.
     google.load('visualization', '1.0', {'packages':['corechart']});
-    
+
     // Set a callback to run when the Google Visualization API is loaded.
     google.setOnLoadCallback(drawChart);
-    
+
     // Callback that creates and populates a data table,
     // instantiates the pie chart, passes in the data and
     // draws it.
@@ -162,7 +162,7 @@
         ['{$value['mes']}', {$value['albaranes']}, {$value['facturas']}],
     {/loop}
     ]);
-    
+
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.AreaChart(document.getElementById('chart_albaranes_month'));
     chart.draw(data);
@@ -271,8 +271,8 @@
                                     <div class="form-group">
                                         <a href="index.php?page=ventas_clientes#grupos">Grupo de clientes</a>:
                                         <select class="form-control" name="codgrupo">
-                                            <option value="---">Ninguno</option>
-                                            <option value="---">-----</option>
+                                 <option value="">Ninguno</option>
+                                 <option value="">-----</option>
                                             {loop="$fsc->grupo->all()"}
                                             <option value="{$value->codgrupo}"{if="$value->codgrupo==$fsc->cliente->codgrupo"} selected=""{/if}>{$value->nombre}</option>
                                             {/loop}
@@ -283,8 +283,14 @@
                                     <div class="form-group">
                                         <a href="{$fsc->serie->url()}">Serie</a>:
                                         <select class="form-control" name="codserie">
+                                            <option value="">Predeterminada</option>
+                                            <option value="">------</option>
                                             {loop="$fsc->serie->all()"}
-                                            <option value="{$value->codserie}"{if="$value->codserie==$fsc->cliente->codserie"} selected=""{/if}>{$value->descripcion}</option>
+                                                {if="$value->codserie==$fsc->proveedor->codserie"}
+                                                <option value="{$value->codserie}" selected="">{$value->descripcion}</option>
+                                                {else}
+                                                <option value="{$value->codserie}">{$value->descripcion}</option>
+                                                {/if}
                                             {/loop}
                                         </select>
                                     </div>
@@ -343,8 +349,8 @@
                                     <div class="form-group">
                                         <a href="{$fsc->agente->url()}">Empleado asignado</a>:
                                         <select class="form-control" name="codagente">
-                                            <option value="---">Ninguno</option>
-                                            <option value="---">-----</option>
+                                            <option value="">Ninguno</option>
+                                            <option value="">-----</option>
                                             {loop="$fsc->agente->all()"}
                                             <option value="{$value->codagente}"{if="$value->codagente==$fsc->cliente->codagente"} selected=""{/if}>{$value->get_fullname()}</option>
                                             {/loop}
@@ -431,12 +437,41 @@
                         </div>
                         <div class="panel-body">
                             <div class="row">
-                                <div class="col-sm-5">
+                        <div class="col-sm-3">
                                     <div class="form-group">
+                              Descripción:
                                         <input class="form-control" type="text" name="descripcion" value="{$value->descripcion}" placeholder="Cuenta principal" autocomplete="off"/>
                                     </div>
                                 </div>
+                        <div class="col-sm-6">
+                           <div class="form-group">
+                              <a target="_blank" href="http://es.wikipedia.org/wiki/International_Bank_Account_Number">IBAN</a>:
+                              <input class="form-control" type="text" name="iban" value="{$value->iban}" maxlength="34" placeholder="ES12345678901234567890123456" autocomplete="off"/>
+                           </div>
+                        </div>
                                 <div class="col-sm-3">
+                           <div class="form-group">
+                              <a target="_blank" href="http://es.wikipedia.org/wiki/Society_for_Worldwide_Interbank_Financial_Telecommunication">SWIFT</a> o BIC:
+                              <input class="form-control" type="text" name="swift" value="{$value->swift}" maxlength="11" autocomplete="off"/>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-sm-2">
+                           <div class="form-group">
+                              Fecha del mandato:
+                              <input type="text" name="fmandato" value="{$value->fmandato}" class="form-control datepicker" autocomplete="off"/>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <br/>
+                           <p class="help-block">
+                              Si el cliente ha autorizado la <b>domiciliación</b> de recibos, debes especificar
+                              la fecha del mandato: la fecha en la que autorizó.
+                           </p>
+                        </div>
+                        <div class="col-sm-2">
+                           <br/>
                                     <div class="checkbox">
                                         <label>
                                             {if="$value->principal"}
@@ -444,11 +479,12 @@
                                             {else}
                                             <input type="checkbox" name="principal" value="TRUE"/>
                                             {/if}
-                                            Cuenta principal
+                                 Esta es la cuenta principal del cliente
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 text-right">
+                           <br/>
                                     <div class="btn-group">
                                         <a class="btn btn-sm btn-danger" onclick="delete_cuenta('{$value->codcuenta}');">
                                             <span class="glyphicon glyphicon-trash"></span>
@@ -461,22 +497,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <a target="_blank" href="http://es.wikipedia.org/wiki/International_Bank_Account_Number">IBAN</a>:
-                                        <input class="form-control" type="text" name="iban" value="{$value->iban}" maxlength="28" placeholder="ES12345678901234567890123456" autocomplete="off"/>
                                     </div>
                                 </div>
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <a target="_blank" href="http://es.wikipedia.org/wiki/Society_for_Worldwide_Interbank_Financial_Telecommunication">SWIFT</a> o BIC:
-                                        <input class="form-control" type="text" name="swift" value="{$value->swift}" maxlength="11" autocomplete="off"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </form>
                 {/loop}
                 <div class="panel panel-success">
@@ -673,7 +695,7 @@
                     </div>
                     <div class="form-group">
                         <a target="_blank" href="http://es.wikipedia.org/wiki/International_Bank_Account_Number">IBAN</a>:
-                        <input class="form-control" type="text" name="iban" maxlength="28" placeholder="ES12345678901234567890123456" autocomplete="off"/>
+                        <input class="form-control" type="text" name="iban" maxlength="34" placeholder="ES12345678901234567890123456" autocomplete="off"/>
                     </div>
                     <div class="form-group">
                         <a target="_blank" href="http://es.wikipedia.org/wiki/Society_for_Worldwide_Interbank_Financial_Telecommunication">SWIFT</a> o BIC:

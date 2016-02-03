@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -49,12 +49,12 @@ class imprimir_facturas extends fs_controller
    public $total_resultados_comision;
    public $total_resultados_txt;
    public $ncf_ventas;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Imprimir '.ucfirst(FS_FACTURAS), 'ventas');
    }
-   
+
    protected function private_core()
    {
       $this->agente = new agente();
@@ -72,13 +72,13 @@ class imprimir_facturas extends fs_controller
       {
          $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
       }
-      
+
       $this->offset = 0;
       if( isset($_REQUEST['offset']) )
       {
          $this->offset = intval($_REQUEST['offset']);
       }
-      
+
       $this->order = 'facturascli.fecha DESC';
       if( isset($_GET['order']) )
       {
@@ -98,14 +98,14 @@ class imprimir_facturas extends fs_controller
          {
             $this->order = 'vencimiento ASC';
          }
-         
+
          setcookie('ventas_fac_order', $this->order, time()+FS_COOKIES_EXPIRE);
       }
       else if( isset($_COOKIE['ventas_fac_order']) )
       {
          $this->order = $_COOKIE['ventas_fac_order'];
       }
-      
+
       if( isset($_POST['buscar_lineas']) )
       {
          $this->buscar_lineas();
@@ -117,10 +117,10 @@ class imprimir_facturas extends fs_controller
       else if( isset($_GET['ref']) )
       {
          $this->template = 'extension/ventas_facturas_articulo';
-         
+
          $articulo = new articulo();
          $this->articulo = $articulo->get($_GET['ref']);
-         
+
          $linea = new linea_factura_cliente();
          $this->resultados = $linea->all_from_articulo($_GET['ref'], $this->offset);
       }
@@ -137,7 +137,7 @@ class imprimir_facturas extends fs_controller
          $this->total_resultados = '';
          $this->total_resultados_comision = 0;
          $this->total_resultados_txt = '';
-         
+
          if( isset($_GET['delete']) )
          {
             $this->delete_factura();
@@ -153,7 +153,7 @@ class imprimir_facturas extends fs_controller
                 */
                $this->mostrar = 'buscar';
             }
-            
+
             if( isset($_REQUEST['codcliente']) )
             {
                if($_REQUEST['codcliente'] != '')
@@ -162,24 +162,24 @@ class imprimir_facturas extends fs_controller
                   $this->cliente = $cli0->get($_REQUEST['codcliente']);
                }
             }
-            
+
             if( isset($_REQUEST['codagente']) )
             {
                $this->codagente = $_REQUEST['codagente'];
             }
-            
+
             if( isset($_REQUEST['codserie']) )
             {
                $this->codserie = $_REQUEST['codserie'];
             }
-            
+
             if( isset($_REQUEST['desde']) )
             {
                $this->desde = $_REQUEST['desde'];
                $this->hasta = $_REQUEST['hasta'];
             }
          }
-         
+
          /// añadimos segundo nivel de ordenación
          $order2 = '';
          if( substr($this->order, -4) == 'DESC' )
@@ -190,11 +190,11 @@ class imprimir_facturas extends fs_controller
          {
             $order2 = ', codigo ASC';
          }
-         
+
          if($this->mostrar == 'sinpagar')
          {
             $this->resultados = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
-            
+
             if($this->offset == 0)
             {
                $this->total_resultados = 0;
@@ -213,23 +213,23 @@ class imprimir_facturas extends fs_controller
             $this->resultados = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
       }
    }
-   
+
    private function buscar_cliente()
    {
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
-      
+
       $cli0 = new cliente();
       $json = array();
       foreach($cli0->search($_REQUEST['buscar_cliente']) as $cli)
       {
          $json[] = array('value' => $cli->nombre, 'data' => $cli->codcliente);
       }
-      
+
       header('Content-Type: application/json');
       echo json_encode( array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json) );
    }
-   
+
    public function paginas()
    {
       $codcliente = '';
@@ -237,7 +237,7 @@ class imprimir_facturas extends fs_controller
       {
          $codcliente = $this->cliente->codcliente;
       }
-      
+
       $url = $this->url()."&mostrar=".$this->mostrar
               ."&query=".$this->query
               ."&codserie=".$this->codserie
@@ -245,12 +245,12 @@ class imprimir_facturas extends fs_controller
               ."&codcliente=".$codcliente
               ."&desde=".$this->desde
               ."&hasta=".$this->hasta;
-      
+
       $paginas = array();
       $i = 0;
       $num = 0;
       $actual = 1;
-      
+
       if($this->mostrar == 'sinpagar')
       {
          $total = $this->total_sinpagar();
@@ -263,7 +263,7 @@ class imprimir_facturas extends fs_controller
       {
          $total = $this->total_registros();
       }
-      
+
       /// añadimos todas la página
       while($num < $total)
       {
@@ -272,21 +272,21 @@ class imprimir_facturas extends fs_controller
              'num' => $i + 1,
              'actual' => ($num == $this->offset)
          );
-         
+
          if($num == $this->offset)
          {
             $actual = $i;
          }
-         
+
          $i++;
          $num += FS_ITEM_LIMIT;
       }
-      
+
       /// ahora descartamos
       foreach($paginas as $j => $value)
       {
          $enmedio = intval($i/2);
-         
+
          /**
           * descartamos todo excepto la primera, la última, la de enmedio,
           * la actual, las 5 anteriores y las 5 siguientes
@@ -296,7 +296,7 @@ class imprimir_facturas extends fs_controller
             unset($paginas[$j]);
          }
       }
-      
+
       if( count($paginas) > 1 )
       {
          return $paginas;
@@ -306,15 +306,15 @@ class imprimir_facturas extends fs_controller
          return array();
       }
    }
-   
+
    public function buscar_lineas()
    {
       /// cambiamos la plantilla HTML
       $this->template = 'ajax/ventas_lineas_facturas';
-      
+
       $this->buscar_lineas = $_POST['buscar_lineas'];
       $linea = new linea_factura_cliente();
-      
+
       if( isset($_POST['codcliente']) )
       {
          $this->lineas = $linea->search_from_cliente2($_POST['codcliente'], $this->buscar_lineas, $_POST['buscar_lineas_o']);
@@ -324,7 +324,7 @@ class imprimir_facturas extends fs_controller
          $this->lineas = $linea->search($this->buscar_lineas);
       }
    }
-   
+
    private function share_extension()
    {
       /// añadimos las extensiones para clientes, agentes y artículos
@@ -357,13 +357,13 @@ class imprimir_facturas extends fs_controller
       foreach($extensiones as $ext)
       {
          $fsext0 = new fs_extension($ext);
-         if( !$fsext0->save() )
+         if( !$fsext0->delete() )
          {
             $this->new_error_msg('Imposible guardar los datos de la extensión '.$ext['name'].'.');
          }
       }
    }
-   
+
    public function total_sinpagar()
    {
       $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli WHERE pagada = false;");
@@ -374,7 +374,7 @@ class imprimir_facturas extends fs_controller
       else
          return 0;
    }
-   
+
    private function total_registros()
    {
       $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli;");
@@ -385,7 +385,7 @@ class imprimir_facturas extends fs_controller
       else
          return 0;
    }
-   
+
    private function buscar($order2)
    {
       $this->resultados = array();
@@ -393,7 +393,7 @@ class imprimir_facturas extends fs_controller
       $query = $this->agente->no_html( strtolower($this->query) );
       $sql = " FROM facturascli, ncf_ventas ";
       $where = 'WHERE ';
-      
+
       if($this->query != '')
       {
          $sql .= $where;
@@ -408,45 +408,45 @@ class imprimir_facturas extends fs_controller
          }
          $where = ' AND ';
       }
-      
+
       if($this->codagente != '')
       {
-         
+
          $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
          $where = ' AND ';
       }
-      
+
       if($this->cliente)
       {
          $sql .= $where."codcliente = ".$this->agente->var2str($this->cliente->codcliente);
          $where = ' AND ';
       }
-      
+
       if($this->codserie != '')
       {
          $sql .= $where."codserie = ".$this->agente->var2str($this->codserie);
          $where = ' AND ';
       }
-      
+
       if($this->desde != '')
       {
          $sql .= $where."facturascli.fecha >= ".$this->agente->var2str($this->desde);
          $where = ' AND ';
       }
-      
+
       if($this->hasta != '')
       {
          $sql .= $where."facturascli.fecha <= ".$this->agente->var2str($this->hasta);
          $where = ' AND ';
       }
-      
+
       $sql .= $where.' idfactura = documento ';
-      
+
       $data = $this->db->select("SELECT COUNT(idfactura) as total".$sql);
       if($data)
       {
          $this->num_resultados = intval($data[0]['total']);
-         
+
          $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY ".$this->order.$order2, FS_ITEM_LIMIT, $this->offset);
          if($data2)
          {
@@ -459,14 +459,14 @@ class imprimir_facturas extends fs_controller
                $this->resultados[] = $values;
             }
          }
-         
+
          $data2 = $this->db->select("SELECT SUM(total) as total".$sql);
          if($data2)
          {
             $this->total_resultados = floatval($data2[0]['total']);
             $this->total_resultados_txt = 'Suma total de los resultados:';
          }
-         
+
          if($this->codagente !== '')
          {
             /// calculamos la comisión del empleado
@@ -478,7 +478,7 @@ class imprimir_facturas extends fs_controller
          }
       }
    }
-   
+
    private function delete_factura()
    {
       $delete = \filter_input(INPUT_GET, 'delete');
@@ -499,7 +499,7 @@ class imprimir_facturas extends fs_controller
                }
             }
          }
-         
+
          $ncf0 = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
          $ncf0->motivo = $motivo;
          $ncf0->estado = FALSE;
@@ -529,7 +529,7 @@ class imprimir_facturas extends fs_controller
       else
          $this->new_error_msg("Factura no encontrada.");
    }
-   
+
    private function factura_all_sin_pagar($offset = 0, $limit = FS_ITEM_LIMIT, $order = 'vencimiento ASC, codigo ASC') {
         $faclist = array();
         $sql = "SELECT * FROM facturascli, ncf_ventas WHERE idfactura = documento AND pagada = false ORDER BY " . $order;
