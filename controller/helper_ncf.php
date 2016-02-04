@@ -33,19 +33,19 @@ class helper_ncf extends fs_controller {
     public $almacen;
     public $pais;
     public $array_series;
-    
+
     public function __construct() {
         parent::__construct(__CLASS__, 'Helper de NCF', 'contabilidad', FALSE, FALSE);
     }
-    
+
     protected function private_core() {
         $this->pais = new pais();
         $this->ncf_rango = new ncf_rango();
         $this->ncf_tipo = new ncf_tipo();
         $this->array_series = \range('A', 'U');
     }
-    
-    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf) {
+
+    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false) {
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {
@@ -66,6 +66,7 @@ class helper_ncf extends fs_controller {
                 $val_ncf = $ncf_orig->get_ncf($this->empresa->id, $factura->idfacturarect, $factura->codcliente);
                 $ncf_factura->documento_modifica = $factura->idfacturarect;
                 $ncf_factura->ncf_modifica = $val_ncf->ncf;
+                $ncf_factura->motivo = $motivo;
             }
             if (!$ncf_factura->save()) {
                 return $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->idfactura . ' con el NCF: ' . $numero_ncf['NCF'] . ' Anule la factura e intentelo nuevamente.');

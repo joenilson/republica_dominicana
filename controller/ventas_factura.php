@@ -31,6 +31,7 @@ require_model('partida.php');
 require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_ventas.php');
+require_model('ncf_tipo_anulacion.php');
 require_once 'helper_ncf.php';
 
 class ventas_factura extends fs_controller
@@ -49,6 +50,7 @@ class ventas_factura extends fs_controller
    public $rectificativa;
    public $serie;
    public $ncf_ventas;
+   public $ncf_tipo_anulacion;
    public $ncf;
 
    public function __construct()
@@ -74,6 +76,7 @@ class ventas_factura extends fs_controller
       $this->rectificativa = FALSE;
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
+      $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
 
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
@@ -397,6 +400,9 @@ class ventas_factura extends fs_controller
       if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
           return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
       }
+
+      $motivo = \filter_input(INPUT_POST, 'motivo');
+      $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
       /// generamos una factura rectificativa a partir de la actual
       $factura = clone $this->factura;
       $factura->idfactura = NULL;
@@ -408,9 +414,9 @@ class ventas_factura extends fs_controller
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
       $factura->codserie = $_POST['codserie'];
-      $factura->fecha = $this->today();
+      $factura->fecha = $_POST['fecha'];
       $factura->hora = $this->hour();
-      $factura->observaciones = $_POST['motivo'];
+      $factura->observaciones = $motivo_anulacion->descripcion;
       $factura->neto = 0 - $factura->neto;
       $factura->totalirpf = 0 - $factura->totalirpf;
       $factura->totaliva = 0 - $factura->totaliva;
@@ -457,7 +463,7 @@ class ventas_factura extends fs_controller
             */
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
             $ncf_controller = new helper_ncf();
-            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);
 

@@ -28,6 +28,10 @@
          event.preventDefault();
          $("#modal_eliminar").modal('show');
       });
+      $("#b_rectificar").click(function(event) {
+         event.preventDefault();
+         $("#modal_rectificar").modal('show');
+      });
       $("#link_eliminar").click(function(event){
          event.preventDefault();
          $("#f_eliminar").attr('action', "{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}");
@@ -132,12 +136,17 @@
                 {if="!$fsc->factura->pagada"}
                     {if="$fsc->allow_delete"}
                         {if="$fsc->ncf->tipo_comprobante!='04'"}
+                        <a id="b_rectificar" class="btn btn-sm btn-warning" href="#">
+                           <span class="glyphicon glyphicon-paperclip"></span>
+                           <span class="hidden-sm hidden-xs">&nbsp; Rectificar</span>
+                        </a>
                         <a id="b_eliminar" class="btn btn-sm btn-danger" href="#">
                            <span class="glyphicon glyphicon-trash"></span>
                            <span class="hidden-sm hidden-xs">&nbsp; Eliminar</span>
                         </a>
                         {/if}
                     {/if}
+
                     <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
                        <span class="glyphicon glyphicon-floppy-disk"></span>
                        <span class="hidden-xs">&nbsp; Guardar</span>
@@ -653,7 +662,16 @@
                   </select>
                </div>
                <div class="form-group">
-                  <textarea name="motivo" id="motivo" class="form-control" placeholder="Motivo de la anulación"></textarea>
+                   Fecha de Anulaci&oacute;n:
+                   <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->factura->fecha}" autocomplete="off"/>
+               </div>
+               <div class="form-group">
+                   Motivo de la Anulaci&oacute;n:
+                   <select name="motivo" class="form-control">
+                   {loop="$fsc->ncf_tipo_anulacion->all()"}
+                   <option value="{$value->codigo}">{$value->codigo} {$value->descripcion}</option>
+                   {/loop}
+                   </select>
                </div>
             </div>
             <div class="modal-footer">
@@ -662,6 +680,57 @@
                </button>
                <button type="submit" class="btn btn-sm btn-warning">
                   <span class="glyphicon glyphicon-flag"></span> &nbsp; Anular
+               </button>
+            </div>
+         </div>
+      </div>
+   </div>
+</form>
+<form action="{$fsc->url()}" id="f_rectificar" method="post" class="form">
+   <input type="hidden" name="rectificar" value="TRUE"/>
+   <input type="hidden" name="idfactura" value="{$fsc->factura->idfactura}"/>
+   <div class="modal fade" id="modal_rectificar">
+      <div class="modal-dialog">
+         <div class="modal-content">
+            <div class="modal-header">
+               <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+               <h4 class="modal-title">¿Quiere rectificar contablemente esta {#FS_FACTURA#}?</h4>
+            </div>
+            <div class="modal-body bg-warning">
+               El rectificar contablemente una factura no moverá el stock, ni anulará la factura solo creará una {#FS_FACTURA_RECTIFICATIVA#}.<br />
+               Se generará una <b>{#FS_FACTURA_RECTIFICATIVA#}</b>, primero debe elegir
+               la serie para la {#FS_FACTURA_RECTIFICATIVA#}:
+               <div class="form-group">
+                  <select name="codserie" class="form-control">
+                  {loop="$fsc->serie->all()"}
+                     {if="$value->codserie==$fsc->factura->codserie"}
+                     <option value="{$value->codserie}" selected="">{$value->descripcion}</option>
+                     {else}
+                     <option value="{$value->codserie}">{$value->descripcion}</option>
+                     {/if}
+                  {/loop}
+                  </select>
+               </div>
+               <div class="form-group">
+                   Fecha de rectificación:
+                   <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->factura->fecha}" autocomplete="off"/>
+               </div>
+               <div class="form-group">
+                  Monto a rectificar:
+                  <input type="number" step="any" name="monto" id="monto" class="form-control" placeholder="monto a rectificar" required></textarea>
+               </div>
+               <div class="form-group">
+                   Motivo de la rectificación:
+                   <select name="motivo" class="form-control">
+                   {loop="$fsc->ncf_tipo_anulacion->all()"}
+                   <option value="{$value->codigo}">{$value->codigo} {$value->descripcion}</option>
+                   {/loop}
+                   </select>
+               </div>
+            </div>
+            <div class="modal-footer">
+               <button type="submit" class="btn btn-sm btn-warning">
+                  <span class="glyphicon glyphicon-flag"></span> &nbsp; Rectificar
                </button>
             </div>
          </div>

@@ -25,6 +25,7 @@ require_model('linea_factura_cliente.php');
 require_model('asiento_factura.php');
 require_model('ncf_ventas.php');
 require_model('ncf_rango.php');
+require_model('ncf_tipo_anulacion.php');
 require_model('albaran_cliente.php');
 require_model('linea_albaran_cliente.php');
 
@@ -52,6 +53,7 @@ class ventas_facturas extends fs_controller
    public $total_resultados_comision;
    public $total_resultados_txt;
    public $ncf_ventas;
+   public $ncf_tipo_anulacion;
    public $albaran;
 
    public function __construct()
@@ -66,6 +68,7 @@ class ventas_facturas extends fs_controller
       $this->huecos = array();
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
+      $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
       $this->mostrar = 'todo';
       if( isset($_GET['mostrar']) )
       {
@@ -512,6 +515,7 @@ class ventas_facturas extends fs_controller
       $delete = \filter_input(INPUT_GET, 'delete');
       $fact = $this->factura->get($delete);
       $motivo = \filter_input(INPUT_POST, 'motivo');
+      $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
       if ($fact)
       {
          $albaranes = new albaran_cliente();
@@ -561,7 +565,7 @@ class ventas_facturas extends fs_controller
          }
 
          $ncf0 = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
-         $ncf0->motivo = $motivo;
+         $ncf0->motivo = $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion;
          $ncf0->estado = FALSE;
          $ncf0->usuario_modificacion = $this->user->nick;
          $ncf0->fecha_modificacion = Date('d-m-Y H:i:s');
