@@ -132,7 +132,7 @@
                <span class="glyphicon glyphicon-plus"></span>
             </a>
             <div class="btn-group">
-            {if="$fsc->ncf->estado=='t'"}
+            {if="$fsc->ncf->estado"}
                 {if="!$fsc->factura->pagada"}
                     {if="$fsc->allow_delete"}
                         {if="$fsc->ncf->tipo_comprobante!='04'"}
@@ -149,7 +149,7 @@
 
                     <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
                        <span class="glyphicon glyphicon-floppy-disk"></span>
-                       <span class="hidden-xs">&nbsp; Guardar</span>
+                       <span class="hidden-xs">&nbsp; Guardar {$fsc->ncf->estado}</span>
                     </button>
                 {/if}
             {/if}

@@ -466,7 +466,11 @@ class ventas_factura extends fs_controller
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);
-
+            $ncf_factura = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
+            $ncf_factura->motivo = $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion;
+            $ncf_factura->fecha_modificacion = \date('Y-m-d H:i:s');
+            $ncf_factura->usuario_modificacion = $this->user->nick;
+            $ncf_factura->anular();
             $this->factura->anulada = TRUE;
             $this->factura->save();
          }
