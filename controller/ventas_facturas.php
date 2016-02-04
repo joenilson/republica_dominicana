@@ -564,7 +564,7 @@ class ventas_facturas extends fs_controller
          $ncf0->motivo = $motivo;
          $ncf0->estado = FALSE;
          $ncf0->usuario_modificacion = $this->user->nick;
-         $ncf0->fecha_modificacion = Date('d-m-Y H:i');
+         $ncf0->fecha_modificacion = Date('d-m-Y H:i:s');
          if ($ncf0->anular()) {
             $asiento_factura = new asiento_factura();
             $asiento_factura->soloasiento = TRUE;

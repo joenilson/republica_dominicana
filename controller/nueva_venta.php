@@ -202,9 +202,9 @@ class nueva_venta extends fs_controller
                         $ncf_entidad_tipo->tipo_entidad = 'CLI';
                         $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
                         $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
-                        $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i');
+                        $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i:s');
                         $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
-                        $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i');
+                        $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i:s');
                         $ncf_entidad_tipo->estado = 'true';
                         if (!$ncf_entidad_tipo->save()) {
                             $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
