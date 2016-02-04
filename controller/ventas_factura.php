@@ -55,7 +55,7 @@ class ventas_factura extends fs_controller
    {
       parent::__construct(__CLASS__, 'Factura de cliente', 'ventas', FALSE, FALSE);
    }
-   
+
    protected function private_core()
    {
       /// ¿El usuario tiene permiso para eliminar en esta página?
@@ -228,6 +228,14 @@ class ventas_factura extends fs_controller
             {
                $this->new_error_msg("Imposible modificar la fecha del asiento.");
             }
+         }
+
+         $ncfventas0 = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
+         $ncfventas0->fecha = $this->factura->fecha;
+         $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
+         $ncfventas0->usuario_modificacion = $this->user->nick;
+         if(!$ncfventas0->save()){
+             $this->new_error_msg("Error al actualizar los datos de la tabla de NCF");
          }
          $this->new_message("Factura modificada correctamente.");
          $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());

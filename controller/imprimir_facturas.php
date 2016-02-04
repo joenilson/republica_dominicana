@@ -357,10 +357,7 @@ class imprimir_facturas extends fs_controller
       foreach($extensiones as $ext)
       {
          $fsext0 = new fs_extension($ext);
-         if( !$fsext0->delete() )
-         {
-            $this->new_error_msg('Imposible guardar los datos de la extensión '.$ext['name'].'.');
-         }
+         $fsext0->delete();
       }
    }
 
@@ -504,7 +501,7 @@ class imprimir_facturas extends fs_controller
          $ncf0->motivo = $motivo;
          $ncf0->estado = FALSE;
          $ncf0->usuario_modificacion = $this->user->nick;
-         $ncf0->fecha_modificacion = Date('d-m-Y H:i');
+         $ncf0->fecha_modificacion = Date('d-m-Y H:i:s');
          if ($ncf0->anular()) {
             $asiento_factura = new asiento_factura();
             $asiento_factura->soloasiento = TRUE;

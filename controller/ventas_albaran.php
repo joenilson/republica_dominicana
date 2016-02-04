@@ -465,7 +465,6 @@ class ventas_albaran extends fs_controller
           return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' no será facturado.');
       }
       $factura = new factura_cliente();
-      $factura->fecha = $this->albaran->fecha;
       $factura->apartado = $this->albaran->apartado;
       $factura->cifnif = $this->albaran->cifnif;
       $factura->ciudad = $this->albaran->ciudad;
@@ -493,11 +492,11 @@ class ventas_albaran extends fs_controller
       $factura->porcomision = $this->albaran->porcomision;
 
       /// asignamos el ejercicio que corresponde a la fecha elegida
-      $eje0 = $this->ejercicio->get_by_fecha($factura->fecha);
+      $eje0 = $this->ejercicio->get_by_fecha($_REQUEST['facturar']);
       if($eje0)
       {
          $factura->codejercicio = $eje0->codejercicio;
-         $factura->set_fecha_hora($factura->fecha, $factura->hora);
+         $factura->set_fecha_hora($_REQUEST['facturar'], $factura->hora);
       }
 
       /// comprobamos la forma de pago para saber si hay que marcar la factura como pagada

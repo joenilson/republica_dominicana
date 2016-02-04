@@ -635,8 +635,8 @@ class nueva_venta extends fs_controller
          $albaran->porcomision = $this->agente->porcomision;
 
          $albaran->codcliente = $cliente->codcliente;
-         $albaran->cifnif = $cliente->cifnif;
-         $albaran->nombrecliente = $cliente->razonsocial;
+         $albaran->cifnif = $_POST['cifnif'];
+         $albaran->nombrecliente = $_POST['nombrecliente'];
          $albaran->ciudad = $_POST['ciudad'];
          $albaran->codpais = $_POST['codpais'];
          $albaran->codpostal = $_POST['codpostal'];
@@ -832,8 +832,6 @@ class nueva_venta extends fs_controller
 
       if($continuar)
       {
-         $factura->fecha = $_POST['fecha'];
-         $factura->hora = $_POST['hora'];
          $factura->codejercicio = $ejercicio->codejercicio;
          $factura->codserie = $serie->codserie;
          $factura->set_fecha_hora($_POST['fecha'], $_POST['hora']);
@@ -862,8 +860,8 @@ class nueva_venta extends fs_controller
          $factura->vencimiento = Date('d-m-Y', strtotime($factura->fecha.' '.$forma_pago->vencimiento));
 
          $factura->codcliente = $cliente->codcliente;
-         $factura->cifnif = $cliente->cifnif;
-         $factura->nombrecliente = $cliente->razonsocial;
+         $factura->cifnif = $_POST['cifnif'];
+         $factura->nombrecliente = $_POST['nombrecliente'];
          $factura->ciudad = $_POST['ciudad'];
          $factura->codpais = $_POST['codpais'];
          $factura->codpostal = $_POST['codpostal'];
@@ -1105,8 +1103,8 @@ class nueva_venta extends fs_controller
          $presupuesto->porcomision = $this->agente->porcomision;
 
          $presupuesto->codcliente = $cliente->codcliente;
-         $presupuesto->cifnif = $cliente->cifnif;
-         $presupuesto->nombrecliente = $cliente->razonsocial;
+         $presupuesto->cifnif = $_POST['cifnif'];
+         $presupuesto->nombrecliente = $_POST['nombrecliente'];
          $presupuesto->ciudad = $_POST['ciudad'];
          $presupuesto->codpais = $_POST['codpais'];
          $presupuesto->codpostal = $_POST['codpostal'];
@@ -1300,8 +1298,8 @@ class nueva_venta extends fs_controller
          $pedido->porcomision = $this->agente->porcomision;
 
          $pedido->codcliente = $cliente->codcliente;
-         $pedido->cifnif = $cliente->cifnif;
-         $pedido->nombrecliente = $cliente->razonsocial;
+         $pedido->cifnif = $_POST['cifnif'];
+         $pedido->nombrecliente = $_POST['nombrecliente'];
          $pedido->ciudad = $_POST['ciudad'];
          $pedido->codpais = $_POST['codpais'];
          $pedido->codpostal = $_POST['codpostal'];
