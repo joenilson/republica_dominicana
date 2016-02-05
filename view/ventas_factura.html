@@ -3,6 +3,14 @@
 {if="$fsc->factura"}
 <script type="text/javascript" src="{$fsc->get_js_location('provincias.js')}"></script>
 <script type="text/javascript">
+   function calcular(){
+       var m =  $("#monto_rectificar").val();
+       var i =  $("#impuesto_rectificar").val();
+       var mt = m*((i/100)+1);
+       mt.toFixed(4);
+       $("#monto_total").val(mt);
+   }
+   
    function check_enviar_copia()
    {
       if($("#copia").is(":checked"))
@@ -133,9 +141,7 @@
             </a>
             <div class="btn-group">
             {if="$fsc->ncf->estado"}
-                {if="!$fsc->factura->pagada"}
                     {if="$fsc->allow_delete"}
-                        {if="$fsc->ncf->tipo_comprobante!='04'"}
                         <a id="b_rectificar" class="btn btn-sm btn-warning" href="#">
                            <span class="glyphicon glyphicon-paperclip"></span>
                            <span class="hidden-sm hidden-xs">&nbsp; Rectificar</span>
@@ -144,14 +150,11 @@
                            <span class="glyphicon glyphicon-trash"></span>
                            <span class="hidden-sm hidden-xs">&nbsp; Eliminar</span>
                         </a>
-                        {/if}
                     {/if}
-
                     <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
                        <span class="glyphicon glyphicon-floppy-disk"></span>
-                       <span class="hidden-xs">&nbsp; Guardar {$fsc->ncf->estado}</span>
+                       <span class="hidden-xs">&nbsp; Guardar</span>
                     </button>
-                {/if}
             {/if}
             </div>
          </div>
@@ -715,9 +718,29 @@
                    Fecha de rectificación:
                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->factura->fecha}" autocomplete="off"/>
                </div>
-               <div class="form-group">
-                  Monto a rectificar:
-                  <input type="number" step="any" name="monto" id="monto" class="form-control" placeholder="monto a rectificar" required></textarea>
+               <div class="row">
+                <div class="col-sm-4">
+                     <div class="form-group">
+                        Monto Neto a rectificar:
+                        <input type="number" class="form-control" step="any" onkeyup="calcular()" name="monto" id="monto_rectificar" class="form-control" required>
+                     </div>
+                </div>
+                <div class="col-sm-4">
+                     <div class="form-group">
+                        <a href="{$fsc->impuesto->url()}">{#FS_IVA#}</a> a calcular:
+                        <select name="codimpuesto" onchange="calcular()" id="impuesto_rectificar" class="form-control">
+                           {loop="$fsc->impuesto->all()"}
+                           <option value="{$value->iva}"{if="$value->is_default()"} selected=""{/if}>{$value->descripcion}</option>
+                           {/loop}
+                        </select>
+                     </div>
+                  </div>
+                <div class="col-sm-4">
+                     <div class="form-group" style="text-align: right">
+                        Total:
+                        <input type="number" step="any"  class="form-control" name="monto_total" id="monto_total" class="form-control" readonly>
+                     </div>
+                </div>
                </div>
                <div class="form-group">
                    Motivo de la rectificación:

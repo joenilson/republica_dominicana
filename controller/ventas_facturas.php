@@ -515,6 +515,7 @@ class ventas_facturas extends fs_controller
       $delete = \filter_input(INPUT_GET, 'delete');
       $fact = $this->factura->get($delete);
       $motivo = \filter_input(INPUT_POST, 'motivo');
+      $fecha = \filter_input(INPUT_POST, 'fecha');
       $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
       if ($fact)
       {
@@ -542,7 +543,7 @@ class ventas_facturas extends fs_controller
             $new_albaran->idalbaran = null;
             $new_albaran->idfactura = null;
             $new_albaran->observaciones = ucfirst(FS_ALBARAN)." ".$albaran0->codigo." anulado por eliminación de la factura asociada ".$fact->codigo;
-            $new_albaran->fecha = \date('Y-m-d');
+            $new_albaran->fecha = $fecha;
             $new_albaran->neto = $new_albaran->neto*-1;
             $new_albaran->total = $new_albaran->total*-1;
             $new_albaran->totaliva = $new_albaran->totaliva*-1;
@@ -576,12 +577,14 @@ class ventas_facturas extends fs_controller
             $factrectifica = (!empty($fact->idfacturarect)) ? $fact_rectifica : 'NULL';
             $fact->idfacturarect = ($ncf0->tipo_comprobante == '04') ? null : $fact->idfactura;
             if ($asiento_factura->generar_asiento_venta($fact)) {
-               $this->db->exec("UPDATE facturascli set anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
+               $this->db->exec("UPDATE facturascli set observaciones = '".ucfirst(FS_FACTURA)." eliminada por: ".$motivo_anulacion->descripcion."', anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
+               $this->db->exec("DELETE FROM lineasivafactcli where idfactura = ".$fact->idfactura);
                $fact_lineas = new linea_factura_cliente();
                $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
                foreach ($lineas_fact as $linea) {
                   $linea->delete();
                }
+               $fact->get_lineas_iva();
                $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> reversado correctamente.");
             }
             $this->new_message("<a href='" . $fact->url() . "'>Factura</a> cambiada a estado anulada por error correctamente.");

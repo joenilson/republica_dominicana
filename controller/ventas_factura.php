@@ -32,6 +32,7 @@ require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_ventas.php');
 require_model('ncf_tipo_anulacion.php');
+require_model('impuesto.php');
 require_once 'helper_ncf.php';
 
 class ventas_factura extends fs_controller
@@ -52,6 +53,7 @@ class ventas_factura extends fs_controller
    public $ncf_ventas;
    public $ncf_tipo_anulacion;
    public $ncf;
+   public $impuesto;  
 
    public function __construct()
    {
@@ -77,7 +79,7 @@ class ventas_factura extends fs_controller
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
-
+      $this->impuesto = new impuesto();
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
        * desactivamos el botón de pagada/sin pagar.
@@ -147,6 +149,11 @@ class ventas_factura extends fs_controller
          else if( isset($_POST['anular']) )
          {
             $this->anular_factura();
+         }
+         
+         else if( isset($_POST['rectificar']) )
+         {
+            $this->rectificar_factura();
          }
 
          if($this->factura->idfacturarect)
@@ -410,13 +417,12 @@ class ventas_factura extends fs_controller
       $factura->numero2 = $numero_ncf['NCF'];
       $factura->codigo = NULL;
       $factura->idasiento = NULL;
-
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
       $factura->codserie = $_POST['codserie'];
       $factura->fecha = $_POST['fecha'];
       $factura->hora = $this->hour();
-      $factura->observaciones = $motivo_anulacion->descripcion;
+      $factura->observaciones = "Anulacion generada por: ".$motivo_anulacion->descripcion;
       $factura->neto = 0 - $factura->neto;
       $factura->totalirpf = 0 - $factura->totalirpf;
       $factura->totaliva = 0 - $factura->totaliva;
@@ -471,6 +477,7 @@ class ventas_factura extends fs_controller
             $ncf_factura->fecha_modificacion = \date('Y-m-d H:i:s');
             $ncf_factura->usuario_modificacion = $this->user->nick;
             $ncf_factura->anular();
+            $this->factura->observaciones = ucfirst(FS_FACTURA)." anulada por: ".$motivo_anulacion->descripcion;
             $this->factura->anulada = TRUE;
             $this->factura->save();
          }
@@ -479,6 +486,35 @@ class ventas_factura extends fs_controller
       {
          $this->new_error_msg('Error al anular la factura.');
       }
+   }
+   
+   public function rectificar_factura(){
+       /*
+      * Verificación de disponibilidad del Número de NCF para Notas de Crédito
+      */
+      $tipo_comprobante = '04';
+      $this->ncf_rango = new ncf_rango();
+      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
+      if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+          return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
+      }
+
+      $motivo = \filter_input(INPUT_POST, 'motivo');
+      $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
+      $monto = \filter_input(INPUT_POST, 'monto');
+      $impuesto = \filter_input(INPUT_POST, 'codimpuesto');
+      $monto_total = \filter_input(INPUT_POST, 'monto_total');
+      $fecha = \filter_input(INPUT_POST, 'fecha');
+      $impuesto0 = $this->impuesto->get_by_iva($impuesto);
+      $irpf = 0;
+      $recargo = 0;
+      $factura = clone $this->factura;
+      $factura->fecha = $fecha;
+      $factura->neto = round($monto, FS_NF0);
+      $factura->totaliva = round((monto * ($impuesto/100)), FS_NF0);
+      $factura->totalirpf = round($irpf, FS_NF0);
+      $factura->totalrecargo = round($recargo, FS_NF0);
+      $factura->total = $factura->neto + $factura->totaliva - $factura->totalirpf + $factura->totalrecargo;
    }
 
    private function get_factura_rectificativa()
