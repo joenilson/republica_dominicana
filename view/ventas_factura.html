@@ -10,7 +10,7 @@
        mt.toFixed(4);
        $("#monto_total").val(mt);
    }
-   
+
    function check_enviar_copia()
    {
       if($("#copia").is(":checked"))
@@ -691,7 +691,7 @@
 </form>
 <form action="{$fsc->url()}" id="f_rectificar" method="post" class="form">
    <input type="hidden" name="rectificar" value="TRUE"/>
-   <input type="hidden" name="idfactura" value="{$fsc->factura->idfactura}"/>
+   <input type="hidden" name="id" value="{$fsc->factura->idfactura}"/>
    <div class="modal fade" id="modal_rectificar">
       <div class="modal-dialog">
          <div class="modal-content">

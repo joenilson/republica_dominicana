@@ -53,7 +53,7 @@ class ventas_factura extends fs_controller
    public $ncf_ventas;
    public $ncf_tipo_anulacion;
    public $ncf;
-   public $impuesto;  
+   public $impuesto;
 
    public function __construct()
    {
@@ -150,7 +150,7 @@ class ventas_factura extends fs_controller
          {
             $this->anular_factura();
          }
-         
+
          else if( isset($_POST['rectificar']) )
          {
             $this->rectificar_factura();
@@ -244,8 +244,8 @@ class ventas_factura extends fs_controller
          $ncfventas0->fecha = $this->factura->fecha;
          $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
          $ncfventas0->usuario_modificacion = $this->user->nick;
-         if(!$ncfventas0->save()){
-             $this->new_error_msg("Error al actualizar los datos de la tabla de NCF");
+         if(!$ncfventas0->corregir_fecha()){
+             $this->new_error_msg("Error al actualizar los datos de la tabla de NCF ");
          }
          $this->new_message("Factura modificada correctamente.");
          $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());
@@ -487,7 +487,7 @@ class ventas_factura extends fs_controller
          $this->new_error_msg('Error al anular la factura.');
       }
    }
-   
+
    public function rectificar_factura(){
        /*
       * Verificación de disponibilidad del Número de NCF para Notas de Crédito
@@ -496,25 +496,74 @@ class ventas_factura extends fs_controller
       $this->ncf_rango = new ncf_rango();
       $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
       if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-          return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
+          return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.'.$this->factura->idfactura);
+      }
+
+      $serie = $this->serie->get($_POST['codserie']);
+      if(!$serie)
+      {
+         $this->new_error_msg('Serie no encontrada.');
+         $continuar = FALSE;
       }
 
       $motivo = \filter_input(INPUT_POST, 'motivo');
       $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
-      $monto = \filter_input(INPUT_POST, 'monto');
-      $impuesto = \filter_input(INPUT_POST, 'codimpuesto');
+      $monto0 = \filter_input(INPUT_POST, 'monto');
+      $monto = ($monto0>0)?($monto0*-1):$monto0;
+      $impuesto0 = \filter_input(INPUT_POST, 'codimpuesto');
+      $impuesto = ($impuesto0>0)?($impuesto0*-1):$impuesto0;
       $monto_total = \filter_input(INPUT_POST, 'monto_total');
       $fecha = \filter_input(INPUT_POST, 'fecha');
-      $impuesto0 = $this->impuesto->get_by_iva($impuesto);
       $irpf = 0;
       $recargo = 0;
       $factura = clone $this->factura;
+      $factura->idfactura = NULL;
+      $factura->numero = NULL;
+      $factura->numero2 = $numero_ncf['NCF'];
+      $factura->codigo = NULL;
+      $factura->idasiento = NULL;
+      $factura->idfacturarect = $this->factura->idfactura;
+      $factura->codigorect = $this->factura->codigo;
       $factura->fecha = $fecha;
       $factura->neto = round($monto, FS_NF0);
-      $factura->totaliva = round((monto * ($impuesto/100)), FS_NF0);
+      $factura->totaliva = (round(($monto * (($impuesto)/100)), FS_NF0)*-1);
       $factura->totalirpf = round($irpf, FS_NF0);
       $factura->totalrecargo = round($recargo, FS_NF0);
       $factura->total = $factura->neto + $factura->totaliva - $factura->totalirpf + $factura->totalrecargo;
+      $factura->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA)." por rectificación contable de la ".ucfirst(FS_FACTURA).": ".$factura->codigorect;
+
+      if( $factura->save() )
+      {
+        $linea = new linea_factura_cliente();
+        $linea->idfactura = $factura->idfactura;
+        $linea->descripcion = "Rectificación de importe";
+        if( !$serie->siniva AND $this->cliente->regimeniva != 'Exento' )
+        {
+            $imp0 = $this->impuesto->get_by_iva($impuesto);
+            $linea->codimpuesto = ($imp0)?$imp0->codimpuesto:NULL;
+            $linea->iva = ($impuesto>0)?floatval($impuesto):floatval($impuesto*-1);
+            $linea->recargo = floatval($recargo);
+        }
+        $linea->irpf = floatval($irpf);
+        $linea->pvpunitario = ($monto>0)?floatval($monto):floatval($monto*-1);
+        $linea->cantidad = -1;
+        $linea->dtopor = 0;
+        $linea->pvpsindto = ($linea->pvpunitario * $linea->cantidad);
+        $linea->pvptotal = floatval($monto);
+        if($linea->save()){
+            $factura->get_lineas_iva();
+            /*
+            * Grabación del Número de NCF para República Dominicana
+            */
+            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+            $ncf = new helper_ncf();
+            $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
+            $this->generar_asiento($factura);
+            $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
+            $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
+        }
+      }
+
    }
 
    private function get_factura_rectificativa()

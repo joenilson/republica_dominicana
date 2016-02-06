@@ -151,6 +151,22 @@ class ncf_ventas extends fs_model {
         }
     }
 
+    public function corregir_fecha(){
+        $sql = "UPDATE ncf_ventas SET ".
+                "fecha = ".$this->var2str($this->fecha).", ".
+                "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
+                "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
+                "WHERE ".
+                "ncf = ".$this->var2str($this->ncf). " AND ".
+                "idempresa = ".$this->intval($this->idempresa). " AND ".
+                "codalmacen = ".$this->var2str($this->codalmacen). "; ";
+        if($this->db->exec($sql)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function delete() {
         return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
     }
