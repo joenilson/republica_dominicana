@@ -46,6 +46,7 @@
          $("#f_eliminar").attr('motivo', $("#motivo").val());
          $("#f_eliminar").submit();
       });
+
       {if="$fsc->factura->totalrecargo==0"}
       $(".recargo").hide();
       {/if}
@@ -689,7 +690,7 @@
       </div>
    </div>
 </form>
-<form action="{$fsc->url()}" id="f_rectificar" method="post" class="form">
+<form action="{$fsc->url()}" data-toggle="validator" role="form" id="f_rectificar" method="post" class="form">
    <input type="hidden" name="rectificar" value="TRUE"/>
    <input type="hidden" name="id" value="{$fsc->factura->idfactura}"/>
    <div class="modal fade" id="modal_rectificar">
@@ -722,7 +723,7 @@
                 <div class="col-sm-4">
                      <div class="form-group">
                         Monto Neto a rectificar:
-                        <input type="number" class="form-control" step="any" onkeyup="calcular()" name="monto" id="monto_rectificar" class="form-control" required>
+                        <input type="number" class="form-control" step="any" onkeyup="calcular()" name="monto" max="{$fsc->factura->neto}" id="monto_rectificar" class="form-control" required>
                      </div>
                 </div>
                 <div class="col-sm-4">
@@ -752,7 +753,7 @@
                </div>
             </div>
             <div class="modal-footer">
-               <button type="submit" class="btn btn-sm btn-warning">
+               <button type="submit" data-disable="true" class="btn btn-sm btn-warning">
                   <span class="glyphicon glyphicon-flag"></span> &nbsp; Rectificar
                </button>
             </div>
