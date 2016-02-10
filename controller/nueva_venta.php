@@ -1,7 +1,7 @@
 <?php
 /*
  * This file is part of FacturaSctipts
- * Copyright (C) 2014-2015  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2014-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  * Copyright (C) 2014-2015  Francesc Pineda Segarra  shawe.ewahs@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -848,7 +848,6 @@ class nueva_venta extends fs_controller
 
          $factura->codagente = $this->agente->codagente;
          $factura->observaciones = $_POST['observaciones'];
-         //Actualizamos el numero 2 para colocar el NCF asignado
          $factura->numero2 = $numero_ncf['NCF'];
          $factura->porcomision = $this->agente->porcomision;
 

@@ -69,6 +69,7 @@ class ventas_facturas extends fs_controller
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+
       $this->mostrar = 'todo';
       if( isset($_GET['mostrar']) )
       {
@@ -206,7 +207,7 @@ class ventas_facturas extends fs_controller
 
          if($this->mostrar == 'sinpagar')
          {
-            $this->resultados = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
+            $this->resultados = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
 
             if($this->offset == 0)
             {
@@ -223,7 +224,7 @@ class ventas_facturas extends fs_controller
             $this->buscar($order2);
          }
          else
-            $this->resultados = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
+            $this->resultados = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
       }
    }
 
@@ -474,6 +475,11 @@ class ventas_facturas extends fs_controller
       else if($this->estado == 'impagadas')
       {
          $sql .= $where."pagada = false";
+         $where = ' AND ';
+      }
+      else if($this->estado == 'anuladas')
+      {
+         $sql .= $where."anulada = true";
          $where = ' AND ';
       }
 

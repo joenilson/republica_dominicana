@@ -169,6 +169,12 @@ class ventas_pedido extends fs_controller
          {
             $this->pedido->fecha = $_POST['fecha'];
             $this->pedido->hora = $_POST['hora'];
+
+            $this->pedido->fechasalida = NULL;
+            if($_POST['fechasalida'] != '')
+            {
+               $this->pedido->fechasalida = $_POST['fechasalida'];
+            }
          }
 
          /// ¿cambiamos el cliente?
@@ -506,6 +512,7 @@ class ventas_pedido extends fs_controller
          if($continuar)
          {
             $this->pedido->idalbaran = $albaran->idalbaran;
+            $this->pedido->fechasalida = $albaran->fecha;
 
             if( $this->pedido->save() )
             {
@@ -545,21 +552,29 @@ class ventas_pedido extends fs_controller
    {
       $lineas = array();
 
-      $sql = "select l.referencia,l.cantidad,s.cantidad as stock,s.ubicacion from lineaspedidoscli l, stocks s"
-              ." where l.idpedido = ".$this->pedido->var2str($this->pedido->idpedido)
-              ." AND l.referencia = s.referencia "
-              . "AND s.codalmacen = ".$this->pedido->var2str($this->pedido->codalmacen).";";
+      $sql = "SELECT l.referencia,l.descripcion,l.cantidad,s.cantidad as stock,s.ubicacion FROM lineaspedidoscli l, stocks s"
+              . " WHERE l.idpedido = ".$this->pedido->var2str($this->pedido->idpedido)
+              . " AND l.referencia = s.referencia"
+              . " AND s.codalmacen = ".$this->pedido->var2str($this->pedido->codalmacen)
+              . " ORDER BY referencia ASC;;";
       $data = $this->db->select($sql);
       if($data)
       {
+         $art0 = new articulo();
+
          foreach($data as $d)
          {
-            $lineas[] = array(
-                'referencia' => $d['referencia'],
-                'cantidad' => floatval($d['cantidad']),
-                'stock' => floatval($d['stock']),
-                'ubicacion' => $d['ubicacion']
-            );
+            $articulo = $art0->get($d['referencia']);
+            if($articulo)
+            {
+               $lineas[] = array(
+                  'articulo' => $articulo,
+                  'descripcion' => $d['descripcion'],
+                  'cantidad' => floatval($d['cantidad']),
+                  'stock' => floatval($d['stock']),
+                  'ubicacion' => $d['ubicacion']
+               );
+            }
          }
       }
 

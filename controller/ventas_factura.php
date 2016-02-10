@@ -1,7 +1,7 @@
 <?php
 /*
  * This file is part of FacturaSctipts
- * Copyright (C) 2013-2015  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2013-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -80,6 +80,7 @@ class ventas_factura extends fs_controller
       $this->ncf_ventas = new ncf_ventas();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
       $this->impuesto = new impuesto();
+
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
        * desactivamos el botón de pagada/sin pagar.
@@ -417,6 +418,7 @@ class ventas_factura extends fs_controller
       $factura->numero2 = $numero_ncf['NCF'];
       $factura->codigo = NULL;
       $factura->idasiento = NULL;
+
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
       $factura->codserie = $_POST['codserie'];
@@ -472,6 +474,7 @@ class ventas_factura extends fs_controller
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
             $this->generar_asiento($factura);
+
             $ncf_factura = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
             $ncf_factura->motivo = $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion;
             $ncf_factura->fecha_modificacion = \date('Y-m-d H:i:s');
