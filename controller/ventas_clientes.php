@@ -62,6 +62,7 @@ class ventas_clientes extends fs_controller
       $this->serie = new serie();
       $this->tarifa = new tarifa();
       $this->tarifas = $this->tarifa->all();
+
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       /// cargamos la configuración
