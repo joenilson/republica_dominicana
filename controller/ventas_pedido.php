@@ -552,11 +552,11 @@ class ventas_pedido extends fs_controller
    {
       $lineas = array();
 
-      $sql = "SELECT l.referencia,l.descripcion,l.cantidad,s.cantidad as stock,s.ubicacion FROM lineaspedidoscli l, stocks s"
-              . " WHERE l.idpedido = ".$this->pedido->var2str($this->pedido->idpedido)
-              . " AND l.referencia = s.referencia"
+      $sql = "SELECT l.referencia,l.descripcion,l.cantidad,s.cantidad as stock,s.ubicacion FROM lineaspedidoscli l"
+              . " LEFT JOIN stocks s ON l.referencia = s.referencia"
               . " AND s.codalmacen = ".$this->pedido->var2str($this->pedido->codalmacen)
-              . " ORDER BY referencia ASC;;";
+              . " WHERE l.idpedido = ".$this->pedido->var2str($this->pedido->idpedido)
+              . " ORDER BY referencia ASC;";
       $data = $this->db->select($sql);
       if($data)
       {
