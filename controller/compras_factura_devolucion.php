@@ -7,18 +7,17 @@
 
 require_model('articulo.php');
 require_model('asiento_factura.php');
-require_model('factura_cliente.php');
+require_model('factura_proveedor.php');
 require_model('serie.php');
 require_model('ncf_rango.php');
 require_model('ncf_tipo_anulacion.php');
-
 require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
 /**
  * Description of ventas_factura_devolucion
  *
  * @author carlos
  */
-class ventas_factura_devolucion extends fs_controller
+class compras_factura_devolucion extends fs_controller
 {
    public $factura;
    public $serie;
@@ -35,7 +34,7 @@ class ventas_factura_devolucion extends fs_controller
 
       $this->serie = new serie();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
-      $fact0 = new factura_cliente();
+      $fact0 = new factura_proveedor();
       $this->factura = FALSE;
       if( isset($_REQUEST['id']) )
       {
@@ -57,18 +56,12 @@ class ventas_factura_devolucion extends fs_controller
 
    private function nueva_rectificativa()
    {
-      $tipo_comprobante = '04';
-      $this->ncf_rango = new ncf_rango();
-      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-      if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-          return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
-      }
       $motivo = \filter_input(INPUT_POST, 'motivo');
       $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
       $frec = clone $this->factura;
       $frec->idfactura = NULL;
       $frec->numero = NULL;
-      $frec->numero2 = $numero_ncf['NCF'];
+      $frec->numproveedor = $_POST['numproveedor'];
       $frec->codigo = NULL;
       $frec->idasiento = NULL;
       $frec->idfacturarect = $this->factura->idfactura;
@@ -147,8 +140,6 @@ class ventas_factura_devolucion extends fs_controller
 
             if( $frec->save() )
             {
-               $ncf_controller = new helper_ncf();
-               $ncf_controller->guardar_ncf($this->empresa->id, $frec, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
                $this->generar_asiento($frec);
                $this->new_message(FS_FACTURA_RECTIFICATIVA.' creada correctamente.');
             }
@@ -169,7 +160,7 @@ class ventas_factura_devolucion extends fs_controller
       if($this->empresa->contintegrada)
       {
          $asiento_factura = new asiento_factura();
-         $asiento_factura->generar_asiento_venta($factura);
+         $asiento_factura->generar_asiento_compra($factura);
 
          foreach($asiento_factura->errors as $err)
          {
@@ -188,7 +179,7 @@ class ventas_factura_devolucion extends fs_controller
       $fsxet = new fs_extension();
       $fsxet->name = 'tab_devoluciones';
       $fsxet->from = __CLASS__;
-      $fsxet->to = 'ventas_factura';
+      $fsxet->to = 'compras_factura';
       $fsxet->type = 'tab';
       $fsxet->text = '<span class="glyphicon glyphicon-share" aria-hidden="true"></span>'
               . '<span class="hidden-xs">&nbsp; Devoluciones</span>';
