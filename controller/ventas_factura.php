@@ -280,7 +280,6 @@ class ventas_factura extends fs_controller
          {
             $this->factura->cifnif = $this->cliente->cifnif;
             $this->factura->nombrecliente = $this->cliente->razonsocial;
-
             $this->factura->apartado = $dir->apartado;
             $this->factura->ciudad = $dir->ciudad;
             $this->factura->coddir = $dir->id;
