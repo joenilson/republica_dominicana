@@ -5,4 +5,6 @@ Plugin de adaptación de FacturaScripts a <b>República Dominicana</b>.
 <li>Genera el Plan Contable en base al plan contable de Perú.</li>
 <li>Agrega el tipo de contribuyente al Maestro de Clientes/Proveedores.</li>
 <li>Genera la secuencia de NCF a usar para cada Factura de Ventas/Compra.</li>
+<li>Devoluciones parciales a Facturas de Ventas/Compra.</li>
+<li>Rectificaciones contables a Facturas de Ventas/Compra.</li>
 </ul>

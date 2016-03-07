@@ -62,6 +62,7 @@ class ventas_clientes extends fs_controller
       $this->serie = new serie();
       $this->tarifa = new tarifa();
       $this->tarifas = $this->tarifa->all();
+
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       /// cargamos la configuración
@@ -147,23 +148,11 @@ class ventas_clientes extends fs_controller
       }
       else if( isset($_POST['cifnif']) ) /// añadir un nuevo cliente
       {
-         $cliente = FALSE;
-         if($_POST['cifnif'] != '')
-         {
-            $cliente = $this->cliente->get_by_cifnif($_POST['cifnif']);
-            if($cliente)
-            {
-               $this->new_advice('Ya existe un cliente con el '.FS_CIFNIF.' '.$_POST['cifnif']);
-               $this->query = $_POST['cifnif'];
-            }
-         }
-
-         if(!$cliente)
-         {
             $cliente = new cliente();
             $cliente->codcliente = $cliente->get_new_codigo();
             $cliente->nombre = $_POST['nombre'];
             $cliente->razonsocial = $_POST['nombre'];
+         $cliente->tipoidfiscal = $_POST['tipoidfiscal'];
             $cliente->cifnif = $_POST['cifnif'];
 
             if($_POST['scodgrupo'] != '')
@@ -228,6 +217,10 @@ class ventas_clientes extends fs_controller
 
                if( $dircliente->save() )
                {
+               /// forzamos la creación de la subcuenta
+               $cliente->get_subcuenta($this->empresa->codejercicio);
+
+               /// redireccionamos a la página del cliente
                   header('location: '.$cliente->url());
                }
                else
@@ -236,7 +229,6 @@ class ventas_clientes extends fs_controller
             else
                $this->new_error_msg("¡Imposible guardar los datos del cliente!");
          }
-      }
 
       $this->offset = 0;
       if( isset($_GET['offset']) )
