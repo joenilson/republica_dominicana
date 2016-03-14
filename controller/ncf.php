@@ -22,7 +22,6 @@ require_model('pais.php');
 require_model('ncf_rango.php');
 require_model('ncf_tipo.php');
 require_model('ncf_ventas.php');
-
 /**
  * Description of ncf
  *
@@ -51,6 +50,7 @@ class ncf extends fs_controller {
 
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
+        $delete = \filter_input(INPUT_GET, 'delete');
         if (isset($_POST['solicitud']) AND isset($_POST['codalmacen']) AND isset($_POST['serie']) AND isset($_POST['division']) AND isset($_POST['punto_emision']) AND isset($_POST['area_impresion']) AND isset($_POST['tipo_comprobante']) AND isset($_POST['secuencia_inicio']) AND isset($_POST['secuencia_fin'])) {
             $id = \filter_input(INPUT_POST, 'id');
             $solicitud = \filter_input(INPUT_POST, 'solicitud');
@@ -102,8 +102,8 @@ class ncf extends fs_controller {
             } else
                 $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
-        elseif ($_GET['delete']) {
-            $id = \filter_input(INPUT_GET, 'delete');
+        elseif ($delete) {
+            $id = $delete;
             if(!is_null($id)){
                 $data_borrar = $this->ncf_rango->get_by_id($this->empresa->id, $id);
                 $ncf0 = new ncf_rango();
