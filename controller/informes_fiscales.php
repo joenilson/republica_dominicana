@@ -35,12 +35,14 @@ class informes_fiscales extends fs_controller {
     public $resultados_606;
     public $resultados_607;
     public $resultados_608;
+    public $resultados_detalle_ventas;
     public $total_resultados_consolidado;
     public $total_resultados_ventas;
     public $total_resultados_compras;
     public $total_resultados_606;
     public $total_resultados_607;
     public $total_resultados_608;
+    public $total_resultados_detalle_ventas;
     public $sumaVentas;
     public $sumaVentasPagadas;
     public $sumaCompras;
@@ -60,12 +62,14 @@ class informes_fiscales extends fs_controller {
         $this->resultados_606 = '';
         $this->resultados_607 = '';
         $this->resultados_608 = '';
+        $this->resultados_detalle_ventas = '';
         $this->total_resultados_consolidado = 0;
         $this->total_resultados_ventas = 0;
         $this->total_resultados_compras = 0;
         $this->total_resultados_606 = 0;
         $this->total_resultados_607 = 0;
         $this->total_resultados_608 = 0;
+        $this->total_resultados_detalle_ventas = 0;
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
         if(!empty($tiporeporte)){
             $inicio = \filter_input(INPUT_POST, 'inicio');
@@ -91,6 +95,9 @@ class informes_fiscales extends fs_controller {
                     break;
                 case 'reporte-608':
                     $this->dgii608();
+                    break;
+                case 'detalle-ventas':
+                    $this->detalle_ventas();
                     break;
                 default :
                     break;
@@ -142,6 +149,32 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_consolidado = $this->total_resultados_ingresos + $this->total_resultados_egresos;
         $this->saldoConsolidado = $this->sumaVentas - $this->sumaCompras;
         $this->saldoConsolidadoPagadas = $this->sumaVentasPagadas - $this->sumaComprasPagadas;
+    }
+    
+    public function detalle_ventas(){
+        $lista = array();
+        $sql = "
+        select fecha,ncf, documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto
+        from ncf_ventas 
+        join lineasfacturascli on (documento = idfactura)
+        where idempresa = ".$this->empresa->id." AND fecha between '".$this->fecha_inicio."' and '".$this->fecha_fin."' and estado = true order by fecha,ncf";
+        $data = $this->db->select($sql);
+        if($data){
+            foreach ($data as $d){
+                $linea = new stdClass();
+                $linea->fecha = $d['fecha'];
+                $linea->ncf = $d['ncf'];
+                $linea->documento = $d['documento'];
+                $linea->referencia = $d['referencia'];
+                $linea->descripcion = $d['descripcion'];
+                $linea->cantidad = $d['cantidad'];
+                $linea->precio = $d['precio'];
+                $linea->monto = $d['monto'];
+                $lista[] = $linea;
+            }
+        }
+        $this->resultados_detalle_ventas = $lista;
+        $this->total_resultados_detalle_ventas = count($lista);
     }
     
     public function ventas(){
@@ -386,6 +419,6 @@ class informes_fiscales extends fs_controller {
                 'params' => ''
             )
         );
-      $fsext18->save();
+      $fsext18->delete();
     }
 }

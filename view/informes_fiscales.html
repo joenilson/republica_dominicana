@@ -44,6 +44,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Ventas
                     </a>
                 </li>
+                <li role="presentation" {if="$fsc->reporte=='detalle-ventas'"}class="active"{/if}>
+                    <a href="#detalle-ventas" aria-controls="detalle-ventas" role="tab" data-toggle="tab" onclick="seleccionar('detalle-ventas');">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Detalle de Ventas
+                    </a>
+                </li>
                 <li role="presentation" {if="$fsc->reporte=='reporte-compras'"}class="active"{/if}>
                     <a href="#reporte-compras" aria-controls="reporte-compras" role="tab" data-toggle="tab" onclick="seleccionar('reporte-compras');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
@@ -197,6 +202,49 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td class="text-right">{$value->totaliva}</td>
                                 <td class="text-right">{$value->total}</td>
                                 <td class="text-center">{$value->condicion}</td>
+                            </tr>
+                            {$lineas=$lineas+1}
+                            {/loop}
+                          {else}
+                            <tr>
+                                <td colspan="9" class="alert alert-danger text-center">
+                                    <span>No hay registros con las fechas seleccionadas</span>
+                                </td>
+                            </tr>
+                           {/if}
+                        </tbody>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-ventas'"}active{/if}" id="detalle-ventas">
+                    <table id="table-detalle-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                        <thead>
+                            <tr>
+                                <th colspan="9" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                            </tr>
+                          <tr class="text-center">
+                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true">NCF</th>
+                              <th data-sortable="true">Documento</th>
+                              <th data-sortable="true">Codigo</th>
+                              <th data-sortable="true">Descripci&oacute;n</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {$lineas=1}
+                          {if="$fsc->total_resultados_detalle_ventas!=0"}
+                            {loop="$fsc->resultados_detalle_ventas"}
+                            <tr id="tr-id-{$lineas}">
+                                <td id="td-id-{$lineas}">{$value->fecha}</td>
+                                <td>{$value->ncf}</td>
+                                <td>{$value->documento}</td>
+                                <td>{$value->referencia}</td>
+                                <td>{$value->descripcion}</td>
+                                <td class="text-right">{$value->cantidad}</td>
+                                <td class="text-right">{$value->precio}</td>
+                                <td class="text-right">{$value->monto}</td>
                             </tr>
                             {$lineas=$lineas+1}
                             {/loop}

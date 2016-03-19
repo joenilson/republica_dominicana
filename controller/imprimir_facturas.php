@@ -325,42 +325,6 @@ class imprimir_facturas extends fs_controller
       }
    }
 
-   private function share_extension()
-   {
-      /// añadimos las extensiones para clientes, agentes y artículos
-      $extensiones = array(
-          array(
-              'name' => 'facturas_cliente',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_cliente',
-              'type' => 'button',
-              'text' => '<span class="glyphicon glyphicon-list" aria-hidden="true"></span> &nbsp; Facturas',
-              'params' => ''
-          ),
-          array(
-              'name' => 'facturas_agente',
-              'page_from' => __CLASS__,
-              'page_to' => 'admin_agente',
-              'type' => 'button',
-              'text' => '<span class="glyphicon glyphicon-list" aria-hidden="true"></span> &nbsp; Facturas de cliente',
-              'params' => ''
-          ),
-          array(
-              'name' => 'facturas_articulo',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_articulo',
-              'type' => 'tab_button',
-              'text' => '<span class="glyphicon glyphicon-list" aria-hidden="true"></span> &nbsp; Facturas de cliente',
-              'params' => ''
-          ),
-      );
-      foreach($extensiones as $ext)
-      {
-         $fsext0 = new fs_extension($ext);
-         $fsext0->delete();
-      }
-   }
-
    public function total_sinpagar()
    {
       $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli WHERE pagada = false;");
