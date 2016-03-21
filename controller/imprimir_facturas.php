@@ -126,7 +126,6 @@ class imprimir_facturas extends fs_controller
       }
       else
       {
-         $this->share_extension();
          $this->huecos = $this->factura->huecos();
          $this->cliente = FALSE;
          $this->codagente = '';
