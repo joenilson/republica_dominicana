@@ -1082,9 +1082,9 @@ class PDF_MC_Table extends FPDF
         return $this->CurrPageGroup;
     }
 
-    function _beginpage($orientation)
+    function _beginpage($orientation, $size = null)
     {
-        parent::_beginpage($orientation);
+        parent::_beginpage($orientation, $size);
         if($this->NewPageGroup)
         {
             // start a new group

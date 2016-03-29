@@ -1094,7 +1094,7 @@ function _getpagesize($size)
 	}
 }
 
-function _beginpage($orientation, $size)
+function _beginpage($orientation, $size )
 {
 	$this->page++;
 	$this->pages[$this->page] = '';
