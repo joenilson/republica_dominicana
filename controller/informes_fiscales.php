@@ -36,6 +36,7 @@ class informes_fiscales extends fs_controller {
     public $resultados_607;
     public $resultados_608;
     public $resultados_detalle_ventas;
+    public $resultados_resumen_ventas;
     public $total_resultados_consolidado;
     public $total_resultados_ventas;
     public $total_resultados_compras;
@@ -43,6 +44,7 @@ class informes_fiscales extends fs_controller {
     public $total_resultados_607;
     public $total_resultados_608;
     public $total_resultados_detalle_ventas;
+    public $total_resultados_resumen_ventas;
     public $sumaVentas;
     public $sumaVentasPagadas;
     public $sumaCompras;
@@ -63,6 +65,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_607 = '';
         $this->resultados_608 = '';
         $this->resultados_detalle_ventas = '';
+        $this->resultados_resumen_ventas = '';
         $this->total_resultados_consolidado = 0;
         $this->total_resultados_ventas = 0;
         $this->total_resultados_compras = 0;
@@ -70,6 +73,7 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_607 = 0;
         $this->total_resultados_608 = 0;
         $this->total_resultados_detalle_ventas = 0;
+        $this->total_resultados_resumen_ventas = 0;
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
         if(!empty($tiporeporte)){
             $inicio = \filter_input(INPUT_POST, 'inicio');
@@ -98,6 +102,9 @@ class informes_fiscales extends fs_controller {
                     break;
                 case 'detalle-ventas':
                     $this->detalle_ventas();
+                    break;
+                case 'resumen-ventas':
+                    $this->resumen_ventas();
                     break;
                 default :
                     break;
@@ -175,6 +182,34 @@ class informes_fiscales extends fs_controller {
         }
         $this->resultados_detalle_ventas = $lista;
         $this->total_resultados_detalle_ventas = count($lista);
+    }
+    
+    public function resumen_ventas(){
+        $lista = array();
+        $sql = "
+        select ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto
+        from ncf_ventas 
+        join lineasfacturascli on (documento = idfactura)
+        join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante)
+        where idempresa = ".$this->empresa->id." AND fecha between '".$this->fecha_inicio."' and '".$this->fecha_fin."' and ncf_ventas.estado = true 
+        group by ncf_tipo.tipo_comprobante, ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion 
+        order by ncf_tipo.tipo_comprobante";
+
+        $data = $this->db->select($sql);
+        if($data){
+            foreach ($data as $d){
+                $linea = new stdClass();
+                $linea->tipo_comprobante = $d['tipo_comprobante'];
+                $linea->tc_descripcion = $d['tc_descripcion'];
+                $linea->referencia = $d['referencia'];
+                $linea->descripcion = $d['descripcion'];
+                $linea->cantidad = $d['cantidad'];
+                $linea->monto = $d['monto'];
+                $lista[] = $linea;
+            }
+        }
+        $this->resultados_resumen_ventas = $lista;
+        $this->total_resultados_resumen_ventas = count($lista);
     }
     
     public function ventas(){

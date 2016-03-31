@@ -4,16 +4,16 @@
  * Copyright (C) 2013-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
+ * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -589,27 +589,27 @@ class ventas_albaran extends fs_controller
             }
             else
             {
-               $this->new_error_msg("¡Imposible vincular el ".FS_ALBARAN." con la nueva ".FS_FACTURA."!");
+               $this->new_error_msg("¡Imposible vincular el ".FS_ALBARAN." con la nueva factura!");
                if( $factura->delete() )
                {
                   $this->new_error_msg("La factura se ha borrado.");
                }
                else
-                  $this->new_error_msg("¡Imposible borrar la ".FS_FACTURA."!");
+                  $this->new_error_msg("¡Imposible borrar la factura!");
             }
          }
          else
          {
             if( $factura->delete() )
             {
-               $this->new_error_msg("La ".FS_FACTURA." se ha borrado.");
+               $this->new_error_msg("La factura se ha borrado.");
             }
             else
-               $this->new_error_msg("¡Imposible borrar la ".FS_FACTURA."!");
+               $this->new_error_msg("¡Imposible borrar la factura!");
          }
       }
       else
-         $this->new_error_msg("¡Imposible guardar la ".FS_FACTURA."!");
+         $this->new_error_msg("¡Imposible guardar la factura!");
    }
 
    private function generar_asiento(&$factura)
@@ -619,7 +619,7 @@ class ventas_albaran extends fs_controller
          $asiento_factura = new asiento_factura();
          if( $asiento_factura->generar_asiento_venta($factura) )
          {
-            $this->new_message("<a href='".$factura->url()."'>".ucfirst(FS_FACTURA)."</a> generada correctamente.");
+            $this->new_message("<a href='".$factura->url()."'>Factura</a> generada correctamente.");
          }
 
          foreach($asiento_factura->errors as $err)
@@ -634,9 +634,9 @@ class ventas_albaran extends fs_controller
       }
       else
       {
-         $this->new_message("<a href='".$factura->url()."'>".ucfirst(FS_FACTURA)."</a> generada correctamente.");
+         $this->new_message("<a href='".$factura->url()."'>Factura</a> generada correctamente.");
       }
 
-      $this->new_change(ucfirst(FS_FACTURA).' '.$factura->codigo, $factura->url(), TRUE);
+      $this->new_change('Factura '.$factura->codigo, $factura->url(), TRUE);
    }
 }

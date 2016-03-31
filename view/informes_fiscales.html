@@ -49,6 +49,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Detalle de Ventas
                     </a>
                 </li>
+                <li role="presentation" {if="$fsc->reporte=='resumen-ventas'"}class="active"{/if}>
+                    <a href="#resumen-ventas" aria-controls="resumen-ventas" role="tab" data-toggle="tab" onclick="seleccionar('resumen-ventas');">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Resumen de Ventas
+                    </a>
+                </li>
                 <li role="presentation" {if="$fsc->reporte=='reporte-compras'"}class="active"{/if}>
                     <a href="#reporte-compras" aria-controls="reporte-compras" role="tab" data-toggle="tab" onclick="seleccionar('reporte-compras');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
@@ -219,7 +224,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-detalle-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="8" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
@@ -251,6 +256,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           {else}
                             <tr>
                                 <td colspan="9" class="alert alert-danger text-center">
+                                    <span>No hay registros con las fechas seleccionadas</span>
+                                </td>
+                            </tr>
+                           {/if}
+                        </tbody>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='resumen-ventas'"}active{/if}" id="resumen-ventas">
+                    <table id="table-resumen-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                        <thead>
+                            <tr>
+                                <th colspan="6" class="text-center">Resúmen de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                            </tr>
+                          <tr class="text-center">
+                              <th data-sortable="true">Tipo NCF</th>
+                              <th data-sortable="true">Descripci&oacute;n NCF</th>
+                              <th data-sortable="true">Codigo</th>
+                              <th data-sortable="true">Descripci&oacute;n</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {$lineas=1}
+                          {if="$fsc->total_resultados_resumen_ventas!=0"}
+                            {loop="$fsc->resultados_resumen_ventas"}
+                            <tr id="tr-id-{$lineas}">
+                                <td id="td-id-{$lineas}">{$value->tipo_comprobante}</td>
+                                <td>{$value->tc_descripcion}</td>
+                                <td>{$value->referencia}</td>
+                                <td>{$value->descripcion}</td>
+                                <td class="text-right">{$value->cantidad}</td>
+                                <td class="text-right">{$value->monto}</td>
+                            </tr>
+                            {$lineas=$lineas+1}
+                            {/loop}
+                          {else}
+                            <tr>
+                                <td colspan="6" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>
