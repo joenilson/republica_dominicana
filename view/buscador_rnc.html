@@ -1,0 +1,39 @@
+{include="header"}
+<!--
+Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<form name="f_buscar" class="form-horizontal" method="POST" action="{$fsc->url()}">
+    <input name="tipo" type="hidden" value="">
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">RNC</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="rnc" id="rnc" placeholder="RNC a buscar">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">Nombre</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre o Razon Social">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" onclick="document.f_buscar.tipo.value='buscar';" class="btn btn-default">Buscar</button>
+        </div>
+    </div>
+</form>
+{$fsc->resultados}
+{include="footer"}
