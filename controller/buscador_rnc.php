@@ -76,7 +76,7 @@ class buscador_rnc extends fs_controller{
 
         $result = curl_exec($h);
         curl_close($h);
-        $html = file_get_html($result);
+        $html = str_get_html($result);
         $this->resultados = $html->find('div[id=pnlResultadoRuc]');
     }
 
