@@ -28,7 +28,7 @@ class buscador_rnc extends fs_controller{
     public function __construct($name = '', $title = 'home', $folder = '', $admin = FALSE, $shmenu = TRUE, $important = FALSE) {
         parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', FALSE, FALSE, TRUE);
     }
-    
+
     protected function private_core() {
         $this->resultados = false;
         $tipo = filter_input(INPUT_POST, 'tipo');
@@ -44,13 +44,13 @@ class buscador_rnc extends fs_controller{
                     break;
             }
         }
-        
-        
+
+
     }
-    
+
     public function buscar(){
         $valor_a_buscar = filter_input(INPUT_POST, 'rnc');
-        
+
         $post = array(
             '__EVENTTARGET'=>"",
             '__EVENTARGUMENT'=>"",
@@ -61,14 +61,14 @@ class buscador_rnc extends fs_controller{
             'txtRncCed' => $valor_a_buscar,
             'btnBuscaRncCed'=> 'Buscar'
         );
-        
+
         $query = http_build_query($post);
-        
+
         $h = curl_init();
-        curl_setopt($h, CURLOPT_PROXYPORT, 3128);
-        curl_setopt($h, CURLOPT_PROXYTYPE, 'HTTP');
-        curl_setopt($h, CURLOPT_PROXY, '192.168.3.84');
-        curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx'); 
+        //curl_setopt($h, CURLOPT_PROXYPORT, 3128);
+        //curl_setopt($h, CURLOPT_PROXYTYPE, 'HTTP');
+        //curl_setopt($h, CURLOPT_PROXY, '192.168.3.84');
+        curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx');
         curl_setopt($h, CURLOPT_POST, true);
         curl_setopt($h, CURLOPT_POSTFIELDS, $query);
         curl_setopt($h, CURLOPT_HEADER, false);
@@ -76,10 +76,17 @@ class buscador_rnc extends fs_controller{
 
         $result = curl_exec($h);
         curl_close($h);
-        $this->resultados = $result;
+        $dom = new DOMDocument();
+        $dom->loadHTML($result);
+        foreach($dom->getElementsByTagName('div') as $div) {
+           $div_id = $div->getAttribute('id');
+           if($div_id == 'pnlResultadoRuc'){
+              $this->resultados = $div;
+           }
+        }
     }
-    
+
     public function guardar(){
-        
+
     }
 }
