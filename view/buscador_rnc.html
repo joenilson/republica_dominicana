@@ -15,25 +15,53 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<form name="f_buscar" class="form-horizontal" method="POST" action="{$fsc->url()}">
-    <input name="tipo" type="hidden" value="">
-    <div class="form-group">
-        <label for="inputEmail3" class="col-sm-2 control-label">RNC</label>
-        <div class="col-sm-10">
-            <input type="text" class="form-control" name="rnc" id="rnc" placeholder="RNC a buscar">
+<div class="container-fluid">
+    <form name="f_buscar" class="form-horizontal" method="POST" action="{$fsc->url()}">
+        <input name="tipo" type="hidden" value="">
+        <div class="form-group">
+            <label for="RNC" class="col-sm-2 control-label">RNC</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" value="{$fsc->rnc}" onclick="document.f_buscar.nombre.value=''" name="rnc" id="rnc" placeholder="RNC a buscar">
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label for="inputPassword3" class="col-sm-2 control-label">Nombre</label>
-        <div class="col-sm-10">
-            <input type="text" class="form-control" id="nombre" placeholder="Nombre o Razon Social">
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Nombre</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" value="{$fsc->nombre}" onclick="document.f_buscar.rnc.value=''" name="nombre" id="nombre" placeholder="Nombre o Razon Social">
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" onclick="document.f_buscar.tipo.value='buscar';" class="btn btn-default">Buscar</button>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" onclick="document.f_buscar.tipo.value='buscar';" class="btn btn-default">Buscar</button>
+            </div>
         </div>
-    </div>
-</form>
-{$fsc->resultados}
+    </form>
+</div>
+{if="$fsc->total_resultados==0"}
+    {$fsc->resultados}
+{else}
+<div class="container-fluid">
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+            {loop="$fsc->cabecera"}
+            <th>{$value}</th>
+            {/loop}
+            </tr>
+        </thead>
+        <tbody>
+            {loop="$fsc->detalle"}
+            <tr>
+                <td>{$value.0}</td>
+                <td>{$value.1}</td>
+                <td>{$value.2}</td>
+                <td>{$value.3}</td>
+                <td>{$value.4}</td>
+                <td>{$value.5}</td>
+            </tr>
+            {/loop}
+        </tbody>
+    </table>
+</div>
+{/if}
 {include="footer"}
