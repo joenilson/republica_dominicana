@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+require_once 'plugins/republica_dominicana/extras/simple_html_dom.php';
 /**
  * Description of buscador_rnc
  *
@@ -76,14 +76,8 @@ class buscador_rnc extends fs_controller{
 
         $result = curl_exec($h);
         curl_close($h);
-        $dom = new DOMDocument();
-        $dom->loadHTML($result);
-        foreach($dom->getElementsByTagName('div') as $div) {
-           $div_id = $div->getAttribute('id');
-           if($div_id == 'pnlResultadoRuc'){
-              $this->resultados = $div;
-           }
-        }
+        $html = file_get_html($result);
+        $this->resultados = $html->find('div[id=pnlResultadoRuc]');
     }
 
     public function guardar(){
