@@ -31,6 +31,7 @@ require_model('serie.php');
 require_model('subcuenta.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('impuesto.php');
+
 class compras_factura extends fs_controller
 {
    public $agente;
@@ -46,6 +47,7 @@ class compras_factura extends fs_controller
    public $serie;
    public $ncf_tipo_anulacion;
    public $impuesto;
+   
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
