@@ -37,6 +37,7 @@ class ventas_clientes extends fs_controller
    public $nocifnif;
    public $nuevocli_setup;
    public $offset;
+   public $orden;
    public $pais;
    public $provincia;
    public $resultados;
@@ -261,6 +262,12 @@ class ventas_clientes extends fs_controller
          $this->codgrupo = $_REQUEST['bcodgrupo'];
       }
 
+      $this->orden = 'nombre ASC';
+      if( isset($_REQUEST['orden']) )
+      {
+         $this->orden = $_REQUEST['orden'];
+      }
+      
       $this->nocifnif = isset($_REQUEST['nocifnif']);
 
       $this->buscar();
@@ -274,7 +281,8 @@ class ventas_clientes extends fs_controller
                  ."&provincia=".$this->provincia
                  ."&codpais=".$this->codpais
                  ."&codgrupo=".$this->codgrupo
-                 ."&offset=".($this->offset+FS_ITEM_LIMIT);
+                 ."&offset=".($this->offset+FS_ITEM_LIMIT)
+                 ."&orden=".$this->orden;
 
       if($this->nocifnif)
       {
@@ -349,27 +357,32 @@ class ventas_clientes extends fs_controller
    {
       $final = array();
 
-      $ciudades = array();
-      $sql = "SELECT DISTINCT ciudad FROM dirclientes ORDER BY ciudad ASC;";
-      if($this->provincia != '')
+      if( $this->db->table_exists('dirclientes') )
       {
-         $sql = "SELECT DISTINCT ciudad FROM dirclientes WHERE lower(provincia) = '"
-                 .$this->provincia."' ORDER BY ciudad ASC;";
-      }
-      $data = $this->db->select($sql);
-      if($data)
-      {
-         foreach($data as $d)
-            $ciudades[] = $d['ciudad'];
-      }
+        $ciudades = array();
+        $sql = "SELECT DISTINCT ciudad FROM dirclientes ORDER BY ciudad ASC;";
+        if($this->provincia != '')
+        {
+           $sql = "SELECT DISTINCT ciudad FROM dirclientes WHERE lower(provincia) = '"
+                   .$this->provincia."' ORDER BY ciudad ASC;";
+        }
+        $data = $this->db->select($sql);
+        if($data)
+        {
+           foreach($data as $d)
+           {
+              $ciudades[] = $d['ciudad'];
+           }
+        }
 
-      /// usamos las minúsculas para filtrar
-      foreach($ciudades as $ciu)
-      {
-         if($ciu != '')
-         {
-            $final[ mb_strtolower($ciu, 'UTF8') ] = $ciu;
-         }
+        /// usamos las minúsculas para filtrar
+        foreach($ciudades as $ciu)
+        {
+           if($ciu != '')
+           {
+              $final[ mb_strtolower($ciu, 'UTF8') ] = $ciu;
+           }
+        }
       }
 
       return $final;
@@ -379,26 +392,31 @@ class ventas_clientes extends fs_controller
    {
       $final = array();
 
-      $provincias = array();
-      $sql = "SELECT DISTINCT provincia FROM dirclientes ORDER BY provincia ASC;";
-      if($this->codpais != '')
+      if( $this->db->table_exists('dirclientes') )
       {
-         $sql = "SELECT DISTINCT provincia FROM dirclientes WHERE codpais = '".$this->codpais
-                 ."' ORDER BY provincia ASC;";
-      }
-      $data = $this->db->select($sql);
-      if($data)
-      {
-         foreach($data as $d)
-            $provincias[] = $d['provincia'];
-      }
+        $provincias = array();
+        $sql = "SELECT DISTINCT provincia FROM dirclientes ORDER BY provincia ASC;";
+        if($this->codpais != '')
+        {
+           $sql = "SELECT DISTINCT provincia FROM dirclientes WHERE codpais = '".$this->codpais
+                   ."' ORDER BY provincia ASC;";
+        }
+        $data = $this->db->select($sql);
+        if($data)
+        {
+           foreach($data as $d)
+           {
+              $provincias[] = $d['provincia'];
+           }
+        }
 
-      foreach($provincias as $pro)
-      {
-         if($pro != '')
-         {
-            $final[ mb_strtolower($pro, 'UTF8') ] = $pro;
-         }
+        foreach($provincias as $pro)
+        {
+           if($pro != '')
+           {
+              $final[ mb_strtolower($pro, 'UTF8') ] = $pro;
+           }
+        }
       }
 
       return $final;
@@ -474,7 +492,7 @@ class ventas_clientes extends fs_controller
       {
          $this->total_resultados = intval($data[0]['total']);
 
-         $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY nombre ASC", FS_ITEM_LIMIT, $this->offset);
+         $data2 = $this->db->select_limit("SELECT *".$sql." ORDER BY ".$this->orden, FS_ITEM_LIMIT, $this->offset);
          if($data2)
          {
             foreach($data2 as $d)
