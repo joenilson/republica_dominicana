@@ -213,6 +213,13 @@ class nueva_venta extends fs_controller
                             $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get(\filter_input(INPUT_POST, 'codcliente'), 'CLI');
                         }
                      }
+
+                     if($this->empresa->contintegrada)
+                     {
+                        /// forzamos crear la subcuenta
+                        $this->cliente_s->get_subcuenta($this->empresa->codejercicio);
+                     }
+
                      $dircliente = new direccion_cliente();
                      $dircliente->codcliente = $this->cliente_s->codcliente;
                      $dircliente->codpais = $this->empresa->codpais;
@@ -392,6 +399,7 @@ class nueva_venta extends fs_controller
       {
          $art0->referencia = $art0->get_new_referencia();
       }
+
       if( $art0->exists() )
       {
          $this->results[] = $art0->get($_REQUEST['referencia']);
@@ -407,7 +415,7 @@ class nueva_venta extends fs_controller
          $art0->sevende = isset($_POST['sevende']);
          $art0->nostock = isset($_POST['nostock']);
          $art0->publico = isset($_POST['publico']);
-         
+
          if($_REQUEST['codfamilia'] != '')
          {
             $art0->codfamilia = $_REQUEST['codfamilia'];
@@ -457,7 +465,9 @@ class nueva_venta extends fs_controller
          $this->results[$i]->query = $this->query;
          $this->results[$i]->dtopor = 0;
          $this->results[$i]->cantidad = 1;
+         $this->results[$i]->coddivisa = $this->empresa->coddivisa;
 
+         /// añadimos el stock del almacén y el general
          $this->results[$i]->stockalm = $this->results[$i]->stockfis;
          if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
          {
@@ -495,6 +505,19 @@ class nueva_venta extends fs_controller
                      $tarifa->set_precios($this->results);
                   }
                }
+            }
+         }
+      }
+
+      /// convertimos la divisa
+      if( isset($_REQUEST['coddivisa']) )
+      {
+         if($_REQUEST['coddivisa'] != $this->empresa->coddivisa)
+         {
+            foreach($this->results as $i => $value)
+            {
+               $this->results[$i]->coddivisa = $_REQUEST['coddivisa'];
+               $this->results[$i]->pvp = $this->divisa_convert($value->pvp, $this->empresa->coddivisa, $_REQUEST['coddivisa']);
             }
          }
       }
@@ -1002,6 +1025,10 @@ class nueva_venta extends fs_controller
       }
    }
 
+   /**
+    * Genera el asiento para la factura, si procede
+    * @param factura_cliente $factura
+    */
    private function generar_asiento(&$factura)
    {
       if($this->empresa->contintegrada)
@@ -1018,6 +1045,11 @@ class nueva_venta extends fs_controller
          {
             $this->new_message($msg);
          }
+      }
+      else
+      {
+         /// de todas formas forzamos la generación de las líneas de iva
+         $factura->get_lineas_iva();
       }
    }
 

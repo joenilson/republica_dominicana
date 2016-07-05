@@ -237,14 +237,14 @@
                      <tr>
                         <th class="text-left text-capitalize">{#FS_ALBARAN#}</th>
                         <th class="text-left">Artículo</th>
-                        <th class="text-right">Cantidad</th>
-                        <th class="text-right">Precio</th>
-                        <th class="text-right">Dto</th>
-                        <th class="text-right">Neto</th>
-                        <th class="text-right">{#FS_IVA#}</th>
-                        <th class="recargo text-right">RE</th>
-                        <th class="irpf text-right">{#FS_IRPF#}</th>
-                        <th class="text-right">Total</th>
+                        <th class="text-right" width="70">Cantidad</th>
+                        <th class="text-right" width="80">Precio</th>
+                        <th class="text-right" width="70">Dto</th>
+                        <th class="text-right" width="85">Neto</th>
+                        <th class="text-right" width="75">{#FS_IVA#}</th>
+                        <th class="recargo text-right" width="70">RE</th>
+                        <th class="irpf text-right" width="70">{#FS_IRPF#}</th>
+                        <th class="text-right" width="90">Total</th>
                      </tr>
                   </thead>
                   {loop="$fsc->factura->get_lineas()"}
@@ -262,7 +262,7 @@
                         {$value->descripcion}
                      </td>
                      <td class="text-right">{$value->cantidad}</td>
-                     <td class="text-right">{$fsc->show_precio($value->pvpunitario, $fsc->factura->coddivisa)}</td>
+                     <td class="text-right">{$fsc->show_precio($value->pvpunitario, $fsc->factura->coddivisa, TRUE, FS_NF0_ART)}</td>
                      <td class="text-right">{$fsc->show_numero($value->dtopor, 2)} %</td>
                      <td class="text-right">{$fsc->show_precio($value->pvptotal, $fsc->factura->coddivisa)}</td>
                      <td class="text-right">{$fsc->show_numero($value->iva, 2)} %</td>
@@ -290,6 +290,16 @@
                      <td class="irpf text-right"><b>-{$fsc->show_precio($fsc->factura->totalirpf, $fsc->factura->coddivisa)}</b></td>
                      <td class="text-right"><b>{$fsc->show_precio($fsc->factura->total, $fsc->factura->coddivisa)}</b></td>
                   </tr>
+                  {if="$fsc->factura->coddivisa!=$fsc->empresa->coddivisa"}
+                  <tr class="warning">
+                     <td colspan="5" class="text-right"><b>{$fsc->empresa->coddivisa}:</b></td>
+                     <td></td>
+                     <td></td>
+                     <td class="recargo"></td>
+                     <td class="irpf"></td>
+                     <td class="text-right"><b>{$fsc->show_precio($fsc->euro_convert($fsc->factura->totaleuros))}</b></td>
+                  </tr>
+                  {/if}
                </table>
             </div>
 
@@ -590,7 +600,7 @@
 </form>
 {else}
 <div class="thumbnail">
-   <img src="view/img/fuuu_face.png" alt="fuuuuu"/>
+   <img src="{#FS_PATH#}view/img/fuuu_face.png" alt="fuuuuu"/>
 </div>
 {/if}
 

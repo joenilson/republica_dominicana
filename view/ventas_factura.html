@@ -228,15 +228,19 @@
          <div class="col-sm-3">
             <div class="form-group">
                <a href="{$fsc->forma_pago->url()}">Forma de pago</a>:
-               <select name="forma_pago" class="form-control">
+               <select name="forma_pago" class="form-control" onchange="this.form.submit()">
                   {loop="$fsc->forma_pago->all()"}
-                  <option value="{$value->codpago}"{if="$fsc->factura->codpago==$value->codpago"} selected=""{/if}>{$value->descripcion}</option>
+                  {if="$fsc->factura->codpago==$value->codpago"}
+                  <option value="{$value->codpago}" selected="">{$value->descripcion}</option>
+                  {else}
+                  <option value="{$value->codpago}">{$value->descripcion}</option>
+                  {/if}
                   {/loop}
                </select>
             </div>
          </div>
          <div class="col-sm-2">
-            <div class="form-group{if="$fsc->factura->vencida()"} has-warning{/if}">
+            <div class='form-group{if="$fsc->factura->vencida()"} has-warning{/if}'>
                Vencimiento:
                <input class="form-control datepicker" type="text" name="vencimiento" value="{$fsc->factura->vencimiento}" autocomplete="off"/>
             </div>
@@ -283,7 +287,7 @@
                         <th class="text-right" width="70">Cantidad</th>
                         <th class="text-right" width="80">Precio</th>
                         <th class="text-right" width="70">Dto</th>
-                        <th class="text-right" width="80">Neto</th>
+                        <th class="text-right" width="85">Neto</th>
                         <th class="text-right" width="70">{#FS_IVA#}</th>
                         <th class="text-right recargo" width="70">RE</th>
                         <th class="text-right irpf" width="70">{#FS_IRPF#}</th>
@@ -302,7 +306,7 @@
                      </td>
                      <td><a href="{$value->articulo_url()}">{$value->referencia}</a> {$value->descripcion()}</td>
                      <td class="text-right">{$value->cantidad}</td>
-                     <td class="text-right">{$fsc->show_precio($value->pvpunitario, $fsc->factura->coddivisa)}</td>
+                     <td class="text-right">{$fsc->show_precio($value->pvpunitario, $fsc->factura->coddivisa, TRUE, FS_NF0_ART)}</td>
                      <td class="text-right">{$fsc->show_numero($value->dtopor, 2)} %</td>
                      <td class="text-right">{$fsc->show_precio($value->pvptotal, $fsc->factura->coddivisa)}</td>
                      <td class="text-right">{$fsc->show_numero($value->iva, 2)} %</td>
@@ -330,6 +334,16 @@
                      <td class="irpf text-right"><b>-{$fsc->show_precio($fsc->factura->totalirpf, $fsc->factura->coddivisa)}</b></td>
                      <td class="text-right"><b>{$fsc->show_precio($fsc->factura->total, $fsc->factura->coddivisa)}</b></td>
                   </tr>
+                  {if="$fsc->factura->coddivisa!=$fsc->empresa->coddivisa"}
+                  <tr class="warning">
+                     <td colspan="5" class="text-right"><b>{$fsc->empresa->coddivisa}:</b></td>
+                     <td></td>
+                     <td></td>
+                     <td class="recargo"></td>
+                     <td class="irpf"></td>
+                     <td class="text-right"><b>{$fsc->show_precio($fsc->euro_convert($fsc->factura->totaleuros))}</b></td>
+                  </tr>
+                  {/if}
                </table>
             </div>
             <div class="container-fluid">
@@ -444,6 +458,11 @@
                         <span class="glyphicon glyphicon-credit-card" aria-hidden="true"></span>
                         &nbsp; Cuentas bancarias del cliente:
                      </h3>
+                     <p class="help-block">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                        Recuerda que para que aparezca la cuenta bancaria principal del cliente
+                        en la factura debes seleccionar una forma de pago <b>domiciliada</b>.
+                     </p>
                      <div class="table-responsive">
                         <table class="table table-hover">
                            <thead>
@@ -640,9 +659,7 @@
          <div class="modal-body">
          {loop="$fsc->extensions"}
             {if="$value->type=='pdf'"}
-            <a href="index.php?page={$value->from}{$value->params}&id={$fsc->factura->idfactura}" target="_blank" class="btn btn-block btn-default">
-               <span class="glyphicon glyphicon-print"></span> &nbsp; {$value->text}
-            </a>
+            <a href="index.php?page={$value->from}{$value->params}&id={$fsc->factura->idfactura}" target="_blank" class="btn btn-block btn-default">{$value->text}</a>
             {/if}
          {/loop}
          </div>
@@ -877,7 +894,7 @@
 </form>
 {else}
 <div class="thumbnail">
-   <img src="view/img/fuuu_face.png" alt="fuuuuu"/>
+   <img src="{#FS_PATH#}view/img/fuuu_face.png" alt="fuuuuu"/>
 </div>
 {/if}
 

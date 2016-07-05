@@ -47,7 +47,7 @@ class compras_factura extends fs_controller
    public $serie;
    public $ncf_tipo_anulacion;
    public $impuesto;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
@@ -275,7 +275,7 @@ class compras_factura extends fs_controller
             }
 
             $asiento_factura = new asiento_factura();
-            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subpro);
+            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subpro, $this->factura->totaleuros);
             if($this->factura->idasientop)
             {
                $this->factura->pagada = TRUE;
