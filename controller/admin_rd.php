@@ -41,6 +41,7 @@ class admin_rd extends fs_controller
       {
          if($_GET['opcion'] == 'moneda')
          {
+            //Validamos si existe la moneda DOP
             $div0 = new divisa();
             $divisa = $div0->get('DOP');
             if(!$divisa)
@@ -50,20 +51,23 @@ class admin_rd extends fs_controller
                $div0->descripcion = 'PESOS DOMINICANOS';
                $div0->simbolo = 'RD$';
                $div0->tasaconv = 45.15;
+               $div0->tasaconv_compra = 45.90;
                $div0->save();
             }
-            
+            //Validamos si existe la moneda USD
+            //por temas de operaciones en dolares
             $divisa = $div0->get('USD');
             if(!$divisa)
             {
-               $div0->coddivisa = 'DOP';
+               $div0->coddivisa = 'USD';
                $div0->codiso = '840';
                $div0->descripcion = 'DÓLARES EE.UU.';
                $div0->simbolo = '$';
                $div0->tasaconv = 1;
+               $div0->tasaconv_compra = 1;
                $div0->save();
             }
-            
+            //Elegimos la divisa para la empresa como DOP
             $this->empresa->coddivisa = 'DOP';
             if( $this->empresa->save() )
             {
