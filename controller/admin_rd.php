@@ -36,7 +36,33 @@ class admin_rd extends fs_controller
    protected function private_core()
    {
       $this->share_extensions();
-
+      
+      $variables=array();
+      $variables['zona_horaria']="America/Santo_Domingo";
+      $variables['nf0']="2";
+      $variables['nf0_art']="4";
+      $variables['nf1']=".";
+      $variables['nf2']=",";
+      $variables['pos_divisa']="left";
+      $variables['factura']="factura";
+      $variables['facturas']="facturas";
+      $variables['factura_simplificada']="factura simplificada";
+      $variables['factura_rectificativa']="nota de credito";
+      $variables['albaran']="conduce";
+      $variables['albaranes']="conduces";
+      $variables['pedido']="pedido";
+      $variables['pedidos']="pedidos";
+      $variables['presupuesto']="presupuesto";
+      $variables['presupuestos']="presupuestos";
+      $variables['provincia']="provincia";
+      $variables['apartado']="apartado";
+      $variables['cifnif']="Cedula/RNC";
+      $variables['iva']="ITBIS";
+      $variables['numero2']="NCF";
+      $variables['serie']="serie";
+      $variables['series']="series";
+      
+      
       if( isset($_GET['opcion']) )
       {
          if($_GET['opcion'] == 'moneda')
@@ -99,6 +125,39 @@ class admin_rd extends fs_controller
             if( $this->empresa->save() )
             {
                $this->new_message('Datos guardados correctamente.');
+            }
+         }
+         else if($_GET['opcion'] == 'configuracion_regional'){
+            //Configuramos la información básica para config2.ini
+            $guardar = FALSE;
+            foreach($GLOBALS['config2'] as $i => $value)
+            {
+               if( isset($variables[$i]) )
+               {
+                  $GLOBALS['config2'][$i] = $variables[$i];
+                  $guardar = TRUE;
+               }
+            }
+
+            if($guardar)
+            {
+               $file = fopen('tmp/'.FS_TMP_NAME.'config2.ini', 'w');
+               if($file)
+               {
+                  foreach($GLOBALS['config2'] as $i => $value)
+                  {
+                     if( is_numeric($value) )
+                     {
+                        fwrite($file, $i." = ".$value.";\n");
+                     }
+                     else
+                     {
+                        fwrite($file, $i." = '".$value."';\n");
+                     }
+                  }
+                  fclose($file);
+               }
+               $this->new_message('Datos de configuracion regional guardados correctamente.');
             }
          }
       }
