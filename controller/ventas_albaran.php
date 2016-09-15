@@ -19,6 +19,7 @@
 
 require_model('agencia_transporte.php');
 require_model('albaran_cliente.php');
+require_model('almacen.php');
 require_model('articulo.php');
 require_model('asiento.php');
 require_model('asiento_factura.php');
@@ -47,6 +48,8 @@ class ventas_albaran extends fs_controller
    public $agente;
    public $albaran;
    public $allow_delete;
+   public $allow_delete_fac;
+   public $almacen;
    public $cliente;
    public $cliente_s;
    public $divisa;
@@ -76,6 +79,7 @@ class ventas_albaran extends fs_controller
       $this->agencia = new agencia_transporte();
       $albaran = new albaran_cliente();
       $this->albaran = FALSE;
+      $this->almacen = new almacen();
       $this->cliente = new cliente();
       $this->cliente_s = FALSE;
       $this->divisa = new divisa();
@@ -94,6 +98,7 @@ class ventas_albaran extends fs_controller
 
       /// ¿El usuario tiene permiso para eliminar en esta página?
       $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
+      $this->allow_delete_fac = $this->user->allow_delete_on('ventas_factura');
 
       /**
        * Comprobamos si el usuario tiene acceso a nueva_venta,
@@ -148,9 +153,11 @@ class ventas_albaran extends fs_controller
             else
                $this->generar_factura();
          }
-         }
+      }
       else
-         $this->new_error_msg("¡".ucfirst(FS_ALBARAN)." de venta no encontrado!");
+      {
+         $this->new_error_msg("¡".ucfirst(FS_ALBARAN)." de venta no encontrado!", 'error', FALSE, FALSE);
+      }
    }
 
    public function url()
@@ -173,6 +180,7 @@ class ventas_albaran extends fs_controller
       $this->albaran->numero2 = $_POST['numero2'];
       $this->albaran->observaciones = $_POST['observaciones'];
 
+      /// ¿Es editable o ya ha sido facturado?
       if($this->albaran->ptefactura)
       {
          $eje0 = $this->ejercicio->get_by_fecha($_POST['fecha'], FALSE);
@@ -192,13 +200,21 @@ class ventas_albaran extends fs_controller
             $cliente = $this->cliente->get($_POST['cliente']);
             if($cliente)
             {
+               $this->albaran->codcliente = $cliente->codcliente;
+               $this->albaran->cifnif = $cliente->cifnif;
+               $this->albaran->nombrecliente = $cliente->razonsocial;
+               $this->albaran->apartado = NULL;
+               $this->albaran->ciudad = NULL;
+               $this->albaran->coddir = NULL;
+               $this->albaran->codpais = NULL;
+               $this->albaran->codpostal = NULL;
+               $this->albaran->direccion = NULL;
+               $this->albaran->provincia = NULL;
+               
                foreach($cliente->get_direcciones() as $d)
                {
                   if($d->domfacturacion)
                   {
-                     $this->albaran->codcliente = $cliente->codcliente;
-                     $this->albaran->cifnif = $cliente->cifnif;
-                     $this->albaran->nombrecliente = $cliente->razonsocial;
                      $this->albaran->apartado = $d->apartado;
                      $this->albaran->ciudad = $d->ciudad;
                      $this->albaran->coddir = $d->id;
@@ -211,7 +227,12 @@ class ventas_albaran extends fs_controller
                }
             }
             else
-               die('No se ha encontrado el cliente.');
+            {
+               $this->albaran->codcliente = NULL;
+               $this->albaran->nombrecliente = $_POST['nombrecliente'];
+               $this->albaran->cifnif = $_POST['cifnif'];
+               $this->albaran->coddir = NULL;
+            }
          }
          else
          {
@@ -222,6 +243,7 @@ class ventas_albaran extends fs_controller
             $this->albaran->ciudad = $_POST['ciudad'];
             $this->albaran->codpostal = $_POST['codpostal'];
             $this->albaran->direccion = $_POST['direccion'];
+            $this->albaran->apartado = $_POST['apartado'];
 
             $this->albaran->envio_nombre = $_POST['envio_nombre'];
             $this->albaran->envio_apellidos = $_POST['envio_apellidos'];
@@ -231,10 +253,12 @@ class ventas_albaran extends fs_controller
                $this->albaran->envio_codtrans = $_POST['envio_codtrans'];
             }
             $this->albaran->envio_codigo = $_POST['envio_codigo'];
+            $this->albaran->envio_codpais = $_POST['envio_codpais'];
             $this->albaran->envio_provincia = $_POST['envio_provincia'];
             $this->albaran->envio_ciudad = $_POST['envio_ciudad'];
             $this->albaran->envio_codpostal = $_POST['envio_codpostal'];
             $this->albaran->envio_direccion = $_POST['envio_direccion'];
+            $this->albaran->envio_apartado = $_POST['envio_apartado'];
 
             $cliente = $this->cliente->get($this->albaran->codcliente);
          }
@@ -315,6 +339,12 @@ class ventas_albaran extends fs_controller
                }
             }
 
+            $regimeniva = 'general';
+            if($cliente)
+            {
+               $regimeniva = $cliente->regimeniva;
+            }
+            
             /// modificamos y/o añadimos las demás líneas
             for($num = 0; $num <= $numlineas; $num++)
             {
@@ -339,7 +369,7 @@ class ventas_albaran extends fs_controller
                         $lineas[$k]->iva = 0;
                         $lineas[$k]->recargo = 0;
                         $lineas[$k]->irpf = floatval($_POST['irpf_'.$num]);
-                        if( !$serie->siniva AND $cliente->regimeniva != 'Exento' )
+                        if( !$serie->siniva AND $regimeniva != 'Exento' )
                         {
                            $imp0 = $this->impuesto->get_by_iva($_POST['iva_'.$num]);
                            if($imp0)
@@ -375,6 +405,7 @@ class ventas_albaran extends fs_controller
                         }
                         else
                            $this->new_error_msg("¡Imposible modificar la línea del artículo ".$value->referencia."!");
+                        
                         break;
                      }
                   }
@@ -386,7 +417,7 @@ class ventas_albaran extends fs_controller
                      $linea->idalbaran = $this->albaran->idalbaran;
                      $linea->descripcion = $_POST['desc_'.$num];
 
-                     if( !$serie->siniva AND $cliente->regimeniva != 'Exento' )
+                     if( !$serie->siniva AND $regimeniva != 'Exento' )
                      {
                         $imp0 = $this->impuesto->get_by_iva($_POST['iva_'.$num]);
                         if($imp0)
@@ -499,9 +530,11 @@ class ventas_albaran extends fs_controller
       $factura->nombrecliente = $this->albaran->nombrecliente;
       $factura->observaciones = $this->albaran->observaciones;
       $factura->provincia = $this->albaran->provincia;
+      $factura->envio_apartado = $this->albaran->envio_apartado;
       $factura->envio_apellidos = $this->albaran->envio_apellidos;
       $factura->envio_ciudad = $this->albaran->envio_ciudad;
       $factura->envio_codigo = $this->albaran->envio_codigo;
+      $factura->envio_codpais = $this->albaran->envio_codpais;
       $factura->envio_codpostal = $this->albaran->envio_codpostal;
       $factura->envio_codtrans = $this->albaran->envio_codtrans;
       $factura->envio_direccion = $this->albaran->envio_direccion;
@@ -515,6 +548,11 @@ class ventas_albaran extends fs_controller
       $factura->totalrecargo = $this->albaran->totalrecargo;
       $factura->porcomision = $this->albaran->porcomision;
 
+      if( is_null($factura->codagente) )
+      {
+         $factura->codagente = $this->user->codagente;
+      }
+      
       /// asignamos el ejercicio que corresponde a la fecha elegida
       $eje0 = $this->ejercicio->get_by_fecha($_REQUEST['facturar']);
       if($eje0)

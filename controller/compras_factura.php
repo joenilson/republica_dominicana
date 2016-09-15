@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_model('almacen.php');
 require_model('articulo.php');
 require_model('asiento.php');
 require_model('asiento_factura.php');
@@ -36,6 +37,7 @@ class compras_factura extends fs_controller
 {
    public $agente;
    public $allow_delete;
+   public $almacen;
    public $divisa;
    public $ejercicio;
    public $factura;
@@ -60,6 +62,7 @@ class compras_factura extends fs_controller
 
       $this->ppage = $this->page->get('compras_facturas');
       $this->agente = FALSE;
+      $this->almacen = new almacen();
       $this->divisa = new divisa();
       $this->ejercicio = new ejercicio();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
@@ -148,7 +151,9 @@ class compras_factura extends fs_controller
          $this->factura->full_test();
       }
       else
-         $this->new_error_msg("¡Factura de proveedor no encontrada!");
+      {
+         $this->new_error_msg("¡Factura de proveedor no encontrada!", 'error', FALSE, FALSE);
+      }
    }
 
    public function url()
@@ -214,6 +219,12 @@ class compras_factura extends fs_controller
          if( $asiento_factura->generar_asiento_compra($factura) )
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
+            
+            if(!$this->empresa->contintegrada)
+            {
+               $this->new_message("¿Quieres que los asientos se generen automáticamente?"
+                       . " Activa la <a href='index.php?page=admin_empresa#facturacion'>Contabilidad integrada</a>.");
+            }
          }
 
          foreach($asiento_factura->errors as $err)
@@ -269,13 +280,15 @@ class compras_factura extends fs_controller
             /// nos aseguramos que el proveedor tenga subcuenta en el ejercicio actual
             $subpro = FALSE;
             $eje = $this->ejercicio->get_by_fecha( $this->today() );
-            if($eje)
+            if($eje AND $this->proveedor)
             {
                $subpro = $this->proveedor->get_subcuenta($eje->codejercicio);
             }
 
+            $importe = $this->euro_convert($this->factura->totaleuros, $this->factura->coddivisa, $this->factura->tasaconv);
+            
             $asiento_factura = new asiento_factura();
-            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subpro, $this->factura->totaleuros);
+            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subpro, $importe);
             if($this->factura->idasientop)
             {
                $this->factura->pagada = TRUE;

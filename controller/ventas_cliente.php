@@ -77,6 +77,10 @@ class ventas_cliente extends fs_controller
       }
       $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
 
+      if($this->cliente)
+      {
+         $this->page->title = $this->cliente->codcliente;
+         
       /// ¿Hay que hacer algo más?
       if( isset($_GET['delete_cuenta']) ) /// eliminar cuenta bancaria
       {
@@ -240,13 +244,11 @@ class ventas_cliente extends fs_controller
          else
             $this->new_error_msg("¡Imposible modificar los datos del cliente!");
       }
-
-      if($this->cliente)
+        }
+        else
       {
-         $this->page->title = $this->cliente->codcliente;
+         $this->new_error_msg("¡Cliente no encontrado!", 'error', FALSE, FALSE);
       }
-      else
-         $this->new_error_msg("¡Cliente no encontrado!");
    }
 
    public function url()
@@ -261,11 +263,6 @@ class ventas_cliente extends fs_controller
       }
       else
          return $this->ppage->url();
-   }
-
-   public function this_year($previous = 0)
-   {
-      return intval(Date('Y')) - $previous;
    }
 
    /*
@@ -317,7 +314,7 @@ class ventas_cliente extends fs_controller
                  ." WHERE fecha >= ".$this->empresa->var2str(Date('1-1-'.$year))
                  ." AND fecha <= ".$this->empresa->var2str(Date('31-12-'.$year))
                  ." AND codcliente = ".$this->empresa->var2str($this->cliente->codcliente)
-                 ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
+                 ." GROUP BY mes ORDER BY mes ASC;";
 
          $data = $this->db->select($sql);
          if($data)
@@ -336,7 +333,7 @@ class ventas_cliente extends fs_controller
                  ." WHERE fecha >= ".$this->empresa->var2str(Date('1-1-'.$year))
                  ." AND fecha <= ".$this->empresa->var2str(Date('31-12-'.$year))
                  ." AND codcliente = ".$this->empresa->var2str($this->cliente->codcliente)
-                 ." GROUP BY ".$sql_aux." ORDER BY mes ASC;";
+                 ." GROUP BY mes ORDER BY mes ASC;";
          $data = $this->db->select($sql);
          if($data)
          {

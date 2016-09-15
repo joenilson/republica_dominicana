@@ -438,7 +438,7 @@
         <form action="{$fsc->url()}#cuentasb" method="post" class="form">
             <input type="hidden" name="codcuenta" value="{$value->codcuenta}"/>
             <input type="hidden" name="codcliente" value="{$value->codcliente}"/>
-            <div class="panel panel-info">
+                  <div class='panel {if="$value->principal"}panel-primary{else}panel-default{/if}'>
                 <div class="panel-heading">
                     <h3 class="panel-title">Cuenta bancaria #{$value->codcuenta}</h3>
                 </div>
@@ -524,16 +524,15 @@
                 <form action="{$fsc->url()}#direcciones" method="post" class="form">
                     <input type="hidden" name="codcliente" value="{$fsc->cliente->codcliente}"/>
                     <input type="hidden" name="coddir" value="{$value->id}"/>
-                    <div class="panel panel-info">
+                  <div class='panel {if="$value->domfacturacion OR $value->domenvio"}panel-primary{else}panel-default{/if}'>
                         <div class="panel-heading">
                             <h3 class="panel-title">
-                                <span class="glyphicon glyphicon-road"></span>&nbsp; {$value->descripcion}
-                                &nbsp; | &nbsp;
-                                <span class="glyphicon glyphicon-calendar"></span> {$value->fecha}
+                           <span class="glyphicon glyphicon-road"></span>&nbsp; {$value->id} &nbsp; | &nbsp;
+                           <span class="glyphicon glyphicon-calendar" title="Última modificación"></span>&nbsp; {$value->fecha}
                             </h3>
                         </div>
                         <div class="panel-body">
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group">
                                 <a href="{$fsc->pais->url()}">País</a>
                                 <select class="form-control" name="pais">
@@ -559,33 +558,33 @@
                                 <input class="form-control" type="text" name="ciudad" value="{$value->ciudad}"/>
                             </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group">
                                 Código Postal:
                                 <input class="form-control" type="text" name="codpostal" value="{$value->codpostal}"/>
                             </div>
                             </div>
-                        <div class="col-sm-2">
-                           <div class="form-group">
-                                <span class="text-capitalize">{#FS_APARTADO#}</span>:
-                                <input class="form-control" type="text" name="apartado" value="{$value->apartado}" autocomplete="off"/>
-                            </div>
-                        </div>
-                        <div class="col-sm-7">
+                        <div class="col-sm-6">
                            <div class="form-group">
                               Dirección:
                               <input class="form-control" type="text" name="direccion" value="{$value->direccion}" autocomplete="off"/>
                               <label class="checkbox-inline">
                                         <input type="checkbox" name="direnvio" value="TRUE"{if="$value->domenvio"} checked=""{/if}/>
-                                        Dirección de envío
+                                        Dirección principal de envío
                                     </label>
                               <label class="checkbox-inline">
                                         <input type="checkbox" name="dirfact" value="TRUE"{if="$value->domfacturacion"} checked=""{/if}/>
-                                        Dirección de facturación
+                                        Dirección principal de facturación
                                     </label>
                                 </div>
                             </div>
-                        <div class="col-sm-5">
+                        <div class="col-sm-3">
+                           <div class="form-group">
+                              <span class="text-capitalize">{#FS_APARTADO#}</span>:
+                              <input class="form-control" type="text" name="apartado" value="{$value->apartado}" autocomplete="off"/>
+                           </div>
+                        </div>
+                        <div class="col-sm-3">
                            <div class="form-group">
                                 Descripción:
                                 <input class="form-control" type="text" name="descripcion" value="{$value->descripcion}" autocomplete="off"/>
@@ -594,7 +593,8 @@
                      </div>
                         <div class="panel-footer text-right">
                             <a class="btn btn-sm btn-danger pull-left" href="{$fsc->url()}&delete_dir={$value->id}#direcciones">
-                           <span class="glyphicon glyphicon-trash"></span>&nbsp; Eliminar
+                           <span class="glyphicon glyphicon-trash"></span>
+                           <span class='hidden-xs'>&nbsp; Eliminar</span>
                             </a>
                             <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
                            <span class="glyphicon glyphicon-floppy-disk"></span>&nbsp; Guardar
@@ -679,7 +679,7 @@
                     <div class="panel-footer">
                         <p class="help-block">
                             Estas son las estadísticas de {#FS_ALBARANES#} y facturas del cliente
-                        de los últimos años. Los valores son netos en {$fsc->simbolo_divisa()}.
+                        de los últimos años. Los valores son <b>netos</b> en {$fsc->simbolo_divisa()}.
                         <br/>
                         Puedes consultar informes de compras más detallados en <b>Informes &gt; Facturas</b>.
                         </p>

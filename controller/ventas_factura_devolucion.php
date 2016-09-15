@@ -64,7 +64,7 @@ class ventas_factura_devolucion extends fs_controller
       }
       else
       {
-         $this->new_error_msg('Factura no encontrada.');
+         $this->new_error_msg('Factura no encontrada.', 'error', FALSE, FALSE);
       }
    }
 

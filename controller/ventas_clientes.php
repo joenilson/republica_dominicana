@@ -32,6 +32,7 @@ class ventas_clientes extends fs_controller
    public $cliente;
    public $codgrupo;
    public $codpais;
+   public $debaja;
    public $grupo;
    public $grupos;
    public $nocifnif;
@@ -157,10 +158,13 @@ class ventas_clientes extends fs_controller
          $cliente->tipoidfiscal = $_POST['tipoidfiscal'];
             $cliente->cifnif = $_POST['cifnif'];
 
+         if( isset($_POST['scodgrupo']) )
+         {
             if($_POST['scodgrupo'] != '')
             {
                $cliente->codgrupo = $_POST['scodgrupo'];
             }
+         }
 
             if( isset($_POST['telefono1']) )
             {
@@ -219,11 +223,14 @@ class ventas_clientes extends fs_controller
 
                if( $dircliente->save() )
                {
-               /// forzamos la creación de la subcuenta
-               $cliente->get_subcuenta($this->empresa->codejercicio);
+               if($this->empresa->contintegrada)
+               {
+                /// forzamos la creación de la subcuenta
+                $cliente->get_subcuenta($this->empresa->codejercicio);
+               }
 
                /// redireccionamos a la página del cliente
-                  header('location: '.$cliente->url());
+                header('location: '.$cliente->url());
                }
                else
                   $this->new_error_msg("¡Imposible guardar la dirección del cliente!");
@@ -269,6 +276,7 @@ class ventas_clientes extends fs_controller
       }
 
       $this->nocifnif = isset($_REQUEST['nocifnif']);
+      $this->debaja = isset($_REQUEST['debaja']);
 
       $this->buscar();
       $this->grupos = $this->grupo->all();
@@ -281,7 +289,6 @@ class ventas_clientes extends fs_controller
                  ."&provincia=".$this->provincia
                  ."&codpais=".$this->codpais
                  ."&codgrupo=".$this->codgrupo
-                 ."&offset=".($this->offset+FS_ITEM_LIMIT)
                  ."&orden=".$this->orden;
 
       if($this->nocifnif)
@@ -289,6 +296,11 @@ class ventas_clientes extends fs_controller
          $url .= '&nocifnif=TRUE';
       }
 
+      if($this->debaja)
+      {
+         $url .= '&debaja=TRUE';
+      }
+      
       $paginas = array();
       $i = 0;
       $num = 0;
@@ -456,7 +468,7 @@ class ventas_clientes extends fs_controller
 
          if($this->ciudad != '')
          {
-            $sql .= "lower(ciudad) = ".$this->cliente->var2str( mb_strtolower($this->ciudad, 'UTF8') );
+            $sql .= $and2."lower(ciudad) = ".$this->cliente->var2str( mb_strtolower($this->ciudad, 'UTF8') );
             $and2 = ' AND ';
          }
 
@@ -487,7 +499,13 @@ class ventas_clientes extends fs_controller
          $and = ' AND ';
       }
 
-      $data = $this->db->select("SELECT COUNT(codcliente) as total".$sql);
+      if($this->debaja)
+      {
+         $sql .= $and."debaja = true";
+         $and = ' AND ';
+      }
+      
+      $data = $this->db->select("SELECT COUNT(codcliente) as total".$sql.';');
       if($data)
       {
          $this->total_resultados = intval($data[0]['total']);

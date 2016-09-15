@@ -18,6 +18,7 @@
  */
 
 require_model('agencia_transporte.php');
+require_model('almacen.php');
 require_model('articulo.php');
 require_model('asiento.php');
 require_model('asiento_factura.php');
@@ -42,6 +43,7 @@ class ventas_factura extends fs_controller
    public $agente;
    public $agentes;
    public $allow_delete;
+   public $almacen;
    public $cliente;
    public $divisa;
    public $ejercicio;
@@ -72,6 +74,7 @@ class ventas_factura extends fs_controller
       $this->agencia = new agencia_transporte();
       $this->agente = FALSE;
       $this->agentes = array();
+      $this->almacen = new almacen();
       $this->cliente = FALSE;
       $this->divisa = new divisa();
       $this->ejercicio = new ejercicio();
@@ -174,7 +177,9 @@ class ventas_factura extends fs_controller
          $this->factura->full_test();
       }
       else
-         $this->new_error_msg("¡Factura de cliente no encontrada!");
+      {
+         $this->new_error_msg("¡Factura de cliente no encontrada!", 'error', FALSE, FALSE);
+      }
    }
 
    public function url()
@@ -203,6 +208,7 @@ class ventas_factura extends fs_controller
       $this->factura->ciudad = $_POST['ciudad'];
       $this->factura->codpostal = $_POST['codpostal'];
       $this->factura->direccion = $_POST['direccion'];
+      $this->factura->apartado = $_POST['apartado'];
 
       $this->factura->envio_nombre = $_POST['envio_nombre'];
       $this->factura->envio_apellidos = $_POST['envio_apellidos'];
@@ -212,10 +218,12 @@ class ventas_factura extends fs_controller
          $this->factura->envio_codtrans = $_POST['envio_codtrans'];
       }
       $this->factura->envio_codigo = $_POST['envio_codigo'];
+      $this->factura->envio_codpais = $_POST['envio_codpais'];
       $this->factura->envio_provincia = $_POST['envio_provincia'];
       $this->factura->envio_ciudad = $_POST['envio_ciudad'];
       $this->factura->envio_codpostal = $_POST['envio_codpostal'];
       $this->factura->envio_direccion = $_POST['envio_direccion'];
+      $this->factura->envio_apartado = $_POST['envio_apartado'];
 
       $this->factura->codagente = NULL;
       $this->factura->porcomision = 0;
@@ -314,6 +322,12 @@ class ventas_factura extends fs_controller
          if( $asiento_factura->generar_asiento_venta($factura) )
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
+            
+            if(!$this->empresa->contintegrada)
+            {
+               $this->new_message("¿Quieres que los asientos se generen automáticamente?"
+                       . " Activa la <a href='index.php?page=admin_empresa#facturacion'>Contabilidad integrada</a>.");
+            }
          }
 
          foreach($asiento_factura->errors as $err)
@@ -369,13 +383,15 @@ class ventas_factura extends fs_controller
             /// nos aseguramos que el cliente tenga subcuenta en el ejercicio actual
             $subcli = FALSE;
             $eje = $this->ejercicio->get_by_fecha( $this->today() );
-            if($eje)
+            if($eje AND $this->cliente)
             {
                $subcli = $this->cliente->get_subcuenta($eje->codejercicio);
             }
 
+            $importe = $this->euro_convert($this->factura->totaleuros, $this->factura->coddivisa, $this->factura->tasaconv);
+            
             $asiento_factura = new asiento_factura();
-            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subcli, $this->factura->totaleuros);
+            $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subcli, $importe);
             if($this->factura->idasientop)
             {
                 $this->factura->pagada = TRUE;
