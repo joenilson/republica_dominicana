@@ -71,7 +71,7 @@ class nueva_venta extends fs_controller
    {
       parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
    }
-
+   
    protected function private_core()
    {
       $this->agencia = new agencia_transporte();
