@@ -20,7 +20,7 @@
 
 require_once 'plugins/republica_dominicana/fpdf17/fs_fpdf.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/fpdf17/font/');
-
+define('EEURO', chr(128));
 require_model('cliente.php');
 require_model('factura_cliente.php');
 require_model('articulo.php');
@@ -45,6 +45,7 @@ class factura_ncf extends fs_controller {
    public $ncf_ventas;
    public $distrib_transporte;
    public $idtransporte;
+   public $archivo;
 
    public function __construct() {
       parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
@@ -55,12 +56,15 @@ class factura_ncf extends fs_controller {
       $this->template = false;
       $this->share_extensions();
       $val_id = \filter_input(INPUT_GET, 'id');
+      $solicitud = \filter_input(INPUT_GET, 'solicitud');
       $valores_id = explode(',', $val_id);
       if(class_exists('distribucion_ordenescarga_facturas')){
         $this->distrib_transporte = new distribucion_ordenescarga_facturas();
       }
-      if(!empty($valores_id[0])){
+      if(!empty($valores_id[0]) AND $solicitud == 'imprimir'){
         $this->procesar_facturas($valores_id);
+      }elseif(!empty($valores_id[0]) AND $solicitud == 'email'){
+         $this->enviar_email($valores_id[0]); 
       }
    }
 
@@ -83,16 +87,18 @@ class factura_ncf extends fs_controller {
       return $mostrar;
    }
 
-   public function procesar_facturas($valores_id){
+   public function procesar_facturas($valores_id, $archivo=FALSE){
         if(!empty($valores_id)){
-            ob_end_clean();
+            if(ob_get_status()){
+                ob_end_clean();
+            }
             $pdf_doc = new PDF_MC_Table('P', 'mm', 'letter');
             $pdf_doc->SetTitle('Facturas de Venta' );
             $pdf_doc->SetSubject('Facturas de Venta para clientes');
             $pdf_doc->SetAuthor($this->empresa->nombre);
             $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
-            //
-            $archivo = FALSE;
+            
+            $this->archivo = $archivo;
             $contador = 0;
             $this->factura = FALSE;
             foreach($valores_id as $id)
@@ -108,7 +114,7 @@ class factura_ncf extends fs_controller {
                   $this->factura->ncf_afecta = $valores->ncf_modifica;
                   $this->factura->estado = $valores->estado;
                   $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
-                  if(class_exists('distribucion_ordenescarga_facturas')){
+                  if($this->distrib_transporte){
                     $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
                     $this->idtransporte = ($transporte[0]->idtransporte)?str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT):false;
                   }
@@ -119,7 +125,7 @@ class factura_ncf extends fs_controller {
               }
             }
             // Damos salida al archivo PDF
-            if ($archivo){
+            if($this->archivo){
                  if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')){
                     mkdir('tmp/' . FS_TMP_NAME . 'enviar');
                  }
@@ -134,6 +140,80 @@ class factura_ncf extends fs_controller {
             }
         }
    }
+   
+    private function enviar_email($doc, $tipo='ncf')
+   {
+      $factura = new factura_cliente();
+      $factura_enviar = $factura->get($doc);
+      if( $this->empresa->can_send_mail() )
+      {
+         if( $_POST['email'] != $this->cliente->email AND isset($_POST['guardar']) )
+         {
+            $this->cliente->email = $_POST['email'];
+            $this->cliente->save();
+         }
+         
+         $filename = 'factura_'.$factura_enviar->numero2.'.pdf';
+         if($tipo == 'ncf'){
+             $this->procesar_facturas(array($factura_enviar->idfactura), $filename);
+         }
+         
+         
+         if( file_exists('tmp/'.FS_TMP_NAME.'enviar/'.$filename) )
+         {
+            $mail = $this->empresa->new_mail();
+            $mail->FromName = $this->user->get_agente_fullname();
+            $mail->addReplyTo($_POST['de'], $mail->FromName);
+            
+            $mail->addAddress($_POST['email'], $this->cliente->razonsocial);
+            if($_POST['email_copia'])
+            {
+               if( isset($_POST['cco']) )
+               {
+                  $mail->addBCC($_POST['email_copia'], $this->cliente->razonsocial);
+               }
+               else
+               {
+                  $mail->addCC($_POST['email_copia'], $this->cliente->razonsocial);
+               }
+            }
+            $mail->Subject = $this->empresa->nombre . ': Su factura '.$this->factura->codigo;
+            
+            $mail->AltBody = $_POST['mensaje'];
+            $mail->msgHTML( nl2br($_POST['mensaje']) );
+            $mail->isHTML(TRUE);
+            
+            $mail->addAttachment('tmp/'.FS_TMP_NAME.'enviar/'.$filename);
+            if( is_uploaded_file($_FILES['adjunto']['tmp_name']) )
+            {
+               $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
+            }
+            
+            if( $mail->smtpConnect($this->empresa->smtp_options()) )
+            {
+               if( $mail->send() )
+               {
+                  $this->template = 'ventas_imprimir';
+                  $this->new_message('Mensaje enviado correctamente.');
+                  
+                  /// nos guardamos la fecha de envío
+                     $factura_enviar->femail = $this->today();
+                     $factura_enviar->save();
+                  
+                  $this->empresa->save_mail($mail);
+               }
+               else
+                  $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
+            }
+            else
+               $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
+            
+            unlink('tmp/'.FS_TMP_NAME.'enviar/'.$filename);
+         }
+         else
+            $this->new_error_msg('Imposible generar el PDF.');
+      }
+   }
 
    public function generar_pdf($pdf_doc)
    {
@@ -141,7 +221,6 @@ class factura_ncf extends fs_controller {
         ///// INICIO - Factura Detallada
         /// Creamos el PDF y escribimos sus metadatos
 
-        define('EEURO', chr(128));
         $pdf_doc->StartPageGroup();
         $pdf_doc->AliasNbPages();
         $pdf_doc->SetAutoPageBreak(true, 40);
@@ -323,17 +402,28 @@ class factura_ncf extends fs_controller {
 
    private function share_extensions()
    {
-      $fsext = new fs_extension(
+      $extensiones = array(
         array(
             'name' => 'factura_ncf',
             'page_from' => __CLASS__,
             'page_to' => 'ventas_factura',
             'type' => 'pdf',
             'text' => 'Factura con NCF',
-            'params' => ''
+            'params' => '&solicitud=imprimir'
+        ),
+          array(
+            'name' => 'email_factura_ncf',
+            'page_from' => __CLASS__,
+            'page_to' => 'ventas_factura',
+            'type' => 'email',
+            'text' => 'Factura con NCF',
+            'params' => '&solicitud=email'
         )
       );
-      $fsext->save();
+      foreach($extensiones as $ext){
+        $fsext = new fs_extension($ext);
+        $fsext->save();
+      }
    }
 
    private function fix_html($txt)

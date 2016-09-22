@@ -365,7 +365,7 @@
                      <td></td>
                      <td class="recargo"></td>
                      <td class="irpf"></td>
-                     <td class="text-right"><b>{$fsc->show_precio($fsc->euro_convert($fsc->factura->totaleuros))}</b></td>
+                     <td class="text-right"><b>{$fsc->show_precio($fsc->euro_convert($fsc->factura->totaleuros, $fsc->factura->coddivisa, $fsc->factura->tasaconv))}</b></td>
                   </tr>
                   {/if}
                </table>
@@ -930,10 +930,10 @@
             </div>
             <div class="modal-footer">
                <button id="link_eliminar" type="button" class="btn btn-sm btn-danger pull-left">
-                  <span class="glyphicon glyphicon-trash"></span> &nbsp; Eliminar
+                  <span class="glyphicon glyphicon-trash"></span>&nbsp; Eliminar
                </button>
                <button type="submit" class="btn btn-sm btn-warning">
-                  <span class="glyphicon glyphicon-flag"></span> &nbsp; Anular
+                  <span class="glyphicon glyphicon-flag"></span>&nbsp; Anular
                </button>
             </div>
          </div>
