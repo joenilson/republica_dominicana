@@ -116,7 +116,7 @@ class factura_ncf extends fs_controller {
                   $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
                   if($this->distrib_transporte){
                     $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
-                    $this->idtransporte = ($transporte[0]->idtransporte)?str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT):false;
+                    $this->idtransporte = (isset($transporte[0]->idtransporte))?str_pad($transporte[0]->idtransporte,10,"0",STR_PAD_LEFT):false;
                   }
                   $cliente = new cliente();
                   $this->cliente = $cliente->get($this->factura->codcliente);
@@ -245,7 +245,16 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
 
         /// Insertamos el Logo y Marca de Agua
-        if (file_exists('tmp/' . FS_TMP_NAME . 'logo.png'))
+        if( file_exists(FS_MYDOCS.'images/logo.png') )
+        {
+           $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
+           $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo
+           $pdf_doc->fdf_Ylogotipo = '35'; // Valor Y para Logotipo
+           $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
+           $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
+           $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
+        }
+        elseif( file_exists(FS_MYDOCS.'images/logo.jpg') )
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
            $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo

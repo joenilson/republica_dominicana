@@ -91,7 +91,7 @@
             $('#modal_impresion_facturas').modal('show');
             $("#imprimir_facturas").detach();
             $("<iframe id='imprimir_facturas' />")
-              .attr('src', 'index.php?page=factura_ncf&id='+checkboxValues)
+              .attr('src', 'index.php?page=factura_ncf&solicitud=imprimir&id='+checkboxValues)
               .attr('width', '100%')
               .attr('height', '500')
               .appendTo('#modal_body_impresion_facturas');
@@ -297,15 +297,24 @@
          </tr>
       </thead>
       {loop="$fsc->resultados"}
-      <tr class="{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->estado=='f'"}tachada{/if}">
+      <tr class="{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->anulada"}tachada{/if}">
         <td class="text-center">
-           {if="$value->estado=='t'"}
+           {if="!$value->anulada"}
             <input type="checkbox" name="imprimir" value="{$value->idfactura}" class="check-mark"/>
            {/if}
         </td> 
         <td class="text-center">
             {if="$value->pagada"}
             <span class="glyphicon glyphicon-ok" title="La {#FS_FACTURA#} está pagada"></span>
+            {/if}
+            {if="$value->anulada"}
+            <span class="glyphicon glyphicon-remove" title="La factura está anulada"></span>
+            {/if}
+            {if="$value->idfacturarect"}
+            <span class="glyphicon glyphicon-flag" title="{#FS_FACTURA_RECTIFICATIVA#} de {$value->codigorect}"></span>
+            {/if}
+            {if="$value->femail"}
+            <span class="glyphicon glyphicon-send" title="La factura fue enviada por email el {$value->femail}"></span>
             {/if}
          </td>
          <td class="text-center">
@@ -315,15 +324,18 @@
          </td>
          <td>
             <a href="{$value->url()}">{$value->codigo}</a> {$value->numero2}
-            {if="$value->idfacturarect"}
-            <span class="label label-danger" title="{#FS_FACTURA_RECTIFICATIVA#} de {$value->codigorect}">
-               <span class="glyphicon glyphicon-flag"></span>
-            </span>
-            {/if}
+            {if="$value->totaliva==0"}<span class="label label-warning">Sin {#FS_IVA#}</span>{/if}
+            {if="$value->totalrecargo!=0"}<span class="label label-default">RE</span>{/if}
+            {if="$value->totalirpf!=0"}<span class="label label-default">{#FS_IRPF#}</span>{/if}
          </td>
          <td>
             {$value->nombrecliente}
-            <a href="{$fsc->url()}&codcliente={$value->codcliente}" class="cancel_clickable" title="Ver más {#FS_FACTURAS#} de {$value->nombrecliente}">[+]</a>
+            {if="$value->codcliente"}
+            <a href="{$fsc->url()}&codcliente={$value->codcliente}" class="cancel_clickable" title="Ver más facturas de {$value->nombrecliente}">[+]</a>
+            {else}
+            <span class="label label-danger" title="Cliente desconocido">???</span>
+            {/if}
+            {if="!$value->cifnif"}<span class="label label-warning" title="Sin {#FS_CIFNIF#}"><s>{#FS_CIFNIF#}</s></span>{/if}
          </td>
          <td>{$value->observaciones_resume()}</td>
          <td class="text-right">{$fsc->show_precio($value->total, $value->coddivisa)}</td>

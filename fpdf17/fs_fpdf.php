@@ -29,7 +29,8 @@ class PDF_MC_Table extends FPDF
     var $extgstates = array();
     var $angle=0;
     var $lineaactual = 0;
-    var $piepagina = false;	
+    var $piepagina = false;
+    var $logo;
     //Adición de grupos de páginas
     //Origen: http://fpdf.de/downloads/addons/57/
     var $NewPageGroup;   // variable indicating whether a new group was requested
@@ -93,7 +94,34 @@ class PDF_MC_Table extends FPDF
         //Logotipo
         if ($this->fdf_verlogotipo == '1')
         {
-            $this->Image('tmp/'.FS_TMP_NAME.'logo.png',$this->fdf_Xlogotipo,$this->fdf_Ylogotipo,50);
+            if( !file_exists(FS_MYDOCS.'images') )
+            {
+               @mkdir(FS_MYDOCS.'images', 0777, TRUE);
+            }
+
+            /**
+             * Antes se guardaba el logo en el temporal.
+             * Mala decisión, lo movemos.
+             */
+            if( file_exists('tmp/'.FS_TMP_NAME.'logo.png') )
+            {
+               rename('tmp/'.FS_TMP_NAME.'logo.png', FS_MYDOCS.'images/logo.png');
+            }
+            else if( file_exists('tmp/'.FS_TMP_NAME.'logo.jpg') )
+            {
+               rename('tmp/'.FS_TMP_NAME.'logo.jpg', FS_MYDOCS.'images/logo.jpg');
+            }
+
+            $this->logo = FALSE;
+            if( file_exists(FS_MYDOCS.'images/logo.png') )
+            {
+               $this->logo = FS_MYDOCS.'images/logo.png';
+            }
+            else if( file_exists(FS_MYDOCS.'images/logo.jpg') )
+            {
+               $this->logo = FS_MYDOCS.'images/logo.jpg';
+            }
+            $this->Image($this->logo,$this->fdf_Xlogotipo,$this->fdf_Ylogotipo,50);
             $this->Ln(0);
         }
 
@@ -103,7 +131,7 @@ class PDF_MC_Table extends FPDF
             // set alpha to semi-transparency
             $this->SetAlpha(0.05);
             // draw png image
-            $this->Image('tmp/'.FS_TMP_NAME.'logo.png',$this->fdf_Xmarcaagua,$this->fdf_Ymarcaagua,160);
+            $this->Image($this->logo,$this->fdf_Xmarcaagua,$this->fdf_Ymarcaagua,160);
             // restore full opacity
             $this->SetAlpha(1);			
             $this->Ln(0);

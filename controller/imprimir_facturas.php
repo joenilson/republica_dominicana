@@ -137,12 +137,6 @@ class imprimir_facturas extends fs_controller
          $this->total_resultados_comision = 0;
          $this->total_resultados_txt = '';
 
-         if( isset($_GET['delete']) )
-         {
-            $this->delete_factura();
-         }
-         else
-         {
             if( !isset($_GET['mostrar']) AND (isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie'])) )
             {
                /**
@@ -177,7 +171,6 @@ class imprimir_facturas extends fs_controller
                $this->desde = $_REQUEST['desde'];
                $this->hasta = $_REQUEST['hasta'];
             }
-         }
 
          /// añadimos segundo nivel de ordenación
          $order2 = '';
@@ -190,26 +183,14 @@ class imprimir_facturas extends fs_controller
             $order2 = ', codigo ASC';
          }
 
-         if($this->mostrar == 'sinpagar')
-         {
-            $this->resultados = $this->factura_all_sin_pagar($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
-
-            if($this->offset == 0)
-            {
-               $this->total_resultados = 0;
-               $this->total_resultados_txt = 'Suma total de esta página:';
-               foreach($this->resultados as $fac)
-               {
-                  $this->total_resultados += $fac->total;
-               }
-            }
-         }
-         else if($this->mostrar == 'buscar')
+         if($this->mostrar == 'buscar')
          {
             $this->buscar($order2);
          }
          else
-            $this->resultados = $this->factura_all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+         {
+            $this->resultados = $this->factura->all($this->offset, FS_ITEM_LIMIT, $this->order.$order2);
+         }
       }
    }
 
@@ -250,11 +231,7 @@ class imprimir_facturas extends fs_controller
       $num = 0;
       $actual = 1;
 
-      if($this->mostrar == 'sinpagar')
-      {
-         $total = $this->total_sinpagar();
-      }
-      else if($this->mostrar == 'buscar')
+      if($this->mostrar == 'buscar')
       {
          $total = $this->num_resultados;
       }
@@ -322,17 +299,6 @@ class imprimir_facturas extends fs_controller
       {
          $this->lineas = $linea->search($this->buscar_lineas);
       }
-   }
-
-   public function total_sinpagar()
-   {
-      $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli WHERE pagada = false;");
-      if($data)
-      {
-         return intval($data[0]['total']);
-      }
-      else
-         return 0;
    }
 
    private function total_registros()
@@ -439,87 +405,4 @@ class imprimir_facturas extends fs_controller
       }
    }
 
-   private function delete_factura()
-   {
-      $delete = \filter_input(INPUT_GET, 'delete');
-      $fact = $this->factura->get($delete);
-      $motivo = \filter_input(INPUT_POST, 'motivo');
-      if($fact)
-      {
-         /// ¿Sumamos stock?
-         $art0 = new articulo();
-         foreach($fact->get_lineas() as $linea)
-         {
-            if( is_null($linea->idalbaran) )
-            {
-               $articulo = $art0->get($linea->referencia);
-               if($articulo)
-               {
-                  $articulo->sum_stock($fact->codalmacen, $linea->cantidad);
-               }
-            }
-         }
-
-         $ncf0 = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
-         $ncf0->motivo = $motivo;
-         $ncf0->estado = FALSE;
-         $ncf0->usuario_modificacion = $this->user->nick;
-         $ncf0->fecha_modificacion = Date('d-m-Y H:i:s');
-         if ($ncf0->anular()) {
-            $asiento_factura = new asiento_factura();
-            $asiento_factura->soloasiento = TRUE;
-            $fact_rectifica = $fact->idfacturarect;
-            $factrectifica = (!empty($fact->idfacturarect))?$fact_rectifica:'NULL';
-            $fact->idfacturarect = ($ncf0->tipo_comprobante == '04')?null:$fact->idfactura;
-            if ($asiento_factura->generar_asiento_venta($fact)) {
-                $this->db->exec("UPDATE facturascli set pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = ".$factrectifica." where idfactura = ".$fact->idfactura.";");
-                $fact_lineas = new linea_factura_cliente();
-                $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
-                foreach($lineas_fact as $linea)
-                {
-                    $linea->delete();
-                }
-                $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> reversado correctamente.");
-            }
-            $this->new_message("<a href='".$fact->url()."'>Factura</a> cambiada a estado anulada por error correctamente.");
-         }
-         else
-            $this->new_error_msg("¡Imposible eliminar la factura!");
-      }
-      else
-         $this->new_error_msg("Factura no encontrada.");
-   }
-
-   private function factura_all_sin_pagar($offset = 0, $limit = FS_ITEM_LIMIT, $order = 'vencimiento ASC, codigo ASC') {
-        $faclist = array();
-        $sql = "SELECT * FROM facturascli, ncf_ventas WHERE idfactura = documento AND pagada = false ORDER BY " . $order;
-
-        $data = $this->db->select_limit($sql, $limit, $offset);
-        if ($data) {
-            foreach ($data as $f) {
-                $values = new factura_cliente($f);
-                $values->ncf = $f['ncf'];
-                $values->ncf_modifica = $f['ncf_modifica'];
-                $values->estado = $f['estado'];
-                $faclist[] = $values;
-            }
-        }
-
-        return $faclist;
-    }
-
-    private function factura_all($offset = 0, $limit = FS_ITEM_LIMIT, $order = 'facturascli.fecha DESC, codigo DESC') {
-        $faclist = array();
-        $data = $this->db->select_limit("SELECT * FROM facturascli, ncf_ventas WHERE idfactura = documento ORDER BY " . $order, $limit, $offset);
-        if ($data) {
-            foreach ($data as $f) {
-                $values = new factura_cliente($f);
-                $values->ncf = $f['ncf'];
-                $values->ncf_modifica = $f['ncf_modifica'];
-                $values->estado = $f['estado'];
-                $faclist[] = $values;
-            }
-        }
-        return $faclist;
-    }
 }

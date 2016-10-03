@@ -1,48 +1,48 @@
 {include="header"}
 
 <div class="container">
-   <div class="row">
-      <div class="col-sm-12">
-         <div class="page-header">
-            <h2>Localizaci&oacute;n para República Dominicana de FacturaScripts</h2>
-         </div>
-         <p align="justify">
-            Este plugin está en desarrollo constante. Contiene el <b>Plan contable de República Dominicana</b>
-            para que puedas importarlo en los ejercicios.<br /> En <b>Contabilidad > Maestro NCF</b> puedes ingresar
-            tus solicitudes de NCF y debes marcar cuales son para uso al contado y cuales son para uso al crédito.<br />
-            En el boton de eliminar facturas, la opción eliminar, pone en 0 los montos de la factura y devuelve el stock
-            de productos al Almac&eacute;n creando un conduce con las cantidades en negativo. La opción anular crea una
-            nota de crédito con NCF.<br />
-            Al crear clientes debes de indicar que tipo de comprobante fiscal se le va generar.<br/>
-            Para la parte de Compras deberás usar el campo <b>Numero2</b> para ingresar allí el comprobante fiscal de la
-            factura del proveedor.<br />
-            En <b>Informes > Informes Fiscales</b> tienes los reportes 606, 607 y 608 para que los exportes y copies en las
-            Herramientas de la DGII.<br />
-         <div class="alert alert-warning" role="alert">Asegurate que la versi&oacute;n de FacturaScripts sea como m&iacute;nimo la <b>2016.000</b> y que
-         el plugin facturacion_base este en la version 74 como mínimo</div>
-         <div class="text-center"><b>Esta versi&oacute;n de FacturaScripts es la {$fsc->version()}</b></div>
-         </p>
-      </div>
-   </div>
-   <div class="row">
-      <div class="col-sm-3">
-         <a href="{$fsc->url()}&opcion=moneda" class="btn btn-sm btn-default">
-            1. Establecer DOP como moneda por defecto
-         </a>
-      </div>
-      <div class="col-sm-1"></div> 
-      <div class="col-sm-3">
-         <a href="{$fsc->url()}&opcion=pais" class="btn btn-sm btn-default">
-            2. Establecer República Dominicana como pais por defecto
-         </a>
-      </div>
-      <div class="col-sm-1"></div>
-      <div class="col-sm-3">
-         <a href="{$fsc->url()}&opcion=configuracion_regional" class="btn btn-sm btn-default">
-            3. Configurar Zona Horaria, Decimales y traducciones.
-         </a>
-      </div>
-   </div>
-</div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-header">
+                <h2>Localizaci&oacute;n para República Dominicana de FacturaScripts
+                <a class="btn btn-sm btn-default hidden-xs" href="{$fsc->url()}" title="recargar la página">
+                    <span class="glyphicon glyphicon-refresh"></span>
+                </a>
+                </h2>
+                
+            </div>
+            <p align="justify">
+                Este plugin está en desarrollo constante. Contiene el <b>Plan contable de República Dominicana</b>
+                para que puedas importarlo en los ejercicios.<br /> En <b>Contabilidad > Maestro NCF</b> puedes ingresar
+                tus solicitudes de NCF y debes marcar cuales son para uso al contado y cuales son para uso al crédito.<br />
+                En el boton de eliminar facturas, la opción eliminar, pone en 0 los montos de la factura y devuelve el stock
+                de productos al Almac&eacute;n creando un conduce con las cantidades en negativo. La opción anular crea una
+                nota de crédito con NCF.<br />
+                Al crear clientes debes de indicar que tipo de comprobante fiscal se le va generar.<br/>
+                Para la parte de Compras deberás usar el campo <b>Numero2</b> para ingresar allí el comprobante fiscal de la
+                factura del proveedor.<br />
+                En <b>Informes > Informes Fiscales</b> tienes los reportes 606, 607 y 608 para que los exportes y copies en las
+                Herramientas de la DGII.<br />
+            <div class="alert alert-info" role="alert">Asegurate que la versi&oacute;n de FacturaScripts sea como m&iacute;nimo la <b>2016.022</b> y que
+                el plugin facturacion_base este en la <b>version 98</b> como mínimo</div>
+            <div class="text-center"><b>Esta versi&oacute;n de FacturaScripts es la {$fsc->version()}</b></div>
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <a href="{$fsc->url()}&opcion=moneda" class="btn btn-sm {if="$fsc->conf_divisa"}btn-success{else}btn-default{/if} col-sm-3">
+            {if="$fsc->conf_divisa"}<span class="fa fa-check"></span>&nbsp;{/if}Establecer DOP como moneda por defecto
+        </a>
+        <a href="{$fsc->url()}&opcion=pais" class="btn btn-sm {if="$fsc->conf_pais"}btn-success{else}btn-default{/if} col-sm-3">
+            {if="$fsc->conf_pais"}<span class="fa fa-check"></span>&nbsp;{/if}República Dominicana como pais por defecto
+        </a>
+        <a href="{$fsc->url()}&opcion=configuracion_regional" class="btn btn-sm {if="$fsc->conf_regional"}btn-success{else}btn-default{/if} col-sm-3">
+            {if="$fsc->conf_regional"}<span class="fa fa-check"></span>&nbsp;{/if}Zona Horaria, Decimales y traducciones
+        </a>
+        <a href="{$fsc->url()}&opcion=impuestos" class="btn btn-sm {if="$fsc->conf_impuestos"}btn-success{else}btn-default{/if} col-sm-3">
+            {if="$fsc->conf_impuestos"}<span class="fa fa-check"></span>&nbsp;{/if}Agregar Impuestos ITBIS y Exentos
+        </a>
+        </div>
+    </div>
 
-{include="footer"}
+    {include="footer"}

@@ -393,18 +393,18 @@
                   </div>
                   <div class="col-sm-7">
                      <input type="text" name="cifnif" class="form-control" autocomplete="off"{if="$fsc->nuevocli_setup['nuevocli_cifnif_req']"} required=""{/if}/>
+                  </div>
                </div>
-               </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Tipo de Comprobante Fiscal:</label>
-                    <div class="col-sm-10">
-                        <select class="form-control" name="tipo_comprobante">
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">Tipo de Comprobante Fiscal:</label>
+                   <div class="col-sm-10">
+                      <select class="form-control" name="tipo_comprobante">
                             {loop="$fsc->ncf_tipo->cliente()"}
                             <option value="{$value->tipo_comprobante}"{if="$value->tipo_comprobante==$fsc->ncf_tipo->tipo_comprobante"} selected=""{/if}>{$value->tipo_comprobante} - {$value->descripcion}</option>
                             {/loop}
-                        </select>
-                    </div>
-                </div>
+                      </select>
+                   </div>
+                /div>
                {if="$fsc->grupos"}
                <div class="form-group">
                   <label class="col-sm-2 control-label">Grupo</label>
