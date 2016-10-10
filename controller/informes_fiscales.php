@@ -56,8 +56,8 @@ class informes_fiscales extends fs_controller {
     }
     protected function private_core() {
         $this->share_extensions();
-        $this->fecha_inicio = \date('01-m-Y');
-        $this->fecha_fin = \date('t-m-Y');
+        $this->fecha_inicio = \date('Y-m-01');
+        $this->fecha_fin = \date('Y-m-d');
         $this->reporte = '';
         $this->resultados_ventas = '';
         $this->resultados_compras = '';
@@ -78,8 +78,8 @@ class informes_fiscales extends fs_controller {
         if(!empty($tiporeporte)){
             $inicio = \filter_input(INPUT_POST, 'inicio');
             $fin = \filter_input(INPUT_POST, 'fin');
-            $this->fecha_inicio = $inicio;
-            $this->fecha_fin = $fin;
+            $this->fecha_inicio = \date("Y-m-d", strtotime($inicio));
+            $this->fecha_fin = \date("Y-m-d", strtotime($fin));
             $this->reporte = $tiporeporte;
             switch ($tiporeporte){
                 case 'reporte-consolidado':
