@@ -33,7 +33,7 @@ class admin_rd extends fs_controller {
     public $conf_pais;
     public $conf_regional;
     public $impuestos_rd;
-    
+    public $variables;
     public function __construct() {
         parent::__construct(__CLASS__, 'República Dominicana', 'admin');
     }
@@ -41,30 +41,30 @@ class admin_rd extends fs_controller {
     protected function private_core() {
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
-        $variables = array();
-        $variables['zona_horaria'] = "America/Santo_Domingo";
-        $variables['nf0'] = "2";
-        $variables['nf0_art'] = "4";
-        $variables['nf1'] = ".";
-        $variables['nf2'] = ",";
-        $variables['pos_divisa'] = "left";
-        $variables['factura'] = "factura";
-        $variables['facturas'] = "facturas";
-        $variables['factura_simplificada'] = "factura simplificada";
-        $variables['factura_rectificativa'] = "nota de credito";
-        $variables['albaran'] = "conduce";
-        $variables['albaranes'] = "conduces";
-        $variables['pedido'] = "pedido";
-        $variables['pedidos'] = "pedidos";
-        $variables['presupuesto'] = "presupuesto";
-        $variables['presupuestos'] = "presupuestos";
-        $variables['provincia'] = "provincia";
-        $variables['apartado'] = "apartado";
-        $variables['cifnif'] = "Cedula/RNC";
-        $variables['iva'] = "ITBIS";
-        $variables['numero2'] = "NCF";
-        $variables['serie'] = "serie";
-        $variables['series'] = "series";
+        $this->variables = array();
+        $this->variables['zona_horaria'] = "America/Santo_Domingo";
+        $this->variables['nf0'] = "2";
+        $this->variables['nf0_art'] = "4";
+        $this->variables['nf1'] = ".";
+        $this->variables['nf2'] = ",";
+        $this->variables['pos_divisa'] = "left";
+        $this->variables['factura'] = "factura";
+        $this->variables['facturas'] = "facturas";
+        $this->variables['factura_simplificada'] = "factura simplificada";
+        $this->variables['factura_rectificativa'] = "nota de credito";
+        $this->variables['albaran'] = "conduce";
+        $this->variables['albaranes'] = "conduces";
+        $this->variables['pedido'] = "pedido";
+        $this->variables['pedidos'] = "pedidos";
+        $this->variables['presupuesto'] = "presupuesto";
+        $this->variables['presupuestos'] = "presupuestos";
+        $this->variables['provincia'] = "provincia";
+        $this->variables['apartado'] = "apartado";
+        $this->variables['cifnif'] = "Cedula/RNC";
+        $this->variables['iva'] = "ITBIS";
+        $this->variables['numero2'] = "NCF";
+        $this->variables['serie'] = "serie";
+        $this->variables['series'] = "series";
 
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '4011', 'subcuenta_ventas' => 4011),
@@ -202,8 +202,8 @@ class admin_rd extends fs_controller {
         //Configuramos la información básica para config2.ini
         $guardar = FALSE;
         foreach ($GLOBALS['config2'] as $i => $value) {
-            if (isset($variables[$i])) {
-                $GLOBALS['config2'][$i] = $variables[$i];
+            if (isset($this->variables[$i])) {
+                $GLOBALS['config2'][$i] = $this->variables[$i];
                 $guardar = TRUE;
             }
         }
