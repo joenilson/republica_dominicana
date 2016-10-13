@@ -20,7 +20,7 @@
 require_model('divisa.php');
 require_model('pais.php');
 require_model('impuesto.php');
-
+require_model('cuenta_especial.php');
 /**
  * Description of admin_rd
  *
@@ -137,8 +137,6 @@ class admin_rd extends fs_controller {
     public function impuestos() {
         $tratamiento = false;
         $impuestos = new impuesto();
-        
-        
         //Eliminamos los Impuestos que no son de RD
         $lista_impuestos =array();
         foreach ($this->impuestos_rd as $imp) {
@@ -165,6 +163,20 @@ class admin_rd extends fs_controller {
                     $tratamiento = true;
                 }
             }
+        }
+        
+        //Corregimos la información de las Cuentas especiales con los nombres correctos
+        $cuentas_especiales_rd['IVAACR']='Cuentas acreedoras de ITBIS en la regularización';
+        $cuentas_especiales_rd['IVASOP']='Cuentas de ITBIS Compras';
+        $cuentas_especiales_rd['IVARXP']='Cuentas de ITBIS exportaciones';
+        $cuentas_especiales_rd['IVASIM']='Cuentas de ITBIS importaciones';
+        $cuentas_especiales_rd['IVAREX']='Cuentas de ITBIS para clientes exentos';
+        $cuentas_especiales_rd['IVAREP']='Cuentas de ITBIS Ventas';
+        $cuentas_especiales = new cuenta_especial();
+        foreach($cuentas_especiales_rd as $id=>$desc){
+            $linea = $cuentas_especiales->get($id);
+            $linea->descripcion = $desc;
+            $linea->save();
         }
         
         if($tratamiento){
