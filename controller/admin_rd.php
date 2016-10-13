@@ -175,8 +175,10 @@ class admin_rd extends fs_controller {
         $cuentas_especiales = new cuenta_especial();
         foreach($cuentas_especiales_rd as $id=>$desc){
             $linea = $cuentas_especiales->get($id);
-            $linea->descripcion = $desc;
-            $linea->save();
+            if($linea->descripcion!==$desc){
+                $linea->descripcion = $desc;
+                $linea->save();
+            }
         }
         
         if($tratamiento){
