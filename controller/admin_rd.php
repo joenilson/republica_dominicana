@@ -21,6 +21,11 @@ require_model('divisa.php');
 require_model('pais.php');
 require_model('impuesto.php');
 require_model('cuenta_especial.php');
+require_model('ncf_tipo.php');
+require_model('ncf_entidad_tipo.php');
+require_model('ncf_rango.php');
+require_model('ncf_tipo_anulacion.php');
+require_model('ncf_ventas.php');
 /**
  * Description of admin_rd
  *
@@ -39,6 +44,13 @@ class admin_rd extends fs_controller {
     }
 
     protected function private_core() {
+        //creamos las tablas necesarias si no están ya creadas
+        new ncf_tipo();
+        new ncf_entidad_tipo();
+        new ncf_rango();
+        new ncf_tipo_anulacion();
+        new ncf_ventas();
+        
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
         $this->variables = array();
