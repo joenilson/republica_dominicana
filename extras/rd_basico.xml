@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Document   : ejercicio_2017.xml
+    Document   : rd_basico.xml
     Description:
-        Estructura de grupos de epígrafes, epígrafes, cuentas y subcuentas del ejercicio 2017.
+        Estructura de grupos de epígrafes, epígrafes, cuentas y subcuentas del plan contable de RD.
 -->
 <ejercicio>
     <cuenta_especial>
