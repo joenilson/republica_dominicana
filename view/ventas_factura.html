@@ -765,9 +765,15 @@
          <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             <h4 class="modal-title">Imprimir factura</h4>
+            {if="mt_rand(0,1)==0"}
             <p class="help-block">
-               Más formatos en la <a href="https://www.facturascripts.com/store" target="_blank">tienda de plugins</a>.
+               Más formatos disponibles <a href="https://www.facturascripts.com/buscar?query=imprimir" target="_blank">en la web</a>.
             </p>
+            {else}
+            <p class="help-block">
+               Más formatos disponibles en el plugin <a href="https://www.facturascripts.com/plugin/plantillas_pdf" target="_blank">Plantillas PDF</a>.
+            </p>
+            {/if}
          </div>
          <div class="modal-body">
          {loop="$fsc->extensions"}
@@ -823,13 +829,13 @@
                      <span class="input-group-addon">Para</span>
                      {if="$fsc->cliente"}
                      <input id="ac_email" class="form-control" type="text" name="email" value="{$fsc->cliente->email}" autocomplete="off"/>
-                     {else}
-                     <input id="ac_email" class="form-control" type="text" name="email" autocomplete="off"/>
-                     {/if}
                      <span class="input-group-addon" title="Asignar email al cliente">
                         <input type="checkbox" name="guardar" value="TRUE"/>
                         <span class="glyphicon glyphicon-floppy-disk"></span>
                      </span>
+                     {else}
+                     <input id="ac_email" class="form-control" type="text" name="email" autocomplete="off"/>
+                     {/if}
                </div>
                </div>
                <div class="form-group">

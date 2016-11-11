@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of FacturaSctipts
+ * This file is part of FacturaScripts
  * Copyright (C) 2013-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -238,11 +238,6 @@ class ventas_clientes extends fs_controller
             }
             else
                $this->new_error_msg("¡Imposible guardar los datos del cliente!");
-         }
-         else
-         {
-            /// eliminar en la siguiente actualización.
-            $this->fix_db();
          }
 
       $this->offset = 0;
@@ -525,14 +520,5 @@ class ventas_clientes extends fs_controller
             }
          }
       }
-   }
-   
-   private function fix_db()
-   {
-      /**
-       * Ponemos a NULL todos los codgrupo que no están en gruposclientes
-       */
-      $this->db->exec("UPDATE clientes SET codgrupo = NULL WHERE codgrupo IS NOT NULL"
-              . " AND codgrupo NOT IN (SELECT codgrupo FROM gruposclientes);");
    }
 }
