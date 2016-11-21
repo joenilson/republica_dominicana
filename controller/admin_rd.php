@@ -257,7 +257,7 @@ class admin_rd extends fs_controller {
         $fsext->to = 'contabilidad_ejercicio';
         $fsext->type = 'fuente';
         $fsext->text = 'Plan Contable República Dominicana <strong>para industrias</strong>';
-        $fsext->params = FS_PATH.'plugins/republica_dominicana/extras/rd_completo.xml';
+        $fsext->params = 'plugins/republica_dominicana/extras/rd_completo.xml';
         $fsext->save();
 
         $fsext->name = 'pcgr';
@@ -265,7 +265,7 @@ class admin_rd extends fs_controller {
         $fsext->to = 'contabilidad_ejercicio';
         $fsext->type = 'fuente';
         $fsext->text = 'Plan Contable República Dominicana <strong>para pymes</strong>';
-        $fsext->params = FS_PATH.'plugins/republica_dominicana/extras/rd_basico.xml';
+        $fsext->params = 'plugins/republica_dominicana/extras/rd_basico.xml';
         $fsext->save();
     }
 
