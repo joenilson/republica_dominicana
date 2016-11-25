@@ -214,10 +214,9 @@ class nueva_venta extends fs_controller
                         if (!$ncf_entidad_tipo->save()) {
                             $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
                         }else{
-                            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get(\filter_input(INPUT_POST, 'codcliente'), 'CLI');
+                            $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente_s->codcliente, 'CLI');
                         }
                      }
-
                      if($this->empresa->contintegrada)
                      {
                         /// forzamos crear la subcuenta

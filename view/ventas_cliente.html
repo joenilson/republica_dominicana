@@ -344,7 +344,7 @@
                                 Tipo de Comprobante Fiscal:
                                 <select class="form-control" name="tipo_comprobante">
                                     {loop="$fsc->ncf_tipo->cliente()"}
-                                    <option value="{$value->tipo_comprobante}"{if="$value->tipo_comprobante==$fsc->ncf_cliente_tipo[0]->tipo_comprobante"} selected=""{/if}>{$value->tipo_comprobante} - {$value->descripcion}</option>
+                                    <option value="{$value->tipo_comprobante}"{if="$value->tipo_comprobante==$fsc->ncf_cliente_tipo->tipo_comprobante"} selected=""{/if}>{$value->tipo_comprobante} - {$value->descripcion}</option>
                                     {/loop}
                                 </select>
                             </div>

@@ -33,7 +33,6 @@ class ncf_tipo extends fs_model
     public $compras;
     public $contribuyente;
     
-    
     public function __construct($t = false) {
         parent::__construct('ncf_tipo','plugins/republica_dominicana/');
         if($t)
@@ -56,14 +55,14 @@ class ncf_tipo extends fs_model
     
     protected function install() {
         return "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente ) VALUES ".
-            "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',true, 'suma','X','X','X'),".
-            "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',true, 'suma','X',null,'X'),".
-            "('03','NOTAS DE DEBITO',true, 'suma','X','X',null),('04','NOTAS DE CREDITO',true, 'resta','X','X',null),".
-            "('11','REGISTROS DE PROVEEDORES INFORMALES',true, 'suma',null,'X','X'),".
-            "('12','REGISTRO UNICO DE INGRESOS',true, 'suma','X',null,null),".
-            "('13','REGISTRO DE GASTOS MENORES',true, 'suma',null,'X',null),".
-            "('14','REGISTRO DE OPERACIONES PARA EMPRESAS ACOGIDAS A REGIMENES ESPECIALES DE TRIBUTACION',true, 'suma','X','X','X'),".
-            "('15','COMPROBANTES GUBERNAMENTALES',true, 'suma','X','X','X');";
+            "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',TRUE, 'suma','X','X','X'),".
+            "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',TRUE, 'suma','X',null,'X'),".
+            "('03','NOTAS DE DEBITO',true, 'suma','X','X',null),('04','NOTAS DE CREDITO',TRUE, 'resta','X','X',null),".
+            "('11','REGISTROS DE PROVEEDORES INFORMALES',TRUE, 'suma',null,'X','X'),".
+            "('12','REGISTRO UNICO DE INGRESOS',TRUE, 'suma','X',null,null),".
+            "('13','REGISTRO DE GASTOS MENORES',TRUE, 'suma',null,'X',null),".
+            "('14','REGISTRO DE OPERACIONES PARA EMPRESAS ACOGIDAS A REGIMENES ESPECIALES DE TRIBUTACION',TRUE, 'suma','X','X','X'),".
+            "('15','COMPROBANTES GUBERNAMENTALES',TRUE, 'suma','X','X','X');";
     }
     
     public function exists() {

@@ -21,97 +21,182 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         document.f_facturador.procesar.value = 'TRUE';
         document.f_facturador.submit();
     }
+    
+    function validar(formulario){
+        var form = '#'+formulario;
+        var oFormObject = document.forms[formulario];
+        var series = document.querySelectorAll(form+' input[name="serie[]"]:checked');
+        var fechas = document.querySelectorAll(form+' input[name="fecha[]"]:checked');
+        var fecha = document.querySelectorAll(form+' input[name="fecha[]"]:checked');
+        if(series.length !== 0 && fechas.length !== 0){
+            var confirmar = confirm('¿Esta seguro de generar los documentos con las series y fechas elegidas?');
+            if(confirmar){
+                oFormObject.elements["procesar"].value = 'TRUE';
+                $(form+' .boton_accion').hide();
+                if(formulario === 'f_pedidos'){
+                    $('#generando_pedidos').show();
+                }else if(formulario === 'f_albaranes'){
+                    $('#generando_albaranes').show();
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(series.length === 0 && fechas.length === 0){
+                alert('¡Debes elegir una serie y una fecha con documentos para procesar!');
+            }else if(series.length === 0){
+                alert('¡Debes elegir una serie para procesar!');
+            }else if(fechas.length === 0){
+                alert('¡Debes elegir una fecha con documentos para procesar!');
+            }
+            return false;
+        }
+    }
 </script>
 <div class="container-fluid">
-    <form name="f_facturador" class="form" action="{$fsc->url()}" method="post">
-        <input type="hidden" name="procesar" value="FALSE"/>
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="page-header">
-                    <h1>
-                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                        Facturación masiva
-                        <a href="{$fsc->url()}" class="btn btn-xs btn-default" title="Recargar la página">
-                            <span class="glyphicon glyphicon-refresh"></span>
-                        </a>
-                        <span class="btn-group">
-                            {loop="$fsc->extensions"}
-                            {if="$value->type=='button'"}
-                            <a href="index.php?page={$value->from}{$value->params}" class="btn btn-xs btn-default">{$value->text}</a>
-                            {/if}
-                            {/loop}
-                        </span>
-                    </h1>
-                    <p class="help-block">
-                        Elige qué es lo que quieres facturar, cómo y pulsa el botón empezar.
-                        Se aprobarán los {#FS_ALBARANES#} seleccionados y se generarán las facturas.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label class="control-label text-capitalize">Fecha {#FS_PEDIDOS#}:</label>
-                    <input type="text" name="fecha_pedido" value="{$fsc->fecha_pedido}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
-                </div>
-                <ul class="list-group">
-                    <li class="list-group-item active"><span class="badge">{$fsc->total_pedidos_pendientes()['total']}</span>{#FS_PEDIDOS#} de venta pendientes</li>
-                    {loop="$fsc->total_pendientes_venta()['lista']"}
-                    <li class="list-group-item">
-                        <label class="control-label">
-                            <input type="checkbox" name="fecha_albaranes[]" id="fecha_albaran_{$counter}">
-                            {$key}
-                        </label>
-                        <span class="badge">{$value}</span>
-                    </li>
-                    {/loop}
-                </ul>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label class="control-label text-capitalize">Fecha {#FS_ALBARANES#}:</label>
-                    <input type="text" name="fecha_albaran" value="{$fsc->fecha_albaran}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
-                </div>
-                <ul class="list-group">
-                    <li class="list-group-item active"><span class="badge">{$fsc->total_pendientes_venta()['total']}</span>{#FS_ALBARANES#} de venta pendientes</li>
-                    {loop="$fsc->total_pendientes_venta()['lista']"}
-                    <li class="list-group-item">
-                        <label class="control-label">
-                            <input type="checkbox" name="fecha_albaranes[]" id="fecha_albaran_{$counter}">
-                            {$key}
-                        </label>
-                        <span class="badge">{$value}</span>
-                    </li>
-                    {/loop}
-                </ul>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label class="control-label text-capitalize">{#FS_SERIE#}:</label>
-                    <div class="checkbox">
-                        {loop="$fsc->serie->all()"}
-                        <label class="control-label">
-                            <input type="checkbox" name="serie[]" value="{$value->codserie}" />
-                            {$value->descripcion}
-                        </label><br/>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-header">
+                <h1>
+                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                    Facturación masiva
+                    <a href="{$fsc->url()}" class="btn btn-xs btn-default" title="Recargar la página">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </a>
+                    <span class="btn-group">
+                        {loop="$fsc->extensions"}
+                        {if="$value->type=='button'"}
+                        <a href="index.php?page={$value->from}{$value->params}" class="btn btn-xs btn-default">{$value->text}</a>
+                        {/if}
                         {/loop}
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label class="control-label">Facturar con fecha:</label>
-                    <input type="text" name="fecha_facturas" value="{$fsc->fecha_facturas}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
-                </div>
-            </div>
-            <div class="col-sm-2">
-                <br/>
-                <button class="btn btn-sm btn-primary" type="button" onclick="this.disabled=true;">
-                    <span class="fa fa-play"></span>&nbsp; Empezar
-                </button>
+                    </span>
+                </h1>
+                <p class="help-block">
+                    Elige qué es lo que quieres facturar, cómo y pulsa el botón empezar.
+                    Se aprobarán los {#FS_ALBARANES#} seleccionados y se generarán las facturas.
+                </p>
             </div>
         </div>
-    </form>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="panel panel-default panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title text-capitalize">{#FS_PEDIDOS#}</h3>
+                </div>
+                <div class="panel-body">
+                    <form name="f_pedidos" id="f_pedidos" method="POST" action="{$fsc->url()}&documento=pedidos">
+                        <input type="hidden" name="procesar" value="FALSE"/>
+                        <div class="form-group">
+                            <label class="control-label text-capitalize">Fecha {#FS_PEDIDOS#}:</label>
+                            <input type="text" name="fecha_pedido" value="{$fsc->fecha_pedido}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label text-capitalize">{#FS_SERIE#} de los {#FS_PEDIDOS#}:</label>
+                            <div class="checkbox">
+                                {loop="$fsc->serie->all()"}
+                                <label class="control-label">
+                                    <input type="checkbox" name="serie[]" value="{$value->codserie}" />
+                                    {$value->descripcion}
+                                </label><br/>
+                                {/loop}
+                            </div>
+                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item list-group-item-info"><span class="badge">{$fsc->total_pedidos_pendientes()['total']}</span>{#FS_PEDIDOS#} de venta pendientes</li>
+                            {loop="$fsc->total_pedidos_pendientes()['lista']"}
+                            <li class="list-group-item">
+                                <label class="control-label">
+                                    <input type="checkbox" name="fecha[]" id="fecha_pedidos_{$counter}">
+                                    {$key}
+                                </label>
+                                <span class="badge">{$value}</span>
+                            </li>
+                            {/loop}
+                        </ul>
+                        <div class="form-group">
+                            <label class="control-label">Generar documentos con fecha:</label>
+                            <input type="text" name="fecha_albaranes" value="{$fsc->fecha_albaranes}" class="form-control datepicker" required="" autocomplete="off"/>
+                        </div>
+                        <div class="form-group text-center">
+                            <button class="btn btn-sm btn-primary boton_accion" type="submit" onclick="return validar('f_pedidos')">
+                                <span class="fa fa-play"></span>&nbsp; Generar {#FS_ALBARANES#}
+                            </button>
+                            <button id="generando_pedidos" class="btn btn-sm btn-default" disabled="" style="display: none;">
+                                <i class="fa fa-spinner fa-pulse fa-fw"></i>
+                                <span>Generando...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="panel panel-default panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title text-capitalize">{#FS_ALBARANES#}</h3>
+                </div>
+                <div class="panel-body">
+                    <form name="f_albaranes" id="f_albaranes" method="POST" action="{$fsc->url()}&documento=albaranes">
+                        <input type="hidden" name="procesar" value="FALSE"/>
+                        <div class="form-group">
+                            <label class="control-label text-capitalize">Fecha {#FS_ALBARANES#}:</label>
+                            <input type="text" name="fecha_albaran" value="{$fsc->fecha_albaran}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label text-capitalize">{#FS_SERIE#} de los {#FS_ALBARANES#}:</label>
+                            <div class="checkbox">
+                                {loop="$fsc->serie->all()"}
+                                <label class="control-label">
+                                    <input type="checkbox" name="serie[]" value="{$value->codserie}" />
+                                    {$value->descripcion}
+                                </label><br/>
+                                {/loop}
+                            </div>
+                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item active"><span class="badge">{$fsc->total_pendientes_venta()['total']}</span>{#FS_ALBARANES#} de venta pendientes</li>
+                            {loop="$fsc->total_pendientes_venta()['lista']"}
+                            <li class="list-group-item">
+                                <label class="control-label">
+                                    <input type="checkbox" name="fecha[]" id="fecha_albaran_{$counter}">
+                                    {$key}
+                                </label>
+                                <span class="badge">{$value}</span>
+                            </li>
+                            {/loop}
+                        </ul>
+                        <div class="form-group">
+                            <label class="control-label">Generar documentos con fecha:</label>
+                            <input type="text" name="fecha_facturas" value="{$fsc->fecha_facturas}" class="form-control datepicker" required="" autocomplete="off"/>
+                        </div>                        
+                        <div class="form-group text-center">
+                            <button class="btn btn-sm btn-success boton_accion" type="submit" onclick="return validar('f_albaranes')">
+                                <span class="fa fa-play"></span>&nbsp; Generar facturas
+                            </button>
+                            <button id="generando_albaranes" class="btn btn-sm btn-default" disabled="" style="display: none;">
+                                <i class="fa fa-spinner fa-pulse fa-fw"></i>
+                                <span>Generando...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="panel panel-default panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Resultados</h3>
+                </div>
+                <div class="panel-body">
+                    no content
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            &nbsp;
+        </div>
+    </div>
 </div>
 {include="footer"}

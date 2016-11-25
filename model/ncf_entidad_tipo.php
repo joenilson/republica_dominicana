@@ -25,14 +25,50 @@
  */
 class ncf_entidad_tipo extends fs_model
 {
+    /**
+     *
+     * @var type integer
+     */
     public $idempresa;
+    /**
+     *
+     * @var type varchar(6)
+     */
     public $entidad;
+    /**
+     *
+     * @var type varchar(2)
+     */
     public $tipo_entidad;
+    /**
+     *
+     * @var type varchar(2)
+     */
     public $tipo_comprobante;
+    /**
+     *
+     * @var type boolean
+     */
     public $estado;
+    /**
+     *
+     * @var type varchar(10)
+     */
     public $usuario_creacion;
+    /**
+     *
+     * @var type datetime
+     */
     public $fecha_creacion;
+    /**
+     *
+     * @var type varchar(10)
+     */
     public $usuario_modificacion;
+    /**
+     *
+     * @var type datetime
+     */
     public $fecha_modificacion;
 
     public function __construct($t = false) {
@@ -44,7 +80,7 @@ class ncf_entidad_tipo extends fs_model
             $this->tipo_entidad = $t['tipo_entidad'];
             $this->tipo_comprobante = $t['tipo_comprobante'];
             $this->usuario_creacion = $t['usuario_creacion'];
-            $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
+            $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = $this->str2bool($t['estado']);
@@ -89,7 +125,7 @@ class ncf_entidad_tipo extends fs_model
                     "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
                     "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
                     "fecha_modificacion = ".$this->var2str($this->fecha_modificacion).", ".
-                    "estado = ".($this->estado).
+                    "estado = ".$this->var2str($this->estado).
                     " WHERE ".
                     "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "entidad = ".$this->var2str($this->entidad)." AND ".

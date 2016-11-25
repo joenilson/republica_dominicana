@@ -44,6 +44,7 @@ require_once 'helper_ncf.php';
  */
 class ventas_megafacturador extends fs_controller {
 
+    public $documento;
     public $numasientos;
     public $opciones;
     public $serie;
@@ -51,6 +52,7 @@ class ventas_megafacturador extends fs_controller {
     public $url_recarga;
     public $fecha_pedido;
     public $fecha_albaran;
+    public $fecha_albaranes;
     public $fecha_facturas;
     private $asiento_factura;
     private $cliente;
@@ -88,22 +90,40 @@ class ventas_megafacturador extends fs_controller {
         $this->series_elegidas['E'] = "E";
         $this->fecha_pedido = \date('d-m-Y');
         $this->fecha_albaran = \date('d-m-Y');
+        $this->fecha_albaranes = \date('d-m-Y',strtotime('+1 day'));
         $this->fecha_facturas = \date('d-m-Y',strtotime('+1 day'));
 
         $this->share_extensions();
 
+        $documento = filter_input(INPUT_GET, 'documento');
         $procesar_g = filter_input(INPUT_GET, 'procesar');
         $procesar_p = filter_input(INPUT_POST, 'procesar');
         
+        $fecha_pedido = filter_input(INPUT_POST, 'fecha_pedido');
         $fecha_albaran = filter_input(INPUT_POST, 'fecha_albaran');
+        $fecha_albaranes = filter_input(INPUT_POST, 'fecha_albaranes');
         $fecha_facturas = filter_input(INPUT_POST, 'fecha_facturas');
+        
+        $this->fecha_pedido = ($fecha_pedido)?$fecha_pedido:$this->fecha_pedido;
         $this->fecha_albaran = ($fecha_albaran)?$fecha_albaran:$this->fecha_albaran;
+        $this->fecha_albaranes = ($fecha_albaranes)?$fecha_albaranes:$this->fecha_albaranes;
         $this->fecha_facturas = ($fecha_facturas)?$fecha_facturas:$this->fecha_facturas;
         
         $procesar = ($procesar_g) ? $procesar_g : $procesar_p;
         if ($procesar == 'TRUE') {
-            $this->generar_facturas();
+            $this->series_elegidas = filter_input(INPUT_POST, 'serie', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->fechas_elegidas = filter_input(INPUT_POST, 'fecha', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            
+            if($documento == 'pedidos'){
+                $this->generar_albaranes();
+            }elseif($documento == 'albaranes'){
+                $this->generar_facturas();
+            }
         }
+    }
+    
+    private function generar_albaranes(){
+        
     }
 
     private function generar_facturas() {
@@ -346,6 +366,31 @@ class ventas_megafacturador extends fs_controller {
         $resultados = array('total'=>$total,'lista'=>$subtotal);
         return $resultados;
     }
+    
+    public function pedidos_pendientes() {
+        $alblist = array();
+
+        $sql = "SELECT * FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
+        if (!empty($this->series_elegidas)) {
+            $series = $this->array_to_text($this->series_elegidas);
+            
+            $sql .= " AND codserie = " . $this->serie->var2str($this->opciones['megafac_codserie']);
+        }
+        if ($this->fecha_pedido and empty($this->fechas_elegidas)) {
+            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
+        }elseif($this->fechas_elegidas){
+            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
+        }
+
+        $data = $this->db->select_limit($sql . ' ORDER BY fecha ASC, hora ASC', 20, 0);
+        if ($data) {
+            foreach ($data as $d) {
+                $alblist[] = new albaran_cliente($d);
+            }
+        }
+
+        return $alblist;
+    }
 
     public function total_pedidos_pendientes() {
         $total = 0;
@@ -357,8 +402,8 @@ class ventas_megafacturador extends fs_controller {
         }
          * 
          */
-        if ($this->fecha_albaran) {
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_albaran)));
+        if ($this->fecha_pedido) {
+            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
             $sql .= "GROUP BY fecha ORDER BY fecha";
         }
 
