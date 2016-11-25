@@ -186,14 +186,11 @@ class ncf_entidad_tipo extends fs_model
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "entidad = ".$this->var2str($entidad)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
-                $lista[] = new ncf_entidad_tipo($d);
-            }
+        if($data){
+            return new ncf_entidad_tipo($data[0]);
+        }else{
+            return false;
         }
-        return $lista;
     }
 
     public function cliente($idempresa)
