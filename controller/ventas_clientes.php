@@ -185,7 +185,7 @@ class ventas_clientes extends fs_controller
                   $ncf_entidad_tipo->entidad = $cliente->codcliente;
                   $ncf_entidad_tipo->tipo_entidad = 'CLI';
                   $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
-                  $ncf_entidad_tipo->estado = 'true';
+                  $ncf_entidad_tipo->estado = TRUE;
                   $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
                   $ncf_entidad_tipo->fecha_creacion = Date('d-m-Y H:i:s');
                   $ncf_entidad_tipo->save();

@@ -210,7 +210,7 @@ class nueva_venta extends fs_controller
                         $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i:s');
                         $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
                         $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i:s');
-                        $ncf_entidad_tipo->estado = 'true';
+                        $ncf_entidad_tipo->estado = TRUE;
                         if (!$ncf_entidad_tipo->save()) {
                             $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente ".$ncf_entidad_tipo->entidad."!");
                         }else{
