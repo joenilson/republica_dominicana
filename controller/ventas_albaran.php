@@ -501,7 +501,7 @@ class ventas_albaran extends fs_controller
       */
       //Obtenemos el tipo de comprobante a generar para el cliente
       $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->albaran->codcliente, 'CLI');
-      $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+      $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
       if(strlen($this->albaran->cifnif)<9 AND $tipo_comprobante == '01'){
          return $this->new_error_msg('El cliente tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
       }

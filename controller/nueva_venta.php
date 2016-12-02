@@ -896,7 +896,7 @@ class nueva_venta extends fs_controller
       */
       //Obtenemos el tipo de comprobante a generar para el cliente
       $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
-      $tipo_comprobante = $tipo_comprobante_d[0]->tipo_comprobante;
+      $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
 
       //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
       $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
