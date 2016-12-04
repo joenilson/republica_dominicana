@@ -32,6 +32,9 @@ require_model('pais.php');
 require_model('partida.php');
 require_model('serie.php');
 require_model('subcuenta.php');
+require_model('ncf_tipo.php');
+require_model('ncf_entidad_tipo.php');
+require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('impuesto.php');
@@ -54,7 +57,10 @@ class ventas_factura extends fs_controller
    public $rectificada;
    public $rectificativa;
    public $serie;
+   public $ncf_tipo;
+   public $ncf_rango;
    public $ncf_ventas;
+   public $ncf_entidad_tipo;
    public $ncf_tipo_anulacion;
    public $ncf;
    public $impuesto;
@@ -71,6 +77,8 @@ class ventas_factura extends fs_controller
 
       $this->ppage = $this->page->get('ventas_facturas');
 
+      $this->shared_extensions();
+
       $this->agencia = new agencia_transporte();
       $this->agente = FALSE;
       $this->agentes = array();
@@ -84,6 +92,9 @@ class ventas_factura extends fs_controller
       $this->rectificada = FALSE;
       $this->rectificativa = FALSE;
       $this->serie = new serie();
+      $this->ncf_tipo = new ncf_tipo();
+      $this->ncf_rango = new ncf_rango();
+      $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_ventas = new ncf_ventas();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
       $this->impuesto = new impuesto();
@@ -163,6 +174,9 @@ class ventas_factura extends fs_controller
          {
             $this->rectificar_factura();
          }
+         else if(isset($_GET['fix_ncf'])){
+            $this->fix_ncf();
+         }
 
          if($this->factura->idfacturarect)
          {
@@ -194,6 +208,36 @@ class ventas_factura extends fs_controller
       }
       else
          return $this->ppage->url();
+   }
+
+   public function fix_ncf(){
+      if($this->factura->numero2!='' and strlen($this->factura->numero2)==19){
+         $this->new_error_msg('¡La Factura ya posee un NCF valido, no se hace ninguna modificación!');
+      }else{
+
+         /*
+         * Verificación de disponibilidad del Número de NCF para República Dominicana
+         */
+         //Obtenemos el tipo de comprobante a generar para el cliente
+         $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
+         $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+
+         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+         $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->cliente->codpago);
+         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
+         {
+             return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');
+         }else{
+            $this->factura->numero2 = $numero_ncf['NCF'];
+            if($this->factura->save()){
+               $ncf = new helper_ncf();
+               $ncf->guardar_ncf($this->empresa->id,$this->factura,$tipo_comprobante,$numero_ncf);
+               $this->new_message('¡NCF corregido correctamente!');
+            }else{
+               $this->new_error_msg('Ocurrio un error y no se pudo generar el NCF correctamente, intentelo nuevamente revisando los datos del Cliente.');
+            }
+         }
+      }
    }
 
    private function modificar()
@@ -314,7 +358,7 @@ class ventas_factura extends fs_controller
          if( $asiento_factura->generar_asiento_venta($factura) )
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
-            
+
             if(!$this->empresa->contintegrada)
             {
                $this->new_message("¿Quieres que los asientos se generen automáticamente?"
@@ -381,7 +425,7 @@ class ventas_factura extends fs_controller
             }
 
             $importe = $this->euro_convert($this->factura->totaleuros, $this->factura->coddivisa, $this->factura->tasaconv);
-            
+
             $asiento_factura = new asiento_factura();
             $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subcli, $importe);
             if($this->factura->idasientop)
@@ -616,5 +660,32 @@ class ventas_factura extends fs_controller
       }
 
       return $cuentas;
+   }
+
+   public function shared_extensions(){
+      $extensiones = array(
+         array(
+             'name' => 'ncf_functions_js',
+             'page_from' => __CLASS__,
+             'page_to' => __CLASS__,
+             'type' => 'head',
+             'text' => '<script src="'.FS_PATH.'plugins/republica_dominicana/view/js/ncf_functions.js" type="text/javascript"></script>',
+             'params' => ''
+         ),
+         array(
+            'name' => 'button_fix_ncf',
+            'page_from' => __CLASS__,
+            'page_to' => __CLASS__,
+            'type' => 'button',
+            'text' => '<span class="fa fa-chain-broken" aria-hidden="true"></span><span class="hidden-xs">&nbsp; Corregir NCF</span>',
+            'params' => '&fix_ncf=true'
+         )
+     );
+     foreach ($extensiones as $ext) {
+         $fsext0 = new fs_extension($ext);
+         if (!$fsext0->save()) {
+             $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
+         }
+     }
    }
 }

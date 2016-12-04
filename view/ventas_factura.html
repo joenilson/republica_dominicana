@@ -5,14 +5,6 @@
 <script type="text/javascript" src="{$fsc->get_js_location('provincias.js')}"></script>
 <script type="text/javascript" src="{$fsc->get_js_location('nueva_venta.js')}"></script>
 <script type="text/javascript">
-   function calcular(){
-       var m =  $("#monto_rectificar").val();
-       var i =  $("#impuesto_rectificar").val();
-       var mt = m*((i/100)+1);
-       mt.toFixed(4);
-       $("#monto_total").val(mt);
-   }
-   
    {if="$fsc->cliente"}
    all_direcciones = {function="json_encode($fsc->cliente->get_direcciones())"};
    {/if}
@@ -36,17 +28,6 @@
          event.preventDefault();
          $("#modal_eliminar").modal('show');
       });
-      $("#b_rectificar").click(function(event) {
-         event.preventDefault();
-         $("#modal_rectificar").modal('show');
-      });
-      $("#link_eliminar").click(function(event){
-         event.preventDefault();
-         $("#f_eliminar").attr('action', "{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}");
-         $("#f_eliminar").attr('motivo', $("#motivo").val());
-         $("#f_eliminar").submit();
-      });
-
       {if="$fsc->factura->totalrecargo==0"}
       $(".recargo").hide();
       {/if}
