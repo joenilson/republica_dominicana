@@ -9,4 +9,5 @@ Plugin de adaptación de FacturaScripts a <b>República Dominicana</b>.
 <li>Rectificaciones contables a Facturas de Ventas/Compra.</li>
 <li>Genera los archivos XLS para parar estos valores a los formatos 606, 607 y 608 de DGII.</li>
 <li>Realiza busquedas de RNC en la página de DGII.</li>
+<li>Se generan facturas desde cajas con impresoras matriciales (requiere instalar <a href="https://www.facturascripts.com/descargar?remoteprinter=TRUE" _target="blank">remote-printer</a>).</li>
 </ul>
