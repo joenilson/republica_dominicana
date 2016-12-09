@@ -204,7 +204,7 @@ class tpv_recambios extends fs_controller
 
                if($this->cliente_s){
                   //Elegimos el número de NCF
-                  $this->cliente_s->tipo_comprobante = $this->ncf_entidad_tipo->get($this->empresa->id,$this->terminal->codcliente, 'CLI')->tipo_comprobante;
+                  $this->cliente_s->tipo_comprobante = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente_s->codcliente, 'CLI')->tipo_comprobante;
                   //Elegimos el tipo de comprobante a generar
                   $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $this->cliente_s->tipo_comprobante, $this->cliente_s->codpago);
                   if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){

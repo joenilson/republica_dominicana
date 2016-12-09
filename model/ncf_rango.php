@@ -248,7 +248,39 @@ class ncf_rango extends fs_model
         }else{
             return array('NCF'=>"NO_DISPONIBLE");
         }
+    }
 
+    public function generate_terminal($idempresa, $codalmacen, $tipo_comprobante, $codpago, $area_impresion)
+    {
+        $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
+        $data = $this->db->select("SELECT ".
+        "* ".
+        "FROM ncf_rango ".
+        "WHERE ".
+        "idempresa = ".$this->intval($idempresa)." AND ".
+        "codalmacen = ".$this->var2str($codalmacen)." AND ".
+        "area_impresion = ".$this->var2str($area_impresion)." AND ".
+        "contado = ".$contado." AND ".
+        "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+        if($data){
+            return $this->ncf_number($data[0]);
+        }else{
+            return array('NCF'=>"NO_DISPONIBLE");
+        }
+    }
+    
+    public function get_by_almacen($idempresa, $almacen){
+        $sql = "SELECT * FROM ".$this->table_name." WHERE idempresa = ".$this->intval($idempresa)." AND codalmacen = ".$this->var2str($almacen).";";
+        $data = $this->db->exec($sql);
+        if($data){
+            $lista = array();
+            foreach($data as $d){
+                $lista[] = new ncf_rango($d);
+            }
+            return $lista;
+        }else{
+            return false;
+        }
     }
 
     protected function ncf_number($data){
