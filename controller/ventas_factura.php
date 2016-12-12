@@ -535,7 +535,7 @@ class ventas_factura extends fs_controller
          }
          else
          {
-             /*
+            /*
             * Luego de que todo este correcto generamos el NCF la Nota de Credito
             */
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF

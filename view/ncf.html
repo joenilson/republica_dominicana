@@ -37,9 +37,12 @@
                     </span>
                 </h1>
                 <p class="help-block">
-                    Se debe registrar en esta página la lista de Solicitudes de NCF autorizadas por DGII en República Dominicana,
-                    si este no es su país, por favor revise su configuración ya que se activará información para este pais. 
+                    <span class="fa fa-info-circle"></span>&nbsp;Se debe registrar en esta página la lista de Solicitudes de NCF autorizadas por DGII en República Dominicana,
+                    si este no es su país, por favor revise su configuración ya que se activará información para este pais.
                     <a href="index.php?page=admin_empresa#facturacion">Ir a configuración de la empresa</a>.
+                </p>
+                <p class="help-block">
+                    <span class="fa fa-info-circle"></span>&nbsp;Si vas a usar cajas registradoras o TPVs debes asignar a las cajas el Area de Impresión correcta y esta debe ser una por cada Caja Registradora o TPV
                 </p>
             </div>
         </div>
@@ -128,11 +131,11 @@
                 {if="$value->correlativo>$value->secuencia_inicio"}
                 <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
                     <span class="glyphicon glyphicon-lock"></span>
-                </a>  
+                </a>
                 {else}
                 <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->id}')">
                     <span class="glyphicon glyphicon-trash"></span>
-                </a>  
+                </a>
                 {/if}
                 {/if}
                 <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">

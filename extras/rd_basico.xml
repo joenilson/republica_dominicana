@@ -71,7 +71,7 @@
     </cuenta_especial>
     <cuenta_especial>
         <idcuentaesp>IRPF</idcuentaesp>
-        <descripcion>Q3VlbnRhcyBkZSByZXRlbmNpb25lcyBJVEY=</descripcion>
+        <descripcion>Q3VlbnRhcyBkZSByZXRlbmNpb25lcyBJUlBG</descripcion>
     </cuenta_especial>
     <cuenta_especial>
         <idcuentaesp>IRPFPR</idcuentaesp>
@@ -156,6 +156,10 @@
     <grupo_epigrafes>
         <codgrupo>06</codgrupo>
         <descripcion>R2FzdG9z</descripcion>
+    </grupo_epigrafes>
+    <grupo_epigrafes>
+        <codgrupo>07</codgrupo>
+        <descripcion>RmluYW56YXM=</descripcion>
     </grupo_epigrafes>
     <epigrafe>
         <codgrupo>01 </codgrupo>
@@ -264,6 +268,12 @@
         <codpadre/>
         <codepigrafe>0601</codepigrafe>
         <descripcion>R2FzdG9zIGdlbmVyYWxlcyB5IGFkbWluaXN0cmF0aXZvcw==</descripcion>
+    </epigrafe>
+    <epigrafe>
+        <codgrupo>07</codgrupo>
+        <codpadre/>
+        <codepigrafe>0701</codepigrafe>
+        <descripcion>VGVzb3Jlcmlh</descripcion>
     </epigrafe>
     <cuenta>
         <codepigrafe>0101</codepigrafe>
@@ -535,10 +545,22 @@
         <descripcion>R2FzdG9zIEV4ZW50b3M=</descripcion>
         <idcuentaesp/>
     </cuenta>
+    <cuenta>
+        <codepigrafe>0701</codepigrafe>
+        <codcuenta>070101</codcuenta>
+        <descripcion>Q2FqYQ==</descripcion>
+        <idcuentaesp>CAJA</idcuentaesp>
+    </cuenta>
     <subcuenta>
         <codcuenta>020102</codcuenta>
         <codsubcuenta>02010201</codsubcuenta>
         <descripcion>UHJvdmVlZG9yZXM=</descripcion>
+        <coddivisa>DOP</coddivisa>
+    </subcuenta>
+    <subcuenta>
+        <codcuenta>020104</codcuenta>
+        <codsubcuenta>02010401</codsubcuenta>
+        <descripcion>SVRCSVM=</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
     <subcuenta>
@@ -575,6 +597,24 @@
         <codcuenta>020106</codcuenta>
         <codsubcuenta>02010606</codsubcuenta>
         <descripcion>U3VlbGRvcyBhY3VtdWxhZG9zIHBvciBwYWdhcg==</descripcion>
+        <coddivisa>DOP</coddivisa>
+    </subcuenta>
+    <subcuenta>
+        <codcuenta>040101</codcuenta>
+        <codsubcuenta>04010101</codsubcuenta>
+        <descripcion>TWVyY2FkZXJpYXMgcHJvcGlhcw==</descripcion>
+        <coddivisa>DOP</coddivisa>
+    </subcuenta>
+    <subcuenta>
+        <codcuenta>070101</codcuenta>
+        <codsubcuenta>07010101</codsubcuenta>
+        <descripcion>Q2FqYSBtb25lZGEgbG9jYWw=</descripcion>
+        <coddivisa>DOP</coddivisa>
+    </subcuenta>
+    <subcuenta>
+        <codcuenta>070101</codcuenta>
+        <codsubcuenta>07010102</codsubcuenta>
+        <descripcion>Q2FqYSBtb25lZGEgZXh0cmFuamVyYQ==</descripcion>
         <coddivisa>DOP</coddivisa>
     </subcuenta>
 </ejercicio>

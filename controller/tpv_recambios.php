@@ -202,18 +202,6 @@ class tpv_recambios extends fs_controller
                   }
                }
 
-               if($this->cliente_s){
-                  //Elegimos el número de NCF
-                  $this->cliente_s->tipo_comprobante = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente_s->codcliente, 'CLI')->tipo_comprobante;
-                  //Elegimos el tipo de comprobante a generar
-                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $this->cliente_s->tipo_comprobante, $this->cliente_s->codpago);
-                  if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
-                     $this->ncf_numero = '';
-                  }else{
-                     $this->ncf_numero = $numero_ncf['NCF'];
-                  }
-               }
-
                if( isset($_GET['abrir_caja']) )
                {
                   $this->abrir_caja();
@@ -236,6 +224,18 @@ class tpv_recambios extends fs_controller
                else if( isset($_REQUEST['generar_comprobante']) )
                {
                   $this->generar_comprobante_fiscal();
+               }
+
+               if($this->cliente_s){
+                  //Elegimos el número de NCF
+                  $this->cliente_s->tipo_comprobante = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente_s->codcliente, 'CLI')->tipo_comprobante;
+                  //Elegimos el tipo de comprobante a generar
+                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $this->cliente_s->tipo_comprobante, $this->cliente_s->codpago);
+                  if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
+                     $this->ncf_numero = '';
+                  }else{
+                     $this->ncf_numero = $numero_ncf['NCF'];
+                  }
                }
 
             }
@@ -625,6 +625,17 @@ class tpv_recambios extends fs_controller
                }
                else if( $factura->save() )
                {
+                  /*
+                  * Luego de que todo este correcto generamos el NCF la Nota de Credito
+                  */
+                  $tipo_comprobante = $_POST['tipo_comprobante'];
+                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $factura->codpago);
+                  $ncf_controller = new helper_ncf();
+                  if($numero_ncf['NCF']==$factura->numero2){
+                     $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                  }else{
+                     $this->new_error_msg('Ocurrió un error al actualizar el correlativo de NCF por favor informe al contador antes de seguir facturando. La factura se grabó con el NCF '.$factura->numero2.' y el NCF segun el listado debió ser '.$numero_ncf['NCF']);
+                  }
                   $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente.");
 
                   $this->generar_asiento($factura);

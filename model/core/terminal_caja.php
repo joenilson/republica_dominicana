@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,67 +34,67 @@ class terminal_caja extends \fs_model
     * @var type Clave primiaria.
     */
    public $id;
-   
+
    /**
     * Códifo del almacén a usar en los tickets.
-    * @var type 
+    * @var type
     */
    public $codalmacen;
-   
+
    /**
     * Código de la serie a utilizar en los tickets.
-    * @var type 
+    * @var type
     */
    public $codserie;
-   
+
    /**
     * Código del cliente predeterminado para los tickets.
-    * @var type 
+    * @var type
     */
    public $codcliente;
-   
+
    /**
     * Buffer con los ticket pendientes para imprimir.
     * @var type
     */
    public $tickets;
-   
+
    /**
     * Número de caracteres que caben en una línea del papel del ticket.
-    * @var type 
+    * @var type
     */
    public $anchopapel;
-   
+
    /**
     * Comando ESC/POS para cortar el papel.
-    * @var type 
+    * @var type
     */
    public $comandocorte;
-   
+
    /**
     * Comando ESC/POS para abrir el cajón portamonedas conectado a la impresora.
-    * @var type 
+    * @var type
     */
    public $comandoapertura;
-   
+
    /**
     * Número de impresiones para cada ticket.
-    * @var integer 
+    * @var integer
     */
    public $num_tickets;
-   
+
    /**
     * El punto de emisión configurado en el maestro de NCF
     * @var type varchar(3)
     */
    public $area_impresion;
-   
+
    /**
     * Desactivar los comandos ESC/POS para comprobaciones de la impresora de tickets.
-    * @var type 
+    * @var type
     */
    public $sin_comandos;
-   
+
    public function __construct($t = FALSE)
    {
       parent::__construct('cajas_terminales');
@@ -106,31 +106,31 @@ class terminal_caja extends \fs_model
          $this->area_impresion = $t['area_impresion'];
          $this->codcliente = $t['codcliente'];
          $this->tickets = $t['tickets'];
-         
+
          $this->anchopapel = 40;
          if( isset($t['anchopapel']) )
          {
             $this->anchopapel = intval($t['anchopapel']);
          }
-         
+
          $this->comandocorte = '27.105';
          if( isset($t['comandocorte']) )
          {
             $this->comandocorte = $t['comandocorte'];
          }
-         
+
          $this->comandoapertura = '27.112.48';
          if( isset($t['comandoapertura']) )
          {
             $this->comandoapertura = $t['comandoapertura'];
          }
-         
+
          $this->num_tickets = 1;
          if( isset($t['num_tickets']) )
          {
             $this->num_tickets = intval($t['num_tickets']);
          }
-         
+
          $this->sin_comandos = $this->str2bool($t['sin_comandos']);
       }
       else
@@ -148,12 +148,12 @@ class terminal_caja extends \fs_model
          $this->sin_comandos = FALSE;
       }
    }
-   
+
    protected function install()
    {
       return '';
    }
-   
+
    public function disponible()
    {
       if( $this->db->select("SELECT * FROM cajas WHERE f_fin IS NULL AND fs_id = ".$this->var2str($this->id).";") )
@@ -163,12 +163,12 @@ class terminal_caja extends \fs_model
       else
          return TRUE;
    }
-   
+
    public function add_linea($linea)
    {
       $this->tickets .= $linea;
    }
-   
+
    public function add_linea_big($linea)
    {
       if($this->sin_comandos)
@@ -180,7 +180,7 @@ class terminal_caja extends \fs_model
          $this->tickets .= chr(27).chr(33).chr(56).$linea.chr(27).chr(33).chr(1);
       }
    }
-   
+
    public function abrir_cajon()
    {
       if($this->sin_comandos)
@@ -196,12 +196,12 @@ class terminal_caja extends \fs_model
             {
                $this->tickets .= chr($a);
             }
-            
+
             $this->tickets .= "\n";
          }
       }
    }
-   
+
    public function cortar_papel()
    {
       if($this->sin_comandos)
@@ -217,19 +217,19 @@ class terminal_caja extends \fs_model
             {
                $this->tickets .= chr($a);
             }
-            
+
             $this->tickets .= "\n";
          }
       }
    }
-   
+
    public function center_text($word = '', $ancho = FALSE)
    {
       if(!$ancho)
       {
          $ancho = $this->anchopapel;
       }
-      
+
       if( strlen($word) == $ancho )
       {
          return $word;
@@ -258,7 +258,7 @@ class terminal_caja extends \fs_model
                {
                   $result .= "\n";
                }
-               
+
                $result .= $this->center_text2($nword, $ancho);
                $nword = $aux;
             }
@@ -269,14 +269,14 @@ class terminal_caja extends \fs_model
             {
                $result .= "\n";
             }
-            
+
             $result .= $this->center_text2($nword, $ancho);
          }
-         
+
          return $result;
       }
    }
-   
+
    private function center_text2($word = '', $ancho = 40)
    {
       $symbol = " ";
@@ -292,7 +292,7 @@ class terminal_caja extends \fs_model
       }
       return $result;
    }
-   
+
    public function get($id)
    {
       $data = $this->db->select("SELECT * FROM cajas_terminales WHERE id = ".$this->var2str($id).";");
@@ -303,7 +303,7 @@ class terminal_caja extends \fs_model
       else
          return FALSE;
    }
-   
+
    public function exists()
    {
       if( is_null($this->id) )
@@ -313,7 +313,7 @@ class terminal_caja extends \fs_model
       else
          return $this->db->select("SELECT * FROM cajas_terminales WHERE id = ".$this->var2str($this->id).";");
    }
-   
+
    public function save()
    {
       if( $this->exists() )
@@ -329,7 +329,7 @@ class terminal_caja extends \fs_model
                  ", num_tickets = ".$this->var2str($this->num_tickets).
                  ", sin_comandos = ".$this->var2str($this->sin_comandos).
                  "  WHERE id = ".$this->var2str($this->id).";";
-         
+
          return $this->db->exec($sql);
       }
       else
@@ -346,7 +346,7 @@ class terminal_caja extends \fs_model
                  $this->var2str($this->comandoapertura).",".
                  $this->var2str($this->num_tickets).",".
                  $this->var2str($this->sin_comandos).");";
-         
+
          if( $this->db->exec($sql) )
          {
             $this->id = $this->db->lastval();
@@ -356,16 +356,16 @@ class terminal_caja extends \fs_model
             return FALSE;
       }
    }
-   
+
    public function delete()
    {
       return $this->db->exec("DELETE FROM cajas_terminales WHERE id = ".$this->var2str($this->id).";");
    }
-   
+
    public function all()
    {
       $tlist = array();
-      
+
       $data = $this->db->select("SELECT * FROM cajas_terminales ORDER BY id ASC;");
       if($data)
       {
@@ -374,17 +374,17 @@ class terminal_caja extends \fs_model
             $tlist[] = new \terminal_caja($d);
          }
       }
-      
+
       return $tlist;
    }
-   
+
    public function disponibles()
    {
       $tlist = array();
       $sql = "SELECT * FROM cajas_terminales WHERE id NOT IN "
               . "(SELECT fs_id as id FROM cajas WHERE f_fin IS NULL) "
               . "ORDER BY id ASC;";
-      
+
       $data = $this->db->select($sql);
       if($data)
       {
@@ -393,10 +393,10 @@ class terminal_caja extends \fs_model
             $tlist[] = new \terminal_caja($d);
          }
       }
-      
+
       return $tlist;
    }
-   
+
    /**
     * A partir de una factura añade un ticket a la cola de impresión de este terminal.
     * @param \factura_cliente $factura
@@ -408,36 +408,36 @@ class terminal_caja extends \fs_model
    {
       $medio = $this->anchopapel / 2.5;
       $this->add_linea_big( $this->center_text( $this->sanitize($empresa->nombre), $medio)."\n");
-      
+
       if($empresa->lema != '')
       {
          $this->add_linea( $this->center_text( $this->sanitize($empresa->lema) ) . "\n\n");
       }
       else
          $this->add_linea("\n");
-      
+
       $this->add_linea(
               $this->center_text( $this->sanitize($empresa->direccion)." - ".$this->sanitize($empresa->ciudad) )."\n"
       );
       $this->add_linea( $this->center_text(FS_CIFNIF.": ".$empresa->cifnif) );
       $this->add_linea("\n\n");
-      
+
       if($empresa->horario != '')
       {
          $this->add_linea( $this->center_text( $this->sanitize($empresa->horario) ) . "\n\n");
       }
-      
+
       $linea = "\n".ucfirst(FS_FACTURA_SIMPLIFICADA).": " . $factura->codigo . "\n";
       $linea .= $factura->fecha. " " . Date('H:i', strtotime($factura->hora)) . "\n";
       $this->add_linea($linea);
       $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
       $this->add_linea("Empleado: " . $factura->codagente . "\n\n");
-      
+
       if($imprimir_observaciones)
       {
          $this->add_linea('Observaciones: ' . $this->sanitize($factura->observaciones) . "\n\n");
       }
-      
+
       $width = $this->anchopapel - 15;
       $this->add_linea(
               sprintf("%3s", "Ud.")." ".
@@ -462,10 +462,10 @@ class terminal_caja extends \fs_model
                   $linea = sprintf("%3s", $col->cantidad)." ".sprintf("%-".$width."s", $this->sanitize($col->referencia))
                           ." ".sprintf("%10s", $this->show_numero($col->total_iva()))."\n";
          }
-         
+
          $this->add_linea($linea);
       }
-      
+
       $lineaiguales = '';
       for($i = 0; $i < $this->anchopapel; $i++)
       {
@@ -476,7 +476,7 @@ class terminal_caja extends \fs_model
               'TOTAL A PAGAR: '.sprintf("%".($this->anchopapel-15)."s", $this->show_precio($factura->total, $factura->coddivisa))."\n"
       );
       $this->add_linea($lineaiguales."\n");
-      
+
       /// imprimimos los impuestos desglosados
       $this->add_linea(
               'TIPO   BASE    '.FS_IVA.'    RE'.
@@ -494,12 +494,12 @@ class terminal_caja extends \fs_model
                  "\n"
          );
       }
-      
+
       $lineaiguales .= "\n\n\n\n\n\n\n\n";
       $this->add_linea($lineaiguales);
       $this->cortar_papel();
    }
-   
+
    /**
     * A partir de una factura añade un ticket regalo a la cola de impresión de este terminal.
     * @param \factura_cliente $factura
@@ -509,36 +509,36 @@ class terminal_caja extends \fs_model
    {
       $medio = $this->anchopapel / 2.5;
       $this->add_linea_big( $this->center_text( $this->sanitize($empresa->nombre), $medio)."\n");
-      
+
       if($empresa->lema != '')
       {
          $this->add_linea( $this->center_text( $this->sanitize($empresa->lema) ) . "\n\n");
       }
       else
          $this->add_linea("\n");
-      
+
       $this->add_linea(
               $this->center_text( $this->sanitize($empresa->direccion)." - ".$this->sanitize($empresa->ciudad) )."\n"
       );
       $this->add_linea( $this->center_text(FS_CIFNIF.": ".$empresa->cifnif) );
       $this->add_linea("\n\n");
-      
+
       if($empresa->horario != '')
       {
          $this->add_linea( $this->center_text( $this->sanitize($empresa->horario) ) . "\n\n");
       }
-      
+
       $linea = "\n".ucfirst(FS_FACTURA_SIMPLIFICADA).": " . $factura->codigo . "\n";
       $linea .= $factura->fecha. " " . Date('H:i', strtotime($factura->hora)) . "\n";
       $this->add_linea($linea);
       $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
       $this->add_linea("Empleado: " . $factura->codagente . "\n\n");
-      
+
       if($imprimir_observaciones)
       {
          $this->add_linea('Observaciones: ' . $this->sanitize($factura->observaciones) . "\n\n");
       }
-      
+
       $width = $this->anchopapel - 15;
       $this->add_linea(
               sprintf("%3s", "Ud.")." ".
@@ -563,11 +563,11 @@ class terminal_caja extends \fs_model
                   $linea = sprintf("%3s", $col->cantidad)." ".sprintf("%-".$width."s", $this->sanitize($col->referencia))
                           ." ".sprintf("%10s", '-')."\n";
          }
-         
+
          $this->add_linea($linea);
       }
-      
-      
+
+
       $lineaiguales = '';
       for($i = 0; $i < $this->anchopapel; $i++)
       {
@@ -579,7 +579,7 @@ class terminal_caja extends \fs_model
       $this->add_linea($lineaiguales);
       $this->cortar_papel();
    }
-   
+
    public function sanitize($txt)
    {
       $changes = array('/à/' => 'a', '/á/' => 'a', '/â/' => 'a', '/ã/' => 'a', '/ä/' => 'a',
@@ -596,10 +596,10 @@ class terminal_caja extends \fs_model
           '/Ù/' => 'U', '/Ú/' => 'U', '/Û/' => 'U', '/Ü/' => 'U',
           '/Ý/' => 'Y', '/Ÿ/' => 'Y',
       );
-      
+
       return preg_replace(array_keys($changes), $changes, $txt);
    }
-   
+
    protected function show_precio($precio, $coddivisa)
    {
       if(FS_POS_DIVISA == 'right')
@@ -611,7 +611,7 @@ class terminal_caja extends \fs_model
          return $coddivisa.' '.number_format($precio, FS_NF0, FS_NF1, FS_NF2);
       }
    }
-   
+
    protected function show_numero($num=0, $decimales=FS_NF0)
    {
       return number_format($num, $decimales, FS_NF1, FS_NF2);

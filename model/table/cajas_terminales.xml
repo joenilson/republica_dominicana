@@ -25,7 +25,8 @@
       <nombre>area_impresion</nombre>
       <tipo>character varying(3)</tipo>
       <nulo>NO</nulo>
-   </columna>   
+      <defecto>001</defecto>
+   </columna>
    <columna>
       <nombre>codcliente</nombre>
       <tipo>character varying(6)</tipo>

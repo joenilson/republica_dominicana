@@ -50,7 +50,7 @@ class admin_rd extends fs_controller {
         new ncf_rango();
         new ncf_tipo_anulacion();
         new ncf_ventas();
-        
+
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
         $this->variables = array();
@@ -79,10 +79,10 @@ class admin_rd extends fs_controller {
         $this->variables['series'] = "series";
 
         $this->impuestos_rd = array(
-            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '4011', 'subcuenta_ventas' => 4011),
-            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '4011', 'subcuenta_ventas' => 4011),
-            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '4011', 'subcuenta_ventas' => 4011),
-            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '4011', 'subcuenta_ventas' => 4011)
+            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
+            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
+            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
+            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '')
         );
 
         if (isset($_GET['opcion'])) {
@@ -131,11 +131,11 @@ class admin_rd extends fs_controller {
             $div0->save();
             $tratamiento = true;
         }
-        
+
         if($tratamiento){
             $this->new_message('Datos de moneda DOP y USD actualizados correctamente.');
         }
-        
+
         if ($this->empresa->coddivisa != 'DOP') {
             //Elegimos la divisa para la empresa como DOP si no esta generada
             $this->empresa->coddivisa = 'DOP';
@@ -143,7 +143,7 @@ class admin_rd extends fs_controller {
                 $this->new_message('Datos de moneda para la empresa guardados correctamente.');
             }
         }
-        
+
     }
 
     public function impuestos() {
@@ -154,13 +154,13 @@ class admin_rd extends fs_controller {
         foreach ($this->impuestos_rd as $imp) {
             $lista_impuestos[]=$imp['porcentaje'];
         }
-        
+
         foreach ($impuestos->all() as $imp) {
             if(!in_array($imp->iva, $lista_impuestos)){
                 $imp->delete();
             }
         }
-        
+
         //Agregamos los Impuestos de RD
         foreach ($this->impuestos_rd as $imp) {
             if(!$impuestos->get_by_iva($imp['porcentaje'])){
@@ -176,7 +176,7 @@ class admin_rd extends fs_controller {
                 }
             }
         }
-        
+
         //Corregimos la información de las Cuentas especiales con los nombres correctos
         $cuentas_especiales_rd['IVAACR']='Cuentas acreedoras de ITBIS en la regularización';
         $cuentas_especiales_rd['IVASOP']='Cuentas de ITBIS Compras';
@@ -192,7 +192,7 @@ class admin_rd extends fs_controller {
                 $linea->save();
             }
         }
-        
+
         if($tratamiento){
             $this->new_message('Información de impuestos actualizada correctamente');
         }else{
