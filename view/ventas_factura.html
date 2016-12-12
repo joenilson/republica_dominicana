@@ -5,6 +5,7 @@
 <script type="text/javascript" src="{$fsc->get_js_location('provincias.js')}"></script>
 <script type="text/javascript" src="{$fsc->get_js_location('nueva_venta.js')}"></script>
 <script type="text/javascript">
+   var url_borrar_factura = '{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}';
    {if="$fsc->cliente"}
    all_direcciones = {function="json_encode($fsc->cliente->get_direcciones())"};
    {/if}

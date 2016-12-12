@@ -37,7 +37,7 @@ $(document).ready(function() {
     });
     $("#link_eliminar").click(function(event){
         event.preventDefault();
-        $("#f_eliminar").attr('action', "{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}");
+        $("#f_eliminar").attr('action', url_borrar_factura);
         $("#f_eliminar").attr('motivo', $("#motivo").val());
         $("#f_eliminar").submit();
     });
