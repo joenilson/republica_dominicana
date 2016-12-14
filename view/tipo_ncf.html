@@ -120,10 +120,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <form class="form" role="form" method="POST" action="{$fsc->url()}">
                     <tr>
                         <td>
-                            <input type="text" maxlength="2" name="tipo_comprobante" value="{$value->tipo_comprobante}" autocomplete="off" class="form-control input-sm">
+                            <input type="text" required maxlength="2" name="tipo_comprobante" value="{$value->tipo_comprobante}" autocomplete="off" class="form-control input-sm">
                         </td>
                         <td>
-                            <input type="text" maxlength="180" name="descripcion" value="{$value->descripcion}" autocomplete="off" class="form-control input-sm">
+                            <input type="text" required maxlength="180" name="descripcion" value="{$value->descripcion}" autocomplete="off" class="form-control input-sm">
                         </td>
                         <td class="text-center">
                             <label class='radio-inline'>
