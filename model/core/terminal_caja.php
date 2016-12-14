@@ -428,6 +428,7 @@ class terminal_caja extends \fs_model
       }
 
       $linea = "\n".ucfirst(FS_FACTURA_SIMPLIFICADA).": " . $factura->codigo . "\n";
+      $linea .= "\nNCF: " . $factura->numero2 . "\n";
       $linea .= $factura->fecha. " " . Date('H:i', strtotime($factura->hora)) . "\n";
       $this->add_linea($linea);
       $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
@@ -529,6 +530,7 @@ class terminal_caja extends \fs_model
       }
 
       $linea = "\n".ucfirst(FS_FACTURA_SIMPLIFICADA).": " . $factura->codigo . "\n";
+      $linea .= "\nNCF: " . $factura->numero2 . "\n";
       $linea .= $factura->fecha. " " . Date('H:i', strtotime($factura->hora)) . "\n";
       $this->add_linea($linea);
       $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
@@ -617,4 +619,3 @@ class terminal_caja extends \fs_model
       return number_format($num, $decimales, FS_NF1, FS_NF2);
    }
 }
-

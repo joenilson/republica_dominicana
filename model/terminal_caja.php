@@ -1,28 +1,30 @@
 <?php
 
 /*
- * Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+ * This file is part of FacturaScripts
+ * Copyright (C) 2015-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/republica_dominicana/model/core/terminal_caja.php';
 
 /**
- * Description of caja_terminal
+ * Configuración del terminal para el TPV, además almacena los tickets a imprimir.
  *
- * @author Joe Nilson <joenilson at gmail.com>
+ * @author Carlos García Gómez <neorazorx@gmail.com>
  */
-class terminal_caja extends FacturaScripts\model\terminal_caja {
-    
+class terminal_caja extends FacturaScripts\model\terminal_caja
+{
+
 }

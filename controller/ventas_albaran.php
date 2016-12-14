@@ -210,7 +210,7 @@ class ventas_albaran extends fs_controller
                $this->albaran->codpostal = NULL;
                $this->albaran->direccion = NULL;
                $this->albaran->provincia = NULL;
-               
+
                foreach($cliente->get_direcciones() as $d)
                {
                   if($d->domfacturacion)
@@ -344,7 +344,7 @@ class ventas_albaran extends fs_controller
             {
                $regimeniva = $cliente->regimeniva;
             }
-            
+
             /// modificamos y/o añadimos las demás líneas
             for($num = 0; $num <= $numlineas; $num++)
             {
@@ -405,7 +405,7 @@ class ventas_albaran extends fs_controller
                         }
                         else
                            $this->new_error_msg("¡Imposible modificar la línea del artículo ".$value->referencia."!");
-                        
+
                         break;
                      }
                   }
@@ -552,7 +552,7 @@ class ventas_albaran extends fs_controller
       {
          $factura->codagente = $this->user->codagente;
       }
-      
+
       /// asignamos el ejercicio que corresponde a la fecha elegida
       $eje0 = $this->ejercicio->get_by_fecha($_REQUEST['facturar']);
       if($eje0)
@@ -609,6 +609,10 @@ class ventas_albaran extends fs_controller
             $n->pvpunitario = $l->pvpunitario;
             $n->recargo = $l->recargo;
             $n->referencia = $l->referencia;
+            $n->orden = $l->orden;
+            $n->mostrar_cantidad = $l->mostrar_cantidad;
+            $n->mostrar_precio = $l->mostrar_precio;
+
             if( !$n->save() )
             {
                $continuar = FALSE;
