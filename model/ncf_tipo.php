@@ -40,6 +40,10 @@ class ncf_tipo extends fs_model
             $this->tipo_comprobante = $t['tipo_comprobante'];
             $this->descripcion = $t['descripcion'];
             $this->estado = $this->str2bool($t['estado']);
+            $this->clase_movimiento = $t['clase_movimiento'];
+            $this->ventas = $t['ventas'];
+            $this->compras = $t['compras'];
+            $this->contribuyente = $t['contribuyente'];
         }
         else
         {
@@ -66,13 +70,14 @@ class ncf_tipo extends fs_model
     }
     
     public function exists() {
-        if(is_null($this->tipo_comprobante))
+        $existe = $this->get($this->tipo_comprobante);
+        if(!$existe)
         {
             return false;
         }
         else
         {
-            return $this->db->select("SELECT * FROM ncf_tipo WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+            return $this->get($this->tipo_comprobante);
         }
     }
     
@@ -81,17 +86,27 @@ class ncf_tipo extends fs_model
         {
             $sql = "UPDATE ncf_tipo SET ".
                     "descripcion = ".$this->var2str($this->descripcion).", ".
-                    "estado = ".$this->str2bool($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
+                    "clase_movimiento = ".$this->var2str($this->clase_movimiento).", ".
+                    "ventas = ".$this->var2str($this->ventas).", ".
+                    "compras = ".$this->var2str($this->compras).", ".
+                    "contribuyente = ".$this->var2str($this->contribuyente).", ".
+                    "estado = ".$this->var2str($this->estado)." "
+                    ." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
             
             return $this->db->exec($sql);
         }
         else
         {
-            $sql = "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado) VALUES ".
-                    "(".$this->var2str($this->tipo_comprobante).", ".$this->var2str($this->descripcion).", ".$this->var2str($this->estado).");";
+            $sql = "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente) VALUES ".
+                    "(".$this->var2str($this->tipo_comprobante).", "
+                    .$this->var2str($this->descripcion).", "
+                    .$this->var2str($this->estado).", "
+                    .$this->var2str($this->clase_movimiento).", "
+                    .$this->var2str($this->ventas).", "
+                    .$this->var2str($this->compras).", "
+                    .$this->var2str($this->contribuyente).");";
             if($this->db->exec($sql))
             {
-                $this->solicitud = $this->db->lastval();
                 return true;
             }
             else
@@ -102,13 +117,14 @@ class ncf_tipo extends fs_model
     }
     
     public function delete() {
-        return $this->db->exec("UPDATE ncf_tipo SET estado = ".$this->var2str($this->estado)." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+        $sql = "DELETE FROM ".$this->table_name." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
+        return $this->db->exec($sql);
     }
     
     public function all()
     {
         $lista = array();
-        $data = $this->db->select("SELECT * FROM ncf_tipo ORDER BY tipo_comprobante,descripcion");
+        $data = $this->db->select("SELECT * FROM ncf_tipo ORDER BY tipo_comprobante");
         
         if($data)
         {
@@ -159,8 +175,11 @@ class ncf_tipo extends fs_model
     public function get($tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_tipo WHERE tipo_comprobante = ".$this->var2str($tipo_comprobante).";");
-        
-        return new ncf_tipo($data[0]);
+        if($data){
+            return new ncf_tipo($data[0]);
+        }else{
+            return false;
+        }
     }
     
 }

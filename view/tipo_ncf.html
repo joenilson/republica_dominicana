@@ -1,0 +1,180 @@
+{include="header"}
+<!--
+Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="container-fluid">
+    <div class='row'>
+        <div class="col-sm-6 col-xs-6">
+            <div class="btn-group hidden-xs">
+                <a class="btn btn-sm btn-default" href="{$fsc->url()}" title="Recargar la página">
+                    <span class="glyphicon glyphicon-refresh"></span>
+                </a>
+                {if="$fsc->page->is_default()"}
+                <a class="btn btn-sm btn-default active" href="{$fsc->url()}&amp;default_page=FALSE" title="desmarcar como página de inicio">
+                    <span class="glyphicon glyphicon-home"></span>
+                </a>
+                {else}
+                <a class="btn btn-sm btn-default" href="{$fsc->url()}&amp;default_page=TRUE" title="marcar como página de inicio">
+                    <span class="glyphicon glyphicon-home"></span>
+                </a>
+                {/if}
+                <span class="btn-group">
+                    <a class="btn btn-sm btn-default" href="index.php?page=ncf" title="Regresar al Maestro de NCF">
+                        <span class="fa fa-arrow-left"></span>&nbsp;Maestro de NCF
+                    </a>
+                    {loop="$fsc->extensions"}
+                        {if="$value->type=='button'"}
+                            <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
+                        {/if}
+                    {/loop}
+                </span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xs-6 text-right">
+            <h4>
+                <span class="fa fa-list-ol"></span>&nbsp;Tipos de NCF
+            </h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th class="col-sm-1">Tipo</th> 
+                        <th class="col-sm-3">Descripcion</th> 
+                        <th class="col-sm-1 text-center">Tipo Mov</th> 
+                        <th class="col-sm-2">Ventas</th> 
+                        <th class="col-sm-2">Compras</th> 
+                        <th class="col-sm-1">Contribuyente</th> 
+                        <th class="col-sm-1">Estado</th> 
+                        <th class="col-sm-1">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <form class="form" role="form" method="POST" action="{$fsc->url()}">
+                    <tr class="info">
+                        <td>
+                            <input type="text" maxlength="2" name="tipo_comprobante" autocomplete="off" class="form-control input-sm">
+                        </td>
+                        <td>
+                            <input type="text" maxlength="180" name="descripcion" autocomplete="off" class="form-control input-sm">
+                        </td>
+                        <td class="text-center">
+                            <label class='radio-inline'>
+                                <input type="radio" name="clase_movimiento" value="suma">&nbsp;<span class="fa fa-plus"></span>
+                            </label>
+                            <label class='radio-inline'>
+                                <input type="radio" name="clase_movimiento" value="resta">&nbsp;<span class="fa fa-minus"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="ventas" value="X">&nbsp;Ventas
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="compras" value="X">&nbsp;Compras
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label class="control-label">
+                                    <input type="checkbox" name="contribuyente" value="X">
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label class="">
+                                    <input type="checkbox" checked name="estado" value="TRUE">&nbsp;Activo
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" name="accion" value="agregar" type="submit">
+                                <span class="fa fa-save"></span>&nbsp;Guardar
+                            </button>
+                        </td>
+                    </tr>
+                    </form>
+                    {loop="$fsc->ncf_tipo->all()"}
+                    <form class="form" role="form" method="POST" action="{$fsc->url()}">
+                    <tr>
+                        <td>
+                            <input type="text" maxlength="2" name="tipo_comprobante" value="{$value->tipo_comprobante}" autocomplete="off" class="form-control input-sm">
+                        </td>
+                        <td>
+                            <input type="text" maxlength="180" name="descripcion" value="{$value->descripcion}" autocomplete="off" class="form-control input-sm">
+                        </td>
+                        <td class="text-center">
+                            <label class='radio-inline'>
+                                <input type="radio" name="clase_movimiento" value="suma" {if="$value->clase_movimiento=='suma'"}checked{/if}>&nbsp;<span class="fa fa-plus"></span>
+                            </label>
+                            <label class='radio-inline'>
+                                <input type="radio" name="clase_movimiento" value="resta" {if="$value->clase_movimiento=='resta'"}checked{/if}>&nbsp;<span class="fa fa-minus"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="ventas" value="X" {if="$value->ventas=='X'"}checked{/if}>&nbsp;Ventas
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="compras" value="X" {if="$value->compras=='X'"}checked{/if}>&nbsp;Compras
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label class="control-label">
+                                    <input type="checkbox" name="contribuyente" value="X" {if="$value->contribuyente=='X'"}checked{/if}>
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="checkbox">
+                                <label class="">
+                                    <input type="checkbox" name="estado" {if="$value->estado"}checked{/if}>&nbsp;Activo
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" name="accion" value="eliminar" type="submit" onclick="return confirm('¿Esta seguro que quiere eliminar el Tipo de comprobante: \n {$value->tipo_comprobante} - {$value->descripcion}?')">
+                                <span class="fa fa-trash"></span>
+                            </button>
+                            <button class="btn btn-sm btn-primary" name="accion" value="agregar" type="submit">
+                                <span class="fa fa-save"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    </form>
+                    {/loop}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{include="footer"}

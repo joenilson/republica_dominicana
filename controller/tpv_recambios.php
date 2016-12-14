@@ -764,12 +764,15 @@ class tpv_recambios extends fs_controller
 
          while($num_tickets > 0)
          {
+            $tipo_ncf = substr($factura->numero2,9,2);
+            $ncf_tipo=$this->ncf_tipo->get($tipo_ncf);
+            $factura->tipo_comprobante = $ncf_tipo->descripcion;
             $this->terminal->imprimir_ticket($factura, $this->empresa, $this->imprimir_descripciones, $this->imprimir_observaciones);
             $num_tickets--;
          }
 
          $this->terminal->save();
-         $this->new_message('<a href="#" data-toggle="modal" data-target="#modal_ayuda_ticket">¿No se imprime el ticket?</a>');
+         $this->new_message('<a href="#" data-toggle="modal" data-target="#modal_ayuda_ticket">¿No se imprime el ticket?</a> ');
       }
       else
       {

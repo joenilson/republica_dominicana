@@ -21,17 +21,17 @@
             <div class="page-header">
                 <h1>
                     Maestro de NCF
-                    <a class="btn btn-xs btn-default" href="{$fsc->url()}" title="Recargar la página">
+                    <a class="btn btn-sm btn-default" href="{$fsc->url()}" title="Recargar la página">
                         <span class="glyphicon glyphicon-refresh"></span>
                     </a>
                     <span class="btn-group">
-                        <a id="b_nueva_solicitud_ncf" class="btn btn-xs btn-success" href="#">
+                        <a id="b_nueva_solicitud_ncf" class="btn btn-sm btn-success" href="#">
                             <span class="glyphicon glyphicon-plus"></span>
                             <span class="hidden-xs">&nbsp; Ingresar Nueva Solicitud</span>
                         </a>
                         {loop="$fsc->extensions"}
                         {if="$value->type=='button'"}
-                        <a href="index.php?page={$value->from}{$value->params}" class="btn btn-xs btn-default">{$value->text}</a>
+                        <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
                         {/if}
                         {/loop}
                     </span>
