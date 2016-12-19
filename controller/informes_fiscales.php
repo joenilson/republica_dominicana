@@ -239,44 +239,7 @@ class informes_fiscales extends fs_controller {
     }
     
     private function share_extensions() {
-       
-        $fsext1 = new fs_extension(
-            array(
-                'name' => 'informes_fiscales_css5',
-                'page_from' => __CLASS__,
-                'page_to' => 'informes_fiscales',
-                'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/ui.jqgrid-bootstrap.css"/>',
-                'params' => ''
-            )
-        );
-        $fsext1->delete();
-        
-        $fsext2 = new fs_extension(
-            array(
-                'name' => 'informes_fiscales_css6',
-                'page_from' => __CLASS__,
-                'page_to' => 'informes_fiscales',
-                'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/locale/grid.locale-es.js" type="text/javascript"></script>',
-                'params' => ''
-            )
-        );
-        $fsext2->delete();
-        
-        $fsext3 = new fs_extension(
-            array(
-                'name' => 'informes_fiscales_css7',
-                'page_from' => __CLASS__,
-                'page_to' => 'informes_fiscales',
-                'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/jquery.jqGrid.min.js" type="text/javascript"></script>',
-                'params' => ''
-            )
-        );
-        $fsext3->delete();
-        
-        $fsext4 = new fs_extension(
+        $extensiones = array(
             array(
                 'name' => 'informes_fiscales_js9',
                 'page_from' => __CLASS__,
@@ -284,11 +247,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-select.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext4->save();
-        
-        $fsext5 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js10',
                 'page_from' => __CLASS__,
@@ -296,11 +255,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/locale/defaults-es_CL.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext5->delete();
-        
-        $fsext6 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_css11',
                 'page_from' => __CLASS__,
@@ -308,11 +263,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-select.min.css"/>',
                 'params' => ''
-            )
-        );
-        $fsext6->save();
-        
-        $fsext7 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js12',
                 'page_from' => __CLASS__,
@@ -320,11 +271,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/bootbox.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext7->save();
-        
-        $fsext8 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js13',
                 'page_from' => __CLASS__,
@@ -332,11 +279,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/plugins/validator.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext8->save();
-        
-        $fsext9 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_css12',
                 'page_from' => __CLASS__,
@@ -344,11 +287,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-table.min.css"/>',
                 'params' => ''
-            )
-        );
-        $fsext9->save();
-        
-        $fsext10 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js14',
                 'page_from' => __CLASS__,
@@ -356,11 +295,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-table.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext10->save();
-        
-        $fsext11 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js15',
                 'page_from' => __CLASS__,
@@ -368,11 +303,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/locale/bootstrap-table-es-MX.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext11->save();
-        
-        $fsext12 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js16',
                 'page_from' => __CLASS__,
@@ -380,11 +311,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-export.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext12->save();
-        
-        $fsext13 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js17',
                 'page_from' => __CLASS__,
@@ -392,11 +319,7 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-filter.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext13->save();
-        
-        $fsext14 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js18',
                 'page_from' => __CLASS__,
@@ -404,56 +327,71 @@ class informes_fiscales extends fs_controller {
                 'type' => 'head',
                 'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-toolbar.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext14->save();
-        
-        $fsext15 = new fs_extension(
+            ),
+            array(
+                'name' => 'informes_fiscales_js_btm',
+                'page_from' => __CLASS__,
+                'page_to' => 'informes_fiscales',
+                'type' => 'head',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-mobile.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
             array(
                 'name' => 'informes_fiscales_js19',
                 'page_from' => __CLASS__,
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.jquery.plugin.js" type="text/javascript"></script>',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext15->save();
-        
-        $fsext16 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js181',
                 'page_from' => __CLASS__,
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/jspdf.min.js" type="text/javascript"></script>',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/fileSaver/FileSaver.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext16->save();
-        
-        $fsext17 = new fs_extension(
+            ),
             array(
                 'name' => 'informes_fiscales_js182',
                 'page_from' => __CLASS__,
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/jspdf.plugin.autotable.js" type="text/javascript"></script>',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/jsPDF/jspdf.min.js" type="text/javascript"></script>',
                 'params' => ''
-            )
-        );
-        $fsext17->save();
-        
-        $fsext18 = new fs_extension(
+            ),
             array(
-                'name' => 'informes_fiscales_css20',
+                'name' => 'informes_fiscales_js183',
                 'page_from' => __CLASS__,
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/font-awesome/css/font-awesome.min.css"/>',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/jsPDF-AutoTable/jspdf.plugin.autotable.js" type="text/javascript"></script>',
                 'params' => ''
-            )
+            ),
+            array(
+                'name' => 'informes_fiscales_js184',
+                'page_from' => __CLASS__,
+                'page_to' => 'informes_fiscales',
+                'type' => 'head',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/js-xlsx/xlsx.core.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => 'informes_fiscales_js185',
+                'page_from' => __CLASS__,
+                'page_to' => 'informes_fiscales',
+                'type' => 'head',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/html2canvas/html2canvas.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            
         );
-      $fsext18->delete();
+        
+        foreach($extensiones as $ext){
+            $fext = new fs_extension($ext);
+            if(!$fext->save()){
+                $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
+            }
+        }
     }
 }

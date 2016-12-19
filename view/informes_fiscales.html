@@ -19,12 +19,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div class="row">
         <div class="col-sm-12 text-right">
             <div class="col-sm-10 text-left">
-                <h2>Informes Fiscales DGII</h2>
+                <h2>
+                    <span class="fa fa-stack-overflow"></span>&nbsp;Informes Fiscales DGII
+                    <a class="btn btn-sm btn-default" href="{$fsc->url()}" title="Recargar la página">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </a>
+                    {if="$fsc->page->is_default()"}
+                    <a class="btn btn-sm btn-default active" href="{$fsc->url()}&amp;default_page=FALSE" title="desmarcar como página de inicio">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                    {else}
+                    <a class="btn btn-sm btn-default" href="{$fsc->url()}&amp;default_page=TRUE" title="marcar como página de inicio">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                    {/if}
+                    <span class="btn-group">
+                        <a class="btn btn-sm btn-default" href="index.php?page=ncf" title="Ir al Maestro de NCF">
+                            <span class="fa fa-list-ol"></span>&nbsp;Maestro de NCF
+                        </a>
+                        {loop="$fsc->extensions"}
+                            {if="$value->type=='button'"}
+                                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
+                            {/if}
+                        {/loop}
+                    </span>
+                    <button id="ayuda-informes-fiscales" type="button" class="btn btn-sm btn-info"><i class="fa fa-question-circle fa-lg"></i></button>
+                </h2>
                 <p align="left">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
-                <hr />
             </div>
             <div class="col-sm-2 text-right">
-                <button id="ayuda-informes-fiscales" type="button" class="btn btn-info"><i class="fa fa-question-circle fa-lg"></i></button>
+                
             </div>
 
         </div>
@@ -76,16 +100,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </li>
             </ul>
       </div>
-        <div class="col-lg-10 col-md-10 col-sm-9">
-            <form class="form-inline" method="POST" action='{$fsc->url()}'>
-                <input type="hidden" name="tipo-reporte" id="tipo-reporte" value='{$fsc->reporte}'>
-                <label for='inicio'><b>Fecha Inicio</b></label>
-                <input type="text" class="form-control datepicker" name='inicio' id="inicio">
-                <label for='fin'><b>Fecha Fin</b></label>
-                <input type="text" class="form-control datepicker" name="fin" id="fin">
-                <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
-            </form>
-        </div>
+      <div class="col-lg-10 col-md-10 col-sm-9">
+         <form class="form-inline" method="POST" action='{$fsc->url()}'>
+            <input type="hidden" name="tipo-reporte" id="tipo-reporte" value='{$fsc->reporte}'>
+            <label for='inicio'><b>Fecha Inicio</b></label>
+            <input type="text" class="form-control datepicker" name='inicio' id="inicio">
+            <label for='fin'><b>Fecha Fin</b></label>
+            <input type="text" class="form-control datepicker" name="fin" id="fin">
+            <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
+         </form>
+      </div>
       <div class="col-lg-10 col-md-10 col-sm-9">
           <div class="row">
             <div class="tab-content">
@@ -130,7 +154,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </table>
                     </div>
                     <div class='col-sm-9'>
-                        <table id="table-reporte-consolidado" data-toggle="table" data-height="450" data-show-footer="false" data-show-export="true">
+                        <table id="table-reporte-consolidado" data-mobile-responsive="true" data-toggle="table" data-height="450" data-show-footer="false" data-show-export="true">
                             <thead>
                               <tr>
                                   <th colspan="9" class="text-center">Reporte Consolidado del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -176,7 +200,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-ventas'"}active{/if}" id="reporte-ventas">
-                    <table id="table-reporte-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="9" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -221,7 +245,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-ventas'"}active{/if}" id="detalle-ventas">
-                    <table id="table-detalle-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-detalle-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="8" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -264,7 +288,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='resumen-ventas'"}active{/if}" id="resumen-ventas">
-                    <table id="table-resumen-ventas" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-resumen-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="6" class="text-center">Resúmen de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -303,7 +327,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-compras'"}active{/if}" id="reporte-compras">
-                    <table id="table-reporte-compras" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-compras" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="8" class="text-center">Reporte de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -344,7 +368,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-606'"}active{/if}" id="reporte-606">
-                    <table id="table-reporte-606" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-606" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="13" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -396,7 +420,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-607'"}active{/if}" id="reporte-607">
-                    <table id="table-reporte-607" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-607" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                         <thead>
                             <tr>
                                 <th colspan="9" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
@@ -441,7 +465,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-608'"}active{/if}" id="reporte-608">
-                    <table id="table-reporte-608" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-608" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
                       <thead>
                           <tr>
                               <th colspan="8" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>

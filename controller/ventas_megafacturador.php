@@ -122,8 +122,10 @@ class ventas_megafacturador extends fs_controller {
         }
     }
     
+    
     private function generar_albaranes(){
-        
+        $recargar = FALSE;
+        $this->total = 0;
     }
 
     private function generar_facturas() {
