@@ -15,45 +15,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<script type="text/javascript">
-    function facturar()
-    {
-        document.f_facturador.procesar.value = 'TRUE';
-        document.f_facturador.submit();
-    }
-    
-    function validar(formulario){
-        var form = '#'+formulario;
-        var oFormObject = document.forms[formulario];
-        var series = document.querySelectorAll(form+' input[name="serie[]"]:checked');
-        var fechas = document.querySelectorAll(form+' input[name="fecha[]"]:checked');
-        var fecha = document.querySelectorAll(form+' input[name="fecha[]"]:checked');
-        if(series.length !== 0 && fechas.length !== 0){
-            var confirmar = confirm('¿Esta seguro de generar los documentos con las series y fechas elegidas?');
-            if(confirmar){
-                oFormObject.elements["procesar"].value = 'TRUE';
-                $(form+' .boton_accion').hide();
-                if(formulario === 'f_pedidos'){
-                    $('#generando_pedidos').show();
-                }else if(formulario === 'f_albaranes'){
-                    $('#generando_albaranes').show();
-                }
-                return true;
-            }else{
-                return false;
-            }
-        }else{
-            if(series.length === 0 && fechas.length === 0){
-                alert('¡Debes elegir una serie y una fecha con documentos para procesar!');
-            }else if(series.length === 0){
-                alert('¡Debes elegir una serie para procesar!');
-            }else if(fechas.length === 0){
-                alert('¡Debes elegir una fecha con documentos para procesar!');
-            }
-            return false;
-        }
-    }
-</script>
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12">
@@ -90,25 +51,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <input type="hidden" name="procesar" value="FALSE"/>
                         <div class="form-group">
                             <label class="control-label text-capitalize">Fecha {#FS_PEDIDOS#}:</label>
-                            <input type="text" name="fecha_pedido" value="{$fsc->fecha_pedido}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
+                            <div class="col-sm-12 rango">
+                                <input type="text" id="fecha_pedido" value="{$fsc->fecha_pedido}" class="form-control input-sm">
+                                <span class="fa fa-calendar"></span>
+                                <input type="hidden" name="fecha_pedido_desde" id="p_desde" value="{$fsc->fecha_pedido_desde}">
+                                <input type="hidden" name="fecha_pedido_hasta" id="p_hasta" value="{$fsc->fecha_pedido_hasta}">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="control-label text-capitalize">{#FS_SERIE#} de los {#FS_PEDIDOS#}:</label>
                             <div class="checkbox">
                                 {loop="$fsc->serie->all()"}
                                 <label class="control-label">
-                                    <input type="checkbox" name="serie[]" value="{$value->codserie}" />
+                                    <input type="checkbox" name="serie_pedidos[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas)"}checked{/if} />
                                     {$value->descripcion}
                                 </label><br/>
                                 {/loop}
                             </div>
+                            <button type="submit" name="accion" value="buscar_pedidos" class="btn btn-sm btn-info"><span class="fa fa-search"></span>&nbsp;Buscar</button>
                         </div>
                         <ul class="list-group">
-                            <li class="list-group-item list-group-item-info"><span class="badge">{$fsc->total_pedidos_pendientes()['total']}</span>{#FS_PEDIDOS#} de venta pendientes</li>
-                            {loop="$fsc->total_pedidos_pendientes()['lista']"}
+                            <li class="list-group-item list-group-item-info"><span class="badge">{$fsc->lista_pedidos_pendientes_total}</span>{#FS_PEDIDOS#} de venta pendientes</li>
+                            {loop="$fsc->lista_pedidos_pendientes"}
                             <li class="list-group-item">
                                 <label class="control-label">
-                                    <input type="checkbox" name="fecha[]" id="fecha_pedidos_{$counter}">
+                                    <input type="checkbox" name="fecha_pedidos[]" value="{$key}" id="fecha_pedidos_{$counter}">
                                     {$key}
                                 </label>
                                 <span class="badge">{$value}</span>
@@ -117,10 +84,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </ul>
                         <div class="form-group">
                             <label class="control-label">Generar documentos con fecha:</label>
-                            <input type="text" name="fecha_albaranes" value="{$fsc->fecha_albaranes}" class="form-control datepicker" required="" autocomplete="off"/>
+                            <input type="text" name="fecha_albaranes_gen" value="{$fsc->fecha_albaranes_gen}" class="form-control datepicker" required="" autocomplete="off"/>
                         </div>
                         <div class="form-group text-center">
-                            <button class="btn btn-sm btn-primary boton_accion" type="submit" onclick="return validar('f_pedidos')">
+                            <button class="btn btn-sm btn-primary boton_accion" {if="$fsc->lista_pedidos_pendientes_total==0"}disabled{/if} name="accion" value="generar_albaranes" type="submit" onclick="return validar('f_pedidos','pedidos')">
                                 <span class="fa fa-play"></span>&nbsp; Generar {#FS_ALBARANES#}
                             </button>
                             <button id="generando_pedidos" class="btn btn-sm btn-default" disabled="" style="display: none;">
@@ -142,25 +109,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <input type="hidden" name="procesar" value="FALSE"/>
                         <div class="form-group">
                             <label class="control-label text-capitalize">Fecha {#FS_ALBARANES#}:</label>
-                            <input type="text" name="fecha_albaran" value="{$fsc->fecha_albaran}" class="form-control datepicker" autocomplete="off" onchange="this.form.submit();"/>
+                            <div class="col-sm-12 rango">
+                                <input type="text" id="fecha_albaran" value="{$fsc->fecha_albaran}" class="form-control input-sm">
+                                <span class="fa fa-calendar"></span>
+                                <input type="hidden" name="fecha_albaran_desde" id="a_desde" value="{$fsc->fecha_albaran_desde}">
+                                <input type="hidden" name="fecha_albaran_hasta" id="a_hasta" value="{$fsc->fecha_albaran_hasta}">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="control-label text-capitalize">{#FS_SERIE#} de los {#FS_ALBARANES#}:</label>
                             <div class="checkbox">
                                 {loop="$fsc->serie->all()"}
                                 <label class="control-label">
-                                    <input type="checkbox" name="serie[]" value="{$value->codserie}" />
+                                    <input type="checkbox" name="serie_albaranes[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas)"}checked{/if}/>
                                     {$value->descripcion}
                                 </label><br/>
                                 {/loop}
                             </div>
+                            <button type="submit" name="accion" value="buscar_albaranes" class="btn btn-sm btn-primary"><span class="fa fa-search"></span>&nbsp;Buscar</button>
                         </div>
                         <ul class="list-group">
-                            <li class="list-group-item active"><span class="badge">{$fsc->total_pendientes_venta()['total']}</span>{#FS_ALBARANES#} de venta pendientes</li>
-                            {loop="$fsc->total_pendientes_venta()['lista']"}
+                            <li class="list-group-item active"><span class="badge">{$fsc->lista_albaranes_pendientes_total}</span>{#FS_ALBARANES#} de venta pendientes</li>
+                            {loop="$fsc->lista_albaranes_pendientes"}
                             <li class="list-group-item">
                                 <label class="control-label">
-                                    <input type="checkbox" name="fecha[]" id="fecha_albaran_{$counter}">
+                                    <input type="checkbox" name="fecha_albaranes[]" value="{$key}" id="fecha_albaran_{$counter}">
                                     {$key}
                                 </label>
                                 <span class="badge">{$value}</span>
@@ -169,10 +142,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </ul>
                         <div class="form-group">
                             <label class="control-label">Generar documentos con fecha:</label>
-                            <input type="text" name="fecha_facturas" value="{$fsc->fecha_facturas}" class="form-control datepicker" required="" autocomplete="off"/>
+                            <input type="text" name="fecha_facturas_gen" value="{$fsc->fecha_facturas_gen}" class="form-control datepicker" required="" autocomplete="off"/>
                         </div>                        
                         <div class="form-group text-center">
-                            <button class="btn btn-sm btn-success boton_accion" type="submit" onclick="return validar('f_albaranes')">
+                            <button class="btn btn-sm btn-success boton_accion" type="submit" name="accion" {if="$fsc->lista_albaranes_pendientes_total==0"}disabled{/if} value="generar_facturas" onclick="return validar('f_albaranes','pedidos')">
                                 <span class="fa fa-play"></span>&nbsp; Generar facturas
                             </button>
                             <button id="generando_albaranes" class="btn btn-sm btn-default" disabled="" style="display: none;">
@@ -190,7 +163,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <h3 class="panel-title">Resultados</h3>
                 </div>
                 <div class="panel-body">
-                    no content
+                    
                 </div>
             </div>
         </div>
@@ -199,4 +172,49 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    var locale_user = 'es';
+    function facturar()
+    {
+        document.f_facturador.procesar.value = 'TRUE';
+        document.f_facturador.submit();
+    }
+    
+    function validar(formulario,documento){
+        var form = '#'+formulario;
+        var oFormObject = document.forms[formulario];
+        var series = document.querySelectorAll(form+' input[name="serie_'+documento+'[]"]:checked');
+        var fechas = document.querySelectorAll(form+' input[name="fecha_'+documento+'[]"]:checked');
+        var fecha = document.querySelectorAll(form+' input[name="fecha_'+documento+'[]"]:checked');
+        if(series.length !== 0 && fechas.length !== 0){
+            var confirmar = confirm('¿Esta seguro de generar los documentos con las series y fechas elegidas?');
+            if(confirmar){
+                oFormObject.elements["procesar"].value = 'TRUE';
+                $(form+' .boton_accion').hide();
+                if(formulario === 'f_pedidos'){
+                    $('#generando_pedidos').show();
+                }else if(formulario === 'f_albaranes'){
+                    $('#generando_albaranes').show();
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(series.length === 0 && fechas.length === 0){
+                alert('¡Debes elegir una serie y una fecha con documentos para procesar!');
+            }else if(series.length === 0){
+                alert('¡Debes elegir una serie para procesar!');
+            }else if(fechas.length === 0){
+                alert('¡Debes elegir una fecha con documentos para procesar!');
+            }
+            return false;
+        }
+    }
+    $(document).ready(function () {
+        moment.locale(locale_user);
+        rango_fechas('fecha_pedido', 'p_desde', 'p_hasta', 'YYYY-MM-DD', false, false);       
+        rango_fechas('fecha_albaran', 'a_desde', 'a_hasta', 'YYYY-MM-DD', false, false);       
+    });
+</script>
 {include="footer"}

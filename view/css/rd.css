@@ -1,0 +1,29 @@
+/*
+Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/* 
+    Created on : 26-dic-2016, 14:48:43
+    Author     : Joe Nilson <joenilson at gmail.com>
+*/
+#f_rango { 
+    position: relative;
+    padding: 6px;
+    width: 100%;
+    border-radius: 4px;
+}
+.rango span { 
+    position: absolute; bottom: 10px; right: 24px; top: auto; cursor: pointer; 
+}

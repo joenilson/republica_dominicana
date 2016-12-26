@@ -41,8 +41,5 @@ $(document).ready(function() {
         $("#f_eliminar").attr('motivo', $("#motivo").val());
         $("#f_eliminar").submit();
     });
-
-
-
 });
 

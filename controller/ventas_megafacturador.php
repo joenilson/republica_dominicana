@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_model('albaran_cliente.php');
+require_model('pedido_cliente.php');
 require_model('albaran_proveedor.php');
 require_model('asiento.php');
 require_model('asiento_factura.php');
@@ -49,11 +50,24 @@ class ventas_megafacturador extends fs_controller {
     public $opciones;
     public $serie;
     public $series_elegidas;
+    public $series_elegidas_albaranes;
+    public $series_elegidas_pedidos;
     public $url_recarga;
     public $fecha_pedido;
+    public $fecha_pedido_desde;
+    public $fecha_pedido_hasta;
     public $fecha_albaran;
-    public $fecha_albaranes;
-    public $fecha_facturas;
+    public $fecha_albaran_desde;
+    public $fecha_albaran_hasta;
+    public $fecha_albaranes_gen;
+    public $fecha_facturas_gen;
+    public $fechas_elegidas;
+    public $fechas_elegidas_albaranes;
+    public $fechas_elegidas_pedidos;
+    public $lista_pedidos_pendientes;
+    public $lista_pedidos_pendientes_total;
+    public $lista_albaranes_pendientes;
+    public $lista_albaranes_pendientes_total;
     private $asiento_factura;
     private $cliente;
     private $ejercicio;
@@ -87,45 +101,183 @@ class ventas_megafacturador extends fs_controller {
         $this->ncf_rango = new ncf_rango();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_ventas = new ncf_ventas();
-        $this->series_elegidas['E'] = "E";
-        $this->fecha_pedido = \date('d-m-Y');
-        $this->fecha_albaran = \date('d-m-Y');
-        $this->fecha_albaranes = \date('d-m-Y',strtotime('+1 day'));
-        $this->fecha_facturas = \date('d-m-Y',strtotime('+1 day'));
-
+        $this->series_elegidas = array();
+        $this->fecha_albaranes_gen = \date('d-m-Y', strtotime('+1 day'));
+        $this->fecha_facturas_gen = \date('d-m-Y', strtotime('+1 day'));
+        $this->lista_pedidos_pendientes = array();
+        $this->lista_albaranes_pendientes = array();
+        $this->lista_pedidos_pendientes_total = 0;
+        $this->lista_albaranes_pendientes_total = 0;
         $this->share_extensions();
 
         $documento = filter_input(INPUT_GET, 'documento');
         $procesar_g = filter_input(INPUT_GET, 'procesar');
         $procesar_p = filter_input(INPUT_POST, 'procesar');
-        
-        $fecha_pedido = filter_input(INPUT_POST, 'fecha_pedido');
-        $fecha_albaran = filter_input(INPUT_POST, 'fecha_albaran');
-        $fecha_albaranes = filter_input(INPUT_POST, 'fecha_albaranes');
-        $fecha_facturas = filter_input(INPUT_POST, 'fecha_facturas');
-        
-        $this->fecha_pedido = ($fecha_pedido)?$fecha_pedido:$this->fecha_pedido;
-        $this->fecha_albaran = ($fecha_albaran)?$fecha_albaran:$this->fecha_albaran;
-        $this->fecha_albaranes = ($fecha_albaranes)?$fecha_albaranes:$this->fecha_albaranes;
-        $this->fecha_facturas = ($fecha_facturas)?$fecha_facturas:$this->fecha_facturas;
-        
+
+        $fecha_pedido_desde = filter_input(INPUT_POST, 'fecha_pedido_desde');
+        $fecha_pedido_hasta = filter_input(INPUT_POST, 'fecha_pedido_hasta');
+        $fecha_albaran_desde = filter_input(INPUT_POST, 'fecha_albaran_desde');
+        $fecha_albaran_hasta = filter_input(INPUT_POST, 'fecha_albaran_hasta');
+        $fecha_albaranes_gen = filter_input(INPUT_POST, 'fecha_albaranes_gen');
+        $fecha_facturas_gen = filter_input(INPUT_POST, 'fecha_facturas_gen');
+
+        $this->fecha_pedido_desde = ($fecha_pedido_desde) ? $fecha_pedido_desde : \date('Y-m-01');
+        $this->fecha_pedido_hasta = ($fecha_pedido_hasta) ? $fecha_pedido_hasta : \date('Y-m-d');
+        $this->fecha_albaran_desde = ($fecha_albaran_desde) ? $fecha_albaran_desde : \date('Y-m-01');
+        $this->fecha_albaran_hasta = ($fecha_albaran_hasta) ? $fecha_albaran_hasta : \date('Y-m-d');
+        $this->fecha_albaranes_gen = ($fecha_albaranes_gen) ? $fecha_albaranes_gen : $this->fecha_albaranes_gen;
+        $this->fecha_facturas_gen = ($fecha_facturas_gen) ? $fecha_facturas_gen : $this->fecha_facturas_gen;
+
         $procesar = ($procesar_g) ? $procesar_g : $procesar_p;
-        if ($procesar == 'TRUE') {
-            $this->series_elegidas = filter_input(INPUT_POST, 'serie', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->fechas_elegidas = filter_input(INPUT_POST, 'fecha', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            
-            if($documento == 'pedidos'){
+
+        if ($documento == 'pedidos') {
+            $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->fechas_elegidas_pedidos = filter_input(INPUT_POST, 'fecha_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $accion = filter_input(INPUT_POST, 'accion');
+            if ($accion == 'buscar_pedidos') {
+                $buscar = $this->total_pedidos_pendientes();
+                $this->lista_pedidos_pendientes = $buscar['lista'];
+                $this->lista_pedidos_pendientes_total = $buscar['total'];
+            } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
                 $this->generar_albaranes();
-            }elseif($documento == 'albaranes'){
+            }
+        } elseif ($documento == 'albaranes') {
+            $this->series_elegidas_albaranes = filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->fechas_elegidas_albaranes = filter_input(INPUT_POST, 'fecha_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $accion = filter_input(INPUT_POST, 'accion');
+            if ($accion == 'buscar_albaranes') {
+                $buscar = $this->total_pendientes_venta();
+                $this->lista_albaranes_pendientes = $buscar['lista'];
+                $this->lista_albaranes_pendientes_total = $buscar['total'];
+            } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
                 $this->generar_facturas();
             }
         }
     }
-    
-    
-    private function generar_albaranes(){
-        $recargar = FALSE;
+
+    private function generar_albaranes() {
+        
         $this->total = 0;
+        foreach ($this->pedidos_pendientes() as $pedido) {
+            $continuar = FALSE;
+            $this->new_message('Generando '.FS_ALBARAN.' para pedido: ' . $pedido->idpedido);
+            $albaran = new albaran_cliente();
+            $albaran->apartado = $pedido->apartado;
+            $albaran->cifnif = $pedido->cifnif;
+            $albaran->ciudad = $pedido->ciudad;
+            $albaran->fecha = $this->fecha_albaranes_gen;
+            $albaran->hora = \date('H:i:s');
+            $albaran->codagente = $pedido->codagente;
+            $albaran->codalmacen = $pedido->codalmacen;
+            $albaran->codcliente = $pedido->codcliente;
+            $albaran->coddir = $pedido->coddir;
+            $albaran->coddivisa = $pedido->coddivisa;
+            $albaran->tasaconv = $pedido->tasaconv;
+            $albaran->codpago = $pedido->codpago;
+            $albaran->codpais = $pedido->codpais;
+            $albaran->codpostal = $pedido->codpostal;
+            $albaran->codserie = $pedido->codserie;
+            $albaran->direccion = $pedido->direccion;
+            $albaran->neto = $pedido->neto;
+            $albaran->nombrecliente = $pedido->nombrecliente;
+            $albaran->observaciones = $pedido->observaciones;
+            $albaran->provincia = $pedido->provincia;
+            $albaran->total = $pedido->total;
+            $albaran->totaliva = $pedido->totaliva;
+            $albaran->numero2 = $pedido->numero2;
+            $albaran->irpf = $pedido->irpf;
+            $albaran->porcomision = $pedido->porcomision;
+            $albaran->totalirpf = $pedido->totalirpf;
+            $albaran->totalrecargo = $pedido->totalrecargo;
+
+            $albaran->envio_nombre = $pedido->envio_nombre;
+            $albaran->envio_apellidos = $pedido->envio_apellidos;
+            $albaran->envio_codtrans = $pedido->envio_codtrans;
+            $albaran->envio_codigo = $pedido->envio_codigo;
+            $albaran->envio_codpais = $pedido->envio_codpais;
+            $albaran->envio_provincia = $pedido->envio_provincia;
+            $albaran->envio_ciudad = $pedido->envio_ciudad;
+            $albaran->envio_codpostal = $pedido->envio_codpostal;
+            $albaran->envio_direccion = $pedido->envio_direccion;
+            $albaran->envio_apartado = $pedido->envio_apartado;
+            
+            if( is_null($albaran->codagente) )
+            {
+                $albaran->codagente = $this->user->codagente;
+            }
+
+            /**
+             * Obtenemos el ejercicio para la fecha de hoy (puede que
+             * no sea el mismo ejercicio que el del pedido, por ejemplo
+             * si hemos cambiado de año)
+             */
+            $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, FALSE);
+            if ($eje0) {
+                $albaran->codejercicio = $eje0->codejercicio;
+            }
+
+            if (!$eje0) {
+                $this->new_error_msg("Ejercicio no encontrado.");
+            } else if (!$eje0->abierto()) {
+                $this->new_error_msg("El ejercicio está cerrado.");
+            } else if ($albaran->save()) {
+                $continuar = TRUE;
+                $art0 = new articulo();
+                foreach ($pedido->get_lineas() as $l) {
+                    $n = new linea_albaran_cliente();
+                    $n->idlineapedido = $l->idlinea;
+                    $n->idpedido = $l->idpedido;
+                    $n->idalbaran = $albaran->idalbaran;
+                    $n->cantidad = $l->cantidad;
+                    $n->codimpuesto = $l->codimpuesto;
+                    $n->descripcion = $l->descripcion;
+                    $n->dtopor = $l->dtopor;
+                    $n->irpf = $l->irpf;
+                    $n->iva = $l->iva;
+                    $n->pvpsindto = $l->pvpsindto;
+                    $n->pvptotal = $l->pvptotal;
+                    $n->pvpunitario = $l->pvpunitario;
+                    $n->recargo = $l->recargo;
+                    $n->referencia = $l->referencia;
+
+                    if ($n->save()) {
+                        /// descontamos del stock
+                        if (!is_null($n->referencia)) {
+                            $articulo = $art0->get($n->referencia);
+                            if ($articulo) {
+                                $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad);
+                            }
+                        }
+                    } else {
+                        $continuar = FALSE;
+                        $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                        break;
+                    }
+                }
+
+                if ($continuar) {
+                    $pedido->idalbaran = $albaran->idalbaran;
+                    $pedido->fechasalida = $albaran->fecha;
+
+                    if (!$pedido->save()) {
+                        $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
+                        if ($albaran->delete()) {
+                            $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                        } else {
+                            $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                        }
+                    }
+                } else {
+                    if ($albaran->delete()) {
+                        $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                    } else {
+                        $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                    }
+                }
+            } else {
+                $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
+            }
+        }
     }
 
     private function generar_facturas() {
@@ -325,14 +477,19 @@ class ventas_megafacturador extends fs_controller {
         $alblist = array();
 
         $sql = "SELECT * FROM albaranescli WHERE ptefactura = true";
-        if ($this->opciones['megafac_codserie'] != '') {
-            $sql .= " AND codserie = " . $this->serie->var2str($this->opciones['megafac_codserie']);
+        if (!empty($this->series_elegidas)) {
+            $series = $this->array_to_text($this->series_elegidas);
+            $sql .= " AND codserie IN (" . $series . ") ";
         }
-        if ($this->fecha_albaran) {
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_albaran)));
+        if ($this->fecha_albaran_desde and empty($this->fechas_elegidas)) {
+            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde)))
+                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
+        } elseif ($this->fechas_elegidas) {
+            $fechas = $this->date_to_text($this->fechas_elegidas);
+            $sql .= " AND fecha IN (" . $fechas . ") ";
         }
 
-        $data = $this->db->select_limit($sql . ' ORDER BY fecha ASC, hora ASC', 20, 0);
+        $data = $this->db->select($sql . ' ORDER BY fecha ASC, hora ASC');
         if ($data) {
             foreach ($data as $d) {
                 $alblist[] = new albaran_cliente($d);
@@ -346,78 +503,85 @@ class ventas_megafacturador extends fs_controller {
         $total = 0;
         $subtotal = array();
         $sql = "SELECT fecha, count(idalbaran) as total FROM albaranescli WHERE ptefactura = true";
-        /**
-        if ($this->opciones['megafac_codserie'] != '') {
-            $sql .= " AND codserie = " . $this->serie->var2str($this->opciones['megafac_codserie']);
+        if (!empty($this->series_elegidas)) {
+            $series = $this->array_to_text($this->series_elegidas);
+            $sql .= " AND codserie IN (" . $series . ") ";
         }
-         * 
-         */
-        if ($this->fecha_albaran) {
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_albaran)));
-            $sql .= "GROUP BY fecha ORDER BY fecha";
+        if ($this->fecha_albaran_desde and empty($this->fechas_elegidas)) {
+            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde)))
+                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
+            $sql .= " GROUP BY fecha ORDER BY fecha";
+        } elseif ($this->fechas_elegidas) {
+            $fechas = $this->date_to_text($this->fechas_elegidas);
+            $sql .= " AND fecha IN (" . $fechas . ") ";
+            $sql .= " GROUP BY fecha ORDER BY fecha";
         }
 
         $data = $this->db->select($sql);
         if ($data) {
-            foreach($data as $d){
+            foreach ($data as $d) {
                 $total += intval($d['total']);
-                $subtotal[$d['fecha']]=intval($d['total']);
+                $subtotal[$d['fecha']] = intval($d['total']);
             }
         }
 
-        $resultados = array('total'=>$total,'lista'=>$subtotal);
+        $resultados = array('total' => $total, 'lista' => $subtotal);
         return $resultados;
     }
-    
+
     public function pedidos_pendientes() {
-        $alblist = array();
+        $pedlist = array();
 
         $sql = "SELECT * FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
-        if (!empty($this->series_elegidas)) {
-            $series = $this->array_to_text($this->series_elegidas);
-            
-            $sql .= " AND codserie = " . $this->serie->var2str($this->opciones['megafac_codserie']);
+        if (!empty($this->series_elegidas_pedidos)) {
+            $series = $this->array_to_text($this->series_elegidas_pedidos);
+            $sql .= " AND codserie IN (" . $series . ") ";
         }
-        if ($this->fecha_pedido and empty($this->fechas_elegidas)) {
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
-        }elseif($this->fechas_elegidas){
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
+        if ($this->fecha_pedido_desde and empty($this->fechas_elegidas_pedidos)) {
+            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
+                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
+        } elseif ($this->fechas_elegidas_pedidos) {
+            $fechas = $this->date_to_text($this->fechas_elegidas_pedidos);
+            $sql .= " AND fecha IN (" . $fechas . ") ";
         }
 
-        $data = $this->db->select_limit($sql . ' ORDER BY fecha ASC, hora ASC', 20, 0);
+        $data = $this->db->select($sql . ' ORDER BY fecha ASC, hora ASC');
         if ($data) {
             foreach ($data as $d) {
-                $alblist[] = new albaran_cliente($d);
+                $pedlist[] = new pedido_cliente($d);
             }
         }
 
-        return $alblist;
+        return $pedlist;
     }
 
     public function total_pedidos_pendientes() {
         $total = 0;
         $subtotal = array();
         $sql = "SELECT fecha, count(idpedido) as total FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
-        /**
-        if ($this->opciones['megafac_codserie'] != '') {
-            $sql .= " AND codserie = " . $this->serie->var2str($this->opciones['megafac_codserie']);
-        }
-         * 
-         */
-        if ($this->fecha_pedido) {
-            $sql .= " AND fecha <= " . $this->serie->var2str(\date('Y-m-d',strtotime($this->fecha_pedido)));
-            $sql .= "GROUP BY fecha ORDER BY fecha";
-        }
 
+        if (!empty($this->series_elegidas_pedidos)) {
+            $series = $this->array_to_text($this->series_elegidas_pedidos);
+            $sql .= " AND codserie IN (" . $series . ") ";
+        }
+        if ($this->fecha_pedido_desde and empty($this->fechas_elegidas_pedidos)) {
+            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
+                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
+            $sql .= " GROUP BY fecha ORDER BY fecha";
+        } elseif ($this->fechas_elegidas_pedidos) {
+            $fechas = $this->date_to_text($this->fechas_elegidas_pedidos);
+            $sql .= " AND fecha IN (" . $fechas . ") ";
+            $sql .= " GROUP BY fecha ORDER BY fecha";
+        }
         $data = $this->db->select($sql);
         if ($data) {
-            foreach($data as $d){
+            foreach ($data as $d) {
                 $total += intval($d['total']);
-                $subtotal[$d['fecha']]=intval($d['total']);
+                $subtotal[$d['fecha']] = intval($d['total']);
             }
         }
 
-        $resultados = array('total'=>$total,'lista'=>$subtotal);
+        $resultados = array('total' => $total, 'lista' => $subtotal);
         return $resultados;
     }
 
@@ -440,8 +604,66 @@ class ventas_megafacturador extends fs_controller {
         return $ok;
     }
 
+    private function array_to_text(Array $array) {
+        $substring = "";
+        foreach ($array as $item) {
+            $substring .= "'" . $item . "',";
+        }
+        $string = substr($substring, 0, strlen($substring) - 1);
+        return $string;
+    }
+
+    private function date_to_text(Array $array) {
+        $substring = "";
+        foreach ($array as $item) {
+            $substring .= "'" . \date('Y-m-d', strtotime($item)) . "',";
+        }
+        $string = substr($substring, 0, strlen($substring) - 1);
+        return $string;
+    }
+
     private function share_extensions() {
         $extensions = array(
+            array(
+                'name' => 'daterangepicker_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => 'moment_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/1/moment-with-locales.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => 'daterangepicker_css',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.css" rel="stylesheet" type="text/css"/>',
+                'params' => ''
+            ),
+            array(
+                'name' => 'republica_dominicana_css',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/rd.css?build=' . rand(1, 1000) . '" rel="stylesheet" type="text/css"/>',
+                'params' => ''
+            ),
+            array(
+                'name' => 'republica_dominicana_commons_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/rd_common.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
             array(
                 'name' => 'ventas_megafacturador',
                 'page_from' => __CLASS__,
