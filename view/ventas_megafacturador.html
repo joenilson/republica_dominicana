@@ -63,7 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             <div class="checkbox">
                                 {loop="$fsc->serie->all()"}
                                 <label class="control-label">
-                                    <input type="checkbox" name="serie_pedidos[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas)"}checked{/if} />
+                                    <input type="checkbox" name="serie_pedidos[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas_pedidos)"}checked{/if} />
                                     {$value->descripcion}
                                 </label><br/>
                                 {/loop}
@@ -121,7 +121,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             <div class="checkbox">
                                 {loop="$fsc->serie->all()"}
                                 <label class="control-label">
-                                    <input type="checkbox" name="serie_albaranes[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas)"}checked{/if}/>
+                                    <input type="checkbox" name="serie_albaranes[]" value="{$value->codserie}" {if="in_array($value->codserie,$fsc->series_elegidas_albaranes)"}checked{/if}/>
                                     {$value->descripcion}
                                 </label><br/>
                                 {/loop}
@@ -145,7 +145,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             <input type="text" name="fecha_facturas_gen" value="{$fsc->fecha_facturas_gen}" class="form-control datepicker" required="" autocomplete="off"/>
                         </div>                        
                         <div class="form-group text-center">
-                            <button class="btn btn-sm btn-success boton_accion" type="submit" name="accion" {if="$fsc->lista_albaranes_pendientes_total==0"}disabled{/if} value="generar_facturas" onclick="return validar('f_albaranes','pedidos')">
+                            <button class="btn btn-sm btn-success boton_accion" type="submit" name="accion" {if="$fsc->lista_albaranes_pendientes_total==0"}disabled{/if} value="generar_facturas" onclick="return validar('f_albaranes','albaranes')">
                                 <span class="fa fa-play"></span>&nbsp; Generar facturas
                             </button>
                             <button id="generando_albaranes" class="btn btn-sm btn-default" disabled="" style="display: none;">
@@ -158,12 +158,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </div>
         </div>
         <div class="col-sm-3">
-            <div class="panel panel-default panel-success">
+            <div class="panel panel-default panel-warning">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Resultados</h3>
+                    <h3 class="panel-title"><span class="fa fa-life-saver"></span>&nbsp;Ayuda</h3>
                 </div>
                 <div class="panel-body">
-                    
+                    <p class="help-block text-justify">Para generar los pedidos o {#FS_ALBARANES#} pendientes, primero se elije el rango de fechas en el selector.</p>
+                    <p class="help-block text-justify">Despues de seleccionar el rango de fechas para realizar la busqueda seleccione las series que se 
+                        tomarán en cuenta para listar los documentos pendientes y proceda a darle click al boton Buscar.</p>
+                    <p class="help-block text-justify">Seguidamente verá la cantidad de pedidos o {#FS_ALBARANES#} pendientes agrupados por fechas, puede seleccionar 
+                        todas o una fecha en específico y luego proceder con el boton correspondiente de Generar.</p>
                 </div>
             </div>
         </div>

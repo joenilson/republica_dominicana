@@ -230,7 +230,7 @@ class tpv_recambios extends fs_controller
                   //Elegimos el número de NCF
                   $this->cliente_s->tipo_comprobante = $this->ncf_entidad_tipo->get($this->empresa->id,$this->cliente_s->codcliente, 'CLI')->tipo_comprobante;
                   //Elegimos el tipo de comprobante a generar
-                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $this->cliente_s->tipo_comprobante, $this->cliente_s->codpago);
+                  $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $this->cliente_s->tipo_comprobante, $this->cliente_s->codpago, $this->terminal->area_impresion);
                   if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
                      $this->ncf_numero = '';
                   }else{
@@ -274,7 +274,7 @@ class tpv_recambios extends fs_controller
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
       $tipo_comprobante = $_REQUEST['generar_comprobante'];
-      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $this->cliente_s->codpago);
+      $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $this->cliente_s->codpago, $this->terminal->area_impresion);
       if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
          $this->ncf_numero = '';
       }else{
@@ -626,10 +626,11 @@ class tpv_recambios extends fs_controller
                else if( $factura->save() )
                {
                   /*
-                  * Luego de que todo este correcto generamos el NCF la Nota de Credito
+                  * Luego de que todo este correcto verificamos que el NCF generado sea el correcto
+                  * Esto solo para confirmar que no se haya registrado otra terminal con la misma area de impresión
                   */
                   $tipo_comprobante = $_POST['tipo_comprobante'];
-                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $factura->codpago);
+                  $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $factura->codpago, $this->terminal->area_impresion);
                   $ncf_controller = new helper_ncf();
                   if($numero_ncf['NCF']==$factura->numero2){
                      $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
