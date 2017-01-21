@@ -205,7 +205,7 @@ class ventas_megafacturador extends fs_controller {
             $albaran->envio_codpostal = $pedido->envio_codpostal;
             $albaran->envio_direccion = $pedido->envio_direccion;
             $albaran->envio_apartado = $pedido->envio_apartado;
-            
+
             if( is_null($albaran->codagente) )
             {
                 $albaran->codagente = $this->user->codagente;
@@ -226,6 +226,7 @@ class ventas_megafacturador extends fs_controller {
             } else if (!$eje0->abierto()) {
                 $this->new_error_msg("El ejercicio está cerrado.");
             } else if ($albaran->save()) {
+                $trazabilidad = FALSE;
                 $continuar = TRUE;
                 $contador++;
                 $art0 = new articulo();
@@ -296,6 +297,7 @@ class ventas_megafacturador extends fs_controller {
         $total = $this->total_pendientes_venta()['total'];
         $contador = 0;
         foreach ($this->pendientes_venta() as $albaran) {
+            $cliente = $this->cliente->get($albaran->codcliente);
             /*
             * Verificación de disponibilidad del Número de NCF para República Dominicana
             */
@@ -371,8 +373,7 @@ class ventas_megafacturador extends fs_controller {
                    {
                       $factura->pagada = TRUE;
                    }
-
-                   $factura->vencimiento = Date('d-m-Y', strtotime($factura->fecha.' '.$formapago->vencimiento));
+                   $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
                 }
 
                 $regularizacion = new regularizacion_iva();

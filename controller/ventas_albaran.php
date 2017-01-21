@@ -1,7 +1,7 @@
 <?php
 /*
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2016  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -521,7 +521,6 @@ class ventas_albaran extends fs_controller
       $factura->coddir = $this->albaran->coddir;
       $factura->coddivisa = $this->albaran->coddivisa;
       $factura->tasaconv = $this->albaran->tasaconv;
-      $factura->codpago = $this->albaran->codpago;
       $factura->codpais = $this->albaran->codpais;
       $factura->codpostal = $this->albaran->codpostal;
       $factura->codserie = $this->albaran->codserie;
@@ -548,6 +547,12 @@ class ventas_albaran extends fs_controller
       $factura->totalrecargo = $this->albaran->totalrecargo;
       $factura->porcomision = $this->albaran->porcomision;
 
+      //comprobamos si se ha cambiado la forma de pago:
+      if(isset($_REQUEST['codigopago']))
+      {
+         $factura->codpago = $_REQUEST['codigopago'];
+      }
+
       if( is_null($factura->codagente) )
       {
          $factura->codagente = $this->user->codagente;
@@ -571,7 +576,14 @@ class ventas_albaran extends fs_controller
             $factura->pagada = TRUE;
          }
 
-         $factura->vencimiento = Date('d-m-Y', strtotime($factura->fecha.' '.$formapago->vencimiento));
+         if($this->cliente_s)
+         {
+            $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $this->cliente_s->diaspago);
+         }
+         else
+         {
+            $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha);
+         }
       }
 
       $regularizacion = new regularizacion_iva();

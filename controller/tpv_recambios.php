@@ -773,7 +773,7 @@ class tpv_recambios extends fs_controller
          }
 
          $this->terminal->save();
-         $this->new_message('<a href="#" data-toggle="modal" data-target="#modal_ayuda_ticket">¿No se imprime el ticket?</a> ');
+         $this->new_message('<a href="#" data-toggle="modal" data-target="#modal_ayuda_ticket">¿No se imprime el ticket?</a>');
       }
       else
       {
