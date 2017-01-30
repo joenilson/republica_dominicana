@@ -1,7 +1,7 @@
 <?php
 /*
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2016  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -210,7 +210,7 @@ class compras_factura extends fs_controller
          if( $asiento_factura->generar_asiento_compra($factura) )
          {
             $this->new_message("<a href='".$asiento_factura->asiento->url()."'>Asiento</a> generado correctamente.");
-            
+
             if(!$this->empresa->contintegrada)
             {
                $this->new_message("¿Quieres que los asientos se generen automáticamente?"
@@ -277,7 +277,7 @@ class compras_factura extends fs_controller
             }
 
             $importe = $this->euro_convert($this->factura->totaleuros, $this->factura->coddivisa, $this->factura->tasaconv);
-            
+
             $asiento_factura = new asiento_factura();
             $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $this->today(), $subpro, $importe);
             if($this->factura->idasientop)
