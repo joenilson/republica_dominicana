@@ -123,7 +123,7 @@ class ncf extends fs_controller {
     protected function verifica_correlativo($ncf, $correlativo) {
         if (($ncf->correlativo != $correlativo) AND ($ncf->correlativo > $ncf->secuencia_inicio)) {
             $this->ncf_ventas = new ncf_ventas();
-            $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen);
+            $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
             if ($facturas) {
                 return count($facturas);
             } else {

@@ -85,6 +85,11 @@
         <tipo>boolean</tipo>
         <nulo>YES</nulo>
     </columna>
+    <columna>
+        <nombre>area_impresion</nombre>
+        <tipo>character varying(3)</tipo>
+        <nulo>YES</nulo>
+    </columna>    
     <restriccion>
         <nombre>ncf_ventas_pkey</nombre>
         <consulta>PRIMARY KEY (idempresa, ncf)</consulta>

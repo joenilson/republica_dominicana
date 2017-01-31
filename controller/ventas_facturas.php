@@ -70,6 +70,8 @@ class ventas_facturas extends fs_controller
       $this->ncf_ventas = new ncf_ventas();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
 
+      $this->run_fix();
+      
       $this->mostrar = 'todo';
       if( isset($_GET['mostrar']) )
       {
@@ -616,5 +618,14 @@ class ventas_facturas extends fs_controller
             $this->new_error_msg("¡Imposible eliminar la factura!");
       } else
          $this->new_error_msg("Factura no encontrada.");
+   }
+   
+   /**
+    * Se agregó el campo area de impresión a la tabla de ncf_ventas 
+    * por lo que hay que corregir la info
+    */
+   public function run_fix(){
+       $sql = "update ncf_ventas set area_impresion = substr(ncf,7,3) where area_impresion IS NULL";
+       $this->db->exec($sql);
    }
 }

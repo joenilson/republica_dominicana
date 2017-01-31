@@ -33,6 +33,7 @@ class ncf_ventas extends fs_model {
     public $documento_modifica;
     public $fecha;
     public $tipo_comprobante;
+    public $area_impresion;
     public $ncf;
     public $ncf_modifica;
     public $usuario_creacion;
@@ -56,6 +57,7 @@ class ncf_ventas extends fs_model {
             $this->documento_modifica = $t['documento_modifica'];
             $this->fecha = $t['fecha'];
             $this->tipo_comprobante = $t['tipo_comprobante'];
+            $this->area_impresion = $t['area_impresion'];
             $this->ncf = $t['ncf'];
             $this->ncf_modifica = $t['ncf_modifica'];
             $this->usuario_creacion = $t['usuario_creacion'];
@@ -75,6 +77,7 @@ class ncf_ventas extends fs_model {
             $this->documento_modifica = null;
             $this->fecha = Date('d-m-Y');
             $this->tipo_comprobante = null;
+            $this->area_impresion = null;
             $this->ncf = null;
             $this->ncf_modifica = null;
             $this->usuario_creacion = null;
@@ -109,7 +112,7 @@ class ncf_ventas extends fs_model {
     public function save() {
         if (!$this->exists())
         {
-            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
                     $this->var2str($this->codalmacen).", ".
@@ -119,6 +122,7 @@ class ncf_ventas extends fs_model {
                     $this->var2str($this->documento_modifica).", ".
                     $this->var2str($this->fecha).", ".
                     $this->var2str($this->tipo_comprobante).", ".
+                    $this->var2str($this->area_impresion).", ".
                     $this->var2str($this->ncf).", ".
                     $this->var2str($this->ncf_modifica).", ".
                     $this->var2str($this->estado).", ".
@@ -220,13 +224,14 @@ class ncf_ventas extends fs_model {
         return new ncf_ventas($data[0]);
     }
 
-    public function get_tipo($idempresa, $tipo_comprobante, $codalmacen)
+    public function get_tipo($idempresa, $tipo_comprobante, $codalmacen, $area_impresion)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "codalmacen = ".$this->var2str($codalmacen)." AND ".
-                "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
+                "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND ".
+                "area_impresion = ".$this->var2str($area_impresion)." ".
                 "ORDER BY idempresa, ncf, fecha");
 
         if($data)
