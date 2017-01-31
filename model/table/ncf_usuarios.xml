@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : ncf_usuarios.xml
+    Description:
+        Estructura de la tabla ncf_usuarios.
+-->
+<tabla>
+    <columna>
+        <nombre>area_impresion</nombre>
+        <tipo>character varying(3)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>codalmacen</nombre>
+        <tipo>character varying(4)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>fecha_creacion</nombre>
+        <tipo>timestamp without time zone</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>fecha_modificacion</nombre>
+        <tipo>timestamp without time zone</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>idempresa</nombre>
+        <tipo>integer</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>punto_emision</nombre>
+        <tipo>character varying(3)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>tipo_comprobante</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>usuario</nombre>
+        <tipo>character varying(12)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>usuario_creacion</nombre>
+        <tipo>character varying(12)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>usuario_modificacion</nombre>
+        <tipo>character varying(12)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <restriccion>
+        <nombre>pk_ncf_usuaurios</nombre>
+        <consulta>PRIMARY KEY (idempresa, codalmacen, usuario, tipo_comprobante, punto_emision, area_impresion)</consulta>
+    </restriccion>
+</tabla>
