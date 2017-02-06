@@ -42,7 +42,35 @@
         <a href="{$fsc->url()}&opcion=impuestos" class="btn btn-sm {if="$fsc->conf_impuestos"}btn-success{else}btn-default{/if} col-sm-3">
             {if="$fsc->conf_impuestos"}<span class="fa fa-check"></span>&nbsp;{/if}Agregar Impuestos ITBIS y Exentos
         </a>
+    </div>
+    <div class="row" style='margin-top: 15px;'>
+        <div class="col-sm-12">
+            <form method="POST" action="{$fsc->url()}&opcion=impresion" class='form-inline'>
+                <div class='form-group col-sm-3'>
+                    <label for="rd_imprimir_logo" class='checkbox'>
+                        Imprimir Logo de Empresa en la factura:
+                        <input type="checkbox" name="rd_imprimir_logo" id="rd_imprimir_logo" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_logo']=='TRUE'"}checked{/if}>
+                    </label>
+                </div>
+                <div class='form-group col-sm-3'>
+                    <label for="rd_imprimir_marca_agua" class='checkbox'>
+                        Imprimir Marca de agua del logo de la empresa en la factura:
+                        <input type="checkbox" name="rd_imprimir_marca_agua" id="rd_imprimir_marca_agua" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_marca_agua']=='TRUE'"}checked{/if}>
+                    </label>
+                </div>
+                <div class='form-group col-sm-3'>
+                    <label for="rd_imprimir_bn" class='checkbox'>
+                        Imprimir blanco y negro:
+                        <input type="checkbox" name="rd_imprimir_bn" id="rd_imprimir_bn" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_bn']=='TRUE'"}checked{/if}>
+                    </label>
+                </div>
+                <div class='form-group col-sm-3'>
+                    <button class='btn btn-sm btn-success'>
+                        <span class="fa fa-save"></span>&nbsp;Guardar Cambios
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-
-    {include="footer"}
+</div>
+{include="footer"}

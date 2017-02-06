@@ -72,6 +72,7 @@ class PDF_MC_Table extends FPDF
         if ($a == 'rojo') { $this->SetFillColor(253, 120, 120); }
         if ($a == 'verde') { $this->SetFillColor(120, 253, 165); }		
         if ($a == 'azul') { $this->SetFillColor(120, 158, 253); }
+        if ($a == 'blanco') { $this->SetFillColor(255, 255, 255); }
     }
 
     //Cabecera de pagina
@@ -231,7 +232,7 @@ class PDF_MC_Table extends FPDF
         $this->SetY(-30);
         $this->SetLineWidth(0.1);		
         $this->SetTextColor(0);
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',10);
         if ($this->piepagina == true)
         {
             // Si existen Incluimos las Observaciones
@@ -824,7 +825,7 @@ class PDF_MC_Table extends FPDF
                     if ($i == 1) { $y2  = $y1 + 6; }
                     if ($i == 2) { $y2  = $y1 + 10; }
                     if ($i == 3) { $y2  = $y1 + 14; }		
-                    $this->SetFont( "Arial", "B", 6);
+                    $this->SetFont( "Arial", "B", 8);
                     $this->SetXY( $r1, $y2 );
                     $this->Cell(8,4, $datos[$i][0], 0, '', "L");
                     $this->Cell(18,4, $datos[$i][1], 0, '', "R");
@@ -834,7 +835,7 @@ class PDF_MC_Table extends FPDF
                     $this->Cell(18,4, $datos[$i][5], 0, '', "R");
                     $this->Cell(7,4, $datos[$i][6], 0, '', "R");
                     $this->Cell(18,4, $datos[$i][7], 0, '', "R");
-                    $this->SetFont( "Arial", "B", 6.5);		
+                    $this->SetFont( "Arial", "B", 8);		
                     $this->Cell(24,4, $datos[$i][8], 0, '', "R");
                 }
             }
@@ -863,7 +864,7 @@ class PDF_MC_Table extends FPDF
         $this->Cell(43,4, $this->neto, 0, 0, "C");
 
         // Suma y Sigue		
-        $this->SetFont( "Arial", "B", 6);
+        $this->SetFont( "Arial", "B", 8);
         $this->SetXY( $r1+16, $y1+13 );
         $this->MultiCell(43,3,'(SUMA y SIGUE)',0,'C');
     }
@@ -918,7 +919,7 @@ class PDF_MC_Table extends FPDF
         $this->Cell(43,4, $this->fdf_numtotal, 0, 0, "C");
 
         // Total factura en texto		
-        $this->SetFont( "Arial", "B", 6);
+        $this->SetFont( "Arial", "B", 8);
         $this->SetXY( $r1+16, $y1+13 );
         $texto = $this->numtoletras($this->fdf_textotal);
         $this->MultiCell(43,3,$texto,0,'C');

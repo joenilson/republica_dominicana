@@ -39,6 +39,7 @@ class admin_rd extends fs_controller {
     public $conf_regional;
     public $impuestos_rd;
     public $variables;
+    public $rd_setup;
     public function __construct() {
         parent::__construct(__CLASS__, 'República Dominicana', 'admin');
     }
@@ -78,6 +79,15 @@ class admin_rd extends fs_controller {
         $this->variables['serie'] = "serie";
         $this->variables['series'] = "series";
 
+        $fsvar = new fs_var();
+        $this->rd_setup = $fsvar->array_get(
+            array(
+                'rd_imprimir_logo' => 'TRUE',
+                'rd_imprimir_marca_agua' => 'TRUE',
+                'rd_imprimir_bn' => 'FALSE',
+            ), FALSE
+        );
+        
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
             array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
@@ -94,8 +104,34 @@ class admin_rd extends fs_controller {
                 $this->pais();
             } else if ($_GET['opcion'] == 'configuracion_regional') {
                 $this->configuracion_regional();
+            } else if ($_GET['opcion'] == 'impresion') {
+                $op_imprimir_logo = \filter_input(INPUT_POST, 'rd_imprimir_logo');
+                $op_imprimir_marca_agua = \filter_input(INPUT_POST, 'rd_imprimir_marca_agua');
+                $op_imprimir_bn = \filter_input(INPUT_POST, 'rd_imprimir_bn');
+                $imprimir_logo = ($op_imprimir_logo)?'TRUE':'FALSE';
+                $imprimir_marca_agua = ($op_imprimir_marca_agua)?'TRUE':'FALSE';
+                $imprimir_bn = ($op_imprimir_bn)?'TRUE':'FALSE';
+                $rd_config = array(
+                    'rd_imprimir_logo' => $imprimir_logo,
+                    'rd_imprimir_marca_agua' => $imprimir_marca_agua,
+                    'rd_imprimir_bn' => $imprimir_bn,
+                );
+                if ($fsvar->array_save($rd_config)) {
+                    $this->new_message('Opciones de impresión actualizadas correctamente.');
+                }else{
+                    $this->new_error_msg('Ocurrió un error al intentar actualizar la información de impresión, por favor revise sus datos.');
+                }
             }
+            
         }
+        
+        $this->rd_setup = $fsvar->array_get(
+            array(
+                'rd_imprimir_logo' => 'TRUE',
+                'rd_imprimir_marca_agua' => 'TRUE',
+                'rd_imprimir_bn' => 'FALSE',
+            ), FALSE
+        );
 
         $this->conf_divisa = ($this->empresa->coddivisa == 'DOP') ? TRUE : FALSE;
         $this->conf_pais = ($this->empresa->codpais == 'DOM') ? TRUE : FALSE;

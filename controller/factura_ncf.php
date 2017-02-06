@@ -46,7 +46,7 @@ class factura_ncf extends fs_controller {
    public $distrib_transporte;
    public $idtransporte;
    public $archivo;
-
+   public $rd_setup;
    public function __construct() {
       parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
    }
@@ -55,6 +55,17 @@ class factura_ncf extends fs_controller {
    {
       $this->template = false;
       $this->share_extensions();
+      
+      //Obtenemos las configuraciones de impresión de las facturas de RD
+      $fsvar = new fs_var();
+      $this->rd_setup = $fsvar->array_get(
+        array(
+            'rd_imprimir_logo' => 'TRUE',
+            'rd_imprimir_marca_agua' => 'TRUE',
+            'rd_imprimir_bn' => 'FALSE',
+        ), FALSE
+     );
+      
       $val_id = \filter_input(INPUT_GET, 'id');
       $solicitud = \filter_input(INPUT_GET, 'solicitud');
       $valores_id = explode(',', $val_id);
@@ -228,7 +239,11 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdf_observaciones = "";
 
         // Definimos el color de relleno (gris, rojo, verde, azul)
-        $pdf_doc->SetColorRelleno('gris');
+        if($this->rd_setup['rd_imprimir_bn']=='FALSE'){
+            $pdf_doc->SetColorRelleno('gris');
+        }else{
+            $pdf_doc->SetColorRelleno('blanco');
+        }
         /// Definimos todos los datos de la cabecera de la factura
         /// Datos de la empresa
         $pdf_doc->fde_nombre = $this->empresa->nombre;
@@ -244,8 +259,8 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_web = $this->empresa->web;
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
 
-        /// Insertamos el Logo y Marca de Agua
-        if( file_exists(FS_MYDOCS.'images/logo.png') )
+        /// Insertamos el Logo y Marca de Agua si esta configurado así
+        if( file_exists(FS_MYDOCS.'images/logo.png') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
            $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo
@@ -254,7 +269,7 @@ class factura_ncf extends fs_controller {
            $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
            $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
         }
-        elseif( file_exists(FS_MYDOCS.'images/logo.jpg') )
+        elseif( file_exists(FS_MYDOCS.'images/logo.jpg') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
            $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo
@@ -324,9 +339,9 @@ class factura_ncf extends fs_controller {
         }
 
         // Cabecera Titulos Columnas
-        $pdf_doc->Setdatoscab(array('ALB', 'DESCRIPCION', 'CANT', 'PRECIO', 'DTO', FS_IVA, 'IMPORTE'));
-        $pdf_doc->SetWidths(array(16, 102, 10, 20, 10, 10, 22));
-        $pdf_doc->SetAligns(array('C', 'L', 'R', 'R', 'R', 'R', 'R'));
+        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'PRECIO', 'DTO', FS_IVA, 'IMPORTE'));
+        $pdf_doc->SetWidths(array(25, 85,15 ,20, 18, 10, 22));
+        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
         $pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
         /// Agregamos la pagina inicial de la factura
         $pdf_doc->AddPage();
@@ -393,7 +408,7 @@ class factura_ncf extends fs_controller {
 
               $lafila = array(
                   // '0' => utf8_decode($lineas[$i]->albaran_codigo() . '-' . $lineas[$i]->albaran_numero()),
-                  '0' => utf8_decode($lineas[$i]->albaran_numero()),
+                  '0' => utf8_decode($lineas[$i]->referencia),
                   '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
                   '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
                   '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
