@@ -23,7 +23,6 @@
  * @author Joe Nilson <joenilson at gmail.com>
  */
 class impresion_texto {
-
     function __contruct() {
         $tmpfname = "docu.txt";
         if (is_file($tmpfname))unlink($tmpfname);
