@@ -49,7 +49,7 @@ class imprimir_facturas extends fs_controller
    public $total_resultados_comision;
    public $total_resultados_txt;
    public $ncf_ventas;
-
+   public $listar;
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Imprimir '.ucfirst(FS_FACTURAS), 'ventas');
@@ -63,6 +63,7 @@ class imprimir_facturas extends fs_controller
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
       $this->mostrar = 'todo';
+      $this->listar = 'todo';      
       if( isset($_GET['mostrar']) )
       {
          $this->mostrar = $_GET['mostrar'];
@@ -71,6 +72,11 @@ class imprimir_facturas extends fs_controller
       else if( isset($_COOKIE['ventas_fac_mostrar']) )
       {
          $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
+      }
+      
+      if(\filter_input(INPUT_POST, 'listar')){
+          $listar = \filter_input(INPUT_POST, 'listar');
+          $this->listar = ($listar)?$listar:$this->listar;
       }
 
       $this->offset = 0;
@@ -317,7 +323,7 @@ class imprimir_facturas extends fs_controller
       $this->resultados = array();
       $this->num_resultados = 0;
       $query = $this->agente->no_html( strtolower($this->query) );
-      $sql = " FROM facturascli, ncf_ventas ";
+      $sql = " FROM facturascli ";
       $where = 'WHERE ';
 
       if($this->query != '')
@@ -356,17 +362,33 @@ class imprimir_facturas extends fs_controller
 
       if($this->desde != '')
       {
-         $sql .= $where."facturascli.fecha >= ".$this->agente->var2str($this->desde);
+         $sql .= $where."fecha >= ".$this->agente->var2str($this->desde);
          $where = ' AND ';
       }
 
       if($this->hasta != '')
       {
-         $sql .= $where."facturascli.fecha <= ".$this->agente->var2str($this->hasta);
+         $sql .= $where."fecha <= ".$this->agente->var2str($this->hasta);
          $where = ' AND ';
       }
-
-      $sql .= $where.' idfactura = documento ';
+      
+      switch($this->listar){
+          case "validas":
+              $sql .= $where." anulada = FALSE ";
+              $where = ' AND ';
+              break;
+          case "rectificativas":
+              $sql .= $where." idfacturarect IS NOT NULL ";
+              $where = ' AND ';
+              break;
+          case "anuladas":
+              $sql .= $where." anulada = TRUE ";
+              $where = ' AND ';
+              break;
+          default:
+              
+              break;
+      }
 
       $data = $this->db->select("SELECT COUNT(idfactura) as total".$sql);
       if($data)
@@ -379,9 +401,6 @@ class imprimir_facturas extends fs_controller
             foreach($data2 as $d)
             {
                $values = new factura_cliente($d);
-               $values->ncf = $d['ncf'];
-               $values->ncf_modifica = $d['ncf_modifica'];
-               $values->estado = $d['estado'];
                $this->resultados[] = $values;
             }
          }

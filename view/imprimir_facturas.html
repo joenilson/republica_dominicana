@@ -265,6 +265,22 @@
             </div>
          </div>
       </div>
+      <div class="row">
+         <div class='col-sm-8' style="margin-bottom: 10px;">
+            <label class="radio-inline">
+                <input type="radio" name="listar" value="todo" onclick="this.form.submit();" {if="$fsc->listar=='todo'"}checked{/if}> Todas
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="listar" value="facturas" onclick="this.form.submit();" {if="$fsc->listar=='facturas'"}checked{/if}> Facturas Válidas
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="listar" value="rectificativas" onclick="this.form.submit();" {if="$fsc->listar=='rectificativas'"}checked{/if}> {#FS_FACTURA_RECTIFICATIVA#}
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="listar" value="anuladas" onclick="this.form.submit();" {if="$fsc->listar=='anuladas'"}checked{/if}> Anuladas
+            </label>
+        </div>    
+      </div>
    </div>
 </form>
 {/if}

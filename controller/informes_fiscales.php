@@ -365,7 +365,7 @@ class informes_fiscales extends fs_controller {
                 'page_from' => __CLASS__,
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/jsPDF-AutoTable/jspdf.plugin.autotable.js" type="text/javascript"></script>',
+                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/jsPDF/zAutoTable/jspdf.plugin.autotable.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
