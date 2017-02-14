@@ -25,7 +25,7 @@ class compras_factura_devolucion extends fs_controller
 
    public function __construct()
    {
-      parent::__construct(__CLASS__, 'Devoluciones de factura de venta', 'ventas', FALSE, FALSE);
+      parent::__construct(__CLASS__, 'Devoluciones de factura de compra', 'compras', FALSE, FALSE);
    }
 
    protected function private_core()
@@ -137,7 +137,7 @@ class compras_factura_devolucion extends fs_controller
             $frec->totalirpf = round($frec->totalirpf, FS_NF0);
             $frec->totalrecargo = round($frec->totalrecargo, FS_NF0);
             $frec->total = $frec->neto + $frec->totaliva - $frec->totalirpf + $frec->totalrecargo;
-
+            $frec->pagada = TRUE;
             if( $frec->save() )
             {
                $this->generar_asiento($frec);

@@ -536,6 +536,10 @@ class ventas_facturas extends fs_controller
       }
    }
 
+   /**
+    * Cuando se le da a eliminar factura en realidad se anula
+    * generando un albaran con las cantidades en negativo para retornar el stock
+    */
    private function delete_factura()
    {
       $delete = \filter_input(INPUT_GET, 'delete');
@@ -603,7 +607,7 @@ class ventas_facturas extends fs_controller
             $factrectifica = (!empty($fact->idfacturarect)) ? $fact_rectifica : 'NULL';
             $fact->idfacturarect = ($ncf0->tipo_comprobante == '04') ? null : $fact->idfactura;
             if ($asiento_factura->generar_asiento_venta($fact)) {
-               $this->db->exec("UPDATE facturascli set observaciones = '".ucfirst(FS_FACTURA)." eliminada por: ".$motivo_anulacion->descripcion."', anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
+               $this->db->exec("UPDATE facturascli set observaciones = '".ucfirst(FS_FACTURA)." eliminada por: ".$motivo_anulacion->descripcion.", ".FS_ALBARAN.": $new_albaran->idalbaran', anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
                $this->db->exec("DELETE FROM lineasivafactcli where idfactura = ".$fact->idfactura);
                $fact_lineas = new linea_factura_cliente();
                $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
