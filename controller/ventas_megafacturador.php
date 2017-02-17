@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+require_model('articulo.php');
 require_model('albaran_cliente.php');
 require_model('pedido_cliente.php');
 require_model('albaran_proveedor.php');
@@ -69,6 +70,7 @@ class ventas_megafacturador extends fs_controller {
     public $lista_albaranes_pendientes;
     public $lista_albaranes_pendientes_total;
     private $asiento_factura;
+    private $articulos;
     private $cliente;
     private $ejercicio;
     private $ejercicios;
@@ -87,6 +89,7 @@ class ventas_megafacturador extends fs_controller {
     }
 
     protected function private_core() {
+        $this->articulos = new articulo();
         $this->asiento_factura = new asiento_factura();
         $this->cliente = new cliente();
         $this->ejercicio = new ejercicio();
@@ -162,7 +165,8 @@ class ventas_megafacturador extends fs_controller {
      * generados en base a las series de los pedidos y las fechas elegidas
      */
     private function generar_albaranes() {
-        $total = $this->total_pedidos_pendientes()['total'];
+        $total_pedidos = $this->total_pedidos_pendientes();
+        $total = $total_pedidos['total'];
         $contador = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
             $continuar = FALSE;
@@ -231,34 +235,42 @@ class ventas_megafacturador extends fs_controller {
                 $contador++;
                 $art0 = new articulo();
                 foreach ($pedido->get_lineas() as $l) {
-                    $n = new linea_albaran_cliente();
-                    $n->idlineapedido = $l->idlinea;
-                    $n->idpedido = $l->idpedido;
-                    $n->idalbaran = $albaran->idalbaran;
-                    $n->cantidad = $l->cantidad;
-                    $n->codimpuesto = $l->codimpuesto;
-                    $n->descripcion = $l->descripcion;
-                    $n->dtopor = $l->dtopor;
-                    $n->irpf = $l->irpf;
-                    $n->iva = $l->iva;
-                    $n->pvpsindto = $l->pvpsindto;
-                    $n->pvptotal = $l->pvptotal;
-                    $n->pvpunitario = $l->pvpunitario;
-                    $n->recargo = $l->recargo;
-                    $n->referencia = $l->referencia;
+                    $articulo_pedido = $art0->get($l->referencia);
+                    if(!$articulo_pedido->controlstock AND $articulo_pedido->stockfis>=$l->cantidad){
+                        $n = new linea_albaran_cliente();
+                        $n->idlineapedido = $l->idlinea;
+                        $n->idpedido = $l->idpedido;
+                        $n->idalbaran = $albaran->idalbaran;
+                        $n->cantidad = $l->cantidad;
+                        $n->codimpuesto = $l->codimpuesto;
+                        $n->descripcion = $l->descripcion;
+                        $n->dtopor = $l->dtopor;
+                        $n->irpf = $l->irpf;
+                        $n->iva = $l->iva;
+                        $n->pvpsindto = $l->pvpsindto;
+                        $n->pvptotal = $l->pvptotal;
+                        $n->pvpunitario = $l->pvpunitario;
+                        $n->recargo = $l->recargo;
+                        $n->referencia = $l->referencia;
 
-                    if ($n->save()) {
-                        /// descontamos del stock
-                        if (!is_null($n->referencia)) {
-                            $articulo = $art0->get($n->referencia);
-                            if ($articulo) {
-                                $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad);
+                        if ($n->save()) {
+                            /// descontamos del stock
+                            if (!is_null($n->referencia)) {
+                                $articulo = $art0->get($n->referencia);
+                                if ($articulo) {
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad);
+                                }
                             }
+                        } else {
+                            $continuar = FALSE;
+                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                            break;
                         }
-                    } else {
-                        $continuar = FALSE;
-                        $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                        break;
+                    }else{
+                        //$albaran->total -= $l->pvptotal;
+                        //$albaran->totaliva -= $l->iva;
+                        //$albaran->neto -= $l->pvptotal;
+                        $this->new_error_msg("¡No hay stock del artículo " . $l->referencia . " en el pedido ".$pedido->codigo."! ");
                     }
                 }
 
@@ -294,7 +306,9 @@ class ventas_megafacturador extends fs_controller {
      * generados en base a las series de los albaranes y las fechas elegidas
      */
     private function generar_facturas(){
-        $total = $this->total_pendientes_venta()['total'];
+        
+        $total_albaranes = $this->total_pendientes_venta();
+        $total = $total_albaranes['total'];
         $contador = 0;
         foreach ($this->pendientes_venta() as $albaran) {
             $cliente = $this->cliente->get($albaran->codcliente);
