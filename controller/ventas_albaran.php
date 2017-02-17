@@ -548,8 +548,8 @@ class ventas_albaran extends fs_controller
       $factura->totalrecargo = $this->albaran->totalrecargo;
       $factura->porcomision = $this->albaran->porcomision;
 
-      //comprobamos si se ha cambiado la forma de pago:
-      if(isset($_REQUEST['codigopago']))
+      /// comprobamos si se ha cambiado la forma de pago
+      if(isset($_REQUEST['codpago']))
       {
          $factura->codpago = $_REQUEST['codpago'];
       }

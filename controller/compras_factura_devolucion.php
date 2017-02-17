@@ -1,8 +1,20 @@
 <?php
-
 /*
- * @author Carlos García Gómez      neorazorx@gmail.com
- * @copyright 2016, Carlos García Gómez. All Rights Reserved.
+ * This file is part of FacturaScripts
+ * Copyright (C) 2017  Carlos Garcia Gomez  neorazorx@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_model('articulo.php');
@@ -13,9 +25,9 @@ require_model('ncf_rango.php');
 require_model('ncf_tipo_anulacion.php');
 require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
 /**
- * Description of ventas_factura_devolucion
+ * Description of compras_factura_devolucion
  *
- * @author carlos
+ * @author Carlos Garcia Gomez
  */
 class compras_factura_devolucion extends fs_controller
 {
@@ -50,7 +62,7 @@ class compras_factura_devolucion extends fs_controller
       }
       else
       {
-         $this->new_error_msg('Factura no encontrada.');
+         $this->new_error_msg('Factura no encontrada.', 'error', FALSE, FALSE);
       }
    }
 
