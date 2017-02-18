@@ -187,17 +187,17 @@ class ventas_megafacturador extends fs_controller {
             $albaran->codpostal = $pedido->codpostal;
             $albaran->codserie = $pedido->codserie;
             $albaran->direccion = $pedido->direccion;
-            $albaran->neto = $pedido->neto;
             $albaran->nombrecliente = $pedido->nombrecliente;
             $albaran->observaciones = $pedido->observaciones;
             $albaran->provincia = $pedido->provincia;
-            $albaran->total = $pedido->total;
-            $albaran->totaliva = $pedido->totaliva;
             $albaran->numero2 = $pedido->numero2;
-            $albaran->irpf = $pedido->irpf;
             $albaran->porcomision = $pedido->porcomision;
-            $albaran->totalirpf = $pedido->totalirpf;
-            $albaran->totalrecargo = $pedido->totalrecargo;
+            $albaran->neto = 0;
+            $albaran->total = 0;
+            $albaran->totaliva = 0;
+            $albaran->irpf = 0;
+            $albaran->totalirpf = 0;
+            $albaran->totalrecargo = 0;
 
             $albaran->envio_nombre = $pedido->envio_nombre;
             $albaran->envio_apellidos = $pedido->envio_apellidos;
@@ -210,8 +210,7 @@ class ventas_megafacturador extends fs_controller {
             $albaran->envio_direccion = $pedido->envio_direccion;
             $albaran->envio_apartado = $pedido->envio_apartado;
 
-            if( is_null($albaran->codagente) )
-            {
+            if (is_null($albaran->codagente)) {
                 $albaran->codagente = $this->user->codagente;
             }
 
@@ -232,11 +231,26 @@ class ventas_megafacturador extends fs_controller {
             } else if ($albaran->save()) {
                 $trazabilidad = FALSE;
                 $continuar = TRUE;
+                $generar = TRUE;
                 $contador++;
                 $art0 = new articulo();
                 foreach ($pedido->get_lineas() as $l) {
-                    $articulo_pedido = $art0->get($l->referencia);
-                    if(!$articulo_pedido->controlstock AND $articulo_pedido->stockfis>=$l->cantidad){
+                    //Si el articulo existe
+                    if(!is_null($l->referencia)){
+                    $articulo = $art0->get($l->referencia);
+                    //Si el producto no tiene control de stock que continue
+                        if ($articulo->controlstock) {
+                            $generar = TRUE;
+                            //Si el producto tiene control de stock y tiene stock suficiente que continue tambien
+                        } elseif (!$articulo->controlstock AND $articulo->stockfis >= $l->cantidad) {
+                            $generar = TRUE;
+                            //Pero si no entonces que no agregue esa linea
+                        } else {
+                            $generar = FALSE;
+                            $this->new_error_msg("¡No hay stock del artículo " . $l->referencia . " en el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a> no se creará una linea para este artículo! ");
+                        }
+                    }
+                    if($generar){
                         $n = new linea_albaran_cliente();
                         $n->idlineapedido = $l->idlinea;
                         $n->idpedido = $l->idpedido;
@@ -266,18 +280,33 @@ class ventas_megafacturador extends fs_controller {
                             $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                             break;
                         }
-                    }else{
-                        //$albaran->total -= $l->pvptotal;
-                        //$albaran->totaliva -= $l->iva;
-                        //$albaran->neto -= $l->pvptotal;
-                        $this->new_error_msg("¡No hay stock del artículo " . $l->referencia . " en el pedido ".$pedido->codigo."! ");
+                        $albaran->neto += $l->pvptotal;
+                        $albaran->totaliva += ($l->pvptotal * $l->iva / 100);
+                        $albaran->totalirpf += ($l->pvptotal * $l->irpf / 100);
+                        $albaran->totalrecargo += ($l->pvptotal * $l->recargo / 100);
+                        if($l->irpf > $albaran->irpf)
+                        {
+                           $albaran->irpf = $l->irpf;
+                        }
                     }
+                }
+                //Validamos la información nueva del albarán
+                $albaran->neto = round($albaran->neto, FS_NF0);
+                $albaran->totaliva = round($albaran->totaliva, FS_NF0);
+                $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
+                $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
+                $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
+                if($albaran->save()){
+                    $continuar=TRUE;
+                }else{
+                    $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
+                    $continuar=FALSE;
                 }
 
                 if ($continuar) {
+
                     $pedido->idalbaran = $albaran->idalbaran;
                     $pedido->fechasalida = $albaran->fecha;
-
                     if (!$pedido->save()) {
                         $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
                         if ($albaran->delete()) {
@@ -297,7 +326,7 @@ class ventas_megafacturador extends fs_controller {
                 $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
             }
         }
-        $this->new_message('Se procesaron correctamente '.$contador.' de '.$total.' pedidos.');
+        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos.');
     }
 
     /**
@@ -305,28 +334,27 @@ class ventas_megafacturador extends fs_controller {
      * Esta función genera las facturas del listado de albaranes pendientes
      * generados en base a las series de los albaranes y las fechas elegidas
      */
-    private function generar_facturas(){
-        
+    private function generar_facturas() {
+
         $total_albaranes = $this->total_pendientes_venta();
         $total = $total_albaranes['total'];
         $contador = 0;
         foreach ($this->pendientes_venta() as $albaran) {
             $cliente = $this->cliente->get($albaran->codcliente);
             /*
-            * Verificación de disponibilidad del Número de NCF para República Dominicana
-            */
+             * Verificación de disponibilidad del Número de NCF para República Dominicana
+             */
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $albaran->codcliente, 'CLI');
             $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-            if(strlen($albaran->cifnif)<9 AND $tipo_comprobante == '01'){
-               $this->new_error_msg('El cliente del '.FS_ALBARAN.' '.$albaran->numero.' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
+            if (strlen($albaran->cifnif) < 9 AND $tipo_comprobante == '01') {
+                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
             }
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
             $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
-            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
-            {
-                $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' '.$albaran->numero.' no será facturado.');
-            }else{
+            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+                $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', el ' . FS_ALBARAN . ' ' . $albaran->numero . ' no será facturado.');
+            } else {
                 $contador++;
                 $factura = new factura_cliente();
                 $factura->apartado = $albaran->apartado;
@@ -365,108 +393,91 @@ class ventas_megafacturador extends fs_controller {
                 $factura->totalrecargo = $albaran->totalrecargo;
                 $factura->porcomision = $albaran->porcomision;
 
-                if( is_null($factura->codagente) )
-                {
-                   $factura->codagente = $this->user->codagente;
+                if (is_null($factura->codagente)) {
+                    $factura->codagente = $this->user->codagente;
                 }
 
                 /// asignamos el ejercicio que corresponde a la fecha elegida
                 $eje0 = $this->ejercicio->get_by_fecha($this->fecha_facturas_gen);
-                if($eje0)
-                {
-                   $factura->codejercicio = $eje0->codejercicio;
-                   $factura->set_fecha_hora($this->fecha_facturas_gen, \date('H:i:s'));
+                if ($eje0) {
+                    $factura->codejercicio = $eje0->codejercicio;
+                    $factura->set_fecha_hora($this->fecha_facturas_gen, \date('H:i:s'));
                 }
 
                 /// comprobamos la forma de pago para saber si hay que marcar la factura como pagada
                 $forma0 = new forma_pago();
                 $formapago = $forma0->get($factura->codpago);
-                if($formapago)
-                {
-                   if($formapago->genrecibos == 'Pagados')
-                   {
-                      $factura->pagada = TRUE;
-                   }
-                   $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
+                if ($formapago) {
+                    if ($formapago->genrecibos == 'Pagados') {
+                        $factura->pagada = TRUE;
+                    }
+                    $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
                 }
 
                 $regularizacion = new regularizacion_iva();
 
-                if( !$eje0 )
-                {
-                   $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
-                }
-                else if( !$eje0->abierto() )
-                {
-                   $this->new_error_msg("El ejercicio está cerrado.");
-                }
-                else if( $regularizacion->get_fecha_inside($factura->fecha) )
-                {
-                   $this->new_error_msg("El ".FS_IVA." de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
-                }
-                else if( $factura->save() )
-                {
-                   $continuar = TRUE;
-                   $ncf_controller = new helper_ncf();
-                   $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-                   foreach($albaran->get_lineas() as $l)
-                   {
-                      $n = new linea_factura_cliente();
-                      $n->idalbaran = $l->idalbaran;
-                      $n->idfactura = $factura->idfactura;
-                      $n->cantidad = $l->cantidad;
-                      $n->codimpuesto = $l->codimpuesto;
-                      $n->descripcion = $l->descripcion;
-                      $n->dtopor = $l->dtopor;
-                      $n->irpf = $l->irpf;
-                      $n->iva = $l->iva;
-                      $n->pvpsindto = $l->pvpsindto;
-                      $n->pvptotal = $l->pvptotal;
-                      $n->pvpunitario = $l->pvpunitario;
-                      $n->recargo = $l->recargo;
-                      $n->referencia = $l->referencia;
-                      $n->orden = $l->orden;
-                      $n->mostrar_cantidad = $l->mostrar_cantidad;
-                      $n->mostrar_precio = $l->mostrar_precio;
+                if (!$eje0) {
+                    $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
+                } else if (!$eje0->abierto()) {
+                    $this->new_error_msg("El ejercicio está cerrado.");
+                } else if ($regularizacion->get_fecha_inside($factura->fecha)) {
+                    $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
+                } else if ($factura->save()) {
+                    $continuar = TRUE;
+                    $ncf_controller = new helper_ncf();
+                    $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                    foreach ($albaran->get_lineas() as $l) {
+                        $n = new linea_factura_cliente();
+                        $n->idalbaran = $l->idalbaran;
+                        $n->idfactura = $factura->idfactura;
+                        $n->cantidad = $l->cantidad;
+                        $n->codimpuesto = $l->codimpuesto;
+                        $n->descripcion = $l->descripcion;
+                        $n->dtopor = $l->dtopor;
+                        $n->irpf = $l->irpf;
+                        $n->iva = $l->iva;
+                        $n->pvpsindto = $l->pvpsindto;
+                        $n->pvptotal = $l->pvptotal;
+                        $n->pvpunitario = $l->pvpunitario;
+                        $n->recargo = $l->recargo;
+                        $n->referencia = $l->referencia;
+                        $n->orden = $l->orden;
+                        $n->mostrar_cantidad = $l->mostrar_cantidad;
+                        $n->mostrar_precio = $l->mostrar_precio;
 
-                      if( !$n->save() )
-                      {
-                         $continuar = FALSE;
-                         $this->new_error_msg("¡Imposible guardar la línea el artículo ".$n->referencia."! ");
-                         break;
-                      }
-                   }
+                        if (!$n->save()) {
+                            $continuar = FALSE;
+                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                            break;
+                        }
+                    }
 
-                   if($continuar)
-                   {
-                      $albaran->idfactura = $factura->idfactura;
-                      $albaran->ptefactura = FALSE;
-                      if( $albaran->save() )
-                      {
-                         $this->generar_asiento_cliente($factura);
-                      } else {
-                         $this->new_error_msg("¡Imposible vincular el ".FS_ALBARAN." con la nueva factura!");
-                         if( $factura->delete() )
-                         {
+                    if ($continuar) {
+                        $albaran->idfactura = $factura->idfactura;
+                        $albaran->ptefactura = FALSE;
+                        if ($albaran->save()) {
+                            $this->generar_asiento_cliente($factura);
+                        } else {
+                            $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
+                            if ($factura->delete()) {
+                                $this->new_error_msg("La factura se ha borrado.");
+                            } else {
+                                $this->new_error_msg("¡Imposible borrar la factura!");
+                            }
+                        }
+                    } else {
+                        if ($factura->delete()) {
                             $this->new_error_msg("La factura se ha borrado.");
-                         } else {
+                        } else {
                             $this->new_error_msg("¡Imposible borrar la factura!");
-                         }
-                      }
-                   } else {
-                      if( $factura->delete() )
-                      {
-                         $this->new_error_msg("La factura se ha borrado.");
-                      } else {
-                         $this->new_error_msg("¡Imposible borrar la factura!");
-                      }
-                   }
+                        }
+                    }
                 } else {
-                   $this->new_error_msg("¡Imposible guardar la factura!");
+                    $this->new_error_msg("¡Imposible guardar la factura!");
                 }
             }
         }
-        $this->new_message('Se procesaron correctamente '.$contador.' de '.$total.' '.FS_ALBARANES);
+        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
     }
 
     public function pendientes_venta() {
