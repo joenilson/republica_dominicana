@@ -297,7 +297,8 @@ class factura_ncf extends fs_controller {
         // Fecha, Codigo Cliente y observaciones de la factura
         $pdf_doc->fdf_fecha = $this->factura->fecha;
         $pdf_doc->fdf_codcliente = $this->factura->codcliente;
-        $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->factura->observaciones) );
+        $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->factura->observaciones)).' '.'(  '. $this->factura->apartado.'/'.substr($this->agente->nombre,0,1).substr($this->agente->apellidos,0,1).')';
+
 
         // Datos del Cliente
         $pdf_doc->fdf_nombrecliente = $this->fix_html($this->factura->nombrecliente);
