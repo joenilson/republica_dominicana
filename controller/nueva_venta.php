@@ -88,9 +88,6 @@ class nueva_venta extends fs_controller
       $this->ncf_rango = new ncf_rango();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_ventas = new ncf_ventas();
-      if(class_exists('distribucion_clientes')){
-      $this->distribucion_client = new distribucion_clientes();}
-
 
       /// cargamos la configuración
       $fsvar = new fs_var();
@@ -691,10 +688,10 @@ class nueva_venta extends fs_controller
          {
             $albaran->tasaconv = floatval($_POST['tasaconv']);
          }
-         $distribuir = new distribucion_clientes();
+
          $albaran->codagente = $this->agente->codagente;
          $albaran->numero2 = $_POST['numero2'];
-         $albaran->observaciones = $_POST['observaciones'] .$distribuir->info_vendedor_codclient($cliente->codcliente);
+         $albaran->observaciones = $_POST['observaciones'];
          $albaran->porcomision = $this->agente->porcomision;
 
          $albaran->codcliente = $cliente->codcliente;
@@ -934,9 +931,9 @@ class nueva_venta extends fs_controller
          {
             $factura->tasaconv = floatval($_POST['tasaconv']);
          }
-         $distribuir = new distribucion_clientes();
+
          $factura->codagente = $this->agente->codagente;
-         $factura->observaciones = $_POST['observaciones'] .$distribuir->info_vendedor_codclient($cliente->codcliente);
+         $factura->observaciones = $_POST['observaciones'];
          $factura->numero2 = $numero_ncf['NCF'];
          $factura->porcomision = $this->agente->porcomision;
 
@@ -1220,10 +1217,9 @@ class nueva_venta extends fs_controller
          {
             $presupuesto->tasaconv = floatval($_POST['tasaconv']);
          }
-         
-         $distribuir = new distribucion_clientes();
+
          $presupuesto->codagente = $this->agente->codagente;
-         $presupuesto->observaciones = $_POST['observaciones'].$distribuir->info_vendedor_codclient($cliente->codcliente);
+         $presupuesto->observaciones = $_POST['observaciones'];
          $presupuesto->numero2 = $_POST['numero2'];
          $presupuesto->porcomision = $this->agente->porcomision;
 
@@ -1432,9 +1428,9 @@ class nueva_venta extends fs_controller
          {
             $pedido->tasaconv = floatval($_POST['tasaconv']);
          }
-         $distribuir = new distribucion_clientes();
+
          $pedido->codagente = $this->agente->codagente;
-         $pedido->observaciones = $_POST['observaciones'].$distribuir->info_vendedor_codclient($cliente->codcliente);;
+         $pedido->observaciones = $_POST['observaciones'];
          $pedido->numero2 = $_POST['numero2'];
          $pedido->porcomision = $this->agente->porcomision;
 
