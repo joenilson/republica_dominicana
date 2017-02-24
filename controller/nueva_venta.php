@@ -44,6 +44,7 @@ require_once 'helper_ncf.php';
 
 class nueva_venta extends fs_controller
 {
+   public $agencia;
    public $agente;
    public $almacen;
    public $articulo;
@@ -61,7 +62,6 @@ class nueva_venta extends fs_controller
    public $results;
    public $serie;
    public $tipo;
-   public $agencia;
    public $ncf_tipo;
    public $ncf_rango;
    public $ncf_ventas;
@@ -768,10 +768,18 @@ class nueva_venta extends fs_controller
 
                   if( $linea->save() )
                   {
-                     if( $articulo AND isset($_POST['stock']) )
+                     if($articulo)
                      {
-                        /// descontamos del stock
-                        $articulo->sum_stock($albaran->codalmacen, 0 - $linea->cantidad);
+                        if( !$articulo->controlstock AND $linea->cantidad > $articulo->stockfis )
+                        {
+                           $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
+                           $continuar = FALSE;
+                        }
+                        else if( isset($_POST['stock']) )
+                        {
+                            /// descontamos del stock
+                            $articulo->sum_stock($albaran->codalmacen, 0 - $linea->cantidad);
+                        }
                      }
 
                      $albaran->neto += $linea->pvptotal;
@@ -824,12 +832,10 @@ class nueva_venta extends fs_controller
                else
                   $this->new_error_msg("¡Imposible actualizar el <a href='".$albaran->url()."'>".FS_ALBARAN."</a>!");
             }
-            else if( $albaran->delete() )
+            else if( !$albaran->delete() )
             {
-               $this->new_message(FS_ALBARAN." eliminado correctamente.");
-            }
-            else
                $this->new_error_msg("¡Imposible eliminar el <a href='".$albaran->url()."'>".FS_ALBARAN."</a>!");
+            }
          }
          else
             $this->new_error_msg("¡Imposible guardar el ".FS_ALBARAN."!");
@@ -1024,10 +1030,18 @@ class nueva_venta extends fs_controller
 
                   if( $linea->save() )
                   {
-                     if( $articulo AND isset($_POST['stock']) )
+                     if($articulo)
                      {
-                        /// descontamos del stock
-                        $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad);
+                        if( !$articulo->controlstock AND $linea->cantidad > $articulo->stockfis )
+                        {
+                           $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
+                           $continuar = FALSE;
+                        }
+                        else if( isset($_POST['stock']) )
+                        {
+                            /// descontamos del stock
+                            $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad);
+                        }
                      }
 
                      $factura->neto += $linea->pvptotal;
@@ -1089,12 +1103,10 @@ class nueva_venta extends fs_controller
                else
                   $this->new_error_msg("¡Imposible actualizar la <a href='".$factura->url()."'>Factura</a>!");
             }
-            else if( $factura->delete() )
+            else if( !$factura->delete() )
             {
-               $this->new_message("Factura eliminada correctamente.");
-            }
-            else
                $this->new_error_msg("¡Imposible eliminar la <a href='".$factura->url()."'>Factura</a>!");
+            }
          }
          else
             $this->new_error_msg("¡Imposible guardar la Factura!");
