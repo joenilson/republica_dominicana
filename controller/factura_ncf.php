@@ -47,6 +47,8 @@ class factura_ncf extends fs_controller {
    public $idtransporte;
    public $archivo;
    public $rd_setup;
+   public $agente;
+
    public function __construct() {
       parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
    }
@@ -72,6 +74,12 @@ class factura_ncf extends fs_controller {
       if(class_exists('distribucion_ordenescarga_facturas')){
         $this->distrib_transporte = new distribucion_ordenescarga_facturas();
       }
+      
+      
+      if(class_exists('agente')){
+        $this->agente = new agente();
+      }
+
       if(!empty($valores_id[0]) AND $solicitud == 'imprimir'){
         $this->procesar_facturas($valores_id);
       }elseif(!empty($valores_id[0]) AND $solicitud == 'email'){
