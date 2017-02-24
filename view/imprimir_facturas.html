@@ -90,7 +90,8 @@
         if(seguir){
             $('#modal_impresion_facturas').modal('show');
             $("#imprimir_facturas").detach();
-            $("<iframe id='imprimir_facturas' />")
+  
+        $("<iframe id='imprimir_facturas' />")
               .attr('src', 'index.php?page=factura_ncf&solicitud=imprimir&id='+checkboxValues)
               .attr('width', '100%')
               .attr('height', '500')

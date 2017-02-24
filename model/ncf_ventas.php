@@ -221,8 +221,9 @@ class ncf_ventas extends fs_model {
                 "documento = ".$this->intval($documento)." AND ".
                 "entidad = ".$this->var2str($entidad).";");
 
-        return new ncf_ventas($data[0]);
-    }
+                return new ncf_ventas($data[0]);
+  
+        }
 
     public function get_tipo($idempresa, $tipo_comprobante, $codalmacen, $area_impresion)
     {

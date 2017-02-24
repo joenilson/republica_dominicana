@@ -143,6 +143,7 @@ class factura_ncf extends fs_controller {
                   $this->generar_pdf($pdf_doc);
                   $contador++;
               }
+              
             }
             // Damos salida al archivo PDF
             if($this->archivo){
@@ -260,7 +261,7 @@ class factura_ncf extends fs_controller {
         
         $agente = new agente();
         $vendedor = $this->agente->get($this->factura->codagente);
-        $vender = $vendedor->nombre." ".$vendedor->apellidos;
+        $vender = substr($vendedor->nombre, 0,1).substr($vendedor->apellidos,0,1);
         $pdf_doc->fde_nombre = $this->empresa->nombre;
         $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
         $pdf_doc->fde_cifnif = $this->empresa->cifnif;
@@ -272,7 +273,7 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
-        $pdf_doc->fde_vendedor = 'Vendedor: '.ucwords(strtolower($vender));
+        $pdf_doc->fde_vendedor = 'Vendedor: ('.$vender.')'; //Mostrando iniciales del vendedor.
         $pdf_doc->fde_ruta = 'Ruta: '.$this->factura->apartado;
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
         
