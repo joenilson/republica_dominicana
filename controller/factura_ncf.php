@@ -30,6 +30,7 @@ require_model('forma_pago.php');
 require_model('ncf_ventas.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
+require_model('agente.php');
 
 //if(class_exists('distrib_creacion')){
     require_model('distribucion_ordenescarga_facturas.php');
@@ -131,7 +132,7 @@ class factura_ncf extends fs_controller {
                   $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
                   $this->factura->ncf = $valores->ncf;
                   $this->factura->ncf_afecta = $valores->ncf_modifica;
-                  $this->factura->estado = $valores->estado;
+                  $this->factura->estado = $valores->estado; 
                   $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
                   if($this->distrib_transporte){
                     $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
@@ -236,6 +237,7 @@ class factura_ncf extends fs_controller {
 
    public function generar_pdf($pdf_doc)
    {
+       
       if(!empty($pdf_doc)){
         ///// INICIO - Factura Detallada
         /// Creamos el PDF y escribimos sus metadatos
@@ -252,8 +254,13 @@ class factura_ncf extends fs_controller {
         }else{
             $pdf_doc->SetColorRelleno('blanco');
         }
+        
         /// Definimos todos los datos de la cabecera de la factura
         /// Datos de la empresa
+        
+        $agente = new agente();
+        $vendedor = $this->agente->get($this->factura->codagente);
+        $vender = $vendedor->nombre." ".$vendedor->apellidos;
         $pdf_doc->fde_nombre = $this->empresa->nombre;
         $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
         $pdf_doc->fde_cifnif = $this->empresa->cifnif;
@@ -265,8 +272,10 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
+        $pdf_doc->fde_vendedor = 'Vendedor: '.ucwords(strtolower($vender));
+        $pdf_doc->fde_ruta = 'Ruta: '.$this->factura->apartado;
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
-
+        
         /// Insertamos el Logo y Marca de Agua si esta configurado así
         if( file_exists(FS_MYDOCS.'images/logo.png') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
         {
@@ -305,8 +314,8 @@ class factura_ncf extends fs_controller {
         // Fecha, Codigo Cliente y observaciones de la factura
         $pdf_doc->fdf_fecha = $this->factura->fecha;
         $pdf_doc->fdf_codcliente = $this->factura->codcliente;
-        $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->factura->observaciones)).' '.'(  '. $this->factura->apartado.'/'.substr($this->agente->nombre,0,1).substr($this->agente->apellidos,0,1).')';
-
+        $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->factura->observaciones));
+        
 
         // Datos del Cliente
         $pdf_doc->fdf_nombrecliente = $this->fix_html($this->factura->nombrecliente);
@@ -325,7 +334,9 @@ class factura_ncf extends fs_controller {
 
         // Conduce asociado
         $pdf_doc->fdf_transporte = $this->idtransporte;
-
+        //Si va usar distribucion se agrega el codigo de la ruta
+        //$pdf_doc->fdf_ruta = $this->factura->apartado;
+        
         // Forma de Pago de la Factura
         $pago = new forma_pago();
         $epago = $pago->get($this->factura->codpago);

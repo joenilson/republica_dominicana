@@ -80,6 +80,7 @@ class PDF_MC_Table extends FPDF
     {
         // Datos de la empresa
         $direccion = $this->fde_FS_CIFNIF . ": " . utf8_decode($this->fde_cifnif) . "\n" . $this->fde_direccion;
+       
         if($this->fde_codpostal && $this->fde_ciudad)
         {
             $direccion .= "\n" . $this->fde_codpostal . ' - ' . $this->fde_ciudad;
@@ -90,6 +91,8 @@ class PDF_MC_Table extends FPDF
         if($this->fde_provincia) { $direccion .= ' (' . $this->fde_provincia . ')'; }
         if($this->fde_telefono) { $direccion .= "\n" . $this->fde_telefono; }
         if($this->fde_fax) { $direccion .= "\n" . $this->fde_fax; }
+        if($this->fde_vendedor){ $direccion .= "\n" . $this->fde_vendedor; } //Agregando el nombre del vendedor.
+        if($this->fde_ruta){ $direccion .= "\n" . $this->fde_ruta; }//Agrega la ruta del cliente. 
         $this->addSociete(utf8_decode($this->fde_nombre), utf8_decode($direccion), utf8_decode($this->fde_email), utf8_decode($this->fde_web));
 
         //Logotipo
@@ -163,6 +166,9 @@ class PDF_MC_Table extends FPDF
         $this->addPago(utf8_decode($this->fdf_epago));
         if(!empty($this->fdf_transporte)){
             $this->addTransporte(utf8_decode($this->fdf_transporte));
+        }
+        if(!empty($this->fdf_ruta)){
+            $this->addRuta(utf8_decode($this->fdf_ruta));
         }
         if(!empty($this->fdf_codigorect)){
             $this->addDocumentoRectifica(utf8_decode($this->fdf_codigorect));
@@ -568,7 +574,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Empresa
-    function addSociete( $nom, $adresse, $email, $web )
+    function addSociete( $nom, $adresse, $email, $web)
     {
         $x1 = 10;
         $y1 = 8;
@@ -603,6 +609,8 @@ class PDF_MC_Table extends FPDF
             $this->SetTextColor(0);
             $this->SetFont('');
         }
+        
+   
     }
 
     // Nombre, numero y estado de la factura
@@ -719,6 +727,24 @@ class PDF_MC_Table extends FPDF
         $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1 + 5 );
         $this->SetFont( "Arial", "", 9);
         $this->Cell(10,5,$mode, 0,0, "C");
+    }
+    
+    // Ruta asociada si es que se va utilizar distribucion
+    function addRuta( $ruta )
+    {
+        $r1  = 120;
+        $r2  = $r1 + 30;
+        $y1  = 65;
+        $y2  = $y1+10;
+        $mid = $y1 + (($y2-$y1) / 2);
+        $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
+        $this->Line( $r1, $mid, $r2, $mid);
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1+1 );
+        $this->SetFont( "Arial", "B", 9);
+        $this->Cell(10,4, "RUTA", 0, 0, "C");
+        $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1 + 5 );
+        $this->SetFont( "Arial", "", 9);
+        $this->Cell(10,5,$ruta, 0,0, "C");
     }
 
     // Transporte Asociado
