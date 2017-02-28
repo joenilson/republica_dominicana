@@ -307,20 +307,22 @@ class compras_factura extends fs_controller
 
    private function anular_factura()
    {
-      /// generamos una factura rectificativa a partir de la actual
+      ///generamos una factura rectificativa a partir de la actual
       $factura = clone $this->factura;
       $factura->idfactura = NULL;
       $factura->numero = NULL;
       $factura->numproveedor = NULL;
       $factura->codigo = NULL;
       $factura->idasiento = NULL;
+      $factura->idasientop = NULL;
+      $factura->numdocs = 0;
 
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
+      $factura->codejercicio = $ejercicio->codejercicio;
       $factura->codserie = $_POST['codserie'];
-      $factura->fecha = $this->today();
-      $factura->hora = $this->hour();
-      $factura->observaciones = $_POST['motivo'];
+      $factura->set_fecha_hora($this->today(), $this->hour());
+      $factura->observaciones = "Motivo de la anulación:\n".$_POST['motivo'];
       $factura->neto = 0 - $factura->neto;
       $factura->totalirpf = 0 - $factura->totalirpf;
       $factura->totaliva = 0 - $factura->totaliva;
