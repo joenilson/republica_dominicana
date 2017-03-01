@@ -292,21 +292,21 @@ class nueva_venta extends fs_controller
 
          if( isset($_POST['tipo']) )
          {
-            if($_POST['tipo'] == 'albaran')
-            {
-               $this->nuevo_albaran_cliente();
-            }
-            else if($_POST['tipo'] == 'factura')
+            if($_POST['tipo'] == 'factura')
             {
                $this->nueva_factura_cliente();
             }
-            else if($_POST['tipo'] == 'presupuesto' AND class_exists('presupuesto_cliente') )
+            else if($_POST['tipo'] == 'albaran')
             {
-               $this->nuevo_presupuesto_cliente();
+               $this->nuevo_albaran_cliente();
             }
             else if($_POST['tipo'] == 'pedido' AND class_exists('pedido_cliente') )
             {
                $this->nuevo_pedido_cliente();
+            }
+            else if($_POST['tipo'] == 'presupuesto' AND class_exists('presupuesto_cliente') )
+            {
+               $this->nuevo_presupuesto_cliente();
             }
 
             /// si el cliente no tiene cifnif nos guardamos el que indique

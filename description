@@ -11,3 +11,4 @@ Plugin de adaptación de FacturaScripts a <b>República Dominicana</b>.
 <li>Realiza busquedas de RNC en la página de DGII.</li>
 <li>Se generan facturas desde cajas con impresoras matriciales (requiere instalar <a href="https://www.facturascripts.com/descargar?remoteprinter=TRUE" _target="blank">remote-printer</a>).</li>
 </ul>
+Licencia LGPL 3
