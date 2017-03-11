@@ -268,7 +268,7 @@ class ncf_rango extends fs_model
             return array('NCF'=>"NO_DISPONIBLE");
         }
     }
-    
+
     public function get_by_almacen($idempresa, $almacen){
         $sql = "SELECT * FROM ".$this->table_name." WHERE idempresa = ".$this->intval($idempresa)." AND codalmacen = ".$this->var2str($almacen).";";
         $data = $this->db->exec($sql);
@@ -287,7 +287,7 @@ class ncf_rango extends fs_model
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
         $correlativo = str_pad($solicitud->correlativo,8,'0',STR_PAD_LEFT);
-        $ncf_number = ($correlativo === $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
+        $ncf_number = ($correlativo == $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
         return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
     }
 

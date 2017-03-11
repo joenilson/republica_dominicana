@@ -168,6 +168,7 @@ class ventas_megafacturador extends fs_controller {
         $total_pedidos = $this->total_pedidos_pendientes();
         $total = $total_pedidos['total'];
         $contador = 0;
+        $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
             $continuar = FALSE;
             $albaran = new albaran_cliente();
@@ -232,7 +233,7 @@ class ventas_megafacturador extends fs_controller {
                 $trazabilidad = FALSE;
                 $continuar = TRUE;
                 $generar = TRUE;
-                $contador++;
+
                 $art0 = new articulo();
                 foreach ($pedido->get_lineas() as $l) {
                     //Si el articulo existe
@@ -247,10 +248,11 @@ class ventas_megafacturador extends fs_controller {
                             //Pero si no entonces que no agregue esa linea
                         } else {
                             $generar = FALSE;
+                            $continuar = FALSE;
                             $this->new_error_msg("¡No hay stock del artículo " . $l->referencia . " en el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a> no se creará una linea para este artículo! ");
                         }
                     }
-                    if($generar){
+                    if($generar AND $continuar){
                         $n = new linea_albaran_cliente();
                         $n->idlineapedido = $l->idlinea;
                         $n->idpedido = $l->idpedido;
@@ -296,28 +298,35 @@ class ventas_megafacturador extends fs_controller {
                 $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
                 $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
                 $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
-                if($albaran->save()){
-                    $continuar=TRUE;
-                }else{
-                    $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
-                    $continuar=FALSE;
-                }
 
-                if ($continuar) {
-
-                    $pedido->idalbaran = $albaran->idalbaran;
-                    $pedido->fechasalida = $albaran->fecha;
-                    if (!$pedido->save()) {
-                        $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
-                        if ($albaran->delete()) {
-                            $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
-                        } else {
-                            $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                if ($continuar AND $generar) {
+                    if($albaran->save()){
+                        $pedido->idalbaran = $albaran->idalbaran;
+                        $pedido->fechasalida = $albaran->fecha;
+                        $contador++;
+                        if (!$pedido->save()) {
+                            $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
+                            if ($albaran->delete()) {
+                                $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                            } else {
+                                $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                            }
                         }
+                    }else{
+                        $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
+                        $continuar=FALSE;
                     }
-                } else {
+                } elseif(!$continuar AND !$generar) {
+                    $errores++;
                     if ($albaran->delete()) {
                         $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                    } else {
+                        $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                    }
+                } elseif($continuar AND !$generar){
+                    $errores++;
+                    if ($albaran->delete()) {
+                        $this->new_error_msg("¡No hay stock para uno o varios artículos en el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a> no se creará el ".FS_ALBARAN."! ");
                     } else {
                         $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
                     }
@@ -326,7 +335,7 @@ class ventas_megafacturador extends fs_controller {
                 $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
             }
         }
-        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos.');
+        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y '.$errores.' no se procesaron por errores en stock o la información.');
     }
 
     /**
