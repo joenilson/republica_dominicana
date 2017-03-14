@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of FacturaScripts
+ * This file is part of facturacion_base
  * Copyright (C) 2014-2017  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -412,7 +412,9 @@ class nueva_compra extends fs_controller
                 'pvp' => floatval($_POST['pvp']),
                 'dto' => floatval($_POST['dto']),
                 'codimpuesto' => $_POST['codimpuesto'],
-                'txt' => $com->nombreatributo.' - '.$com->valor
+                'txt' => $com->nombreatributo.' - '.$com->valor,
+                'codigo' => $com->codigo,
+                'stockfis' => $com->stockfis,
             );
          }
       }
@@ -545,6 +547,10 @@ class nueva_compra extends fs_controller
                   if($articulo)
                   {
                      $linea->referencia = $articulo->referencia;
+                     if($_POST['codcombinacion_'.$i])
+                     {
+                        $linea->codcombinacion = $_POST['codcombinacion_'.$i];
+                     }
                   }
 
                   if( $linea->save() )
@@ -754,6 +760,11 @@ class nueva_compra extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
+                     
+                     if($_POST['codcombinacion_'.$i])
+                     {
+                        $linea->codcombinacion = $_POST['codcombinacion_'.$i];
+                     }
                   }
 
                   if( $linea->save() )
@@ -762,7 +773,7 @@ class nueva_compra extends fs_controller
                      {
                         if( isset($_POST['stock']) )
                         {
-                           $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, isset($_POST['costemedio']) );
+                           $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, isset($_POST['costemedio']), $linea->codcombinacion);
                         }
                         else if( isset($_POST['costemedio']) )
                         {
@@ -998,6 +1009,11 @@ class nueva_compra extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
+                     
+                     if($_POST['codcombinacion_'.$i])
+                     {
+                        $linea->codcombinacion = $_POST['codcombinacion_'.$i];
+                     }
                   }
 
                   if( $linea->save() )
@@ -1006,7 +1022,7 @@ class nueva_compra extends fs_controller
                      {
                         if( isset($_POST['stock']) )
                         {
-                           $articulo->sum_stock($factura->codalmacen, $linea->cantidad, isset($_POST['costemedio']) );
+                           $articulo->sum_stock($factura->codalmacen, $linea->cantidad, isset($_POST['costemedio']), $linea->codcombinacion);
                         }
                         else if( isset($_POST['costemedio']) )
                         {

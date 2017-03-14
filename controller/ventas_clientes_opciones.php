@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of FacturaScripts
+ * This file is part of facturacion_base
  * Copyright (C) 2015-2016    Carlos Garcia Gomez        neorazorx@gmail.com
  * Copyright (C) 2015         Luis Miguel Pérez Romero   luismipr@gmail.com
  *
@@ -14,7 +14,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,18 +30,18 @@ class ventas_clientes_opciones extends fs_controller
 {
    public $nuevocli_setup;
    public $grupo;
-
+   
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Opciones', 'clientes', FALSE, FALSE);
    }
-
+   
    protected function private_core()
    {
       $this->share_extension();
-
+      
       $this->grupo = new grupo_clientes();
-
+      
       /// cargamos la configuración
       $fsvar = new fs_var();
       $this->nuevocli_setup = $fsvar->array_get(
@@ -65,7 +65,7 @@ class ventas_clientes_opciones extends fs_controller
          ),
          FALSE
       );
-
+      
       if( isset($_POST['setup']) )
       {
          $this->nuevocli_setup['nuevocli_cifnif_req'] = ( isset($_POST['nuevocli_cifnif_req']) ? 1 : 0 );
@@ -84,7 +84,7 @@ class ventas_clientes_opciones extends fs_controller
          $this->nuevocli_setup['nuevocli_telefono2'] = ( isset($_POST['nuevocli_telefono2']) ? 1 : 0 );
          $this->nuevocli_setup['nuevocli_telefono2_req'] = ( isset($_POST['nuevocli_telefono2_req']) ? 1 : 0 );
          $this->nuevocli_setup['nuevocli_codgrupo'] = $_POST['nuevocli_codgrupo'];
-
+         
          if( $fsvar->array_save($this->nuevocli_setup) )
          {
             $this->new_message('Datos guardados correctamente.');
@@ -93,7 +93,7 @@ class ventas_clientes_opciones extends fs_controller
             $this->new_error_msg('Error al guardar los datos.');
       }
    }
-
+   
    private function share_extension()
    {
       $fsext = new fs_extension();
@@ -104,5 +104,5 @@ class ventas_clientes_opciones extends fs_controller
       $fsext->text = '<span class="glyphicon glyphicon-wrench" aria-hidden="true" title="Opciones para nuevos clientes"></span>'
               . '<span class="hidden-xs">&nbsp; Opciones</span>';
       $fsext->save();
-    }
+   }
 }

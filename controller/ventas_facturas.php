@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of FacturaScripts
+ * This file is part of facturacion_base
  * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -543,23 +543,27 @@ class ventas_facturas extends fs_controller
    private function delete_factura()
    {
       $delete = \filter_input(INPUT_GET, 'delete');
-      $fact = $this->factura->get($delete);
       $motivo = \filter_input(INPUT_POST, 'motivo');
       $fecha = \filter_input(INPUT_POST, 'fecha');
       $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
-      if ($fact)
+      $fact = $this->factura->get($_GET['delete']);
+      if($fact)
       {
+         /// obtenemos las líneas de la factura antes de eliminar
+         $lineas = $fact->get_lineas();
+         
          $albaranes = new albaran_cliente();
          /// ¿Sumamos stock?
          $art0 = new articulo();
-         foreach($fact->get_lineas() as $linea)
+         foreach($lineas as $linea)
          {
+            /// si la línea pertenece a un albarán no descontamos stock
             if( is_null($linea->idalbaran) )
             {
                $articulo = $art0->get($linea->referencia);
                if($articulo)
                {
-                  $articulo->sum_stock($fact->codalmacen, $linea->cantidad);
+                    $articulo->sum_stock($fact->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                }
             }
             else
@@ -616,6 +620,7 @@ class ventas_facturas extends fs_controller
                }
                $fact->get_lineas_iva();
                $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> reversado correctamente.");
+               $this->clean_last_changes();
             }
             $this->new_message("<a href='" . $fact->url() . "'>Factura</a> cambiada a estado anulada por error correctamente.");
          } else

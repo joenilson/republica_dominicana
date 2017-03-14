@@ -274,7 +274,7 @@ class ventas_megafacturador extends fs_controller {
                             if (!is_null($n->referencia)) {
                                 $articulo = $art0->get($n->referencia);
                                 if ($articulo) {
-                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad);
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
                                 }
                             }
                         } else {
@@ -453,6 +453,7 @@ class ventas_megafacturador extends fs_controller {
                         $n->orden = $l->orden;
                         $n->mostrar_cantidad = $l->mostrar_cantidad;
                         $n->mostrar_precio = $l->mostrar_precio;
+                        $n->codcombinacion = $l->codcombinacion;
 
                         if (!$n->save()) {
                             $continuar = FALSE;
