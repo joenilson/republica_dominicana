@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of FacturaScripts
+ * This file is part of facturacion_base
  * Copyright (C) 2015-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  * Copyright (C) 2016-2017  Joe Nilson Zegarra Galvez  joenilson@gmail.com
  * This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\model;
+
 /**
  * Configuración de un terminal de TPV y de la impresora de tickets,
  * además almacena los tickets a imprimir para el plugin de república dominicana.
@@ -146,7 +148,6 @@ class terminal_caja extends \fs_model
          $this->num_tickets = 1;
          $this->sin_comandos = FALSE;
       }
-
    }
 
    protected function install()
@@ -426,6 +427,7 @@ class terminal_caja extends \fs_model
       {
          $this->add_linea( $this->center_text( $this->sanitize($empresa->horario) ) . "\n\n");
       }
+
       $linea = "\n".ucfirst(FS_FACTURA_SIMPLIFICADA).": " . $factura->codigo . "\n";
       $linea .= "\n" . $factura->tipo_comprobante . "\n";
       $linea .= "NCF: " . $factura->numero2 . "\n";

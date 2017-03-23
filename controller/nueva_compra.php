@@ -29,6 +29,7 @@ require_model('proveedor.php');
 require_model('regularizacion_iva.php');
 require_model('ncf_tipo.php');
 require_model('ncf_rango.php');
+
 class nueva_compra extends fs_controller
 {
    public $agente;
@@ -48,6 +49,7 @@ class nueva_compra extends fs_controller
    public $ncf_tipo;
    public $ncf_numero;
    public $ncf_rango;
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Nueva compra...', 'compras', FALSE, FALSE, TRUE);
@@ -760,7 +762,7 @@ class nueva_compra extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
-                     
+
                      if($_POST['codcombinacion_'.$i])
                      {
                         $linea->codcombinacion = $_POST['codcombinacion_'.$i];
@@ -886,7 +888,6 @@ class nueva_compra extends fs_controller
          }
       }
 
-
       $eje0 = new ejercicio();
       $ejercicio = $eje0->get_by_fecha($_POST['fecha']);
       if(!$ejercicio)
@@ -1009,7 +1010,7 @@ class nueva_compra extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
-                     
+
                      if($_POST['codcombinacion_'.$i])
                      {
                         $linea->codcombinacion = $_POST['codcombinacion_'.$i];

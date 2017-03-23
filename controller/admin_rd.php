@@ -87,7 +87,7 @@ class admin_rd extends fs_controller {
                 'rd_imprimir_bn' => 'FALSE',
             ), FALSE
         );
-        
+
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
             array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
@@ -122,9 +122,9 @@ class admin_rd extends fs_controller {
                     $this->new_error_msg('Ocurrió un error al intentar actualizar la información de impresión, por favor revise sus datos.');
                 }
             }
-            
+
         }
-        
+
         $this->rd_setup = $fsvar->array_get(
             array(
                 'rd_imprimir_logo' => 'TRUE',
@@ -137,6 +137,57 @@ class admin_rd extends fs_controller {
         $this->conf_pais = ($this->empresa->codpais == 'DOM') ? TRUE : FALSE;
         $this->conf_regional = ($GLOBALS['config2']['iva'] == 'ITBIS') ? TRUE : FALSE;
         $this->conf_impuestos = ($impuesto_empresa->get_by_iva(18)) ? TRUE : FALSE;
+        //Cargamos el menu
+        $this->check_menu();
+    }
+
+    /**
+     * Cargamos el menú en la base de datos, pero en varias pasadas.
+     */
+    private function check_menu() {
+        if (file_exists(__DIR__)) {
+            $max = 25;
+
+            /// leemos todos los controladores del plugin
+            foreach (scandir(__DIR__) as $f) {
+                if ($f != '.' AND $f != '..' AND is_string($f) AND strlen($f) > 4 AND ! is_dir($f) AND $f != __CLASS__ . '.php') {
+                    /// obtenemos el nombre
+                    $page_name = substr($f, 0, -4);
+
+                    /// lo buscamos en el menú
+                    $encontrado = FALSE;
+                    foreach ($this->menu as $m) {
+                        if ($m->name == $page_name) {
+                            $encontrado = TRUE;
+                            break;
+                        }
+                    }
+
+                    if (!$encontrado) {
+                        require_once __DIR__ . '/' . $f;
+                        $new_fsc = new $page_name();
+
+                        if (!$new_fsc->page->save()) {
+                            $this->new_error_msg("Imposible guardar la página " . $page_name);
+                        }
+
+                        unset($new_fsc);
+
+                        if ($max > 0) {
+                            $max--;
+                        } else {
+                            $this->recargar = TRUE;
+                            $this->new_message('Instalando las entradas al menú para el plugin... &nbsp; <i class="fa fa-refresh fa-spin"></i>');
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            $this->new_error_msg('No se encuentra el directorio ' . __DIR__);
+        }
+
+        $this->load_menu(TRUE);
     }
 
     public function moneda() {

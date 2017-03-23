@@ -111,7 +111,7 @@ class informes_fiscales extends fs_controller {
             }
         }
     }
-    
+
     public function consolidado(){
         $this->sumaVentas = 0;
         $this->sumaCompras = 0;
@@ -157,12 +157,12 @@ class informes_fiscales extends fs_controller {
         $this->saldoConsolidado = $this->sumaVentas - $this->sumaCompras;
         $this->saldoConsolidadoPagadas = $this->sumaVentasPagadas - $this->sumaComprasPagadas;
     }
-    
+
     public function detalle_ventas(){
         $lista = array();
         $sql = "
         select fecha,ncf, documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto
-        from ncf_ventas 
+        from ncf_ventas
         join lineasfacturascli on (documento = idfactura)
         where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and estado = true order by fecha,ncf";
         $data = $this->db->select($sql);
@@ -183,16 +183,16 @@ class informes_fiscales extends fs_controller {
         $this->resultados_detalle_ventas = $lista;
         $this->total_resultados_detalle_ventas = count($lista);
     }
-    
+
     public function resumen_ventas(){
         $lista = array();
         $sql = "
         select ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto
-        from ncf_ventas 
+        from ncf_ventas
         join lineasfacturascli on (documento = idfactura)
         join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante)
-        where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and ncf_ventas.estado = true 
-        group by ncf_tipo.tipo_comprobante, ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion 
+        where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and ncf_ventas.estado = true
+        group by ncf_tipo.tipo_comprobante, ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion
         order by ncf_tipo.tipo_comprobante";
 
         $data = $this->db->select($sql);
@@ -211,7 +211,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_resumen_ventas = $lista;
         $this->total_resultados_resumen_ventas = count($lista);
     }
-    
+
     public function ventas(){
         $facturas = new ncf_ventas();
         $this->resultados_ventas = $facturas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
@@ -237,7 +237,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_608 = $facturas->all_anulado_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
         $this->total_resultados_608 = count($this->resultados_608);
     }
-    
+
     private function share_extensions() {
         $extensiones = array(
             array(
@@ -262,14 +262,6 @@ class informes_fiscales extends fs_controller {
                 'page_to' => 'informes_fiscales',
                 'type' => 'head',
                 'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-select.min.css"/>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'informes_fiscales_js12',
-                'page_from' => __CLASS__,
-                'page_to' => 'informes_fiscales',
-                'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/bootbox.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -384,13 +376,32 @@ class informes_fiscales extends fs_controller {
                 'text' => '<script src="plugins/republica_dominicana/view/js/plugins/tableExport.xtras/html2canvas/html2canvas.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
-            
+
         );
-        
+
         foreach($extensiones as $ext){
             $fext = new fs_extension($ext);
             if(!$fext->save()){
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
+            }
+        }
+
+        //Eliminamos extensiones que no se vayan a utilizar
+        //version 51 eliminado bootbox
+        $ext_delete = array(
+            array(
+                'name' => 'informes_fiscales_js12',
+                'page_from' => __CLASS__,
+                'page_to' => 'informes_fiscales',
+                'type' => 'head',
+                'text' => '<script src="plugins/republica_dominicana/view/js/bootbox.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+        );
+        foreach($ext_delete as $del){
+            $fext = new fs_extension($del);
+            if(!$fext->delete()){
+                $this->new_error_msg('Imposible eliminar los datos de la extensión ' . $ext['name'] . '.');
             }
         }
     }

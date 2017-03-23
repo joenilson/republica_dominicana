@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,6 +24,7 @@ require_model('serie.php');
 require_model('ncf_rango.php');
 require_model('ncf_tipo_anulacion.php');
 require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
+
 /**
  * Description of compras_factura_devolucion
  *
@@ -46,6 +47,7 @@ class compras_factura_devolucion extends fs_controller
 
       $this->serie = new serie();
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+
       $fact0 = new factura_proveedor();
       $this->factura = FALSE;
       if( isset($_REQUEST['id']) )
@@ -70,9 +72,9 @@ class compras_factura_devolucion extends fs_controller
    {
       $motivo = \filter_input(INPUT_POST, 'motivo');
       $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
-      
+
       $continuar = TRUE;
-      
+
       $eje0 = new ejercicio();
       $ejercicio = $eje0->get_by_fecha($_POST['fecha']);
       if(!$ejercicio)
@@ -80,7 +82,7 @@ class compras_factura_devolucion extends fs_controller
          $this->new_error_msg('Ejercicio no encontrado o está cerrado.');
          $continuar = FALSE;
       }
-      
+
       if($continuar)
       {
         $frec = clone $this->factura;
@@ -211,7 +213,7 @@ class compras_factura_devolucion extends fs_controller
       $fsxet->text = '<span class="glyphicon glyphicon-share" aria-hidden="true"></span>'
               . '<span class="hidden-xs">&nbsp; Devoluciones</span>';
       $fsxet->save();
-      
+
       $fsxet2 = new fs_extension();
       $fsxet2->name = 'tab_editar_factura';
       $fsxet2->from = __CLASS__;
