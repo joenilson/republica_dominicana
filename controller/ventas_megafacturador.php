@@ -239,11 +239,13 @@ class ventas_megafacturador extends fs_controller {
                     //Si el articulo existe
                     if(!is_null($l->referencia)){
                     $articulo = $art0->get($l->referencia);
+                    $stock = new stock();
+                    $articulo_stock = $stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
                     //Si el producto no tiene control de stock que continue
                         if ($articulo->controlstock) {
                             $generar = TRUE;
                             //Si el producto tiene control de stock y tiene stock suficiente que continue tambien
-                        } elseif (!$articulo->controlstock AND $articulo->stockfis >= $l->cantidad) {
+                        } elseif (!$articulo->controlstock AND $articulo_stock >= $l->cantidad) {
                             $generar = TRUE;
                             //Pero si no entonces que no agregue esa linea
                         } else {
@@ -690,7 +692,64 @@ class ventas_megafacturador extends fs_controller {
                 'params' => ''
             )
         );
+
         foreach ($extensions as $ext) {
+            $fsext = new fs_extension($ext);
+            $fsext->delete();
+        }
+
+        $extensions2 = array(
+            array(
+                'name' => '005_daterangepicker_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => '004_moment_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/1/moment-with-locales.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => '003_daterangepicker_css',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.css" rel="stylesheet" type="text/css"/>',
+                'params' => ''
+            ),
+            array(
+                'name' => '002_republica_dominicana_css',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/rd.css?build=' . rand(1, 1000) . '" rel="stylesheet" type="text/css"/>',
+                'params' => ''
+            ),
+            array(
+                'name' => '001_republica_dominicana_commons_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/rd_common.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => '005_ventas_megafacturador',
+                'page_from' => __CLASS__,
+                'page_to' => 'ventas_albaranes',
+                'type' => 'button',
+                'text' => '<i class="fa fa-check-square-o" aria-hidden="true"></i><span class="hidden-xs">&nbsp; Facturación masiva</span>',
+                'params' => ''
+            )
+        );
+
+        foreach ($extensions2 as $ext) {
             $fsext = new fs_extension($ext);
             $fsext->save();
         }

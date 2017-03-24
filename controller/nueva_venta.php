@@ -766,7 +766,7 @@ class nueva_venta extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
-                     
+
                      if($_POST['codcombinacion_'.$i])
                      {
                         $linea->codcombinacion = $_POST['codcombinacion_'.$i];
@@ -777,7 +777,9 @@ class nueva_venta extends fs_controller
                   {
                      if($articulo)
                      {
-                        if( !$articulo->controlstock AND $linea->cantidad > $articulo->stockfis )
+                        $stock = new stock();
+                        $articulo_stock = $stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                        if( !$articulo->controlstock AND $articulo_stock >= $linea->cantidad )
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
                            $continuar = FALSE;
@@ -1033,7 +1035,7 @@ class nueva_venta extends fs_controller
                      {
                         $trazabilidad = TRUE;
                      }
-                     
+
                      if($_POST['codcombinacion_'.$i])
                      {
                         $linea->codcombinacion = $_POST['codcombinacion_'.$i];
@@ -1044,7 +1046,9 @@ class nueva_venta extends fs_controller
                   {
                      if($articulo)
                      {
-                        if( !$articulo->controlstock AND $linea->cantidad > $articulo->stockfis )
+                        $stock = new stock();
+                        $articulo_stock = $stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                        if( !$articulo->controlstock AND $articulo_stock >= $linea->cantidad )
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
                            $continuar = FALSE;
