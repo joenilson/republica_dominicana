@@ -143,9 +143,6 @@ class ventas_factura extends fs_controller
          $cliente = new cliente();
          $this->cliente = $cliente->get($this->factura->codcliente);
 
-         //Obtenemos el NCF asociado
-         $this->ncf = $this->ncf_ventas->get_ncf($this->empresa->id,$this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
-
          if( isset($_GET['gen_asiento']) AND isset($_GET['petid']) )
          {
             if( $this->duplicated_petition($_GET['petid']) )
@@ -463,12 +460,15 @@ class ventas_factura extends fs_controller
       $factura->numero2 = $numero_ncf['NCF'];
       $factura->codigo = NULL;
       $factura->idasiento = NULL;
+      $factura->idasientop = NULL;
+      $factura->femail = NULL;
+      $factura->numdocs = 0;
 
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
+      $factura->codejercicio = $ejercicio->codejercicio;
       $factura->codserie = $_POST['codserie'];
-      $factura->fecha = $_POST['fecha'];
-      $factura->hora = $this->hour();
+      $factura->set_fecha_hora($_POST['fecha'], $this->hour());
       $factura->observaciones = "Anulacion generada por: ".$motivo_anulacion->descripcion;
       $factura->neto = 0 - $factura->neto;
       $factura->totalirpf = 0 - $factura->totalirpf;
@@ -523,7 +523,10 @@ class ventas_factura extends fs_controller
             $ncf_controller = new helper_ncf();
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion);
             $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamente.' );
-            $this->generar_asiento($factura);
+            if($this->empresa->contintegrada)
+            {
+               $this->generar_asiento($factura);
+            }
 
             $ncf_factura = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
             $ncf_factura->motivo = $motivo_anulacion->codigo." ".$motivo_anulacion->descripcion;

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+require_model('almacen.php');
 require_model('factura_cliente.php');
 require_model('factura_proveedor.php');
 require_model('ncf_ventas.php');
@@ -26,6 +27,8 @@ require_model('ncf_tipo.php');
  * @author darkniisan
  */
 class informes_fiscales extends fs_controller {
+    public $almacenes;
+    public $codalmacen;
     public $fecha_inicio;
     public $fecha_fin;
     public $reporte;
@@ -56,6 +59,7 @@ class informes_fiscales extends fs_controller {
     }
     protected function private_core() {
         $this->share_extensions();
+        $this->almacenes = new almacen();
         $this->fecha_inicio = \date('01-m-Y');
         $this->fecha_fin = \date('d-m-Y');
         $this->reporte = '';
@@ -74,6 +78,19 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_608 = 0;
         $this->total_resultados_detalle_ventas = 0;
         $this->total_resultados_resumen_ventas = 0;
+        
+        //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
+        if(!$this->user->admin){
+            $this->agente = new agente();
+            $cod = $this->agente->get($this->user->codagente);
+            $user_almacen = $this->almacenes->get($cod->codalmacen);
+            $this->user->codalmacen = $user_almacen->codalmacen;
+            $this->user->nombrealmacen = $user_almacen->nombre;
+        }        
+        
+        $codalmacen = filter_input(INPUT_POST, 'codalmacen');
+        $this->codalmacen = (isset($this->user->codalmacen))?$this->user->codalmacen:$codalmacen;
+        
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
         if(!empty($tiporeporte)){
             $inicio = \filter_input(INPUT_POST, 'inicio');

@@ -45,7 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </span>
                     <button id="ayuda-informes-fiscales" type="button" class="btn btn-sm btn-info"><i class="fa fa-question-circle fa-lg"></i></button>
                 </h2>
-                <p align="left">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
+                <p align="left">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y si tiene multiples almacenes elige uno y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
             </div>
             <div class="col-sm-2 text-right">
                 
@@ -107,6 +107,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <input type="text" class="form-control datepicker" name='inicio' id="inicio">
             <label for='fin'><b>Fecha Fin</b></label>
             <input type="text" class="form-control datepicker" name="fin" id="fin">
+            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen" id="codalmacen" data-style="btn-default" data-actions-box="true" required=''>
+                <option value="">Elija un Almacén</option>
+                {if="$fsc->user->admin"}
+                    {loop="$fsc->almacenes->all()"}
+                    <option value="{$value->codalmacen}" {if="$value->codalmacen==$fsc->codalmacen"}selected{/if}>{$value->nombre}</option>
+                    {/loop}
+                {else}
+                <option value="{$fsc->user->codalmacen}" selected>{$fsc->user->nombrealmacen}</option>
+                {/if}
+            </select>
             <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
          </form>
       </div>
@@ -543,6 +553,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 <script>
+    $.fn.selectpicker.defaults = {
+        selectAllText: 'Marcar Todo',
+        deselectAllText: 'Desmarcar',
+        noneSelectedText: 'Nada Seleccionado',
+        countSelectedText: "{0} de {1} marcados",
+        selectedTextFormat: 'count'
+    };
+    
     function runningFormatter(value, row, index) {
         return index;
     }
