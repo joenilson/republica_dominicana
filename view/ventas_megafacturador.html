@@ -50,6 +50,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <form name="f_pedidos" id="f_pedidos" method="POST" action="{$fsc->url()}&documento=pedidos">
                         <input type="hidden" name="procesar" value="FALSE"/>
                         <div class="form-group">
+                            <label class="control-label text-capitalize">Almacén:</label>
+                            <div class="col-sm-12">
+                                <select class='form-control input-sm' name='codalmacen' required>
+                                    <option value="">Elije un almacén</option>
+                                    {loop="$fsc->almacenes->all()"}
+                                    <option value="{$value->codalmacen}" {if="$value->codalmacen==$fsc->codalmacen_ped"}selected{/if}>{$value->nombre}</option>
+                                    {/loop}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label class="control-label text-capitalize">Fecha {#FS_PEDIDOS#}:</label>
                             <div class="col-sm-12 rango">
                                 <input type="text" id="fecha_pedido" value="{$fsc->fecha_pedido}" class="form-control input-sm">
@@ -107,6 +118,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <div class="panel-body">
                     <form name="f_albaranes" id="f_albaranes" method="POST" action="{$fsc->url()}&documento=albaranes">
                         <input type="hidden" name="procesar" value="FALSE"/>
+                        <div class="form-group">
+                            <label class="control-label text-capitalize">Almacén:</label>
+                            <div class="col-sm-12">
+                                <select class='form-control input-sm' name='codalmacen' required>
+                                    <option value="">Elije un almacén</option>
+                                    {loop="$fsc->almacenes->all()"}
+                                    <option value="{$value->codalmacen}" {if="$value->codalmacen==$fsc->codalmacen_alb"}selected{/if}>{$value->nombre}</option>
+                                    {/loop}
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="control-label text-capitalize">Fecha {#FS_ALBARANES#}:</label>
                             <div class="col-sm-12 rango">

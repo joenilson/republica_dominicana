@@ -1,18 +1,6 @@
 {include="header"}
-<style type="text/css">
-  .tachada{ text-decoration:line-through; }    
-</style>
+
 <script type="text/javascript">
-   function fs_marcar_todo()
-   {
-       $('input:checkbox').prop('checked', true);
-   }
-    
-   function fs_marcar_nada()
-   {
-       $('input:checkbox').prop('checked', false);
-   }
-   
    function buscar_lineas()
    {
       if(document.f_buscar_lineas.buscar_lineas.value == '')
@@ -39,9 +27,9 @@
    }
    function clean_cliente()
    {
-      document.f_custom_search.ac_cliente.value='';
-      document.f_custom_search.codcliente.value='';
-      document.f_custom_search.ac_cliente.focus();
+      document.f_custom_search.ac_cliente.value = '';
+      document.f_custom_search.codcliente.value = '';
+      document.f_custom_search.submit();
    }
    $(document).ready(function() {
       
@@ -49,6 +37,9 @@
       document.f_custom_search.query.focus();
       {/if}
       
+      $('#b_huecos').click(function() {
+         $('#modal_huecos').modal('show');
+      });
       $('#b_buscar_lineas').click(function(event) {
          event.preventDefault();
          $('#modal_buscar_lineas').modal('show');
@@ -75,29 +66,6 @@
             }
          }
       });
-      $('#b_imprimir').click(function(event) {
-        event.preventDefault();
-        var checkboxValues = [];
-        var seguir = true;
-        $('input[name=imprimir]:checked').map(function() {
-            checkboxValues.push($(this).val());
-        });
-        console.log(checkboxValues.length);
-        if(checkboxValues.length === 0){
-            seguir = false;
-            alert('Debe elegir una factura como minimo para Imprimir');
-        }
-        if(seguir){
-            $('#modal_impresion_facturas').modal('show');
-            $("#imprimir_facturas").detach();
-  
-        $("<iframe id='imprimir_facturas' />")
-              .attr('src', 'index.php?page=factura_ncf&solicitud=imprimir&id='+checkboxValues)
-              .attr('width', '100%')
-              .attr('height', '500')
-              .appendTo('#modal_body_impresion_facturas');
-        }
-      });
    });
 </script>
 
@@ -119,9 +87,15 @@
             {/if}
          </div>
          <div class="btn-group">
-            <button class="btn btn-sm btn-default" data-toggle="modal" id="b_imprimir">
-               <span class="glyphicon glyphicon-print"></span> &nbsp; Imprimir
+            <a class="btn btn-sm btn-success" href="index.php?page=nueva_venta&tipo=factura">
+               <span class="glyphicon glyphicon-plus"></span>
+               <span class="hidden-xs">&nbsp;Nueva</span>
+            </a>
+            {if="$fsc->huecos"}
+            <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal_huecos">
+               <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp; Huecos
             </button>
+            {/if}
             {loop="$fsc->extensions"}
                {if="$value->type=='button'"}
                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
@@ -131,51 +105,66 @@
       </div>
       <div class="col-sm-4 col-xs-6 text-right">
          <a id="b_buscar_lineas" class="btn btn-sm btn-info" title="Buscar en las líneas">
-            <span class="glyphicon glyphicon-search"></span> &nbsp; Líneas
+            <span class="glyphicon glyphicon-search"></span>&nbsp; Líneas
          </a>
          <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
                <span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right">
                <li>
-                  <a href="{$fsc->url()}&mostrar={$fsc->mostrar}&order=fecha_desc">
+                  <a href="{$fsc->url(TRUE)}&order=fecha_desc">
                      <span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>
                      &nbsp; Fecha &nbsp;
                      {if="$fsc->order=='fecha DESC'"}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
                   </a>
                </li>
                <li>
-                  <a href="{$fsc->url()}&mostrar={$fsc->mostrar}&order=fecha_asc">
+                  <a href="{$fsc->url(TRUE)}&order=fecha_asc">
                      <span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>
                      &nbsp; Fecha &nbsp;
                      {if="$fsc->order=='fecha ASC'"}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
                   </a>
                </li>
                <li>
-                  <a href="{$fsc->url()}&mostrar={$fsc->mostrar}&order=vencimiento_desc">
+                  <a href="{$fsc->url(TRUE)}&order=vencimiento_desc">
                      <span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>
                      &nbsp; Vencimiento &nbsp;
                      {if="$fsc->order=='vencimiento DESC'"}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
                   </a>
                </li>
                <li>
-                  <a href="{$fsc->url()}&mostrar={$fsc->mostrar}&order=vencimiento_asc">
+                  <a href="{$fsc->url(TRUE)}&order=vencimiento_asc">
                      <span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>
                      &nbsp; Vencimiento &nbsp;
                      {if="$fsc->order=='vencimiento ASC'"}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
                   </a>
                </li>
+               <li>
+                  <a href="{$fsc->url(TRUE)}&order=total_desc">
+                     <span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>
+                     &nbsp; Total &nbsp;
+                     {if="$fsc->order=='total DESC'"}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
+                  </a>
+               </li>
             </ul>
          </div>
       </div>
-    </div>
+   </div>
 </div>
 
 <ul class="nav nav-tabs" role="tablist">
    <li{if="$fsc->mostrar=='todo'"} class="active"{/if}>
       <a href="{$fsc->url()}&mostrar=todo">
-         Todas las {#FS_FACTURAS#}
+         <span class="text-capitalize hidden-xs">Facturas (todo)</span>
+         <span class="visible-xs">Todo</span>
+      </a>
+   </li>
+   <li{if="$fsc->mostrar=='sinpagar'"} class="active"{/if}>
+      <a href="{$fsc->url()}&mostrar=sinpagar">
+         <span class="glyphicon glyphicon-pushpin"></span>
+         <span class="hidden-xs">&nbsp; Sin pagar</span>
+         <span class="hidden-xs badge">{$fsc->total_sinpagar()}</span>
       </a>
    </li>
    <li{if="$fsc->mostrar=='buscar'"} class="active"{/if}>
@@ -186,7 +175,15 @@
          {/if}
       </a>
    </li>
+   {loop="$fsc->extensions"}
+      {if="$value->type=='tab'"}
+      <li{if="$fsc->mostrar=='ext_'.$value->name"} class="active"{/if}>
+         <a href="{$fsc->url()}&mostrar=ext_{$value->name}">{$value->text}</a>
+      </li>
+      {/if}
+   {/loop}
 </ul>
+
 {if="$fsc->mostrar=='buscar'"}
 <br/>
 <form name="f_custom_search" action="{$fsc->url()}" method="post" class="form">
@@ -212,7 +209,7 @@
          <div class="col-sm-2">
             <div class="form-group">
                <select class="form-control" name="codserie" onchange="this.form.submit()">
-                  <option value="">Cualquier serie</option>
+                  <option value="">Cualquier {#FS_SERIE#}</option>
                   <option value="">-----</option>
                   {loop="$fsc->serie->all()"}
                      {if="$value->codserie==$fsc->codserie"}
@@ -282,42 +279,63 @@
          </div>          
       </div>
       <div class="row">
-         <div class='col-sm-8' style="margin-bottom: 10px;">
-            <label class="radio-inline">
-                <input type="radio" name="listar" value="todo" onclick="this.form.submit();" {if="$fsc->listar=='todo'"}checked{/if}> Todas
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="listar" value="facturas" onclick="this.form.submit();" {if="$fsc->listar=='facturas'"}checked{/if}> Facturas Válidas
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="listar" value="rectificativas" onclick="this.form.submit();" {if="$fsc->listar=='rectificativas'"}checked{/if}> {#FS_FACTURA_RECTIFICATIVA#}
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="listar" value="anuladas" onclick="this.form.submit();" {if="$fsc->listar=='anuladas'"}checked{/if}> Anuladas
-            </label>
-        </div>    
+         <div class="col-sm-12">
+            <div class="radio-inline">
+               <label>
+                  {if="$fsc->estado==''"}
+                  <input type="radio" name="estado" value="" checked="" onchange="this.form.submit()"/>
+                  {else}
+                  <input type="radio" name="estado" value="" onchange="this.form.submit()"/>
+                  {/if}
+                  Todas
+               </label>
+            </div>
+            <div class="radio-inline">
+               <label>
+                  {if="$fsc->estado=='pagadas'"}
+                  <input type="radio" name="estado" value="pagadas" checked="" onchange="this.form.submit()"/>
+                  {else}
+                  <input type="radio" name="estado" value="pagadas" onchange="this.form.submit()"/>
+                  {/if}
+                  Pagadas
+               </label>
+            </div>
+            <div class="radio-inline">
+               <label>
+                  {if="$fsc->estado=='impagadas'"}
+                  <input type="radio" name="estado" value="impagadas" checked="" onchange="this.form.submit()"/>
+                  {else}
+                  <input type="radio" name="estado" value="impagadas" onchange="this.form.submit()"/>
+                  {/if}
+                  Impagadas
+               </label>
+            </div>
+            <div class="radio-inline">
+               <label>
+                  {if="$fsc->estado=='anuladas'"}
+                  <input type="radio" name="estado" value="anuladas" checked="" onchange="this.form.submit()"/>
+                  {else}
+                  <input type="radio" name="estado" value="anuladas" onchange="this.form.submit()"/>
+                  {/if}
+                  Anuladas
+               </label>
+            </div>
+         </div>
       </div>
    </div>
 </form>
 {/if}
 
+{if="in_array($fsc->mostrar, array('todo','sinpagar','buscar'))"}
 <div class="table-responsive">
    <table class="table table-hover">
       <thead>
          <tr>
-             <th colspan="2">
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-default" type="button" onclick="fs_marcar_todo()" title="Marcar todo">
-                       <span class="glyphicon glyphicon-check"></span>
-                    </button>
-                    <button class="btn btn-sm btn-default" type="button" onclick="fs_marcar_nada()" title="Desmarcar todo">
-                       <span class="glyphicon glyphicon-unchecked"></span>
-                    </button>
-                </div>
-             </th>
+            <th></th>
             <th></th>
             <th class="text-left">Código + {#FS_NUMERO2#}</th>
             <th class="text-left">Cliente</th>
+            <th class="hidden-sm"></th>
             <th class="text-left">Observaciones</th>
             <th class="text-right">Total</th>
             {if="$fsc->codagente!==''"}
@@ -329,15 +347,10 @@
          </tr>
       </thead>
       {loop="$fsc->resultados"}
-      <tr class="{if="$value->vencida()"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if} {if="$value->anulada"}tachada{/if}">
-        <td class="text-center">
-           {if="!$value->anulada"}
-            <input type="checkbox" name="imprimir" value="{$value->idfactura}" class="check-mark"/>
-           {/if}
-        </td> 
-        <td class="text-center">
+      <tr class="clickableRow{if="$value->vencida() OR $value->anulada"} danger{elseif="$value->pagada"} success{elseif="$value->total<=0"} warning{/if}" href="{$value->url()}">
+         <td class="text-center">
             {if="$value->pagada"}
-            <span class="glyphicon glyphicon-ok" title="La {#FS_FACTURA#} está pagada"></span>
+            <span class="glyphicon glyphicon-ok" title="La factura está pagada"></span>
             {/if}
             {if="$value->anulada"}
             <span class="glyphicon glyphicon-remove" title="La factura está anulada"></span>
@@ -351,7 +364,7 @@
          </td>
          <td class="text-center">
             {if="$value->idasiento"}
-            <span class="glyphicon glyphicon-paperclip" title="La {#FS_FACTURA#} tiene vinculado un asiento contable"></span>
+            <span class="glyphicon glyphicon-paperclip" title="La factura tiene vinculado un asiento contable"></span>
             {/if}
          </td>
          <td>
@@ -369,34 +382,52 @@
             {/if}
             {if="!$value->cifnif"}<span class="label label-warning" title="Sin {#FS_CIFNIF#}"><s>{#FS_CIFNIF#}</s></span>{/if}
          </td>
+         <td class="text-right hidden-sm">
+            <span title="{$value->numdocs} documentos adjuntos">
+               {if="$value->numdocs==1"}
+               <i class="fa fa-file" aria-hidden="true"></i>
+               {elseif="$value->numdocs>1"}
+               {$value->numdocs} <i class="fa fa-file" aria-hidden="true"></i>
+               {/if}
+            </span>
+         </td>
          <td>{$value->observaciones_resume()}</td>
-         <td class="text-right">{$fsc->show_precio($value->total, $value->coddivisa)}</td>
+         <td class="text-right" title="{$fsc->show_precio($fsc->euro_convert($value->totaleuros, $value->coddivisa, $value->tasaconv))}">
+            {$fsc->show_precio($value->total, $value->coddivisa)}
+         </td>
          {if="$fsc->codagente!==''"}
-         <td class="text-right bg-info">
+         <td class="text-right info">
             {$fsc->show_precio($value->neto*$value->porcomision/100, $value->coddivisa)}
          </td>
          <td class="text-left">{$fsc->show_numero($value->porcomision)}</td>
          {/if}
-         <td class="text-right">
+         <td class="text-right" title="Hora {$value->hora}">
             {if="$value->fecha==$fsc->today()"}<b>{$value->fecha}</b>{else}{$value->fecha}{/if}
          </td>
-         <td class="text-right">{$value->vencimiento}</td>
+         <td class="text-right">
+            {if="$value->vencimiento==$fsc->today()"}<b>{$value->vencimiento}</b>{else}{$value->vencimiento}{/if}
+         </td>
       </tr>
       {else}
       <tr class="warning">
          <td></td>
          <td></td>
-         <td colspan="6">Ninguna {#FS_FACTURA#} encontrada. Pulsa <b>Nueva</b> para crear una.</td>
+         <td colspan="6">Ninguna factura encontrada. Pulsa <b>Nueva</b> para crear una.</td>
+         <th class="hidden-sm"></th>
          {if="$fsc->codagente!==''"}
          <td></td>
          <td></td>
          {/if}
       </tr>
       {/loop}
-      {if="$fsc->total_resultados!==''"}
+      {if="$fsc->total_resultados"}
       <tr>
+         <th class="hidden-sm"></th>
          <td colspan="6" class="text-right">
-            {$fsc->total_resultados_txt} &nbsp; <b>{$fsc->show_precio($fsc->total_resultados)}</b>
+            {$fsc->total_resultados_txt}
+            {loop="$fsc->total_resultados"}
+            <br/><b>{$fsc->show_precio($value['total'],$value['coddivisa'],FALSE)}</b>
+            {/loop}
          </td>
          {if="$fsc->codagente!==''"}
          <td class="text-right"><b>{$fsc->show_precio($fsc->total_resultados_comision)}</b></td>
@@ -421,8 +452,52 @@
       </div>
    </div>
 </div>
+{else}
+   {loop="$fsc->extensions"}
+      {if="$value->type=='tab' AND $fsc->mostrar=='ext_'.$value->name"}
+      <iframe src="index.php?page={$value->from}{$value->params}" width="100%" height="2000" frameborder="0"></iframe>
+      {/if}
+   {/loop}
+{/if}
 
-<form class="form" role="form" id="f_buscar_lineas" name="f_buscar_lineas" action ="{$fsc->url()}" method="post">
+<div class="modal fade" id="modal_huecos">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">
+               <span class="glyphicon glyphicon-exclamation-sign"></span>
+               &nbsp; Huecos en la facturación
+            </h4>
+            <p class="help-block">
+               Si hay huecos en la facturación es debido a que faltan facturas.
+            </p>
+         </div>
+         <div class="table-responsive">
+            <table class="table table-hover">
+               <thead>
+                  <tr>
+                     <th class="text-center">Código</th>
+                     <th class="text-center">Fecha y hora</th>
+                  </tr>
+               </thead>
+               {loop="$fsc->huecos"}
+               <tr class="warning">
+                  <td class="text-center">{$value.codigo}</td>
+                  <td class="text-center">{$value.fecha} {$value.hora}</td>
+               </tr>
+               {else}
+               <tr class="success">
+                  <td colspan="2">No hay huecos en la numeración de facturas. Eso es bueno ;-)</td>
+               </tr>
+               {/loop}
+            </table>
+         </div>
+      </div>
+   </div>
+</div>
+
+<form class="form" role="form" id="f_buscar_lineas" name="f_buscar_lineas" action="{$fsc->url()}" method="post">
    <div class="modal" id="modal_buscar_lineas">
       <div class="modal-dialog" style="width: 99%; max-width: 950px;">
          <div class="modal-content">
@@ -431,7 +506,7 @@
                <h4 class="modal-title">Buscar en las líneas</h4>
                {if="$fsc->cliente"}
                <p class="help-block">
-                  Estas buscando en las líneas de las {#FS_FACTURAS#} de {$fsc->cliente->nombre}.
+                  Estas buscando en las líneas de las facturas de {$fsc->cliente->nombre}.
                </p>
                {else}
                <p class="help-block">Si quieres, puede <a href="{$fsc->url()}&mostrar=buscar">filtrar por cliente</a>.</p>
@@ -442,7 +517,7 @@
                <input type="hidden" name="codcliente" value="{$fsc->cliente->codcliente}"/>
                <div class="container-fluid">
                   <div class="row">
-                     <div class="col-lg-6 col-md-6 col-sm-6">
+                     <div class="col-sm-6">
                         <div class="input-group">
                            <input class="form-control" type="text" name="buscar_lineas" placeholder="Referencia" autocomplete="off"/>
                            <span class="input-group-btn">
@@ -452,7 +527,7 @@
                            </span>
                         </div>
                      </div>
-                     <div class="col-lg-6 col-md-6 col-sm-6">
+                     <div class="col-sm-6">
                         <div class="form-group">
                            <input class="form-control" type="text" name="buscar_lineas_o" placeholder="Observaciones" autocomplete="off"/>
                         </div>
@@ -475,16 +550,5 @@
       </div>
    </div>
 </form>
-<div class="modal" id="modal_impresion_facturas">
-    <div class="modal-dialog" style="width: 99%; max-width: 950px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            </div>
-            <div class="modal-body" id='modal_body_impresion_facturas'>
-                
-            </div>
-        </div>
-    </div>
-</div>
+
 {include="footer"}

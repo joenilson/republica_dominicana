@@ -57,6 +57,7 @@ class helper_ncf extends fs_controller {
             $ncf_factura->documento = $factura->idfactura;
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
+            $ncf_factura->area_impresion = substr($numero_ncf['NCF'],6,3);
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');

@@ -18,6 +18,7 @@
  */
 
 require_model('agente.php');
+require_model('almacen.php');
 require_model('articulo.php');
 require_model('cliente.php');
 require_model('factura_cliente.php');
@@ -29,6 +30,8 @@ require_model('ncf_rango.php');
 class imprimir_facturas extends fs_controller
 {
    public $agente;
+   public $codalmacen;
+   public $almacenes;
    public $articulo;
    public $buscar_lineas;
    public $cliente;
@@ -58,6 +61,7 @@ class imprimir_facturas extends fs_controller
    protected function private_core()
    {
       $this->agente = new agente();
+      $this->almacenes = new almacen();
       $this->factura = new factura_cliente();
       $this->huecos = array();
       $this->serie = new serie();
@@ -135,6 +139,7 @@ class imprimir_facturas extends fs_controller
          $this->huecos = $this->factura->huecos();
          $this->cliente = FALSE;
          $this->codagente = '';
+         $this->codalmacen = '';
          $this->codserie = '';
          $this->desde = '';
          $this->hasta = '';
@@ -170,6 +175,11 @@ class imprimir_facturas extends fs_controller
             if( isset($_REQUEST['codserie']) )
             {
                $this->codserie = $_REQUEST['codserie'];
+            }
+            
+            if( isset($_REQUEST['codalmacen']) )
+            {
+               $this->codalmacen = $_REQUEST['codalmacen'];
             }
 
             if( isset($_REQUEST['desde']) )
@@ -228,6 +238,7 @@ class imprimir_facturas extends fs_controller
               ."&query=".$this->query
               ."&codserie=".$this->codserie
               ."&codagente=".$this->codagente
+              ."&codalmacen=".$this->codalmacen
               ."&codcliente=".$codcliente
               ."&desde=".$this->desde
               ."&hasta=".$this->hasta;
@@ -345,6 +356,13 @@ class imprimir_facturas extends fs_controller
       {
 
          $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
+         $where = ' AND ';
+      }
+      
+      if($this->codalmacen != '')
+      {
+
+         $sql .= $where."codalmacen = ".$this->agente->var2str($this->codalmacen);
          $where = ' AND ';
       }
 

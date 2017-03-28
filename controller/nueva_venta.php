@@ -779,7 +779,7 @@ class nueva_venta extends fs_controller
                      {
                         $stock = new stock();
                         $articulo_stock = $stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
-                        if( !$articulo->controlstock AND $articulo_stock >= $linea->cantidad )
+                        if( !$articulo->controlstock AND $articulo_stock < $linea->cantidad )
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
                            $continuar = FALSE;
