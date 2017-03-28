@@ -675,7 +675,7 @@ class ventas_articulo extends fs_controller
             AND a.codalmacen = ".$this->empresa->var2str($codalmacen)." 
             AND l.referencia = ".$this->articulo->var2str($this->articulo->referencia);
          
-         $data = $this->db->select_limit($sql, 5000, 0);
+         $data = $this->db->select($sql);
          if($data)
          {
             foreach($data as $d)
@@ -703,7 +703,7 @@ class ventas_articulo extends fs_controller
             AND f.codalmacen = ".$this->empresa->var2str($codalmacen)." 
             AND l.referencia = ".$this->articulo->var2str($this->articulo->referencia);
          
-         $data = $this->db->select_limit($sql, 5000, 0);
+         $data = $this->db->select($sql);
          if($data)
          {
             foreach($data as $d)
@@ -731,7 +731,7 @@ class ventas_articulo extends fs_controller
             AND a.codalmacen = ".$this->empresa->var2str($codalmacen)." 
             AND l.referencia = ".$this->articulo->var2str($this->articulo->referencia);
          
-         $data = $this->db->select_limit($sql, 5000, 0);
+         $data = $this->db->select($sql);
          if($data)
          {
             foreach($data as $d)
@@ -759,7 +759,7 @@ class ventas_articulo extends fs_controller
             AND f.codalmacen = ".$this->empresa->var2str($codalmacen)." 
             AND l.referencia = ".$this->articulo->var2str($this->articulo->referencia);
          
-         $data = $this->db->select_limit($sql, 5000, 0);
+         $data = $this->db->select($sql);
          if($data)
          {
             foreach($data as $d)
@@ -830,17 +830,6 @@ class ventas_articulo extends fs_controller
    private function calcular_stock_real()
    {
       $almacenes = $this->almacen->all();
-      /**
-       * 
-      if( count($almacenes) > 1 )
-      {
-         $this->new_error_msg('El cálculo de stock con más de un almaćen está temporalmente desactivado.');
-      }
-      else
-      {
-         
-      }
-      */
       foreach($almacenes as $alm)
       {
          $movimientos = $this->get_movimientos($alm->codalmacen);
@@ -849,19 +838,6 @@ class ventas_articulo extends fs_controller
          {
             if($mov['codalmacen'] == $alm->codalmacen)
             {
-               //El movimiento de regularización ya tiene una cantidad de movimiento
-               //no es necesario este arbol if
-               /*
-               if($mov['movimiento'] == '-')
-               {
-                  $total = $mov['final']; /// regularización
-               }
-               else
-               {
-                  $total += $mov['movimiento'];
-               }
-                * 
-                */
                 $total += $mov['movimiento'];
             }
          }

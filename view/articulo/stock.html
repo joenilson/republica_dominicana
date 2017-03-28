@@ -84,7 +84,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                <button type="button" id="b_movimientos" class="btn btn-sm btn-default active">
                   <span class="glyphicon glyphicon-transfer"></span>&nbsp; Movimientos
                </button>
+               <!--
                <button type="button" id="b_regularizaciones" class="btn btn-sm btn-default">Regularizaciones</button>
+               !-->
             </div>
          </div>
          <div class="col-sm-6 text-right">
@@ -94,18 +96,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          </div>
       </div>
    </div>
-   <div class="table-responsive" style="margin-top: 10px;">
+    <div class="container-fluid">
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">      
       {loop="$fsc->stocks"}
          <li role="presentation" {if="$counter==0"}class="active"{/if}><a href="#{$value->codalmacen}" aria-controls="{$value->codalmacen}" role="tab" data-toggle="tab">{$value->nombre}</a></li>
       {/loop}
+      <li role="presentation"><a href="#table_regularizaciones" aria-controls="table_regularizaciones" role="tab" data-toggle="tab">Regularizaciones</a></li>
       </ul>      
       <div class="tab-content">
           {loop="$fsc->stocks"}
           <div role="tabpanel" class="tab-pane fade in {if="$counter==0"}active{/if}" id="{$value->codalmacen}">
+             <div class="table-responsive" style="margin-top: 10px;">
                 <table id="table_movimientos" class="table table-hover">
-                 
                     <thead>
                        <tr>
                           <th colspan="3" class="text-left"><b>Movimientos del Almacén: {$value->nombre}</b></th>
@@ -130,8 +133,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                        </tr>
                     </thead>
                     <!-- {$totalIngreso=0} !-->
-                    <!-- {$totalSalida=0} !-->
-
+                    <!-- {$totalSalida=0} !-->               
                     {loop="$fsc->get_movimientos($value->codalmacen)"}
                     {if="$counter==0"}
                     <!-- {$ultimaFecha=$value['fecha']} !-->
@@ -189,47 +191,54 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </td>
                     <td class="text-right"><b>{$totalIngreso}</b></td>
                     <td class="text-right"><b>{$totalSalida}</b></td>
-                    <td class="text-right"><b>{$fsc->articulo->stockfis}</b></td>
+                    <td class="text-right"><b>{$fsc->stock->total_from_articulo($fsc->articulo->referencia,$value->codalmacen)}</b></td>
                     <td colspan="2"></td>
                  </tr>
-              </table>
-              <table id="table_regularizaciones" class="table table-hover" style="display: none;">
-                 <thead>
-                    <tr>
-                       <th class="text-left">Usuario</th>
-                       <th class="text-left">Motivo</th>
-                       <th class="text-right">Cantidad inicial</th>
-                       <th class="text-right">Cantidad final</th>
-                       <th class="text-right">Fecha</th>
-                       <th class="text-right">Hora</th>
-                       <th></th>
-                    </tr>
-                 </thead>
-                 {loop="$fsc->regularizaciones"}
-                 <tr{if="$value->cantidadfin<$value->cantidadini"} class="danger"{/if}>
-                    <td>{$value->nick}</td>
-                    <td>{$value->motivo}</td>
-                    <td class="text-right">{$value->cantidadini}</td>
-                    <td class="text-right">{$value->cantidadfin}</td>
-                    <td class="text-right">{$value->fecha}</td>
-                    <td class="text-right">{$value->hora}</td>
-                    <td>
-                       {if="$fsc->allow_delete"}
-                       <a href="{$fsc->url()}&deletereg={$value->id}#stock" title="Eliminar la regularización">
-                          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                       </a>
-                       {/if}
-                    </td>
-                 </tr>
-                 {else}
-                 <tr class="warning">
-                    <td colspan="7">Sin resultados.</td>
-                 </tr>
-                 {/loop}
-              </table>              
+              </table>  
+            </div>
           </div>
           {/loop}
+          <div role="tabpanel" class="tab-pane fade in" id="table_regularizaciones">
+          <div class="table-responsive" style="margin-top: 10px;">
+            <table class="table table-hover">
+              <thead>
+                 <tr>
+                    <th class="text-left">Almacén</th>
+                    <th class="text-left">Usuario</th>
+                    <th class="text-left">Motivo</th>
+                    <th class="text-right">Cantidad inicial</th>
+                    <th class="text-right">Cantidad final</th>
+                    <th class="text-right">Fecha</th>
+                    <th class="text-right">Hora</th>
+                    <th></th>
+                 </tr>
+              </thead>
+              {loop="$fsc->regularizaciones"}
+              <tr{if="$value->cantidadfin<$value->cantidadini"} class="danger"{/if}>
+                 <td>{$value->codalmacendest}</td>
+                 <td>{$value->nick}</td>
+                 <td>{$value->motivo}</td>
+                 <td class="text-right">{$value->cantidadini}</td>
+                 <td class="text-right">{$value->cantidadfin}</td>
+                 <td class="text-right">{$value->fecha}</td>
+                 <td class="text-right">{$value->hora}</td>
+                 <td>
+                    {if="$fsc->allow_delete"}
+                    <a href="{$fsc->url()}&deletereg={$value->id}#stock" title="Eliminar la regularización">
+                       <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    </a>
+                    {/if}
+                 </td>
+              </tr>
+              {else}
+              <tr class="warning">
+                 <td colspan="7">Sin resultados.</td>
+              </tr>
+              {/loop}
+            </table>
+          </div>
       </div>
+      </div> 
    </div>
    <div class="modal fade" id="modal_recal_stock" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">

@@ -55,6 +55,7 @@ class informe_articulos extends fs_controller
    public $url_recarga;
    public $codalmacen;
    public $tablas;
+   
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Artículos', 'informes', FALSE, TRUE);
@@ -69,6 +70,7 @@ class informe_articulos extends fs_controller
       $this->stock = new stock();
       $this->url_recarga = FALSE;
       $this->tablas = $this->db->list_tables();
+      
       $this->pestanya = 'stats';
       if( isset($_GET['tab']) )
       {
@@ -203,40 +205,10 @@ class informe_articulos extends fs_controller
    
    private function recalcular_stock()
    {
-      /*
-      if( count($almacenes) > 1 )
-      {
-         $this->new_error_msg('El cálculo de stock con más de un almaćen está temporalmente desactivado.');
-      }
-      else
-      {
-         $articulo = new articulo();
-         $continuar = FALSE;
-         $offset = intval($_GET['offset']);
-         
-         $this->new_message('Recalculando stock de artículos... '.$offset);
-         
-         foreach($articulo->all($offset, 30) as $art)
-         {
-            $this->calcular_stock_real($art);
-            $continuar = TRUE;
-            $offset++;
-         }
-         
-         if($continuar)
-         {
-            $this->url_recarga = $this->url().'&tab=stock&recalcular=TRUE&offset='.$offset;
-         }
-         else
-         {
-            $this->new_advice('Finalizado &nbsp; <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>');
-         }
-      }
-       * 
-       */
       $articulo = new articulo();
       $continuar = FALSE;
       $offset = intval($_GET['offset']);
+      
       if($this->codalmacen != ''){
         $this->new_message('Recalculando stock de artículos del almacen '.$this->codalmacen.'... '.$offset);
       }else{
@@ -377,7 +349,7 @@ class informe_articulos extends fs_controller
                  . " GROUP BY referencia"
                  . " ORDER BY unidades DESC";
          
-         $lineas = $this->db->select($sql, FS_ITEM_LIMIT, 0);
+         $lineas = $this->db->select_limit($sql, FS_ITEM_LIMIT, 0);
          if($lineas)
          {
             foreach($lineas as $l)
@@ -746,8 +718,7 @@ class informe_articulos extends fs_controller
    
    private function get_movimientos($ref, $desde='', $hasta='', $codagente='')
    {
-      $mlist = array();
-      
+      $mlist = array();      
       $regularizacion = new regularizacion_stock();
       
       foreach($regularizacion->all_from_articulo($ref) as $reg)
@@ -1015,13 +986,10 @@ class informe_articulos extends fs_controller
       
       /// recalculamos
       $inicial = 0;
-      //$final = $this->stock->total_from_articulo($ref);
       foreach($mlist as $i => $value)
       {
          if($value['movimiento'] == '-')
          {
-            //El resultado del stock final anterior y el valor de la regularización se agrega como salida o ingreso
-            //$value['movimiento'] = $value['inicial']-$value['final'];
             $inicial = $value['final'];
          }
          else
@@ -1029,16 +997,6 @@ class informe_articulos extends fs_controller
             $inicial += $value['movimiento'];
          }
          $mlist[$i]['final'] = $inicial;
-         /*
-         if($mlist[$i]['movimiento'] == '-')
-         {
-            //El resultado del stock final anterior y el valor de la regularización se agrega como salida o ingreso
-            $mlist[$i]['movimiento'] = $mlist[$i]['inicial']-$mlist[$i]['final'];
-         }
-         $mlist[$i]['final'] = $final;
-         $final -= $mlist[$i]['movimiento'];
-         $mlist[$i]['inicial'] = $final;
-         */
       }
       
       return $mlist;

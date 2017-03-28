@@ -137,7 +137,7 @@ class informes_fiscales extends fs_controller {
         $this->sumaComprasPagadas = 0;
         $this->saldoConsolidadoPagadas = 0;
         $facturas_ventas = new ncf_ventas();
-        $lista_facturas_ventas = $facturas_ventas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $lista_facturas_ventas = $facturas_ventas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $nueva_lista_ventas = array();
         foreach($lista_facturas_ventas as $linea){
             $nueva_linea = clone $linea;
@@ -153,7 +153,7 @@ class informes_fiscales extends fs_controller {
         }
         $this->total_resultados_ingresos = count($nueva_lista_ventas);
         $facturas_compras = new factura_proveedor();
-        $lista_facturas_compras = $facturas_compras->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $lista_facturas_compras = $facturas_compras->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $nueva_lista_compras = array();
         foreach($lista_facturas_compras as $linea){
             $nueva_linea->tipo = "Compra";
@@ -177,11 +177,18 @@ class informes_fiscales extends fs_controller {
 
     public function detalle_ventas(){
         $lista = array();
+        $extra='';
+        if($this->codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->empresa->var2str($this->codalmacen);
+        }
         $sql = "
         select fecha,ncf, documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto
         from ncf_ventas
         join lineasfacturascli on (documento = idfactura)
-        where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and estado = true order by fecha,ncf";
+        where idempresa = ".$this->empresa->id
+        ." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))
+        ."' AND '".\date("Y-m-d", strtotime($this->fecha_fin))
+        ."' AND estado = true".$extra." order by fecha,ncf";
         $data = $this->db->select($sql);
         if($data){
             foreach ($data as $d){
@@ -203,13 +210,18 @@ class informes_fiscales extends fs_controller {
 
     public function resumen_ventas(){
         $lista = array();
+        $extra='';
+        if($this->codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->empresa->var2str($this->codalmacen);
+        }
         $sql = "
         select ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto
         from ncf_ventas
         join lineasfacturascli on (documento = idfactura)
         join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante)
-        where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and ncf_ventas.estado = true
-        group by ncf_tipo.tipo_comprobante, ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion
+        where idempresa = ".$this->empresa->id." AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio))
+        ."' and '".\date("Y-m-d", strtotime($this->fecha_fin))."' and ncf_ventas.estado = true ".$extra
+        ."group by ncf_tipo.tipo_comprobante, ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion
         order by ncf_tipo.tipo_comprobante";
 
         $data = $this->db->select($sql);
@@ -231,27 +243,27 @@ class informes_fiscales extends fs_controller {
 
     public function ventas(){
         $facturas = new ncf_ventas();
-        $this->resultados_ventas = $facturas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $this->resultados_ventas = $facturas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $this->total_resultados_ventas = count($this->resultados_ventas);
     }
     public function compras(){
         $facturas = new factura_proveedor();
-        $this->resultados_compras = $facturas->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $this->resultados_compras = $facturas->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $this->total_resultados_compras = count($this->resultados_compras);
     }
     public function dgii606(){
         $facturas = new factura_proveedor();
-        $this->resultados_606 = $facturas->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $this->resultados_606 = $facturas->all_desde(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $this->total_resultados_606 = count($this->resultados_606);
     }
     public function dgii607(){
         $facturas = new ncf_ventas();
-        $this->resultados_607 = $facturas->all_activo_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $this->resultados_607 = $facturas->all_activo_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $this->total_resultados_607 = count($this->resultados_607);
     }
     public function dgii608(){
         $facturas = new ncf_ventas();
-        $this->resultados_608 = $facturas->all_anulado_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)));
+        $this->resultados_608 = $facturas->all_anulado_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $this->codalmacen);
         $this->total_resultados_608 = count($this->resultados_608);
     }
 

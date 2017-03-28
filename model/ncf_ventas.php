@@ -252,12 +252,16 @@ class ncf_ventas extends fs_model {
         return $datos_adicionales;
     }
 
-    public function all_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    public function all_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
     {
         $lista = array();
+        $extra='';
+        if($codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
+        }
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." ".
                 "ORDER BY idempresa, fecha, ncf");
 
         if($data)
@@ -283,12 +287,16 @@ class ncf_ventas extends fs_model {
         return $lista;
     }
 
-    public function all_activo_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    public function all_activo_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
     {
         $lista = array();
+        $extra='';
+        if($codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
+        }
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." AND estado = TRUE ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." AND estado = TRUE ".
                 "ORDER BY idempresa, fecha, ncf");
 
         if($data)
@@ -317,12 +325,15 @@ class ncf_ventas extends fs_model {
         return $lista;
     }
 
-    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin)
+    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
     {
         $lista = array();
+        if($codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
+        }
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin)." and estado = FALSE ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." and estado = FALSE ".
                 "ORDER BY idempresa, fecha, ncf");
 
         if($data)
