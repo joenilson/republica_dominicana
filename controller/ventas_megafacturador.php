@@ -245,7 +245,7 @@ class ventas_megafacturador extends fs_controller {
                 $trazabilidad = FALSE;
                 $continuar = TRUE;
                 $generar = TRUE;
-
+                $lista_errores = array();
                 $art0 = new articulo();
                 foreach ($pedido->get_lineas() as $l) {
                     //Si el articulo existe
@@ -283,6 +283,7 @@ class ventas_megafacturador extends fs_controller {
                           {
                              $this->new_error_msg("No hay suficiente stock del artículo <b>".$n->referencia."</b> para el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a>, el stock es de ".$articulo_stock." y el pedido necesita: ".$n->cantidad);
                              $continuar = FALSE;
+                             $lista_errores[$n->referencia] = $n->referencia;
                              
                           }
                        }
@@ -345,6 +346,16 @@ class ventas_megafacturador extends fs_controller {
                         $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
                     }
                 } else {
+                    //Corregimos el stock si es que los articulos tienen control de stock
+                    foreach($albaran->get_lineas() as $linea){
+                        if($linea->referencia){
+                            $art1 = $this->articulos->get($linea->referencia);
+                            $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                            if(!isset($lista_errores[$linea->referencia])){
+                                $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+                            }
+                        }
+                    }
                     $errores++;
                     if ($albaran->delete()) {
                         $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
