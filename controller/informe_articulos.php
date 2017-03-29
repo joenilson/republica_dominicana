@@ -990,7 +990,7 @@ class informe_articulos extends fs_controller
       {
          if($value['movimiento'] == '-')
          {
-            $inicial = $value['final'];
+            $inicial += $value['inicial']-$value['final'];
          }
          else
          {

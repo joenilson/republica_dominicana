@@ -783,7 +783,7 @@ class nueva_venta extends fs_controller
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
                            $continuar = FALSE;
-                           $lista_errores[$articulo->referencia];
+                           $lista_errores[$articulo->referencia]=$articulo->referencia;
                         }
                         else if( isset($_POST['stock']) )
                         {
@@ -1007,7 +1007,7 @@ class nueva_venta extends fs_controller
          else if( $factura->save() )
          {
             $trazabilidad = FALSE;
-
+            $lista_errores = array();
             $art0 = new articulo();
             $n = floatval($_POST['numlineas']);
             for($i = 0; $i <= $n; $i++)
@@ -1066,6 +1066,7 @@ class nueva_venta extends fs_controller
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
                            $continuar = FALSE;
+                           $lista_errores[$articulo->referencia]=$articulo->referencia;
                         }
                         else if( isset($_POST['stock']) )
                         {
@@ -1133,9 +1134,21 @@ class nueva_venta extends fs_controller
                else
                   $this->new_error_msg("¡Imposible actualizar la <a href='".$factura->url()."'>Factura</a>!");
             }
-            else if( !$factura->delete() )
+            else
             {
-               $this->new_error_msg("¡Imposible eliminar la <a href='".$factura->url()."'>Factura</a>!");
+               //Corregimos el stock si es que los articulos tienen control de stock
+               foreach($factura->get_lineas() as $linea){
+                  if($linea->referencia){
+                     $art1 = $this->articulos->get($linea->referencia);
+                     $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $factura->codalmacen);
+                     if(!isset($lista_errores[$linea->referencia])){
+                        $art1->sum_stock($factura->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+                     }
+                  }
+               }
+               if( !$factura->delete() ){
+                  $this->new_error_msg("¡Imposible eliminar la <a href='".$factura->url()."'>Factura</a>!");
+               }
             }
          }
          else
