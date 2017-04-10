@@ -89,9 +89,13 @@
         <nombre>area_impresion</nombre>
         <tipo>character varying(3)</tipo>
         <nulo>YES</nulo>
-    </columna>    
+    </columna>
     <restriccion>
         <nombre>ncf_ventas_pkey</nombre>
         <consulta>PRIMARY KEY (idempresa, ncf)</consulta>
+    </restriccion>
+    <restriccion>
+        <nombre>ca_ncf_ventas_facturascli</nombre>
+        <consulta>FOREIGN KEY (documento) REFERENCES facturascli (idfactura) MATCH SIMPLE ON UPDATE CASCADE ON DELETE CASCADE</consulta>
     </restriccion>
 </tabla>

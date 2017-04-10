@@ -171,6 +171,9 @@ class ventas_factura extends fs_controller
          {
             $this->rectificar_factura();
          }
+         else if(isset($_GET['fix_ncf'])){
+            $this->fix_ncf();
+         }
 
          if($this->factura->idfacturarect)
          {
@@ -202,6 +205,36 @@ class ventas_factura extends fs_controller
       }
       else
          return $this->ppage->url();
+   }
+
+   public function fix_ncf(){
+      if($this->factura->numero2!='' and strlen($this->factura->numero2)==19){
+         $this->new_error_msg('¡La Factura ya posee un NCF valido, no se hace ninguna modificación!');
+      }else{
+
+         /*
+         * Verificación de disponibilidad del Número de NCF para República Dominicana
+         */
+         //Obtenemos el tipo de comprobante a generar para el cliente
+         $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
+         $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+
+         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+         $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->cliente->codpago);
+         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
+         {
+             return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');
+         }else{
+            $this->factura->numero2 = $numero_ncf['NCF'];
+            if($this->factura->save()){
+               $ncf = new helper_ncf();
+               $ncf->guardar_ncf($this->empresa->id,$this->factura,$tipo_comprobante,$numero_ncf);
+               $this->new_message('¡NCF corregido correctamente!');
+            }else{
+               $this->new_error_msg('Ocurrio un error y no se pudo generar el NCF correctamente, intentelo nuevamente revisando los datos del Cliente.');
+            }
+         }
+      }
    }
 
    private function modificar()
@@ -265,13 +298,13 @@ class ventas_factura extends fs_controller
                $this->new_error_msg("Imposible modificar la fecha del asiento.");
             }
          }
-
+         
          $ncfventas0 = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
          $ncfventas0->fecha = $this->factura->fecha;
          $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
          $ncfventas0->usuario_modificacion = $this->user->nick;
          if(!$ncfventas0->corregir_fecha()){
-             $this->new_error_msg("Error al actualizar los datos de la tabla de NCF ");
+            $this->new_error_msg("Error al actualizar los datos de la tabla de NCF ");
          }
          $this->new_message("Factura modificada correctamente.");
          $this->new_change('Factura Cliente '.$this->factura->codigo, $this->factura->url());

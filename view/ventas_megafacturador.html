@@ -213,26 +213,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var fechas = document.querySelectorAll(form+' input[name="fecha_'+documento+'[]"]:checked');
         var fecha = document.querySelectorAll(form+' input[name="fecha_'+documento+'[]"]:checked');
         if(series.length !== 0 && fechas.length !== 0){
-            var confirmar = confirm('¿Esta seguro de generar los documentos con las series y fechas elegidas?');
-            if(confirmar){
-                oFormObject.elements["procesar"].value = 'TRUE';
-                $(form+' .boton_accion').hide();
-                if(formulario === 'f_pedidos'){
-                    $('#generando_pedidos').show();
-                }else if(formulario === 'f_albaranes'){
-                    $('#generando_albaranes').show();
+            //var confirmar = confirm('¿Esta seguro de generar los documentos con las series y fechas elegidas?');
+            bootbox.confirm({
+                message: "¿Esta seguro de generar los documentos con las series y fechas elegidas?",
+                buttons: {
+                    confirm: {
+                        label: 'Si',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (confirmar) {
+                    if(confirmar){
+                        oFormObject.elements["procesar"].value = 'TRUE';
+                        $(form+' .boton_accion').hide();
+                        if(formulario === 'f_pedidos'){
+                            $('#generando_pedidos').show();
+                        }else if(formulario === 'f_albaranes'){
+                            $('#generando_albaranes').show();
+                        }
+                        return true;
+                    }else{
+                        return false;
+                    }
                 }
-                return true;
-            }else{
-                return false;
-            }
+            });
+            
         }else{
             if(series.length === 0 && fechas.length === 0){
-                alert('¡Debes elegir una serie y una fecha con documentos para procesar!');
+                bootbox.alert('¡Debes elegir una serie y una fecha con documentos para procesar!');
             }else if(series.length === 0){
-                alert('¡Debes elegir una serie para procesar!');
+                bootbox.alert('¡Debes elegir una serie para procesar!');
             }else if(fechas.length === 0){
-                alert('¡Debes elegir una fecha con documentos para procesar!');
+                bootbox.alert('¡Debes elegir una fecha con documentos para procesar!');
             }
             return false;
         }
