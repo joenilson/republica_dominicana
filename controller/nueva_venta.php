@@ -1129,6 +1129,14 @@ class nueva_venta extends fs_controller
                }
                else if( $factura->save() )
                {
+                  /*
+                  * Grabación del Número de NCF para República Dominicana
+                  */
+                  //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
+                  $ncf = new helper_ncf();
+                  $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
+
                   $this->generar_asiento($factura);
                   $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
                   $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
