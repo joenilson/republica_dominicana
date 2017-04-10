@@ -58,7 +58,7 @@ class factura_ncf extends fs_controller {
    {
       $this->template = false;
       $this->share_extensions();
-      
+
       //Obtenemos las configuraciones de impresión de las facturas de RD
       $fsvar = new fs_var();
       $this->rd_setup = $fsvar->array_get(
@@ -68,15 +68,15 @@ class factura_ncf extends fs_controller {
             'rd_imprimir_bn' => 'FALSE',
         ), FALSE
      );
-      
+
       $val_id = \filter_input(INPUT_GET, 'id');
       $solicitud = \filter_input(INPUT_GET, 'solicitud');
       $valores_id = explode(',', $val_id);
       if(class_exists('distribucion_ordenescarga_facturas')){
         $this->distrib_transporte = new distribucion_ordenescarga_facturas();
       }
-      
-      
+
+
       if(class_exists('agente')){
         $this->agente = new agente();
       }
@@ -84,7 +84,7 @@ class factura_ncf extends fs_controller {
       if(!empty($valores_id[0]) AND $solicitud == 'imprimir'){
         $this->procesar_facturas($valores_id);
       }elseif(!empty($valores_id[0]) AND $solicitud == 'email'){
-         $this->enviar_email($valores_id[0]); 
+         $this->enviar_email($valores_id[0]);
       }
    }
 
@@ -117,7 +117,7 @@ class factura_ncf extends fs_controller {
             $pdf_doc->SetSubject('Facturas de Venta para clientes');
             $pdf_doc->SetAuthor($this->empresa->nombre);
             $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
-            
+
             $this->archivo = $archivo;
             $contador = 0;
             $this->factura = FALSE;
@@ -132,7 +132,7 @@ class factura_ncf extends fs_controller {
                   $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
                   $this->factura->ncf = $valores->ncf;
                   $this->factura->ncf_afecta = $valores->ncf_modifica;
-                  $this->factura->estado = $valores->estado; 
+                  $this->factura->estado = $valores->estado;
                   $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
                   if($this->distrib_transporte){
                     $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
@@ -143,7 +143,7 @@ class factura_ncf extends fs_controller {
                   $this->generar_pdf($pdf_doc);
                   $contador++;
               }
-              
+
             }
             // Damos salida al archivo PDF
             if($this->archivo){
@@ -161,7 +161,7 @@ class factura_ncf extends fs_controller {
             }
         }
    }
-   
+
     private function enviar_email($doc, $tipo='ncf')
    {
       $factura = new factura_cliente();
@@ -173,19 +173,19 @@ class factura_ncf extends fs_controller {
             $this->cliente->email = $_POST['email'];
             $this->cliente->save();
          }
-         
+
          $filename = 'factura_'.$factura_enviar->numero2.'.pdf';
          if($tipo == 'ncf'){
              $this->procesar_facturas(array($factura_enviar->idfactura), $filename);
          }
-         
-         
+
+
          if( file_exists('tmp/'.FS_TMP_NAME.'enviar/'.$filename) )
          {
             $mail = $this->empresa->new_mail();
             $mail->FromName = $this->user->get_agente_fullname();
             $mail->addReplyTo($_POST['de'], $mail->FromName);
-            
+
             $mail->addAddress($_POST['email'], $this->cliente->razonsocial);
             if($_POST['email_copia'])
             {
@@ -199,28 +199,28 @@ class factura_ncf extends fs_controller {
                }
             }
             $mail->Subject = $this->empresa->nombre . ': Su factura '.$this->factura->codigo;
-            
+
             $mail->AltBody = $_POST['mensaje'];
             $mail->msgHTML( nl2br($_POST['mensaje']) );
             $mail->isHTML(TRUE);
-            
+
             $mail->addAttachment('tmp/'.FS_TMP_NAME.'enviar/'.$filename);
             if( is_uploaded_file($_FILES['adjunto']['tmp_name']) )
             {
                $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
             }
-            
+
             if( $mail->smtpConnect($this->empresa->smtp_options()) )
             {
                if( $mail->send() )
                {
                   $this->template = 'ventas_imprimir';
                   $this->new_message('Mensaje enviado correctamente.');
-                  
+
                   /// nos guardamos la fecha de envío
                      $factura_enviar->femail = $this->today();
                      $factura_enviar->save();
-                  
+
                   $this->empresa->save_mail($mail);
                }
                else
@@ -228,7 +228,7 @@ class factura_ncf extends fs_controller {
             }
             else
                $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-            
+
             unlink('tmp/'.FS_TMP_NAME.'enviar/'.$filename);
          }
          else
@@ -238,7 +238,7 @@ class factura_ncf extends fs_controller {
 
    public function generar_pdf($pdf_doc)
    {
-       
+
       if(!empty($pdf_doc)){
         ///// INICIO - Factura Detallada
         /// Creamos el PDF y escribimos sus metadatos
@@ -255,10 +255,10 @@ class factura_ncf extends fs_controller {
         }else{
             $pdf_doc->SetColorRelleno('blanco');
         }
-        
+
         /// Definimos todos los datos de la cabecera de la factura
         /// Datos de la empresa
-        
+
         $agente = new agente();
         $vendedor = $this->agente->get($this->factura->codagente);
         $vender = substr($vendedor->nombre, 0,1).substr($vendedor->apellidos,0,1);
@@ -273,16 +273,18 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
-        $pdf_doc->fde_vendedor = 'Vendedor: ('.$vender.')'; //Mostrando iniciales del vendedor.
-        $pdf_doc->fde_ruta = 'Ruta: '.$this->factura->apartado;
+        if(in_array('distribucion',$GLOBALS['plugins'])){
+           $pdf_doc->fde_vendedor = 'Vendedor: ('.$vender.')'; //Mostrando iniciales del vendedor.
+           $pdf_doc->fde_ruta = 'Ruta: '.$this->factura->apartado;
+        }
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
-        
+
         /// Insertamos el Logo y Marca de Agua si esta configurado así
         if( file_exists(FS_MYDOCS.'images/logo.png') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
-           $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo
-           $pdf_doc->fdf_Ylogotipo = '35'; // Valor Y para Logotipo
+           $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
+           $pdf_doc->fdf_Ylogotipo = '40'; // Valor Y para Logotipo
            $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
            $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
            $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
@@ -290,8 +292,8 @@ class factura_ncf extends fs_controller {
         elseif( file_exists(FS_MYDOCS.'images/logo.jpg') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
-           $pdf_doc->fdf_Xlogotipo = '15'; // Valor X para Logotipo
-           $pdf_doc->fdf_Ylogotipo = '35'; // Valor Y para Logotipo
+           $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
+           $pdf_doc->fdf_Ylogotipo = '40'; // Valor Y para Logotipo
            $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
            $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
            $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
@@ -316,7 +318,7 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdf_fecha = $this->factura->fecha;
         $pdf_doc->fdf_codcliente = $this->factura->codcliente;
         $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->factura->observaciones));
-        
+
 
         // Datos del Cliente
         $pdf_doc->fdf_nombrecliente = $this->fix_html($this->factura->nombrecliente);
@@ -330,6 +332,7 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
         $pdf_doc->fdc_fax = $this->cliente->fax;
         $pdf_doc->fdc_email = $this->cliente->email;
+        $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
 
         $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
 
@@ -337,7 +340,7 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdf_transporte = $this->idtransporte;
         //Si va usar distribucion se agrega el codigo de la ruta
         //$pdf_doc->fdf_ruta = $this->factura->apartado;
-        
+
         // Forma de Pago de la Factura
         $pago = new forma_pago();
         $epago = $pago->get($this->factura->codpago);

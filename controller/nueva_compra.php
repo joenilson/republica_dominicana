@@ -251,7 +251,7 @@ class nueva_compra extends fs_controller
 
       if( $art0->exists() )
       {
-         $this->results[] = $art0->get($_REQUEST['referencia']);
+         $this->results[] = $art0->get($art0->referencia);
       }
       else
       {

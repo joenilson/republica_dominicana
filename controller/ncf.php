@@ -73,34 +73,34 @@ class ncf extends fs_controller {
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }
-
             $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
-            if ($verificacion) {
-                return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, no se puede retroceder el correlativo!");
+            if ($verificacion+1 > $correlativo) {
+                return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, y el ultimo correlativo es ".$verificacion." no se puede retroceder el correlativo!");
+            }else{
+                $ncf0->idempresa = $this->empresa->id;
+                $ncf0->id = $id;
+                $ncf0->solicitud = $solicitud;
+                $ncf0->codalmacen = $codalmacen;
+                $ncf0->serie = $serie;
+                $ncf0->division = $division;
+                $ncf0->punto_emision = $punto_emision;
+                $ncf0->area_impresion = $area_impresion;
+                $ncf0->tipo_comprobante = $tipo_comprobante;
+                $ncf0->secuencia_inicio = $secuencia_inicio;
+                $ncf0->secuencia_fin = $secuencia_fin;
+                $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
+                $ncf0->usuario_creacion = $this->user->nick;
+                $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
+                $ncf0->usuario_modificacion = $this->user->nick;
+                $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
+                $ncf0->estado = $estado;
+                $ncf0->contado = $contado;
+                if ($ncf0->save()) {
+                    $this->new_message("Datos de la Solicitud {$ncf0->contado} " . $ncf0->solicitud . " guardados correctamente.");
+                } else {
+                    $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
+                }
             }
-
-            $ncf0->idempresa = $this->empresa->id;
-            $ncf0->id = $id;
-            $ncf0->solicitud = $solicitud;
-            $ncf0->codalmacen = $codalmacen;
-            $ncf0->serie = $serie;
-            $ncf0->division = $division;
-            $ncf0->punto_emision = $punto_emision;
-            $ncf0->area_impresion = $area_impresion;
-            $ncf0->tipo_comprobante = $tipo_comprobante;
-            $ncf0->secuencia_inicio = $secuencia_inicio;
-            $ncf0->secuencia_fin = $secuencia_fin;
-            $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
-            $ncf0->usuario_creacion = $this->user->nick;
-            $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
-            $ncf0->usuario_modificacion = $this->user->nick;
-            $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
-            $ncf0->estado = $estado;
-            $ncf0->contado = $contado;
-            if ($ncf0->save()) {
-                $this->new_message("Datos de la Solicitud {$ncf0->contado} " . $ncf0->solicitud . " guardados correctamente.");
-            } else
-                $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
         elseif ($delete) {
             $id = $delete;
@@ -121,17 +121,16 @@ class ncf extends fs_controller {
     }
 
     protected function verifica_correlativo($ncf, $correlativo) {
+        $ultimo_correlativo = 0;
         if (($ncf->correlativo != $correlativo) AND ($ncf->correlativo > $ncf->secuencia_inicio)) {
             $this->ncf_ventas = new ncf_ventas();
             $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
-            if ($facturas) {
-                return count($facturas);
-            } else {
-                return false;
+            if($facturas){
+                $ultimo_documento = end($facturas);
+                $ultimo_correlativo = substr($ultimo_documento->ncf,12,8)+0;
             }
-        } else {
-            return false;
         }
+        return $ultimo_correlativo;
     }
 
 }

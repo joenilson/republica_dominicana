@@ -1,8 +1,8 @@
 <?php
 /*
  * This file is part of facturacion_base
- * Copyright (C) 2014-2017  Carlos Garcia Gomez  neorazorx@gmail.com
- * Copyright (C) 2014-2015  Francesc Pineda Segarra  shawe.ewahs@gmail.com
+ * Copyright (C) 2014-2017  Carlos Garcia Gomez       neorazorx@gmail.com
+ * Copyright (C) 2014-2015  Francesc Pineda Segarra   shawe.ewahs@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -57,6 +57,7 @@ class nueva_venta extends fs_controller
    public $forma_pago;
    public $grupo;
    public $impuesto;
+   public $multi_almacen;
    public $nuevocli_setup;
    public $pais;
    public $results;
@@ -91,6 +92,7 @@ class nueva_venta extends fs_controller
 
       /// cargamos la configuración
       $fsvar = new fs_var();
+      $this->multi_almacen = $fsvar->simple_get('multi_almacen');
       $this->nuevocli_setup = $fsvar->array_get(
          array(
             'nuevocli_cifnif_req' => 0,
@@ -108,6 +110,8 @@ class nueva_venta extends fs_controller
             'nuevocli_telefono1_req' => 0,
             'nuevocli_telefono2' => 0,
             'nuevocli_telefono2_req' => 0,
+            'nuevocli_email' => 0,
+            'nuevocli_email_req' => 0,
             'nuevocli_codgrupo' => '',
          ),
          FALSE
@@ -179,6 +183,11 @@ class nueva_venta extends fs_controller
                   $this->cliente_s->tipoidfiscal = $_POST['nuevo_tipoidfiscal'];
                   $this->cliente_s->cifnif = $_POST['nuevo_cifnif'];
                   $this->cliente_s->personafisica = isset($_POST['personafisica']);
+
+                  if( isset($_POST['nuevo_email']) )
+                  {
+                     $this->cliente_s->email = $_POST['nuevo_email'];
+                  }
 
                   if( isset($_POST['codgrupo']) )
                   {
@@ -425,7 +434,7 @@ class nueva_venta extends fs_controller
 
       if( $art0->exists() )
       {
-         $this->results[] = $art0->get($_REQUEST['referencia']);
+         $this->results[] = $art0->get($art0->referencia);
       }
       else
       {
@@ -464,10 +473,6 @@ class nueva_venta extends fs_controller
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
 
-      $fsvar = new fs_var();
-      $multi_almacen = $fsvar->simple_get('multi_almacen');
-      $stock = new stock();
-
       $articulo = new articulo();
       $codfamilia = '';
       if( isset($_REQUEST['codfamilia']) )
@@ -483,6 +488,7 @@ class nueva_venta extends fs_controller
       $this->results = $articulo->search($this->query, 0, $codfamilia, $con_stock, $codfabricante);
 
       /// añadimos la busqueda, el descuento, la cantidad, etc...
+      $stock = new stock();
       foreach($this->results as $i => $value)
       {
          $this->results[$i]->query = $this->query;
@@ -492,7 +498,7 @@ class nueva_venta extends fs_controller
 
          /// añadimos el stock del almacén y el general
          $this->results[$i]->stockalm = $this->results[$i]->stockfis;
-         if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
+         if( $this->multi_almacen AND isset($_REQUEST['codalmacen']) )
          {
             $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
          }
@@ -665,7 +671,9 @@ class nueva_venta extends fs_controller
          $continuar = FALSE;
       }
 
+      $art0 = new articulo();
       $albaran = new albaran_cliente();
+      $stock0 = new stock();
 
       if( $this->duplicated_petition($_POST['petition_id']) )
       {
@@ -724,8 +732,7 @@ class nueva_venta extends fs_controller
          if( $albaran->save() )
          {
             $trazabilidad = FALSE;
-            $lista_errores = array();
-            $art0 = new articulo();
+
             $n = floatval($_POST['numlineas']);
             for($i = 0; $i <= $n; $i++)
             {
@@ -775,17 +782,21 @@ class nueva_venta extends fs_controller
 
                   if( $linea->save() )
                   {
-                     if($articulo)
+                     if( $articulo AND isset($_POST['stock']) )
                      {
-                        $stock = new stock();
-                        $articulo_stock = $stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
-                        if( !$articulo->controlstock AND $linea->cantidad > $articulo_stock  )
+                        $stockfis = $articulo->stockfis;
+                        if($this->multi_almacen)
+                        {
+                           $stockfis = $stock0->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                        }
+
+                        if( !$articulo->controlstock AND $linea->cantidad > $stockfis )
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
+                           $linea->delete();
                            $continuar = FALSE;
-                           $lista_errores[$articulo->referencia]=$articulo->referencia;
                         }
-                        else if( isset($_POST['stock']) )
+                        else
                         {
                             /// descontamos del stock
                             $articulo->sum_stock($albaran->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
@@ -806,7 +817,6 @@ class nueva_venta extends fs_controller
                   {
                      $this->new_error_msg("¡Imposible guardar la linea con referencia: ".$linea->referencia);
                      $continuar = FALSE;
-                     
                   }
                }
             }
@@ -843,19 +853,23 @@ class nueva_venta extends fs_controller
                else
                   $this->new_error_msg("¡Imposible actualizar el <a href='".$albaran->url()."'>".FS_ALBARAN."</a>!");
             }
-            else 
+            else
             {
-               //Corregimos el stock si es que los articulos tienen control de stock
-               foreach($albaran->get_lineas() as $linea){
-                  if($linea->referencia){
-                     $art1 = $this->articulos->get($linea->referencia);
-                     $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
-                     if(!isset($lista_errores[$linea->referencia])){
-                        $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+               /// actualizamos el stock
+               foreach($albaran->get_lineas() as $linea)
+               {
+                  if($linea->referencia)
+                  {
+                     $articulo = $art0->get($linea->referencia);
+                     if($articulo)
+                     {
+                        $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                      }
                   }
                }
-               if( !$albaran->delete() ){
+
+               if( !$albaran->delete() )
+               {
                   $this->new_error_msg("¡Imposible eliminar el <a href='".$albaran->url()."'>".FS_ALBARAN."</a>!");
                }
             }
@@ -920,7 +934,9 @@ class nueva_venta extends fs_controller
          $continuar = FALSE;
       }
 
+      $art0 = new articulo();
       $factura = new factura_cliente();
+      $stock0 = new stock();
 
       if( $this->duplicated_petition($_POST['petition_id']) )
       {
@@ -1007,8 +1023,7 @@ class nueva_venta extends fs_controller
          else if( $factura->save() )
          {
             $trazabilidad = FALSE;
-            $lista_errores = array();
-            $art0 = new articulo();
+
             $n = floatval($_POST['numlineas']);
             for($i = 0; $i <= $n; $i++)
             {
@@ -1058,17 +1073,21 @@ class nueva_venta extends fs_controller
 
                   if( $linea->save() )
                   {
-                     if($articulo)
+                     if( $articulo AND isset($_POST['stock']) )
                      {
-                        $stock = new stock();
-                        $articulo_stock = $stock->total_from_articulo($articulo->referencia, $factura->codalmacen);
-                        if( !$articulo->controlstock AND $linea->cantidad > $articulo_stock )
+                        $stockfis = $articulo->stockfis;
+                        if($this->multi_almacen)
+                        {
+                           $stockfis = $stock0->total_from_articulo($articulo->referencia, $factura->codalmacen);
+                        }
+
+                        if( !$articulo->controlstock AND $linea->cantidad > $stockfis )
                         {
                            $this->new_error_msg("No hay suficiente stock del artículo <b>".$linea->referencia.'</b>.');
+                           $linea->delete();
                            $continuar = FALSE;
-                           $lista_errores[$articulo->referencia]=$articulo->referencia;
                         }
-                        else if( isset($_POST['stock']) )
+                        else
                         {
                             /// descontamos del stock
                             $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
@@ -1110,14 +1129,6 @@ class nueva_venta extends fs_controller
                }
                else if( $factura->save() )
                {
-                  /*
-                  * Grabación del Número de NCF para República Dominicana
-                  */
-                  //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                  $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-                  $ncf = new helper_ncf();
-                  $ncf->guardar_ncf($this->empresa->id,$factura,$tipo_comprobante,$numero_ncf);
-
                   $this->generar_asiento($factura);
                   $this->new_message("<a href='".$factura->url()."'>Factura</a> guardada correctamente con número NCF: ".$numero_ncf['NCF']);
                   $this->new_change('Factura Cliente '.$factura->codigo, $factura->url(), TRUE);
@@ -1136,17 +1147,21 @@ class nueva_venta extends fs_controller
             }
             else
             {
-               //Corregimos el stock si es que los articulos tienen control de stock
-               foreach($factura->get_lineas() as $linea){
-                  if($linea->referencia){
-                     $art1 = $this->articulos->get($linea->referencia);
-                     $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $factura->codalmacen);
-                     if(!isset($lista_errores[$linea->referencia])){
-                        $art1->sum_stock($factura->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+               /// actualizamos el stock
+               foreach($factura->get_lineas() as $linea)
+               {
+                  if($linea->referencia)
+                  {
+                     $articulo = $art0->get($linea->referencia);
+                     if($articulo)
+                     {
+                        $articulo->sum_stock($factura->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                      }
                   }
                }
-               if( !$factura->delete() ){
+
+               if( !$factura->delete() )
+               {
                   $this->new_error_msg("¡Imposible eliminar la <a href='".$factura->url()."'>Factura</a>!");
                }
             }

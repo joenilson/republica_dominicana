@@ -33,8 +33,8 @@ require_model('linea_albaran_cliente.php');
 class ventas_facturas extends fs_controller
 {
    public $agente;
-   public $articulo;
    public $almacenes;
+   public $articulo;
    public $buscar_lineas;
    public $cliente;
    public $codagente;
@@ -47,6 +47,7 @@ class ventas_facturas extends fs_controller
    public $huecos;
    public $lineas;
    public $mostrar;
+   public $multi_almacen;
    public $num_resultados;
    public $offset;
    public $order;
@@ -84,6 +85,9 @@ class ventas_facturas extends fs_controller
       {
          $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
       }
+
+      $fsvar = new fs_var();
+      $this->multi_almacen = $fsvar->simple_get('multi_almacen');
 
       $this->offset = 0;
       if( isset($_REQUEST['offset']) )
@@ -185,7 +189,7 @@ class ventas_facturas extends fs_controller
             {
                $this->codagente = $_REQUEST['codagente'];
             }
-            
+
             if( isset($_REQUEST['codalmacen']) )
             {
                $this->codalmacen = $_REQUEST['codalmacen'];
@@ -438,12 +442,12 @@ class ventas_facturas extends fs_controller
    {
       $this->resultados = array();
       $this->num_resultados = 0;
-      $query = $this->agente->no_html( mb_strtolower($this->query, 'UTF8') );
       $sql = " FROM facturascli ";
       $where = 'WHERE ';
 
-      if($this->query != '')
+      if($this->query)
       {
+         $query = $this->agente->no_html( mb_strtolower($this->query, 'UTF8') );
          $sql .= $where;
          if( is_numeric($query) )
          {
@@ -459,13 +463,13 @@ class ventas_facturas extends fs_controller
          $where = ' AND ';
       }
 
-      if($this->codagente != '')
+      if($this->codagente)
       {
          $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
          $where = ' AND ';
       }
 
-      if($this->codalmacen != '')
+      if($this->codalmacen)
       {
          $sql .= $where."codalmacen = ".$this->agente->var2str($this->codalmacen);
          $where = ' AND ';
@@ -477,19 +481,19 @@ class ventas_facturas extends fs_controller
          $where = ' AND ';
       }
 
-      if($this->codserie != '')
+      if($this->codserie)
       {
          $sql .= $where."codserie = ".$this->agente->var2str($this->codserie);
          $where = ' AND ';
       }
 
-      if($this->desde != '')
+      if($this->desde)
       {
          $sql .= $where."fecha >= ".$this->agente->var2str($this->desde);
          $where = ' AND ';
       }
 
-      if($this->hasta != '')
+      if($this->hasta)
       {
          $sql .= $where."fecha <= ".$this->agente->var2str($this->hasta);
          $where = ' AND ';
