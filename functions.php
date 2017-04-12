@@ -21,7 +21,7 @@
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-if( !function_exists('fs_tipos_id_fiscal') )
+if(!function_exists('fs_tipos_id_fiscal'))
 {
    /**
     * Devuelve la lista de identificadores fiscales.

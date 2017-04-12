@@ -74,7 +74,7 @@ class ncf extends fs_controller {
                 $ncf0 = new ncf_rango();
             }
             $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
-            if ($verificacion+1 > $correlativo) {
+            if ($verificacion+1 > $correlativo AND $verificacion!=0) {
                 return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, y el ultimo correlativo es ".$verificacion." no se puede retroceder el correlativo!");
             }else{
                 $ncf0->idempresa = $this->empresa->id;
@@ -96,7 +96,7 @@ class ncf extends fs_controller {
                 $ncf0->estado = $estado;
                 $ncf0->contado = $contado;
                 if ($ncf0->save()) {
-                    $this->new_message("Datos de la Solicitud {$ncf0->contado} " . $ncf0->solicitud . " guardados correctamente.");
+                    $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
                 }
