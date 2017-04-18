@@ -32,3 +32,12 @@ if(!function_exists('fs_tipos_id_fiscal'))
       return array(FS_CIFNIF,'Pasaporte','Cédula','RNC');
    }
 }
+
+/**
+ * Se debe migrar aquí la funcionalidad de generar el ncf para insertarlo en 
+ * el campo numero2
+ * @return string
+ */
+function generar_numero2(){
+    return '';
+}
