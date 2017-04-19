@@ -107,7 +107,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <input type="text" class="form-control datepicker" name='inicio' id="inicio">
             <label for='fin'><b>Fecha Fin</b></label>
             <input type="text" class="form-control datepicker" name="fin" id="fin">
-            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen" id="codalmacen" data-style="btn-default" data-actions-box="true" required=''>
+            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen" id="codalmacen" data-style="btn-default" data-actions-box="true">
                 <option value="">Elija un Almacén</option>
                 {if="$fsc->user->admin"}
                     {loop="$fsc->almacenes->all()"}

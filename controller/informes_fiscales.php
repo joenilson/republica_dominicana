@@ -434,4 +434,25 @@ class informes_fiscales extends fs_controller {
             }
         }
     }
+    
+    /**
+     * @url http://snippets.khromov.se/convert-comma-separated-values-to-array-in-php/
+     * @param $string - Input string to convert to array
+     * @param string $separator - Separator to separate by (default: ,)
+     *
+     * @return array
+     */
+    private function comma_separated_to_array($string, $separator = ',') {
+        //Explode on comma
+        $vals = explode($separator, $string);
+
+        //Trim whitespace
+        foreach ($vals as $key => $val) {
+            $vals[$key] = trim($val);
+        }
+        //Return empty array if no items found
+        //http://php.net/manual/en/function.explode.php#114273
+        return array_diff($vals, array(""));
+    }    
+    
 }
