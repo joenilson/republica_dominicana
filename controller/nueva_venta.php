@@ -721,9 +721,15 @@ class nueva_venta extends fs_controller
           * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
           */
          if($this->distribucion_clientes){
-            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
-            $albaran->codruta = $_POST['codruta'];
-            $albaran->codvendedor = $ruta_data->codagente;
+            $codvendedor = '';
+            $ruta = '';
+            if(\filter_input(INPUT_POST, 'codruta')){
+                $ruta = \filter_input(INPUT_POST, 'codruta');
+                $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$ruta);
+                $codvendedor = ($ruta_data)?$ruta_data->codagente:'';
+            }
+            $albaran->codruta = $ruta;
+            $albaran->codvendedor = $codvendedor;
          }
          
          $albaran->fecha = $_POST['fecha'];
@@ -1011,9 +1017,15 @@ class nueva_venta extends fs_controller
           * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
           */
          if($this->distribucion_clientes){
-            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
-            $factura->codruta = $_POST['codruta'];
-            $factura->codvendedor = $ruta_data->codagente;
+            $codvendedor = '';
+            $ruta = '';
+            if(\filter_input(INPUT_POST, 'codruta')){
+                $ruta = \filter_input(INPUT_POST, 'codruta');
+                $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$ruta);
+                $codvendedor = ($ruta_data)?$ruta_data->codagente:'';
+            }             
+            $factura->codruta = $ruta;
+            $factura->codvendedor = $codvendedor;
          }
          
          $factura->codejercicio = $ejercicio->codejercicio;
@@ -1558,9 +1570,15 @@ class nueva_venta extends fs_controller
           * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
           */
          if($this->distribucion_clientes){
-            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
-            $pedido->codruta = $_POST['codruta'];
-            $pedido->codvendedor = $ruta_data->codagente;
+            $codvendedor = '';
+            $ruta = '';
+            if(\filter_input(INPUT_POST, 'codruta')){
+                $ruta = \filter_input(INPUT_POST, 'codruta');
+                $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$ruta);
+                $codvendedor = ($ruta_data)?$ruta_data->codagente:'';
+            }
+            $pedido->codruta = $ruta;
+            $pedido->codvendedor = $codvendedor;
          }
          $pedido->fecha = $_POST['fecha'];
          $pedido->codalmacen = $almacen->codalmacen;
