@@ -28,7 +28,7 @@
    <input type="hidden" name="redir"/>
    <div class="container-fluid">
       <div class="row">
-         <div class="col-sm-6">
+         <div class="{if="$fsc->cliente_rutas"}col-sm-4{else}col-sm-6{/if}">
             <h1 style="margin-top: 5px; margin-bottom: 0px;">
                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
                <a href="{$fsc->cliente_s->url()}">{$fsc->cliente_s->razonsocial}</a>
@@ -56,6 +56,19 @@
                {/if}
             {/loop}
          </div>
+         {if="$fsc->cliente_rutas"}
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->distribucion_clientes->url()}" class="text-capitalize">Ruta</a>:
+               <select name="codruta" class="form-control" id="codruta" onchange="document.f_new_albaran.codalmacen.value=(this.value)?$('option:selected',this).attr('almacen'):'ALG';">
+                  <option value="">Elije la ruta</option>
+               {loop="$fsc->cliente_rutas"}
+               <option value="{$value->ruta}" almacen="{$value->codalmacen}">{$value->ruta}</option>
+               {/loop}
+               </select>
+            </div>
+         </div>
+         {/if}
          <div class="col-sm-2">
             <div class="form-group">
                <a href="{$fsc->serie->url()}" class="text-capitalize">{#FS_SERIE#}</a>:

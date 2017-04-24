@@ -41,6 +41,11 @@ require_model('ncf_tipo.php');
 require_model('ncf_ventas.php');
 require_model('ncf_rango.php');
 require_once 'helper_ncf.php';
+/**
+ * Compatibilidad si existe el plugin distribucion
+ * esto es para obtener el listado de rutas del cliente
+ */
+require_model('distribucion_clientes.php');
 
 class ventas_albaran extends fs_controller
 {
@@ -65,7 +70,11 @@ class ventas_albaran extends fs_controller
    public $ncf_entidad_tipo;
    public $ncf_tipo;
    public $ncf_ventas;
-
+   
+   //Para el plugin distribucion
+   public $distribucion_clientes;
+   public $cliente_rutas;
+   
    public function __construct()
    {
       parent::__construct(__CLASS__, FS_ALBARAN.' de cliente', 'ventas', FALSE, FALSE);
@@ -95,7 +104,11 @@ class ventas_albaran extends fs_controller
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_ventas = new ncf_ventas();
-
+      
+      //Para el plugin distribucion
+      if(class_exists('distribucion_clientes')){
+         $this->distribucion_clientes = new distribucion_clientes();
+      }
       /// ¿El usuario tiene permiso para eliminar en esta página?
       $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
       $this->allow_delete_fac = $this->user->allow_delete_on('ventas_factura');
@@ -557,6 +570,17 @@ class ventas_albaran extends fs_controller
           return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' no será facturado.');
       }
       $factura = new factura_cliente();
+      
+      /**
+       * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
+       * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
+       * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
+       */
+      if(property_exists('factura_cliente','codruta')){
+         $factura->codruta = $this->albaran->codruta;
+         $factura->codvendedor = $this->albaran->codvendedor;
+      }
+      
       $factura->apartado = $this->albaran->apartado;
       $factura->cifnif = $this->albaran->cifnif;
       $factura->ciudad = $this->albaran->ciudad;

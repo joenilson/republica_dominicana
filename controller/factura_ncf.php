@@ -32,9 +32,8 @@ require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 require_model('agente.php');
 
-//if(class_exists('distrib_creacion')){
-    require_model('distribucion_ordenescarga_facturas.php');
-//}
+//Compatibilidad con plugin distribucion
+require_model('distribucion_ordenescarga_facturas.php');
 
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';

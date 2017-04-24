@@ -42,6 +42,12 @@ require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
 
+/**
+ * Compatibilidad si existe el plugin distribucion
+ * esto es para obtener el listado de rutas del cliente
+ */
+require_model('distribucion_clientes.php');
+
 class nueva_venta extends fs_controller
 {
    public $agencia;
@@ -67,7 +73,11 @@ class nueva_venta extends fs_controller
    public $ncf_rango;
    public $ncf_ventas;
    public $ncf_entidad_tipo;
-
+   
+   //Para el plugin distribucion
+   public $distribucion_clientes;
+   public $cliente_rutas;
+   
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
@@ -89,7 +99,12 @@ class nueva_venta extends fs_controller
       $this->ncf_rango = new ncf_rango();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_ventas = new ncf_ventas();
-
+      
+      //Para el plugin distribucion
+      if(class_exists('distribucion_clientes')){
+         $this->distribucion_clientes = new distribucion_clientes();
+      }
+      
       /// cargamos la configuración
       $fsvar = new fs_var();
       $this->multi_almacen = $fsvar->simple_get('multi_almacen');
@@ -157,7 +172,7 @@ class nueva_venta extends fs_controller
       else if( isset($_POST['cliente']) )
       {
          $this->cliente_s = $this->cliente->get($_POST['cliente']);
-
+         
          /**
           * Nuevo cliente
           */
@@ -283,6 +298,9 @@ class nueva_venta extends fs_controller
                   $this->direccion = $dir;
                   break;
                }
+            }
+            if(class_exists('distribucion_clientes')){
+                $this->cliente_rutas = $this->distribucion_clientes->get($this->empresa->id, $this->cliente_s->codcliente);
             }
          }
 
@@ -696,6 +714,18 @@ class nueva_venta extends fs_controller
 
       if($continuar)
       {
+          
+         /**
+          * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
+          * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
+          * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
+          */
+         if($this->distribucion_clientes){
+            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
+            $albaran->codruta = $_POST['codruta'];
+            $albaran->codvendedor = $ruta_data->codagente;
+         }
+         
          $albaran->fecha = $_POST['fecha'];
          $albaran->hora = $_POST['hora'];
          $albaran->codalmacen = $almacen->codalmacen;
@@ -974,6 +1004,18 @@ class nueva_venta extends fs_controller
 
       if($continuar)
       {
+          
+         /**
+          * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
+          * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
+          * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
+          */
+         if($this->distribucion_clientes){
+            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
+            $factura->codruta = $_POST['codruta'];
+            $factura->codvendedor = $ruta_data->codagente;
+         }
+         
          $factura->codejercicio = $ejercicio->codejercicio;
          $factura->codserie = $serie->codserie;
          $factura->set_fecha_hora($_POST['fecha'], $_POST['hora']);
@@ -1471,7 +1513,7 @@ class nueva_venta extends fs_controller
          $this->new_error_msg('Ejercicio no encontrado.');
          $continuar = FALSE;
       }
-
+      
       $serie = $this->serie->get($_POST['serie']);
       if(!$serie)
       {
@@ -1509,6 +1551,17 @@ class nueva_venta extends fs_controller
 
       if($continuar)
       {
+          
+         /**
+          * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
+          * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
+          * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
+          */
+         if($this->distribucion_clientes){
+            $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$_POST['codruta']);
+            $pedido->codruta = $_POST['codruta'];
+            $pedido->codvendedor = $ruta_data->codagente;
+         }
          $pedido->fecha = $_POST['fecha'];
          $pedido->codalmacen = $almacen->codalmacen;
          $pedido->codejercicio = $ejercicio->codejercicio;
@@ -1636,7 +1689,6 @@ class nueva_venta extends fs_controller
                {
                   $this->new_message("<a href='".$pedido->url()."'>".ucfirst(FS_PEDIDO)."</a> guardado correctamente.");
                   $this->new_change(ucfirst(FS_PEDIDO)." a Cliente ".$pedido->codigo, $pedido->url(), TRUE);
-
                   if($_POST['redir'] == 'TRUE')
                   {
                      header('Location: '.$pedido->url());

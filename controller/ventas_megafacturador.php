@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+ * Copyright (C) 2017 Joe Nilson <joenilson at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_model('articulo.php');
@@ -39,6 +39,11 @@ require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
+/**
+ * Compatibilidad si existe el plugin distribucion
+ * esto es para obtener el listado de rutas del cliente
+ */
+require_model('distribucion_clientes.php');
 
 /**
  * Esta es una copia de funcionalidades minimas del plugin MegaFacturador
@@ -90,7 +95,11 @@ class ventas_megafacturador extends fs_controller {
     public $ncf_rango;
     public $ncf_ventas;
     public $ncf_entidad_tipo;
-
+   
+   //Para el plugin distribucion
+   public $distribucion_clientes;
+   public $cliente_rutas;
+   
     public function __construct() {
         parent::__construct(__CLASS__, 'Facturación masiva', 'ventas', FALSE, TRUE, FALSE);
     }
@@ -123,6 +132,11 @@ class ventas_megafacturador extends fs_controller {
         $this->lista_albaranes_pendientes_total = 0;
         $this->share_extensions();
 
+        //Para el plugin distribucion
+        if(class_exists('distribucion_clientes')){
+           $this->distribucion_clientes = new distribucion_clientes();
+        }
+        
         $documento = filter_input(INPUT_GET, 'documento');
         $procesar_g = filter_input(INPUT_GET, 'procesar');
         $procesar_p = filter_input(INPUT_POST, 'procesar');
@@ -184,6 +198,12 @@ class ventas_megafacturador extends fs_controller {
         foreach ($this->pedidos_pendientes() as $pedido) {
             $continuar = FALSE;
             $albaran = new albaran_cliente();
+            //Para el plugin distribucion
+            if(property_exists('albaran_cliente','codruta')){
+               $albaran->codruta = $pedido->codruta;
+               $albaran->codvendedor = $pedido->codvendedor;
+            }
+            
             $albaran->apartado = $pedido->apartado;
             $albaran->cifnif = $pedido->cifnif;
             $albaran->ciudad = $pedido->ciudad;
@@ -398,6 +418,11 @@ class ventas_megafacturador extends fs_controller {
             } else {
                 $contador++;
                 $factura = new factura_cliente();
+                //Para el plugin distribucion
+                if(property_exists('factura_cliente','codruta')){
+                   $factura->codruta = $albaran->codruta;
+                   $factura->codvendedor = $albaran->codvendedor;
+                }
                 $factura->apartado = $albaran->apartado;
                 $factura->cifnif = $albaran->cifnif;
                 $factura->ciudad = $albaran->ciudad;
@@ -437,7 +462,6 @@ class ventas_megafacturador extends fs_controller {
                 if (is_null($factura->codagente)) {
                     $factura->codagente = $this->user->codagente;
                 }
-
                 /// asignamos el ejercicio que corresponde a la fecha elegida
                 $eje0 = $this->ejercicio->get_by_fecha($this->fecha_facturas_gen);
                 if ($eje0) {

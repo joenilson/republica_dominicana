@@ -91,6 +91,13 @@ class ventas_factura_devolucion extends fs_controller
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
         $frec = clone $this->factura;
+        /**
+         * Compatibilidad con plugin distribucion
+         */
+        if(property_exists('factura_cliente', 'codruta')){
+            $frec->codruta = $this->factura->codruta;
+            $frec->codvendedor = $this->factura->codvendedor;
+        }
         $frec->idfactura = NULL;
         $frec->numero = NULL;
         $frec->numero2 = $numero_ncf['NCF'];
