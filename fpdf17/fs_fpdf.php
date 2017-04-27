@@ -152,10 +152,10 @@ class PDF_MC_Table extends FPDF
         $this->addPageNumber($this->GroupPageNo().'/'.$this->PageGroupAlias());
 
         // Datos del Cliente
-        $cliente  = $this->fdf_nombrecliente . "\n";
+        $cliente  = 'Cliente: '.$this->fdf_nombrecliente . "\n";
         $cliente .= $this->fdf_FS_CIFNIF . ": ";
         $cliente .= $this->fdf_cifnif . "\n";
-        $cliente .= $this->fdf_direccion . "\n";
+        $cliente .= 'Dirección: '.$this->fdf_direccion;
         $cliente .= $this->fdf_codpostal . " - ";
         $cliente .= $this->fdf_ciudad . " (".$this->fdf_provincia.")\n";
         $cliente .= "Teléfono: " . $this->fdc_telefono1;
@@ -582,7 +582,7 @@ class PDF_MC_Table extends FPDF
         $x1 = 10;
         $y1 = 8;
         $this->SetXY( $x1, $y1 );
-        $this->SetFont('Arial','B',12);
+        $this->SetFont('Arial','B',10);
         $this->SetTextColor(0);
         $length = $this->GetStringWidth( $nom );
         $this->Cell( $length, 4, $nom);
@@ -627,7 +627,7 @@ class PDF_MC_Table extends FPDF
 
         $texte  = 'NCF: ' . $num;
         $tipo_comprobante = $libelle;
-        $szfont = 11;
+        $szfont = 10;
         $loop   = 0;
 
         while ( $loop == 0 )
@@ -644,7 +644,7 @@ class PDF_MC_Table extends FPDF
         $this->RoundedRect($r1, $y1, ($r2 - $r1), $y2, 2.5, 'DF');
         $this->SetXY( $r1+1, $y1+2);
         $this->Cell($r2-$r1 -1,5, $texte, 0, 0, "C" );
-        $this->SetFont( "Arial", "B", 9 );
+        $this->SetFont( "Arial", "B", 8 );
         $this->SetXY( $r1+1, $y1+7);
         $this->MultiCell( $r2-$r1-1,3, $tipo_comprobante, 0, "C");
         $this->SetXY( $r1+1, $y1+7);
@@ -679,10 +679,10 @@ class PDF_MC_Table extends FPDF
         $this->RoundedRect($r1, $y1, ($r2 - $r1), $y2-6, 2.5, 'D');
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1+1 );
-        $this->SetFont( "Arial", "B", 9);
+        $this->SetFont( "Arial", "B", 8);
         $this->Cell(10,5, 'N'.chr(176).' de CLIENTE', 0, 0, "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1 + 7 );
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont( "Arial", "", 8);
         $this->Cell(10,5,$ref, 0,0, "C");
     }
 
@@ -707,10 +707,10 @@ class PDF_MC_Table extends FPDF
     function addClientAdresse( $adresse )
     {
         $r1     = $this->w - 97;
-        $y1     = 41;
+        $y1     = 37;
         $this->SetXY( $r1, $y1);
         $this->AddFont('Verdana');
-        $this->SetFont('Verdana','',10);
+        $this->SetFont('Verdana','',8);
         $this->MultiCell( 87, 4, $adresse);
     }
 
@@ -726,7 +726,7 @@ class PDF_MC_Table extends FPDF
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1+1 );
         $this->SetFont( "Arial", "B", 9);
-        $this->Cell(10,4, "CONDUCE", 0, 0, "C");
+        $this->Cell(10,4, "TRANSPORTE", 0, 0, "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 -5 , $y1 + 5 );
         $this->SetFont( "Arial", "", 9);
         $this->Cell(10,5,$mode, 0,0, "C");

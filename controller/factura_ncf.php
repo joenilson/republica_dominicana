@@ -257,8 +257,6 @@ class factura_ncf extends fs_controller {
 
         /// Definimos todos los datos de la cabecera de la factura
         /// Datos de la empresa
-
-        $agente = new agente();
         $vendedor = $this->agente->get($this->factura->codagente);
         $vender = substr($vendedor->nombre, 0,1).substr($vendedor->apellidos,0,1);
         $pdf_doc->fde_nombre = $this->empresa->nombre;
@@ -365,7 +363,8 @@ class factura_ncf extends fs_controller {
         $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'PRECIO', 'DTO', FS_IVA, 'IMPORTE'));
         $pdf_doc->SetWidths(array(25, 85,15 ,20, 18, 10, 22));
         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
-        $pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
+        //$pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
+        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
         /// Agregamos la pagina inicial de la factura
          $pdf_doc->AddPage();
 
