@@ -196,195 +196,219 @@ class ventas_megafacturador extends fs_controller {
         $contador = 0;
         $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
-            $continuar = FALSE;
-            $albaran = new albaran_cliente();
-            //Para el plugin distribucion
-            if(property_exists('albaran_cliente','codruta')){
-               $albaran->codruta = $pedido->codruta;
-               $albaran->codvendedor = $pedido->codvendedor;
-            }
-            
-            $albaran->apartado = $pedido->apartado;
-            $albaran->cifnif = $pedido->cifnif;
-            $albaran->ciudad = $pedido->ciudad;
-            $albaran->fecha = $this->fecha_albaranes_gen;
-            $albaran->hora = \date('H:i:s');
-            $albaran->codagente = $pedido->codagente;
-            $albaran->codalmacen = $pedido->codalmacen;
-            $albaran->codcliente = $pedido->codcliente;
-            $albaran->coddir = $pedido->coddir;
-            $albaran->coddivisa = $pedido->coddivisa;
-            $albaran->tasaconv = $pedido->tasaconv;
-            $albaran->codpago = $pedido->codpago;
-            $albaran->codpais = $pedido->codpais;
-            $albaran->codpostal = $pedido->codpostal;
-            $albaran->codserie = $pedido->codserie;
-            $albaran->direccion = $pedido->direccion;
-            $albaran->nombrecliente = $pedido->nombrecliente;
-            $albaran->observaciones = $pedido->observaciones;
-            $albaran->provincia = $pedido->provincia;
-            $albaran->numero2 = $pedido->numero2;
-            $albaran->porcomision = $pedido->porcomision;
-            $albaran->neto = 0;
-            $albaran->total = 0;
-            $albaran->totaliva = 0;
-            $albaran->irpf = 0;
-            $albaran->totalirpf = 0;
-            $albaran->totalrecargo = 0;
+            if( $this->comprobar_stock($pedido) )
+            {
+                $continuar = FALSE;
+                $albaran = new albaran_cliente();
+                //Para el plugin distribucion
+                if(property_exists('albaran_cliente','codruta')){
+                   $albaran->codruta = $pedido->codruta;
+                   $albaran->codvendedor = $pedido->codvendedor;
+                }
 
-            $albaran->envio_nombre = $pedido->envio_nombre;
-            $albaran->envio_apellidos = $pedido->envio_apellidos;
-            $albaran->envio_codtrans = $pedido->envio_codtrans;
-            $albaran->envio_codigo = $pedido->envio_codigo;
-            $albaran->envio_codpais = $pedido->envio_codpais;
-            $albaran->envio_provincia = $pedido->envio_provincia;
-            $albaran->envio_ciudad = $pedido->envio_ciudad;
-            $albaran->envio_codpostal = $pedido->envio_codpostal;
-            $albaran->envio_direccion = $pedido->envio_direccion;
-            $albaran->envio_apartado = $pedido->envio_apartado;
+                $albaran->apartado = $pedido->apartado;
+                $albaran->cifnif = $pedido->cifnif;
+                $albaran->ciudad = $pedido->ciudad;
+                $albaran->fecha = $this->fecha_albaranes_gen;
+                $albaran->hora = \date('H:i:s');
+                $albaran->codagente = $pedido->codagente;
+                $albaran->codalmacen = $pedido->codalmacen;
+                $albaran->codcliente = $pedido->codcliente;
+                $albaran->coddir = $pedido->coddir;
+                $albaran->coddivisa = $pedido->coddivisa;
+                $albaran->tasaconv = $pedido->tasaconv;
+                $albaran->codpago = $pedido->codpago;
+                $albaran->codpais = $pedido->codpais;
+                $albaran->codpostal = $pedido->codpostal;
+                $albaran->codserie = $pedido->codserie;
+                $albaran->direccion = $pedido->direccion;
+                $albaran->nombrecliente = $pedido->nombrecliente;
+                $albaran->observaciones = $pedido->observaciones;
+                $albaran->provincia = $pedido->provincia;
+                $albaran->numero2 = $pedido->numero2;
+                $albaran->porcomision = $pedido->porcomision;
+                $albaran->neto = 0;
+                $albaran->total = 0;
+                $albaran->totaliva = 0;
+                $albaran->irpf = 0;
+                $albaran->totalirpf = 0;
+                $albaran->totalrecargo = 0;
 
-            if (is_null($albaran->codagente)) {
-                $albaran->codagente = $this->user->codagente;
-            }
+                $albaran->envio_nombre = $pedido->envio_nombre;
+                $albaran->envio_apellidos = $pedido->envio_apellidos;
+                $albaran->envio_codtrans = $pedido->envio_codtrans;
+                $albaran->envio_codigo = $pedido->envio_codigo;
+                $albaran->envio_codpais = $pedido->envio_codpais;
+                $albaran->envio_provincia = $pedido->envio_provincia;
+                $albaran->envio_ciudad = $pedido->envio_ciudad;
+                $albaran->envio_codpostal = $pedido->envio_codpostal;
+                $albaran->envio_direccion = $pedido->envio_direccion;
+                $albaran->envio_apartado = $pedido->envio_apartado;
 
-            /**
-             * Obtenemos el ejercicio para la fecha de hoy (puede que
-             * no sea el mismo ejercicio que el del pedido, por ejemplo
-             * si hemos cambiado de año)
-             */
-            $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, FALSE);
-            if ($eje0) {
-                $albaran->codejercicio = $eje0->codejercicio;
-            }
+                if (is_null($albaran->codagente)) {
+                    $albaran->codagente = $this->user->codagente;
+                }
 
-            if (!$eje0) {
-                $this->new_error_msg("Ejercicio no encontrado.");
-            } else if (!$eje0->abierto()) {
-                $this->new_error_msg("El ejercicio está cerrado.");
-            } else if ($albaran->save()) {
-                $trazabilidad = FALSE;
-                $continuar = TRUE;
-                $generar = TRUE;
-                $lista_errores = array();
-                $art0 = new articulo();
-                foreach ($pedido->get_lineas() as $l) {
-                    //Si el articulo existe
-                    if(!is_null($l->referencia)){
-                        $articulo = $art0->get($l->referencia);
-                        $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
-                    }
-                    $n = new linea_albaran_cliente();
-                    $n->idlineapedido = $l->idlinea;
-                    $n->idpedido = $l->idpedido;
-                    $n->idalbaran = $albaran->idalbaran;
-                    $n->cantidad = $l->cantidad;
-                    $n->codimpuesto = $l->codimpuesto;
-                    $n->codcombinacion = $l->codcombinacion;
-                    $n->descripcion = $l->descripcion;
-                    $n->dtopor = $l->dtopor;
-                    $n->irpf = $l->irpf;
-                    $n->iva = $l->iva;
-                    $n->pvpsindto = $l->pvpsindto;
-                    $n->pvptotal = $l->pvptotal;
-                    $n->pvpunitario = $l->pvpunitario;
-                    $n->recargo = $l->recargo;
-                    $n->referencia = $l->referencia;
+                /**
+                 * Obtenemos el ejercicio para la fecha de hoy (puede que
+                 * no sea el mismo ejercicio que el del pedido, por ejemplo
+                 * si hemos cambiado de año)
+                 */
+                $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, FALSE);
+                if ($eje0) {
+                    $albaran->codejercicio = $eje0->codejercicio;
+                }
 
-                    if( $n->save() )
-                    {
-                       if($articulo)
-                       {
-                          if(!$articulo->controlstock AND $articulo_stock>=$n->cantidad AND $articulo_stock > 0 )
-                          {
-                             /// descontamos del stock
-                             $articulo->sum_stock($albaran->codalmacen, 0 - $n->cantidad, FALSE, $n->codcombinacion);                             
-                          }
-                          else
-                          {
-                             $this->new_error_msg("No hay suficiente stock del artículo <b>".$n->referencia."</b> para el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a>, el stock es de ".$articulo_stock." y el pedido necesita: ".$n->cantidad);
-                             $continuar = FALSE;
-                             $lista_errores[$n->referencia] = $n->referencia;
-                             
-                          }
-                       }
+                if (!$eje0) {
+                    $this->new_error_msg("Ejercicio no encontrado.");
+                } else if (!$eje0->abierto()) {
+                    $this->new_error_msg("El ejercicio está cerrado.");
+                } else if ($albaran->save()) {
+                    $trazabilidad = FALSE;
+                    $continuar = TRUE;
+                    $lista_errores = array();
+                    $art0 = new articulo();
+                    foreach ($pedido->get_lineas() as $l) {
+                        //Si el articulo existe
+                        if(!is_null($l->referencia)){
+                            $articulo = $art0->get($l->referencia);
+                            $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
+                        }
+                        $n = new linea_albaran_cliente();
+                        $n->idlineapedido = $l->idlinea;
+                        $n->idpedido = $l->idpedido;
+                        $n->idalbaran = $albaran->idalbaran;
+                        $n->cantidad = $l->cantidad;
+                        $n->codimpuesto = $l->codimpuesto;
+                        $n->codcombinacion = $l->codcombinacion;
+                        $n->descripcion = $l->descripcion;
+                        $n->dtopor = $l->dtopor;
+                        $n->irpf = $l->irpf;
+                        $n->iva = $l->iva;
+                        $n->pvpsindto = $l->pvpsindto;
+                        $n->pvptotal = $l->pvptotal;
+                        $n->pvpunitario = $l->pvpunitario;
+                        $n->recargo = $l->recargo;
+                        $n->referencia = $l->referencia;
 
-                       $albaran->neto += $n->pvptotal;
-                       $albaran->totaliva += ($n->pvptotal * $n->iva/100);
-                       $albaran->totalirpf += ($n->pvptotal * $n->irpf/100);
-                       $albaran->totalrecargo += ($n->pvptotal * $n->recargo/100);
+                        if( $n->save() )
+                        {
+                           /// descontamos del stock
+                           if($n->referencia)
+                           {
+                              $articulo = $art0->get($n->referencia);
+                              if($articulo)
+                              {
+                                 $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
+                                 if($articulo->trazabilidad)
+                                 {
+                                    $trazabilidad = TRUE;
+                                 }
+                              }
+                           }
+                           /*
+                           if($articulo)
+                           {
+                              if(!$articulo->controlstock AND $articulo_stock>=$n->cantidad AND $articulo_stock > 0 )
+                              {
+                                 /// descontamos del stock
+                                 $articulo->sum_stock($albaran->codalmacen, 0 - $n->cantidad, FALSE, $n->codcombinacion);                             
+                              }
+                              else
+                              {
+                                 $this->new_error_msg("No hay suficiente stock del artículo <b>".$n->referencia."</b> para el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a>, el stock es de ".$articulo_stock." y el pedido necesita: ".$n->cantidad);
+                                 $continuar = FALSE;
+                                 $lista_errores[$n->referencia] = $n->referencia;
 
-                       if($n->irpf > $albaran->irpf)
-                       {
-                          $albaran->irpf = $n->irpf;
-                       }
-                    }
-                    /*
-                    if ($n->save()) {
-                        /// descontamos del stock
-                        if (!is_null($n->referencia)) {
-                            $articulo = $art0->get($n->referencia);
-                            if ($articulo) {
-                                $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
+                              }
+                           }
+                            * 
+                            */
+
+                           $albaran->neto += $n->pvptotal;
+                           $albaran->totaliva += ($n->pvptotal * $n->iva/100);
+                           $albaran->totalirpf += ($n->pvptotal * $n->irpf/100);
+                           $albaran->totalrecargo += ($n->pvptotal * $n->recargo/100);
+
+                           if($n->irpf > $albaran->irpf)
+                           {
+                              $albaran->irpf = $n->irpf;
+                           }
+                        }else {
+                            $continuar = FALSE;
+                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                            break;
+                        }
+                        /*
+                        if ($n->save()) {
+                            /// descontamos del stock
+                            if (!is_null($n->referencia)) {
+                                $articulo = $art0->get($n->referencia);
+                                if ($articulo) {
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
+                                }
                             }
+                        } else {
+                            $continuar = FALSE;
+                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                            break;
+                        }
+                        $albaran->neto += $l->pvptotal;
+                        $albaran->totaliva += ($l->pvptotal * $l->iva / 100);
+                        $albaran->totalirpf += ($l->pvptotal * $l->irpf / 100);
+                        $albaran->totalrecargo += ($l->pvptotal * $l->recargo / 100);
+                        if($l->irpf > $albaran->irpf)
+                        {
+                           $albaran->irpf = $l->irpf;
+                        }
+                        */
+                    }
+                    //Validamos la información nueva del albarán
+                    $albaran->neto = round($albaran->neto, FS_NF0);
+                    $albaran->totaliva = round($albaran->totaliva, FS_NF0);
+                    $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
+                    $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
+                    $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
+
+                    if ($continuar) {
+                        if($albaran->save()){
+                            $pedido->idalbaran = $albaran->idalbaran;
+                            $pedido->fechasalida = $albaran->fecha;
+                            $contador++;
+                            if (!$pedido->save()) {
+                                $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
+                                if ($albaran->delete()) {
+                                    $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el ".FS_PEDIDO." ".$pedido->codigo.".");
+                                } else {
+                                    $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                                }
+                            }
+                        }else{
+                            $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
                         }
                     } else {
-                        $continuar = FALSE;
-                        $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                        break;
-                    }
-                    $albaran->neto += $l->pvptotal;
-                    $albaran->totaliva += ($l->pvptotal * $l->iva / 100);
-                    $albaran->totalirpf += ($l->pvptotal * $l->irpf / 100);
-                    $albaran->totalrecargo += ($l->pvptotal * $l->recargo / 100);
-                    if($l->irpf > $albaran->irpf)
-                    {
-                       $albaran->irpf = $l->irpf;
-                    }
-                    */
-                }
-                //Validamos la información nueva del albarán
-                $albaran->neto = round($albaran->neto, FS_NF0);
-                $albaran->totaliva = round($albaran->totaliva, FS_NF0);
-                $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
-                $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
-                $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
-
-                if ($continuar) {
-                    if($albaran->save()){
-                        $pedido->idalbaran = $albaran->idalbaran;
-                        $pedido->fechasalida = $albaran->fecha;
-                        $contador++;
-                        if (!$pedido->save()) {
-                            $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
-                            if ($albaran->delete()) {
-                                $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el ".FS_PEDIDO." ".$pedido->codigo.".");
-                            } else {
-                                $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                        //Corregimos el stock si es que los articulos tienen control de stock
+                        foreach($albaran->get_lineas() as $linea){
+                            if($linea->referencia){
+                                $art1 = $this->articulos->get($linea->referencia);
+                                $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                                if(!isset($lista_errores[$linea->referencia])){
+                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+                                }
                             }
                         }
-                    }else{
-                        $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
+                        $errores++;
+                        if ($albaran->delete()) {
+                            $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                        } else {
+                            $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                        }
                     }
                 } else {
-                    //Corregimos el stock si es que los articulos tienen control de stock
-                    foreach($albaran->get_lineas() as $linea){
-                        if($linea->referencia){
-                            $art1 = $this->articulos->get($linea->referencia);
-                            $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
-                            if(!isset($lista_errores[$linea->referencia])){
-                                $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
-                            }
-                        }
-                    }
-                    $errores++;
-                    if ($albaran->delete()) {
-                        $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
-                    } else {
-                        $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
-                    }
+                    $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
                 }
-            } else {
-                $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
+            }else{
+                $this->new_error_msg("¡Artículos del " . FS_PEDIDO . " ".$pedido->codigo." sin stock suficiente!");
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y '.$errores.' no se procesaron por errores en stock o la información.');
@@ -401,130 +425,139 @@ class ventas_megafacturador extends fs_controller {
         $total = $total_albaranes['total'];
         $contador = 0;
         foreach ($this->pendientes_venta() as $albaran) {
-            $cliente = $this->cliente->get($albaran->codcliente);
-            /*
-             * Verificación de disponibilidad del Número de NCF para República Dominicana
-             */
-            //Obtenemos el tipo de comprobante a generar para el cliente
-            $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $albaran->codcliente, 'CLI');
-            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-            if (strlen($albaran->cifnif) < 9 AND $tipo_comprobante == '01') {
-                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
-            }
-            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
-            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-                $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', el ' . FS_ALBARAN . ' ' . $albaran->numero . ' no será facturado.');
-            } else {
-                $contador++;
-                $factura = new factura_cliente();
-                //Para el plugin distribucion
-                if(property_exists('factura_cliente','codruta')){
-                   $factura->codruta = $albaran->codruta;
-                   $factura->codvendedor = $albaran->codvendedor;
+            if( $this->comprobar_stock($albaran) )
+            {            
+                $cliente = $this->cliente->get($albaran->codcliente);
+                /*
+                 * Verificación de disponibilidad del Número de NCF para República Dominicana
+                 */
+                //Obtenemos el tipo de comprobante a generar para el cliente
+                $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $albaran->codcliente, 'CLI');
+                $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+                if (strlen($albaran->cifnif) < 9 AND $tipo_comprobante == '01') {
+                    $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
                 }
-                $factura->apartado = $albaran->apartado;
-                $factura->cifnif = $albaran->cifnif;
-                $factura->ciudad = $albaran->ciudad;
-                $factura->codagente = $albaran->codagente;
-                $factura->codalmacen = $albaran->codalmacen;
-                $factura->codcliente = $albaran->codcliente;
-                $factura->coddir = $albaran->coddir;
-                $factura->coddivisa = $albaran->coddivisa;
-                $factura->tasaconv = $albaran->tasaconv;
-                $factura->codpago = $albaran->codpago;
-                $factura->codpais = $albaran->codpais;
-                $factura->codpostal = $albaran->codpostal;
-                $factura->codserie = $albaran->codserie;
-                $factura->direccion = $albaran->direccion;
-                $factura->neto = $albaran->neto;
-                $factura->nombrecliente = $albaran->nombrecliente;
-                $factura->observaciones = $albaran->observaciones;
-                $factura->provincia = $albaran->provincia;
-                $factura->envio_apartado = $albaran->envio_apartado;
-                $factura->envio_apellidos = $albaran->envio_apellidos;
-                $factura->envio_ciudad = $albaran->envio_ciudad;
-                $factura->envio_codigo = $albaran->envio_codigo;
-                $factura->envio_codpais = $albaran->envio_codpais;
-                $factura->envio_codpostal = $albaran->envio_codpostal;
-                $factura->envio_codtrans = $albaran->envio_codtrans;
-                $factura->envio_direccion = $albaran->envio_direccion;
-                $factura->envio_nombre = $albaran->envio_nombre;
-                $factura->envio_provincia = $albaran->envio_provincia;
-                $factura->total = $albaran->total;
-                $factura->totaliva = $albaran->totaliva;
-                $factura->numero2 = $numero_ncf['NCF'];
-                $factura->irpf = $albaran->irpf;
-                $factura->totalirpf = $albaran->totalirpf;
-                $factura->totalrecargo = $albaran->totalrecargo;
-                $factura->porcomision = $albaran->porcomision;
-
-                if (is_null($factura->codagente)) {
-                    $factura->codagente = $this->user->codagente;
-                }
-                /// asignamos el ejercicio que corresponde a la fecha elegida
-                $eje0 = $this->ejercicio->get_by_fecha($this->fecha_facturas_gen);
-                if ($eje0) {
-                    $factura->codejercicio = $eje0->codejercicio;
-                    $factura->set_fecha_hora($this->fecha_facturas_gen, \date('H:i:s'));
-                }
-
-                /// comprobamos la forma de pago para saber si hay que marcar la factura como pagada
-                $forma0 = new forma_pago();
-                $formapago = $forma0->get($factura->codpago);
-                if ($formapago) {
-                    if ($formapago->genrecibos == 'Pagados') {
-                        $factura->pagada = TRUE;
+                //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+                $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
+                if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+                    $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', el ' . FS_ALBARAN . ' ' . $albaran->numero . ' no será facturado.');
+                } else {
+                    $contador++;
+                    $factura = new factura_cliente();
+                    //Para el plugin distribucion
+                    if(property_exists('factura_cliente','codruta')){
+                       $factura->codruta = $albaran->codruta;
+                       $factura->codvendedor = $albaran->codvendedor;
                     }
-                    $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
-                }
+                    $factura->apartado = $albaran->apartado;
+                    $factura->cifnif = $albaran->cifnif;
+                    $factura->ciudad = $albaran->ciudad;
+                    $factura->codagente = $albaran->codagente;
+                    $factura->codalmacen = $albaran->codalmacen;
+                    $factura->codcliente = $albaran->codcliente;
+                    $factura->coddir = $albaran->coddir;
+                    $factura->coddivisa = $albaran->coddivisa;
+                    $factura->tasaconv = $albaran->tasaconv;
+                    $factura->codpago = $albaran->codpago;
+                    $factura->codpais = $albaran->codpais;
+                    $factura->codpostal = $albaran->codpostal;
+                    $factura->codserie = $albaran->codserie;
+                    $factura->direccion = $albaran->direccion;
+                    $factura->neto = $albaran->neto;
+                    $factura->nombrecliente = $albaran->nombrecliente;
+                    $factura->observaciones = $albaran->observaciones;
+                    $factura->provincia = $albaran->provincia;
+                    $factura->envio_apartado = $albaran->envio_apartado;
+                    $factura->envio_apellidos = $albaran->envio_apellidos;
+                    $factura->envio_ciudad = $albaran->envio_ciudad;
+                    $factura->envio_codigo = $albaran->envio_codigo;
+                    $factura->envio_codpais = $albaran->envio_codpais;
+                    $factura->envio_codpostal = $albaran->envio_codpostal;
+                    $factura->envio_codtrans = $albaran->envio_codtrans;
+                    $factura->envio_direccion = $albaran->envio_direccion;
+                    $factura->envio_nombre = $albaran->envio_nombre;
+                    $factura->envio_provincia = $albaran->envio_provincia;
+                    $factura->total = $albaran->total;
+                    $factura->totaliva = $albaran->totaliva;
+                    $factura->numero2 = $numero_ncf['NCF'];
+                    $factura->irpf = $albaran->irpf;
+                    $factura->totalirpf = $albaran->totalirpf;
+                    $factura->totalrecargo = $albaran->totalrecargo;
+                    $factura->porcomision = $albaran->porcomision;
 
-                $regularizacion = new regularizacion_iva();
+                    if (is_null($factura->codagente)) {
+                        $factura->codagente = $this->user->codagente;
+                    }
+                    /// asignamos el ejercicio que corresponde a la fecha elegida
+                    $eje0 = $this->ejercicio->get_by_fecha($this->fecha_facturas_gen);
+                    if ($eje0) {
+                        $factura->codejercicio = $eje0->codejercicio;
+                        $factura->set_fecha_hora($this->fecha_facturas_gen, \date('H:i:s'));
+                    }
 
-                if (!$eje0) {
-                    $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
-                } else if (!$eje0->abierto()) {
-                    $this->new_error_msg("El ejercicio está cerrado.");
-                } else if ($regularizacion->get_fecha_inside($factura->fecha)) {
-                    $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
-                } else if ($factura->save()) {
-                    $continuar = TRUE;
-                    $ncf_controller = new helper_ncf();
-                    $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-                    foreach ($albaran->get_lineas() as $l) {
-                        $n = new linea_factura_cliente();
-                        $n->idalbaran = $l->idalbaran;
-                        $n->idfactura = $factura->idfactura;
-                        $n->cantidad = $l->cantidad;
-                        $n->codimpuesto = $l->codimpuesto;
-                        $n->descripcion = $l->descripcion;
-                        $n->dtopor = $l->dtopor;
-                        $n->irpf = $l->irpf;
-                        $n->iva = $l->iva;
-                        $n->pvpsindto = $l->pvpsindto;
-                        $n->pvptotal = $l->pvptotal;
-                        $n->pvpunitario = $l->pvpunitario;
-                        $n->recargo = $l->recargo;
-                        $n->referencia = $l->referencia;
-                        $n->orden = $l->orden;
-                        $n->mostrar_cantidad = $l->mostrar_cantidad;
-                        $n->mostrar_precio = $l->mostrar_precio;
-                        $n->codcombinacion = $l->codcombinacion;
-
-                        if (!$n->save()) {
-                            $continuar = FALSE;
-                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                            break;
+                    /// comprobamos la forma de pago para saber si hay que marcar la factura como pagada
+                    $forma0 = new forma_pago();
+                    $formapago = $forma0->get($factura->codpago);
+                    if ($formapago) {
+                        if ($formapago->genrecibos == 'Pagados') {
+                            $factura->pagada = TRUE;
                         }
+                        $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
                     }
 
-                    if ($continuar) {
-                        $albaran->idfactura = $factura->idfactura;
-                        $albaran->ptefactura = FALSE;
-                        if ($albaran->save()) {
-                            $this->generar_asiento_cliente($factura);
+                    $regularizacion = new regularizacion_iva();
+
+                    if (!$eje0) {
+                        $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
+                    } else if (!$eje0->abierto()) {
+                        $this->new_error_msg("El ejercicio está cerrado.");
+                    } else if ($regularizacion->get_fecha_inside($factura->fecha)) {
+                        $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
+                    } else if ($factura->save()) {
+                        $continuar = TRUE;
+                        $ncf_controller = new helper_ncf();
+                        $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                        foreach ($albaran->get_lineas() as $l) {
+                            $n = new linea_factura_cliente();
+                            $n->idalbaran = $l->idalbaran;
+                            $n->idfactura = $factura->idfactura;
+                            $n->cantidad = $l->cantidad;
+                            $n->codimpuesto = $l->codimpuesto;
+                            $n->descripcion = $l->descripcion;
+                            $n->dtopor = $l->dtopor;
+                            $n->irpf = $l->irpf;
+                            $n->iva = $l->iva;
+                            $n->pvpsindto = $l->pvpsindto;
+                            $n->pvptotal = $l->pvptotal;
+                            $n->pvpunitario = $l->pvpunitario;
+                            $n->recargo = $l->recargo;
+                            $n->referencia = $l->referencia;
+                            $n->orden = $l->orden;
+                            $n->mostrar_cantidad = $l->mostrar_cantidad;
+                            $n->mostrar_precio = $l->mostrar_precio;
+                            $n->codcombinacion = $l->codcombinacion;
+
+                            if (!$n->save()) {
+                                $continuar = FALSE;
+                                $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                                break;
+                            }
+                        }
+
+                        if ($continuar) {
+                            $albaran->idfactura = $factura->idfactura;
+                            $albaran->ptefactura = FALSE;
+                            if ($albaran->save()) {
+                                $this->generar_asiento_cliente($factura);
+                            } else {
+                                $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
+                                if ($factura->delete()) {
+                                    $this->new_error_msg("La factura se ha borrado.");
+                                } else {
+                                    $this->new_error_msg("¡Imposible borrar la factura!");
+                                }
+                            }
                         } else {
-                            $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
                             if ($factura->delete()) {
                                 $this->new_error_msg("La factura se ha borrado.");
                             } else {
@@ -532,15 +565,11 @@ class ventas_megafacturador extends fs_controller {
                             }
                         }
                     } else {
-                        if ($factura->delete()) {
-                            $this->new_error_msg("La factura se ha borrado.");
-                        } else {
-                            $this->new_error_msg("¡Imposible borrar la factura!");
-                        }
+                        $this->new_error_msg("¡Imposible guardar la factura!");
                     }
-                } else {
-                    $this->new_error_msg("¡Imposible guardar la factura!");
                 }
+            }else{
+                $this->new_error_msg("¡Artículos del " . FS_ALBARAN . " ".$albaran->codigo." sin stock suficiente!");
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
@@ -689,6 +718,60 @@ class ventas_megafacturador extends fs_controller {
 
         return $ok;
     }
+    
+    /**
+    * Comprueba el stock de cada uno de los artículos del documento.
+    * Devuelve TRUE si hay suficiente stock.
+    * @return boolean
+    */
+   private function comprobar_stock($documento)
+   {
+      $ok = TRUE;
+      
+      $art0 = new articulo();
+      foreach($documento->get_lineas() as $linea)
+      {
+         if($linea->referencia)
+         {
+            $articulo = $art0->get($linea->referencia);
+            if($articulo)
+            {
+               if(!$articulo->controlstock)
+               {
+                  if($linea->cantidad > $articulo->stockfis)
+                  {
+                     /// si se pide más cantidad de la disponible, es que no hay suficiente
+                     $ok = FALSE;
+                  }
+                  else
+                  {
+                     /// comprobamos el stock en el almacén del pedido
+                     $ok = FALSE;
+                     foreach($articulo->get_stock() as $stock)
+                     {
+                        if($stock->codalmacen == $documento->codalmacen)
+                        {
+                           if($stock->cantidad >= $linea->cantidad)
+                           {
+                              $ok = TRUE;
+                           }
+                           break;
+                        }
+                     }
+                  }
+                  
+                  if(!$ok)
+                  {
+                     $this->new_error_msg('No hay suficiente stock del artículo '.$linea->referencia);
+                     break;
+                  }
+               }
+            }
+         }
+      }
+      
+      return $ok;
+   }
 
     private function array_to_text(Array $array) {
         $substring = "";
