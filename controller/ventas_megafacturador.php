@@ -529,7 +529,7 @@ class ventas_megafacturador extends fs_controller {
                     }
                 }
             }else{
-                $this->new_error_msg("¡Artículos del " . FS_ALBARAN . " ".$albaran->codigo." sin stock suficiente!");
+                $this->new_error_msg("¡Artículos del " . FS_ALBARAN . " <a href=\"".$albaran->url()."\" target=\"_blank\">".$albaran->codigo."</a> sin stock suficiente!");
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
