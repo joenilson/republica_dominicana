@@ -95,11 +95,11 @@ class ventas_megafacturador extends fs_controller {
     public $ncf_rango;
     public $ncf_ventas;
     public $ncf_entidad_tipo;
-   
+
    //Para el plugin distribucion
    public $distribucion_clientes;
    public $cliente_rutas;
-   
+
     public function __construct() {
         parent::__construct(__CLASS__, 'Facturación masiva', 'ventas', FALSE, TRUE, FALSE);
     }
@@ -136,7 +136,7 @@ class ventas_megafacturador extends fs_controller {
         if(class_exists('distribucion_clientes')){
            $this->distribucion_clientes = new distribucion_clientes();
         }
-        
+
         $documento = filter_input(INPUT_GET, 'documento');
         $procesar_g = filter_input(INPUT_GET, 'procesar');
         $procesar_p = filter_input(INPUT_POST, 'procesar');
@@ -306,24 +306,6 @@ class ventas_megafacturador extends fs_controller {
                                  }
                               }
                            }
-                           /*
-                           if($articulo)
-                           {
-                              if(!$articulo->controlstock AND $articulo_stock>=$n->cantidad AND $articulo_stock > 0 )
-                              {
-                                 /// descontamos del stock
-                                 $articulo->sum_stock($albaran->codalmacen, 0 - $n->cantidad, FALSE, $n->codcombinacion);                             
-                              }
-                              else
-                              {
-                                 $this->new_error_msg("No hay suficiente stock del artículo <b>".$n->referencia."</b> para el pedido <a href='".$pedido->url()."' target='_blank'>". $pedido->codigo . "</a>, el stock es de ".$articulo_stock." y el pedido necesita: ".$n->cantidad);
-                                 $continuar = FALSE;
-                                 $lista_errores[$n->referencia] = $n->referencia;
-
-                              }
-                           }
-                            * 
-                            */
 
                            $albaran->neto += $n->pvptotal;
                            $albaran->totaliva += ($n->pvptotal * $n->iva/100);
@@ -339,29 +321,7 @@ class ventas_megafacturador extends fs_controller {
                             $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                             break;
                         }
-                        /*
-                        if ($n->save()) {
-                            /// descontamos del stock
-                            if (!is_null($n->referencia)) {
-                                $articulo = $art0->get($n->referencia);
-                                if ($articulo) {
-                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
-                                }
-                            }
-                        } else {
-                            $continuar = FALSE;
-                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                            break;
-                        }
-                        $albaran->neto += $l->pvptotal;
-                        $albaran->totaliva += ($l->pvptotal * $l->iva / 100);
-                        $albaran->totalirpf += ($l->pvptotal * $l->irpf / 100);
-                        $albaran->totalrecargo += ($l->pvptotal * $l->recargo / 100);
-                        if($l->irpf > $albaran->irpf)
-                        {
-                           $albaran->irpf = $l->irpf;
-                        }
-                        */
+
                     }
                     //Validamos la información nueva del albarán
                     $albaran->neto = round($albaran->neto, FS_NF0);
@@ -393,7 +353,7 @@ class ventas_megafacturador extends fs_controller {
                                 $art1 = $this->articulos->get($linea->referencia);
                                 $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
                                 if(!isset($lista_errores[$linea->referencia])){
-                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion); 
+                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                                 }
                             }
                         }
@@ -408,7 +368,7 @@ class ventas_megafacturador extends fs_controller {
                     $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
                 }
             }else{
-                $this->new_error_msg("¡Artículos del " . FS_PEDIDO . " ".$pedido->codigo." sin stock suficiente!");
+                $this->new_error_msg("¡Artículos del " . FS_PEDIDO ." <a href=\"".$pedido->url()."\" target=\"_blank\">".$pedido->codigo."</a> sin stock suficiente!");
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y '.$errores.' no se procesaron por errores en stock o la información.');
@@ -426,7 +386,7 @@ class ventas_megafacturador extends fs_controller {
         $contador = 0;
         foreach ($this->pendientes_venta() as $albaran) {
             if( $this->comprobar_stock($albaran) )
-            {            
+            {
                 $cliente = $this->cliente->get($albaran->codcliente);
                 /*
                  * Verificación de disponibilidad del Número de NCF para República Dominicana
@@ -581,7 +541,7 @@ class ventas_megafacturador extends fs_controller {
         $sql = "SELECT * FROM albaranescli WHERE ptefactura = true";
         if(!empty($this->codalmacen)){
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
-        } 
+        }
         if (!empty($this->series_elegidas_albaranes)) {
             $series = $this->array_to_text($this->series_elegidas_albaranes);
             $sql .= " AND codserie IN (" . $series . ") ";
@@ -610,7 +570,7 @@ class ventas_megafacturador extends fs_controller {
         $sql = "SELECT fecha, count(idalbaran) as total FROM albaranescli WHERE ptefactura = true";
         if(!empty($this->codalmacen)){
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
-        }        
+        }
         if (!empty($this->series_elegidas_albaranes)) {
             $series = $this->array_to_text($this->series_elegidas_albaranes);
             $sql .= " AND codserie IN (" . $series . ") ";
@@ -643,7 +603,7 @@ class ventas_megafacturador extends fs_controller {
         $sql = "SELECT * FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
         if(!empty($this->codalmacen)){
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
-        } 
+        }
         if (!empty($this->series_elegidas_pedidos)) {
             $series = $this->array_to_text($this->series_elegidas_pedidos);
             $sql .= " AND codserie IN (" . $series . ") ";
@@ -670,11 +630,11 @@ class ventas_megafacturador extends fs_controller {
         $total = 0;
         $subtotal = array();
         $sql = "SELECT fecha, count(idpedido) as total FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
-        
+
         if(!empty($this->codalmacen)){
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
         }
-        
+
         if (!empty($this->series_elegidas_pedidos)) {
             $series = $this->array_to_text($this->series_elegidas_pedidos);
             $sql .= " AND codserie IN (" . $series . ") ";
@@ -718,7 +678,7 @@ class ventas_megafacturador extends fs_controller {
 
         return $ok;
     }
-    
+
     /**
     * Comprueba el stock de cada uno de los artículos del documento.
     * Devuelve TRUE si hay suficiente stock.
@@ -727,7 +687,7 @@ class ventas_megafacturador extends fs_controller {
    private function comprobar_stock($documento)
    {
       $ok = TRUE;
-      
+
       $art0 = new articulo();
       foreach($documento->get_lineas() as $linea)
       {
@@ -759,7 +719,7 @@ class ventas_megafacturador extends fs_controller {
                         }
                      }
                   }
-                  
+
                   if(!$ok)
                   {
                      $this->new_error_msg('No hay suficiente stock del artículo '.$linea->referencia);
@@ -769,7 +729,7 @@ class ventas_megafacturador extends fs_controller {
             }
          }
       }
-      
+
       return $ok;
    }
 
