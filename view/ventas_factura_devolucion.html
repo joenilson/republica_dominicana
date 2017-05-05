@@ -76,7 +76,8 @@
                         <div class="form-control">{$value->cantidad}</div>
                      </td>
                      <td class="info">
-                        <input type="number" name="devolver_{$value->idlinea}" value="0" min="0" max="{$value->cantidad}" step="any" class="form-control text-right"/>
+                        
+                        <input type="number" name="devolver_{$value->idlinea}" value="0" min="0" {if="$value->dtopor==100"}readonly{/if} max="{$value->cantidad}" step="any" class="form-control text-right"/>
                      </td>
                   </tr>
                   {/loop}
@@ -97,29 +98,33 @@
                            {/loop}
                         </select>
                            {if="$fsc->empresa->codpais=='ESP'"}
-                        <p class="help-block">
-                           En España la {#FS_FACTURA_RECTIFICATIVA#} debe ir en una serie distinta.
-                        </p>
-                              {/if}
+                            <p class="help-block">
+                               En España la {#FS_FACTURA_RECTIFICATIVA#} debe ir en una serie distinta.
+                            </p>
+                           {/if}
+                           <p class="help-block text-danger bg-danger">
+                                No se puede hacer {#FS_FACTURA_RECTIFICATIVA#} de articulos que salieron con descuento del 100% ya que generaría valor 0 en {#FS_IVA#} e importe.
+                            </p>
                      </div>
-                     </div>
-                     <div class="col-sm-2">
-                        <div class="form-group">
-                           Fecha:
-                           <div class="input-group">
-                              <span class="input-group-addon">
-                                 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                              </span>
-                              <input type="text" name="fecha" value="{$fsc->today()}" class="form-control datepicker" autocomplete="off"/>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="col-sm-7 text-right">
-                     <br/>
-                     <button type="submit" class="btn btn-sm btn-primary">
-                        <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp; Guardar
-                     </button>
-                  </div>
+                    </div>
+                    <div class="col-sm-2">
+                       <div class="form-group">
+                          Fecha:
+                          <div class="input-group">
+                             <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                             </span>
+                             <input type="text" name="fecha" value="{$fsc->today()}" class="form-control datepicker" autocomplete="off"/>
+                          </div>
+                       </div>
+                    </div>
+                    <div class="col-sm-7 text-right">
+                       <br/>
+                       <button type="submit" class="btn btn-sm btn-primary">
+                          <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp; Guardar
+                       </button>
+                    </div>
+                   
                </div>
                <div class="row">
                   <div class="col-sm-12">
