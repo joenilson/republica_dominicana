@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 require_model('agencia_transporte.php');
 require_model('almacen.php');
 require_model('articulo.php');
@@ -48,7 +49,7 @@ require_once 'helper_ncf.php';
  */
 require_model('distribucion_clientes.php');
 
-class nueva_venta extends fs_controller
+class nueva_venta extends fbase_controller
 {
    public $agencia;
    public $agente;
@@ -107,7 +108,6 @@ class nueva_venta extends fs_controller
       
       /// cargamos la configuración
       $fsvar = new fs_var();
-      $this->multi_almacen = $fsvar->simple_get('multi_almacen');
       $this->nuevocli_setup = $fsvar->array_get(
          array(
             'nuevocli_cifnif_req' => 0,
@@ -147,7 +147,7 @@ class nueva_venta extends fs_controller
 
       if( isset($_REQUEST['buscar_cliente']) )
       {
-         $this->buscar_cliente();
+         $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
       }
       else if( isset($_REQUEST['datoscliente']) )
       {
@@ -411,21 +411,6 @@ class nueva_venta extends fs_controller
       return 'index.php?page='.__CLASS__.'&tipo='.$this->tipo;
    }
 
-   private function buscar_cliente()
-   {
-      /// desactivamos la plantilla HTML
-      $this->template = FALSE;
-
-      $json = array();
-      foreach($this->cliente->search($_REQUEST['buscar_cliente']) as $cli)
-      {
-         $json[] = array('value' => $cli->razonsocial, 'data' => $cli->codcliente);
-      }
-
-      header('Content-Type: application/json');
-      echo json_encode( array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json) );
-   }
-
    private function datos_cliente()
    {
       /// desactivamos la plantilla HTML
@@ -587,6 +572,8 @@ class nueva_venta extends fs_controller
       /// cambiamos la plantilla HTML
       $this->template = 'ajax/nueva_venta_combinaciones';
 
+      $impuestos = $this->impuesto->all();
+      
       $this->results = array();
       $comb1 = new articulo_combinacion();
       foreach($comb1->all_from_ref($_POST['referencia4combi']) as $com)
@@ -1707,6 +1694,7 @@ class nueva_venta extends fs_controller
                {
                   $this->new_message("<a href='".$pedido->url()."'>".ucfirst(FS_PEDIDO)."</a> guardado correctamente.");
                   $this->new_change(ucfirst(FS_PEDIDO)." a Cliente ".$pedido->codigo, $pedido->url(), TRUE);
+
                   if($_POST['redir'] == 'TRUE')
                   {
                      header('Location: '.$pedido->url());

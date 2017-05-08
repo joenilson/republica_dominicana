@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 require_model('agente.php');
 require_model('almacen.php');
 require_model('articulo.php');
@@ -42,11 +43,10 @@ require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
 
-class tpv_recambios extends fs_controller
+class tpv_recambios extends fbase_controller
 {
    public $agente;
    public $almacen;
-   public $allow_delete;
    public $articulo;
    public $caja;
    public $cliente;
@@ -78,10 +78,8 @@ class tpv_recambios extends fs_controller
 
    protected function private_core()
    {
+      parent::private_core();
       $this->share_extensions();
-
-      /// ¿El usuario tiene permiso para eliminar en esta página?
-      $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
 
       $this->articulo = new articulo();
       $this->cliente = new cliente();
@@ -299,8 +297,6 @@ class tpv_recambios extends fs_controller
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
 
-      $fsvar = new fs_var();
-      $multi_almacen = $fsvar->simple_get('multi_almacen');
       $stock = new stock();
 
       $codfamilia = '';
@@ -324,7 +320,7 @@ class tpv_recambios extends fs_controller
          $this->results[$i]->cantidad = 1;
 
          $this->results[$i]->stockalm = $value->stockfis;
-         if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
+         if( $this->multi_almacen AND isset($_REQUEST['codalmacen']) )
          {
             $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
          }
@@ -380,6 +376,8 @@ class tpv_recambios extends fs_controller
       /// cambiamos la plantilla HTML
       $this->template = 'ajax/tpv_recambios_combinaciones';
 
+      $impuestos = $this->impuesto->all();
+      
       $this->results = array();
       $comb1 = new articulo_combinacion();
       foreach($comb1->all_from_ref($_POST['referencia4combi']) as $com)
@@ -391,12 +389,23 @@ class tpv_recambios extends fs_controller
          }
          else
          {
+            $iva = 0;
+            foreach($impuestos as $imp)
+            {
+               if($imp->codimpuesto == $_POST['codimpuesto'])
+               {
+                  $iva = $imp->iva;
+                  break;
+               }
+            }
+            
             $this->results[$com->codigo] = array(
                 'ref' => $_POST['referencia4combi'],
                 'desc' => base64_decode($_POST['desc'])."\n".$com->nombreatributo.' - '.$com->valor,
                 'pvp' => floatval($_POST['pvp']) + $com->impactoprecio,
                 'dto' => floatval($_POST['dto']),
                 'codimpuesto' => $_POST['codimpuesto'],
+                'iva' => $iva,
                 'cantidad' => floatval($_POST['cantidad']),
                 'txt' => $com->nombreatributo.' - '.$com->valor,
                 'codigo' => $com->codigo,

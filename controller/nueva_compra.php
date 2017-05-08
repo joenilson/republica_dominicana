@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 require_model('almacen.php');
 require_model('articulo_combinacion.php');
 require_model('articulo_proveedor.php');
@@ -30,7 +31,7 @@ require_model('regularizacion_iva.php');
 require_model('ncf_tipo.php');
 require_model('ncf_rango.php');
 
-class nueva_compra extends fs_controller
+class nueva_compra extends fbase_controller
 {
    public $agente;
    public $almacen;
@@ -57,6 +58,8 @@ class nueva_compra extends fs_controller
 
    protected function private_core()
    {
+      parent::private_core();
+      
       $this->articulo_prov = new articulo_proveedor();
       $this->fabricante = new fabricante();
       $this->familia = new familia();
@@ -82,7 +85,7 @@ class nueva_compra extends fs_controller
 
       if( isset($_REQUEST['buscar_proveedor']) )
       {
-         $this->buscar_proveedor();
+         $this->fbase_buscar_proveedor($_REQUEST['buscar_proveedor']);
       }
       else if( isset($_REQUEST['datosproveedor']) )
       {
@@ -210,21 +213,6 @@ class nueva_compra extends fs_controller
       return 'index.php?page='.__CLASS__.'&tipo='.$this->tipo;
    }
 
-   private function buscar_proveedor()
-   {
-      /// desactivamos la plantilla HTML
-      $this->template = FALSE;
-
-      $json = array();
-      foreach($this->proveedor->search($_REQUEST['buscar_proveedor']) as $pro)
-      {
-         $json[] = array('value' => $pro->razonsocial, 'data' => $pro->codproveedor);
-      }
-
-      header('Content-Type: application/json');
-      echo json_encode( array('query' => $_REQUEST['buscar_proveedor'], 'suggestions' => $json) );
-   }
-
    private function datos_proveedor()
    {
       /// desactivamos la plantilla HTML
@@ -324,10 +312,7 @@ class nueva_compra extends fs_controller
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
 
-      $fsvar = new fs_var();
-      $multi_almacen = $fsvar->simple_get('multi_almacen');
       $stock = new stock();
-
       $this->results = $this->search_from_proveedor();
 
       /// completamos los datos de la búsqueda
@@ -352,7 +337,7 @@ class nueva_compra extends fs_controller
 
          /// añadimos el stock del almacén y el general
          $this->results[$i]->stockalm = $this->results[$i]->stockfis;
-         if( $multi_almacen AND isset($_REQUEST['codalmacen']) )
+         if( $this->multi_almacen AND isset($_REQUEST['codalmacen']) )
          {
             $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
          }

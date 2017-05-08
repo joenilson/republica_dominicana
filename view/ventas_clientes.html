@@ -11,18 +11,6 @@
    {
       $('#tab_clientes a[href="#grupos"]').tab('show');
    }
-   function eliminar_grupo(cod)
-   {
-      bootbox.confirm({
-         message: '¿Realmente desea eliminar el grupo '+cod+'?',
-         title: '<b>Atención</b>',
-         callback: function(result) {
-            if (result) {
-                window.location.href = '{$fsc->url()}&delete_grupo='+cod+'#grupos';
-            }
-         }
-      });
-   }
    $(document).ready(function() {
       if(window.location.hash.substring(1) == 'nuevo')
       {
@@ -52,12 +40,12 @@
                <span class="glyphicon glyphicon-refresh"></span>
             </a>
             {if="$fsc->page->is_default()"}
-            <a class="btn btn-sm btn-default active" href="{$fsc->url()}&amp;default_page=FALSE" title="desmarcar como página de inicio">
-               <span class="glyphicon glyphicon-home"></span>
+            <a class="btn btn-sm btn-default active" href="{$fsc->url()}&amp;default_page=FALSE" title="Marcada como página de inicio (pulsa de nuevo para desmarcar)">
+               <i class="fa fa-bookmark" aria-hidden="true"></i>
             </a>
             {else}
-            <a class="btn btn-sm btn-default" href="{$fsc->url()}&amp;default_page=TRUE" title="marcar como página de inicio">
-               <span class="glyphicon glyphicon-home"></span>
+            <a class="btn btn-sm btn-default" href="{$fsc->url()}&amp;default_page=TRUE" title="Marcar como página de inicio">
+               <i class="fa fa-bookmark-o" aria-hidden="true"></i>
             </a>
             {/if}
          </div>
@@ -81,8 +69,7 @@
    </div>
 </div>
 
-<div id="tab_clientes" role="tabpanel">
-   <ul class="nav nav-tabs" role="tablist">
+<ul id="tab_clientes" class="nav nav-tabs" role="tablist">
       <li role="presentation" class="active">
          <a href="#home" aria-controls="home" role="tab" data-toggle="tab">
             <span class="glyphicon glyphicon-search"></span>
@@ -93,7 +80,7 @@
       <li role="presentation">
          <a href="#grupos" aria-controls="grupos" role="tab" data-toggle="tab">
             <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
-            <span class="hidden-xs">&nbsp; Grupos</span>
+            <span class="hidden-xs">&nbsp;Grupos</span>
             <span class="badge">{function="count($fsc->grupos)"}</span>
          </a>
       </li>
@@ -178,12 +165,13 @@
                            <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
                         </div>
                         <select name="orden" class="form-control" onchange="this.form.submit()">
-                           <option value="nombre ASC">Orden: nombre</option>
-                           <option value="nombre DESC"{if="$fsc->orden=='nombre DESC'"} selected=""{/if}>Orden: nombre descendente</option>
-                           <option value="cifnif ASC"{if="$fsc->orden=='cifnif ASC'"} selected=""{/if}>Orden: {#FS_CIFNIF#}</option>
-                           <option value="cifnif DESC"{if="$fsc->orden=='cifnif DESC'"} selected=""{/if}>Orden: {#FS_CIFNIF#} descendente</option>
-                           <option value="fechaalta ASC"{if="$fsc->orden=='fechaalta ASC'"} selected=""{/if}>Orden: fecha</option>
-                           <option value="fechaalta DESC"{if="$fsc->orden=='fechaalta DESC'"} selected=""{/if}>Orden: fecha descendente</option>
+                        {loop="$fsc->orden()"}
+                           {if="$fsc->orden==$key"}
+                           <option value="{$key}" selected="">{$value}</option>
+                           {else}
+                           <option value="{$key}">{$value}</option>
+                           {/if}
+                        {/loop}
                         </select>
                      </div>
                   </div>
@@ -214,7 +202,6 @@
             </div>
             </div>
          </form>
-
          <div class="table-responsive">
             <table class="table table-hover">
                <thead>
@@ -270,72 +257,55 @@
          </div>
       </div>
       <div role="tabpanel" class="tab-pane" id="grupos">
+      <div class="container-fluid" style="margin-top: 15px;">
+         <div class="row">
+            <div class="col-sm-8">
+               <div class="table-responsive">
          <table class="table table-hover">
             <thead>
                <tr>
-                  <th width="70"></th>
-                  <th class="text-left" width="150">Código</th>
-                  <th class="text-left">Nombre</th>
-                  <th class="text-left">
-                     <a href="{$fsc->tarifa->url()}">
-                        Tarifa &nbsp;<span class="glyphicon glyphicon-share"></span>
-                     </a>
-                  </th>
-                  <th class="text-right" width="120">Acción</th>
+                           <th class="text-left">Código + Nombre</th>
+                           <th class="text-right">Tarifa</th>
                </tr>
             </thead>
             {loop="$fsc->grupos"}
-            <form action="{$fsc->url()}#grupos" method="post" class="form">
-               <tr>
+                <tr class="clickableRow" href="{$value->url()}">
                   <td>
-                     <a href="{$value->url()}" class="btn btn-block btn-default" title="ver detalles de este grupo">
-                        <span class="glyphicon glyphicon-eye-open"></span>
-                     </a>
-                  </td>
-                  <td>
-                     <input class="form-control" type="text" name="codgrupo" value="{$value->codgrupo}" readonly="true"/>
-                  </td>
-                  <td>
-                     <input class="form-control" type="text" name="nombre" value="{$value->nombre}" maxlength="50" autocomplete="off"/>
-                  </td>
-                  <td>
-                     <select name="codtarifa" class="form-control">
-                        <option value="---">Ninguna</option>
-                        <option value="---">---</option>
-                        {loop="$fsc->tarifas"}
-                           {if="$value1->codtarifa==$value2->codtarifa"}
-                           <option value="{$value2->codtarifa}" selected="">{$value2->nombre}</option>
-                           {else}
-                           <option value="{$value2->codtarifa}">{$value2->nombre}</option>
-                           {/if}
-                        {/loop}
-                     </select>
+                    <a href="{$value->url()}">{$value->codgrupo}</a> {$value->nombre}
                   </td>
                   <td class="text-right">
-                     <div class="btn-group">
-                        {if="$fsc->allow_delete"}
-                        <a href="#" class="btn btn-sm btn-danger" title="Eliminar" onclick="eliminar_grupo('{$value->codgrupo}')">
-                           <span class="glyphicon glyphicon-trash"></span>
-                        </a>
-                        {/if}
-                        <button class="btn btn-sm btn-primary" type="submit" title="Guardar" onclick="this.disabled=true;this.form.submit();">
-                           <span class="glyphicon glyphicon-floppy-disk"></span>
-                        </button>
-                     </div>
+                        {loop="$fsc->tarifas"}
+                              {if="$value1->codtarifa==$value2->codtarifa"}{$value2->nombre}{/if}
+                        {/loop}
                   </td>
                </tr>
-            </form>
+                     {else}
+                     <tr class="warning">
+                        <td colspan="2">Sin resultados.</td>
+                     </tr>
             {/loop}
+                  </table>
+               </div>
+            </div>
+            <div class="col-sm-4">
             <form name="f_new_grupo" action="{$fsc->url()}#grupos" method="post" class="form">
-               <tr class="info">
-                  <td></td>
-                  <td>
+                  <div class="panel panel-info">
+                     <div class="panel-heading">
+                        <h3 class="panel-title">
+                           <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>&nbsp; Nuevo grupo
+                        </h3>
+                     </div>
+                     <div class="panel-body">
+                        <div class="form-group">
+                           Código:
                      <input class="form-control" type="text" name="codgrupo" value="{$fsc->grupo->get_new_codigo()}" maxlength="6" autocomplete="off"/>
-                  </td>
-                  <td>
+                        </div>
+                        <div class="form-group">
+                           Nombre:
                      <input class="form-control" type="text" name="nombre" maxlength="50" placeholder="Nuevo grupo..." autocomplete="off"/>
-                  </td>
-                  <td>
+                        </div>
+                        <div class="form-group">
+                           <a href="{$fsc->tarifa->url()}">Tarifa</a>:
                      <select name="codtarifa" class="form-control">
                         <option value="---">Ninguna tarifa</option>
                         <option value="---">---</option>
@@ -343,17 +313,20 @@
                         <option value="{$value->codtarifa}">{$value->nombre}</option>
                         {/loop}
                      </select>
-                  </td>
-                  <td class="text-right">
+                        </div>
+                     </div>
+                     <div class="panel-footer">
                      <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();" title="Nuevo">
                         <span class="glyphicon glyphicon-plus-sign"></span>
-                        <span class="hidden-sm">&nbsp; Nuevo</span>
+                           <span class="hidden-sm">&nbsp;Nuevo</span>
                      </button>
-                  </td>
-               </tr>
-            </form>
-         </table>
+                     </div>
+                  </div>
+                </form>
+            </div>
+         </div>
       </div>
+   </div>
       {loop="$fsc->extensions"}
          {if="$value->type=='tab'"}
          <div role="tabpanel" class="tab-pane" id="ext_{$value->name}">
@@ -361,7 +334,6 @@
    </div>
          {/if}
       {/loop}
-</div>
 </div>
 
 <form class="form-horizontal" role="form" name="f_nuevo_cliente" action="{$fsc->url()}" method="post">

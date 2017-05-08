@@ -35,7 +35,7 @@
    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp; Esta factura está anulada.
 </div>
 {else}
-<form action="{$fsc->url()}" method="post" class="form">
+<form action="{$fsc->url()}" id="f_devolucion" method="post" class="form">
    <input type="hidden" name="id" value="{$fsc->factura->idfactura}"/>
 <div class="container-fluid">
    <div class="row">
@@ -61,8 +61,9 @@
                         <th width="150" class="text-right">Devolver</th>
                      </tr>
                   </thead>
+                  <tbody id='lineas_factura'>
                   {loop="$fsc->factura->get_lineas()"}
-                  <tr>
+                  <tr id='linea_{$value->idlinea}'>
                      <td>
                         <div class="form-control">{$value->referencia} {$value->descripcion}</div>
                      </td>
@@ -73,14 +74,17 @@
                         <div class="form-control">{$fsc->show_numero($value->dtopor)} %</div>
                      </td>
                      <td class="text-right">
-                        <div class="form-control">{$value->cantidad}</div>
+                        <div class="form-control">
+                            <input type='hidden' id='cantidad_{$value->idlinea}' name='cantidad_{$value->idlinea}' value='{$value->cantidad}'>
+                            {$value->cantidad}
+                        </div>
                      </td>
                      <td class="info">
-                        
-                        <input type="number" name="devolver_{$value->idlinea}" value="0" min="0" {if="$value->dtopor==100"}readonly{/if} max="{$value->cantidad}" step="any" class="form-control text-right"/>
+                        <input type="number" id="devolver_{$value->idlinea}" name="devolver_{$value->idlinea}" value="0" min="0" {if="$value->dtopor==100"}readonly{/if} max="{$value->cantidad}" step="any" class="form-control text-right"/>
                      </td>
                   </tr>
                   {/loop}
+                  </tbody>
                </table>
            </div>
            <div class="panel-body">
@@ -120,6 +124,9 @@
                     </div>
                     <div class="col-sm-7 text-right">
                        <br/>
+                       <button type="button" class="btn btn-sm btn-warning" id="b_devolucion_total">
+                          <span class="fa fa-undo" aria-hidden="true"></span>&nbsp; Devolución Total
+                       </button>
                        <button type="submit" class="btn btn-sm btn-primary">
                           <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp; Guardar
                        </button>
@@ -144,6 +151,32 @@
       </div>
    </div>
 </form>
+<script>
+    $(document).ready(function () {
+        bootbox.setLocale('es');
+        $('#b_devolucion_total').click(function (event) {
+            bootbox.confirm({
+                title: '¿Generar devolución completa de la factura?',
+                message: "¿Desea generar la devolución completa de la factura?, si acepta se copiarán los valores de todos los productos a devolver, luego de esto debe dar click en Guardar.",
+                callback: function(respuesta)
+                {
+                    if(respuesta)
+                    {
+                        $('#lineas_factura > tr').each(function(idx) {
+                            console.log(idx);
+                            var item = this.id;
+                            var item_parts = item.split('_');
+                            var linea = item_parts[1];
+                            var cantidad = $('#cantidad_'+linea).val();
+                            $('#devolver_'+linea).attr('readonly','true');
+                            $('#devolver_'+linea).val(cantidad); 
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
 {/if}
 <br/>
 {/if}

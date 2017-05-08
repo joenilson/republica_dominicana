@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 require_model('almacen.php');
 require_model('articulo.php');
 require_model('asiento.php');
@@ -33,10 +34,9 @@ require_model('subcuenta.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('impuesto.php');
 
-class compras_factura extends fs_controller
+class compras_factura extends fbase_controller
 {
    public $agente;
-   public $allow_delete;
    public $almacen;
    public $divisa;
    public $ejercicio;
@@ -57,8 +57,7 @@ class compras_factura extends fs_controller
 
    protected function private_core()
    {
-      /// ¿El usuario tiene permiso para eliminar en esta página?
-      $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
+      parent::private_core();
 
       $this->ppage = $this->page->get('compras_facturas');
       $this->agente = FALSE;

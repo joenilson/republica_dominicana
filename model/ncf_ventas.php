@@ -294,10 +294,11 @@ class ncf_ventas extends fs_model {
         if($codalmacen !=''){
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
-        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
-                "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." AND estado = TRUE ".
-                "ORDER BY idempresa, fecha, ncf");
+        $sql = "SELECT * FROM ncf_ventas WHERE ".
+            " idempresa = ".$this->intval($idempresa)." AND ".
+            " fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." AND estado = TRUE ".
+            " ORDER BY idempresa, fecha, ncf;";
+        $data = $this->db->select($sql);
 
         if($data)
         {
@@ -313,9 +314,6 @@ class ncf_ventas extends fs_model {
                 $datos->cifnif_len = strlen($datos->cifnif);
                 $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
                 $datos->fecha = str_replace("-", "", $datos->fecha);
-                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
-                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
-                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
@@ -328,14 +326,14 @@ class ncf_ventas extends fs_model {
     public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
     {
         $lista = array();
+        $extra='';
         if($codalmacen !=''){
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
-        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
-                "idempresa = ".$this->intval($idempresa)." AND ".
-                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." and estado = FALSE ".
-                "ORDER BY idempresa, fecha, ncf");
-
+        $data = $this->db->select("SELECT * FROM ncf_ventas ".
+                " WHERE idempresa = ".$this->intval($idempresa)." AND ".
+                " fecha BETWEEN ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." and estado = false ".
+                " ORDER BY idempresa, fecha, ncf");
         if($data)
         {
             foreach($data as $d)
@@ -350,15 +348,10 @@ class ncf_ventas extends fs_model {
                 $datos->cifnif_len = strlen($datos->cifnif);
                 $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
                 $datos->fecha = str_replace("-", "", $datos->fecha);
-                $datos->neto = ($datos->neto<0)?$datos->neto*-1:$datos->neto;
-                $datos->totaliva = ($datos->totaliva<0)?$datos->totaliva*-1:$datos->totaliva;
-                $datos->total = ($datos->total<0)?$datos->total*-1:$datos->total;
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-
         }
-
         return $lista;
     }
 }

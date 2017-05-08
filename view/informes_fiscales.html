@@ -104,20 +104,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          <form class="form-inline" method="POST" action='{$fsc->url()}'>
             <input type="hidden" name="tipo-reporte" id="tipo-reporte" value='{$fsc->reporte}'>
             <label for='inicio'><b>Fecha Inicio</b></label>
-            <input type="text" class="form-control datepicker" name='inicio' id="inicio">
+            <input type="text" class="form-control input-sm datepicker" name='inicio' id="inicio">
             <label for='fin'><b>Fecha Fin</b></label>
-            <input type="text" class="form-control datepicker" name="fin" id="fin">
-            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen" id="codalmacen" data-style="btn-default" data-actions-box="true">
-                <option value="">Elija un Almacén</option>
+            <input type="text" class="form-control input-sm datepicker" name="fin" id="fin">
+            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen[]" required='' id="codalmacen" data-style="btn-default btn-sm" data-actions-box="true">
                 {if="$fsc->user->admin"}
                     {loop="$fsc->almacenes->all()"}
-                    <option value="{$value->codalmacen}" {if="$value->codalmacen==$fsc->codalmacen"}selected{/if}>{$value->nombre}</option>
+                    <option value="{$value->codalmacen}" {if="in_array($value->codalmacen,$fsc->almacenes_seleccionados)"}selected{/if}>{$value->nombre}</option>
                     {/loop}
                 {else}
                 <option value="{$fsc->user->codalmacen}" selected>{$fsc->user->nombrealmacen}</option>
                 {/if}
             </select>
-            <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
+            <div class='btn-group'>
+                <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
+                {if="$fsc->archivoXLSXPath"}
+                <a class="btn btn-success btn-sm" role="button" href="{$fsc->archivoXLSXPath}">Descargar Informaci&oacute;n</a>
+                {/if}
+            </div>
          </form>
       </div>
       <div class="col-lg-10 col-md-10 col-sm-9">
@@ -164,13 +168,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </table>
                     </div>
                     <div class='col-sm-9'>
-                        <table id="table-reporte-consolidado" data-mobile-responsive="true" data-toggle="table" data-height="450" data-show-footer="false" data-show-export="true">
+                        <table id="table-reporte-consolidado" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="false">
                             <thead>
                               <tr>
-                                  <th colspan="9" class="text-center">Reporte Consolidado del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                  <th colspan="10" class="text-center">Reporte Consolidado del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                               </tr>
                               <tr class="text-center">
                                   <th data-sortable="true">Tipo</th>
+                                  <th data-sortable="true">Almacén</th>
                                   <th data-sortable="true">Fecha</th>
                                   <th data-sortable="true">Entidad</th>
                                   <th data-sortable="true">NCF</th>
@@ -182,11 +187,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                               </tr>
                             </thead>
                             <tbody>
-                              {$lineas=1}
                               {if="$fsc->total_resultados_consolidado!=0"}
                                 {loop="$fsc->resultados_consolidado"}
-                                <tr id="tr-id-{$lineas}" {if="$value->condicion=='Anulado'"}class="danger"{/if}>
-                                    <td id="td-id-{$lineas}">{$value->tipo}</td>
+                                <tr id="tr-id-{$counter}" {if="$value->condicion=='Anulado'"}class="danger"{/if}>
+                                    <td id="td-id-{$counter}">{$value->tipo}</td>
+                                    <td>{$value->codalmacen}</td>
                                     <td>{$value->fecha}</td>
                                     <td>{$value->nombre}</td>
                                     <td>{$value->ncf}</td>
@@ -196,11 +201,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                     <td class="text-center">{$value->pagada}</td>
                                     <td class="text-left">{$value->condicion}</td>
                                 </tr>
-                                {$lineas=$lineas+1}
                                 {/loop}
                               {else}
                                 <tr>
-                                    <td colspan="9" class="alert alert-danger text-center">
+                                    <td colspan="10" class="alert alert-danger text-center">
                                         <span>No hay registros con las fechas seleccionadas</span>
                                     </td>
                                 </tr>
@@ -210,13 +214,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-ventas'"}active{/if}" id="reporte-ventas">
-                    <table id="table-reporte-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="10" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true">Almacén</th>
                               <th data-sortable="true" data-footer-formatter="totalFormatter">Cliente</th>
                               <th data-sortable="true">RNC</th>
                               <th data-sortable="true">NCF</th>
@@ -228,11 +233,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_ventas!=0"}
                             {loop="$fsc->resultados_ventas"}
-                            <tr id="tr-id-{$lineas}" {if="!$value->estado"}class="danger"{/if}>
-                                <td id="td-id-{$lineas}">{$value->fecha}</td>
+                            <tr id="tr-id-{$counter}" {if="!$value->estado"}class="danger"{/if}>
+                                <td id="td-id-{$counter}">{$value->fecha}</td>
+                                <td>{$value->codalmacen}</td>
                                 <td>{$value->nombrecliente}</td>
                                 <td>{$value->cifnif}</td>
                                 <td>{$value->ncf}</td>
@@ -242,11 +247,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td class="text-right">{$value->total}</td>
                                 <td class="text-center">{$value->condicion}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
+                                <td colspan="10" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>
@@ -255,13 +259,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-ventas'"}active{/if}" id="detalle-ventas">
-                    <table id="table-detalle-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-detalle-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
-                                <th colspan="8" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="9" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true">Almacén</th>
                               <th data-sortable="true">NCF</th>
                               <th data-sortable="true">Documento</th>
                               <th data-sortable="true">Codigo</th>
@@ -272,20 +277,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_detalle_ventas!=0"}
                             {loop="$fsc->resultados_detalle_ventas"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$value->fecha}</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->fecha}</td>
+                                <td>{$value->codalmacen}</td>
                                 <td>{$value->ncf}</td>
                                 <td>{$value->documento}</td>
-                                <td>{$value->referencia}</td>
+                                <td><a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a></td>
                                 <td>{$value->descripcion}</td>
                                 <td class="text-right">{$value->cantidad}</td>
                                 <td class="text-right">{$value->precio}</td>
                                 <td class="text-right">{$value->monto}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
@@ -298,37 +302,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='resumen-ventas'"}active{/if}" id="resumen-ventas">
-                    <table id="table-resumen-ventas" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-resumen-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
-                                <th colspan="6" class="text-center">Resúmen de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="7" class="text-center">Resúmen de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
-                          <tr class="text-center">
-                              <th data-sortable="true">Tipo NCF</th>
-                              <th data-sortable="true">Descripci&oacute;n NCF</th>
-                              <th data-sortable="true">Codigo</th>
-                              <th data-sortable="true">Descripci&oacute;n</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
-                          </tr>
+                            <tr class="text-center">
+                                <th data-sortable="true">Almacén</th>
+                                <th data-sortable="true">Tipo NCF</th>
+                                <th data-sortable="true">Descripci&oacute;n NCF</th>
+                                <th data-sortable="true">Referencia</th>
+                                <th data-sortable="true">Descripci&oacute;n Artículo</th>
+                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_resumen_ventas!=0"}
                             {loop="$fsc->resultados_resumen_ventas"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$value->tipo_comprobante}</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->codalmacen}</td>
+                                <td>{$value->tipo_comprobante}</td>
                                 <td>{$value->tc_descripcion}</td>
-                                <td>{$value->referencia}</td>
+                                <td>
+                                    {if="$value->referencia"}
+                                    <a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a>
+                                    {else}
+                                    No Aplica
+                                    {/if}
+                                </td>
                                 <td>{$value->descripcion}</td>
                                 <td class="text-right">{$value->cantidad}</td>
                                 <td class="text-right">{$value->monto}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
-                                <td colspan="6" class="alert alert-danger text-center">
+                                <td colspan="7" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>
@@ -337,27 +347,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-compras'"}active{/if}" id="reporte-compras">
-                    <table id="table-reporte-compras" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-compras" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
                                 <th colspan="8" class="text-center">Reporte de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
-                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                              <th data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
-                              <th data-sortable="true">RNC</th>
-                              <th data-sortable="true">Factura - NCF</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
-                          </tr>
+                                <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                                <th data-sortable="true">Almacén</th> 
+                                <th data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
+                                <th data-sortable="true">RNC</th>
+                                <th data-sortable="true">Factura - NCF</th>
+                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
+                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
+                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_compras!=0"}
                             {loop="$fsc->resultados_compras"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$value->fecha}</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->fecha}</td>
+                                <td>{$value->codalmacen}</td>
                                 <td>{$value->nombre}</td>
                                 <td>{$value->cifnif}</td>
                                 <td>{$value->idfactura} - {$value->numproveedor}</td>
@@ -365,11 +376,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td class="text-right">{$value->totaliva}</td>
                                 <td class="text-right">{$value->total}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
+                                <td colspan="8" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>
@@ -378,46 +388,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-606'"}active{/if}" id="reporte-606">
-                    <table id="table-reporte-606" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-606" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
                                 <th colspan="13" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
-                          <tr class="text-center">
-                              <th data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
-                              <th>Tipo Id.</th>
-                              <th data-footer-formatter="totalFormatter">Tipo Bienes o Servicios Comprados</th>
-                              <th>NCF</th>
-                              <th>NCF Modifica</th>
-                              <th>Fec. NCF AAAAMM</th>
-                              <th>Fec. NCF DD</th>
-                              <th>Fec. Pago AAAAMM</th>
-                              <th>Fec. Pago DD</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Retenido</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Retencion Renta</th>
-                          </tr>
+                            <tr class="text-center">
+                                <th data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
+                                <th>Tipo Id.</th>
+                                <th data-footer-formatter="totalFormatter">Tipo Bienes o Servicios Comprados</th>
+                                <th>NCF</th>
+                                <th>NCF Modifica</th>
+                                <th>Fec. NCF AAAAMM</th>
+                                <th>Fec. NCF DD</th>
+                                <th>Fec. Pago AAAAMM</th>
+                                <th>Fec. Pago DD</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Retenido</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Retencion Renta</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_606!=0"}
                             {loop="$fsc->resultados_606"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$value->cifnif}</td>
-                                <td>1</td>
-                                <td>Proveedor</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->cifnif}</td>
+                                <td>{$value->tipo_id}</td>
+                                <td>{$value->descripcion}</td>
                                 <td>{$value->numproveedor}</td>
-                                <td>{$value->idfacturarect}</td>
-                                <td>{$value->fecha|substr:6,4}{$value->fecha|substr:3,2}</td>
-                                <td>{$value->fecha|substr:0,2}</td>
-                                <td>{$value->fecha|substr:6,4}{$value->fecha|substr:3,2}</td>
-                                <td>{$value->fecha|substr:0,2}</td>
-                                <td class="text-right">{$value->neto}</td>
+                                <td>{$value->numproveedor_rect}</td>
+                                <td>{$value->periodo}</td>
+                                <td>{$value->dia}</td>
+                                <td>{$value->periodo_pago}</td>
+                                <td>{$value->dia_pago}</td>
                                 <td class="text-right">{$value->totaliva}</td>
-                                <td class="text-right">{$value->total}</td>
+                                <td class="text-right">{$value->totalirpf}</td>
+                                <td class="text-right">{$value->neto}</td>
+                                <td class="text-right">{$value->retencionneto}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
@@ -430,31 +439,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                       </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-607'"}active{/if}" id="reporte-607">
-                    <table id="table-reporte-607" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-607" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
                                 <th colspan="9" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
-                          <tr>
-                              <th data-footer-formatter="totalTextFormatter">Item</th>
-                              <th data-footer-formatter="totalFormatter">RNC/Cedula</th>
-                              <th>Tipo Ident.</th>
-                              <th>NCF</th>
-                              <th>NCF Modifica</th>
-                              <th>Fecha</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
-                              <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
-                              <th>Estado</th>
-                          </tr>
+                            <tr>
+                                <th data-footer-formatter="totalTextFormatter">Item</th>
+                                <th data-footer-formatter="totalFormatter">RNC/Cedula</th>
+                                <th>Tipo Ident.</th>
+                                <th>NCF</th>
+                                <th>NCF Modifica</th>
+                                <th>Fecha</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
+                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th>Estado</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_607!=0"}
                             {loop="$fsc->resultados_607"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$lineas}</td>
-                                <td>{if="$value->cifnif_len>8"}{$value->cifnif}{/if}</td>
-                                <td>{if="$value->cifnif_len>8"}{$value->cifnif_tipo}{else}3{/if}</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$counter+1}</td>
+                                <td>{$value->cifnif}</td>
+                                <td>{$value->tipo_id}</td>
                                 <td>{$value->ncf}</td>
                                 <td>{$value->ncf_modifica}</td>
                                 <td>{$value->fecha}</td>
@@ -462,7 +470,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td class="text-right">{$value->neto}</td>
                                 <td class="text-center">{$value->condicion}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
@@ -475,10 +482,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-608'"}active{/if}" id="reporte-608">
-                    <table id="table-reporte-608" data-mobile-responsive="true" data-toggle="table" data-height="300" data-show-footer="true" data-show-export="true">
+                    <table id="table-reporte-608" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                       <thead>
                           <tr>
-                              <th colspan="8" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                              <th colspan="4" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                           </tr>
                         <tr>
                             <th data-footer-formatter="totalTextFormatter">NCF</th>
@@ -488,20 +495,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </tr>
                       </thead>
                       <tbody>
-                          {$lineas=1}
                           {if="$fsc->total_resultados_608!=0"}
                             {loop="$fsc->resultados_608"}
-                            <tr id="tr-id-{$lineas}">
-                                <td id="td-id-{$lineas}">{$value->ncf}</td>
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->ncf}</td>
                                 <td>{$value->fecha}</td>
                                 <td class="text-left">{$value->motivo}</td>
                                 <td class="text-center">{$value->condicion}</td>
                             </tr>
-                            {$lineas=$lineas+1}
                             {/loop}
                           {else}
                             <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
+                                <td colspan="4" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>

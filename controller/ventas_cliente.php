@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 require_model('agente.php');
 require_model('cliente.php');
 require_model('cuenta_banco_cliente.php');
@@ -32,10 +33,9 @@ require_model('direccion_proveedor.php');
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 
-class ventas_cliente extends fs_controller
+class ventas_cliente extends fbase_controller
 {
    public $agente;
-   public $allow_delete;
    public $cliente;
    public $cuenta_banco;
    public $divisa;
@@ -53,6 +53,8 @@ class ventas_cliente extends fs_controller
 
    protected function private_core()
    {
+      parent::private_core();
+      
       $this->ppage = $this->page->get('ventas_clientes');
       $this->agente = new agente();
       $this->cuenta_banco = new cuenta_banco_cliente();
@@ -63,9 +65,6 @@ class ventas_cliente extends fs_controller
       $this->serie = new serie();
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-
-      /// ¿El usuario tiene permiso para eliminar en esta página?
-      $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
 
       /// cargamos el cliente
       $cliente = new cliente();
