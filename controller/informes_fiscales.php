@@ -122,7 +122,7 @@ class informes_fiscales extends fs_controller {
         }
         
         $codalmacen = \filter_input(INPUT_POST, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-        $this->codalmacen = (isset($this->user->codalmacen))?$this->user->codalmacen:$codalmacen;
+        $this->codalmacen = ($codalmacen)?$codalmacen:false;
         $this->almacenes_seleccionados = (is_array($this->codalmacen))?$this->codalmacen:array($this->codalmacen);
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
         if(!empty($tiporeporte)){

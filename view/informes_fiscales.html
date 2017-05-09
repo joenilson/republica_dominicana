@@ -113,13 +113,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <label for='fin'><b>Fecha Fin</b></label>
             <input type="text" class="form-control input-sm datepicker" name="fin" id="fin">
             <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen[]" required='' id="codalmacen" data-style="btn-default btn-sm" data-actions-box="true">
-                {if="$fsc->user->admin"}
-                    {loop="$fsc->almacenes->all()"}
-                    <option value="{$value->codalmacen}" {if="in_array($value->codalmacen,$fsc->almacenes_seleccionados)"}selected{/if}>{$value->nombre}</option>
-                    {/loop}
-                {else}
-                <option value="{$fsc->user->codalmacen}" selected>{$fsc->user->nombrealmacen}</option>
-                {/if}
+            {loop="$fsc->almacenes->all()"}
+                <option value="{$value->codalmacen}" {if="in_array($value->codalmacen,$fsc->almacenes_seleccionados)"}selected{/if}>{$value->nombre}</option>
+            {/loop}
             </select>
             <div class='btn-group'>
                 <button class="btn btn-default btn-sm" type="submit" name="buscar">Generar Informaci&oacute;n</button>
