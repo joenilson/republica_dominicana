@@ -83,6 +83,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte de Compras
                     </a>
                 </li>
+                <li role="presentation" {if="$fsc->reporte=='detalle-compras'"}class="active"{/if}>
+                    <a href="#detalle-compras" aria-controls="detalle-compras" role="tab" data-toggle="tab" onclick="seleccionar('detalle-compras');">
+                        <span class="glyphicon glyphicon-book"></span> &nbsp; Detalle de Compras
+                    </a>
+                </li>
                 <li role="presentation" {if="$fsc->reporte=='reporte-606'"}class="active"{/if}>
                     <a href="#reporte-606" aria-controls="reporte-606" role="tab" data-toggle="tab" onclick="seleccionar('reporte-606');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Reporte 606
@@ -283,7 +288,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td id="td-id-{$counter}">{$value->fecha}</td>
                                 <td>{$value->codalmacen}</td>
                                 <td>{$value->ncf}</td>
-                                <td>{$value->documento}</td>
+                                <td><a href="{#FS_PATH#}index.php?page=ventas_factura&id={$value->documento}" target="_blank">{$value->documento}</a></td>
                                 <td><a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a></td>
                                 <td>{$value->descripcion}</td>
                                 <td class="text-right">{$value->cantidad}</td>
@@ -371,7 +376,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td>{$value->codalmacen}</td>
                                 <td>{$value->nombre}</td>
                                 <td>{$value->cifnif}</td>
-                                <td>{$value->idfactura} - {$value->numproveedor}</td>
+                                <td><a href="{#FS_PATH#}index.php?page=compras_factura&id={$value->idfactura}" target="_blank">{$value->idfactura} - {$value->numproveedor}</a></td>
                                 <td class="text-right">{$value->neto}</td>
                                 <td class="text-right">{$value->totaliva}</td>
                                 <td class="text-right">{$value->total}</td>
@@ -380,6 +385,49 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                           {else}
                             <tr>
                                 <td colspan="8" class="alert alert-danger text-center">
+                                    <span>No hay registros con las fechas seleccionadas</span>
+                                </td>
+                            </tr>
+                           {/if}
+                        </tbody>
+                      </table>
+                </div>
+                <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-compras'"}active{/if}" id="detalle-compras">
+                    <table id="table-detalle-compras" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                        <thead>
+                            <tr>
+                                <th colspan="9" class="text-center">Detalle de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                            </tr>
+                          <tr class="text-center">
+                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true">Almacén</th>
+                              <th data-sortable="true">NCF</th>
+                              <th data-sortable="true">Documento</th>
+                              <th data-sortable="true">Codigo</th>
+                              <th data-sortable="true">Descripci&oacute;n</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
+                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {if="$fsc->total_resultados_detalle_compras!=0"}
+                            {loop="$fsc->resultados_detalle_compras"}
+                            <tr id="tr-id-{$counter}">
+                                <td id="td-id-{$counter}">{$value->fecha}</td>
+                                <td>{$value->codalmacen}</td>
+                                <td>{$value->ncf}</td>
+                                <td><a href="{#FS_PATH#}index.php?page=compras_factura&id={$value->documento}" target="_blank">{$value->documento}</a></td>
+                                <td><a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a></td>
+                                <td>{$value->descripcion}</td>
+                                <td class="text-right">{$value->cantidad}</td>
+                                <td class="text-right">{$value->precio}</td>
+                                <td class="text-right">{$value->monto}</td>
+                            </tr>
+                            {/loop}
+                          {else}
+                            <tr>
+                                <td colspan="9" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>

@@ -43,6 +43,7 @@ class informes_fiscales extends fs_controller {
     public $resultados_607;
     public $resultados_608;
     public $resultados_detalle_ventas;
+    public $resultados_detalle_compras;
     public $resultados_resumen_ventas;
     public $total_resultados_consolidado;
     public $total_resultados_ventas;
@@ -50,6 +51,7 @@ class informes_fiscales extends fs_controller {
     public $total_resultados_606;
     public $total_resultados_607;
     public $total_resultados_608;
+    public $total_resultados_detalle_compras;
     public $total_resultados_detalle_ventas;
     public $total_resultados_resumen_ventas;
     public $sumaVentas;
@@ -82,6 +84,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_606 = '';
         $this->resultados_607 = '';
         $this->resultados_608 = '';
+        $this->resultados_detalle_compras = '';
         $this->resultados_detalle_ventas = '';
         $this->resultados_resumen_ventas = '';
         $this->total_resultados_consolidado = 0;
@@ -90,6 +93,7 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_606 = 0;
         $this->total_resultados_607 = 0;
         $this->total_resultados_608 = 0;
+        $this->total_resultados_detalle_compras = 0;
         $this->total_resultados_detalle_ventas = 0;
         $this->total_resultados_resumen_ventas = 0;
         
@@ -136,6 +140,9 @@ class informes_fiscales extends fs_controller {
                     break;
                 case 'reporte-compras':
                     $this->compras();
+                    break;
+                case 'detalle-compras':
+                    $this->detalle_compras();
                     break;
                 case 'reporte-606':
                     $this->dgii606();
@@ -233,6 +240,48 @@ class informes_fiscales extends fs_controller {
         );
     }
 
+    public function detalle_compras(){
+        $lista = array();
+        $sql = "SELECT  codalmacen, fecha, numproveedor, f.idfactura, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
+        " FROM facturasprov as f".
+        " JOIN lineasfacturasprov as fl on (f.idfactura = fl.idfactura)".
+        " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+        " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+        " AND anulada = FALSE".
+        " AND codalmacen IN ('".implode("','",$this->almacenes_seleccionados)."') ".
+        " ORDER BY codalmacen,fecha,numproveedor";
+        $data = $this->db->select($sql);
+        $totalCantidad = 0;
+        $totalMonto = 0;
+        if($data){
+            foreach ($data as $d){
+                $linea = new stdClass();
+                $linea->codalmacen = $d['codalmacen'];
+                $linea->fecha = $d['fecha'];
+                $linea->ncf = $d['numproveedor'];
+                $linea->documento = $d['idfactura'];
+                $linea->referencia = $d['referencia'];
+                $linea->descripcion = $d['descripcion'];
+                $linea->cantidad = $d['cantidad'];
+                $linea->precio = $d['precio'];
+                $linea->monto = $d['monto'];
+                $lista[] = $linea;
+                $totalCantidad += $d['cantidad'];
+                $totalMonto += $d['monto'];
+            }
+        }
+        $this->resultados_detalle_compras = $lista;
+        $this->total_resultados_detalle_compras = count($lista);
+        $this->generar_excel(
+            array('Almacén','Fecha','NCF','Documento','Referencia','Descripción','Cantidad','Precio','Monto'), 
+            $this->resultados_detalle_compras, 
+            array('Total','','','','','',$totalCantidad,'',$totalMonto), 
+            FALSE, 
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')), 
+            FALSE
+        );
+    }
+    
     public function detalle_ventas(){
         $lista = array();
         $sql = "SELECT  codalmacen, fecha,ncf, documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
