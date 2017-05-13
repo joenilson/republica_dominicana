@@ -70,6 +70,8 @@ class helper_ncf extends fs_controller {
                 $ncf_factura->motivo = $motivo;
             }
             if (!$ncf_factura->save()) {
+                $factura->numero2 = $ncf_factura->ncf;
+                $factura->save();
                 return $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->idfactura . ' con el NCF: ' . $numero_ncf['NCF'] . ' Anule la factura e intentelo nuevamente.');
             } else {
                 $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
