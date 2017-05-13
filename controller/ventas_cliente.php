@@ -54,7 +54,7 @@ class ventas_cliente extends fbase_controller
    protected function private_core()
    {
       parent::private_core();
-      
+
       $this->ppage = $this->page->get('ventas_clientes');
       $this->agente = new agente();
       $this->cuenta_banco = new cuenta_banco_cliente();
@@ -77,11 +77,14 @@ class ventas_cliente extends fbase_controller
       {
          $this->cliente = $cliente->get($_GET['cod']);
       }
-      $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
-
+      
       if($this->cliente)
       {
          $this->page->title = $this->cliente->codcliente;
+         $ncf_entidad_tipo = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
+         $ncf_entidad_tipo_0 = new ncf_entidad_tipo();
+         $ncf_entidad_tipo_0->tipo_comprobante = '02';
+         $this->ncf_cliente_tipo = ($ncf_entidad_tipo)?$ncf_entidad_tipo:$ncf_entidad_tipo_0;
 
       /// ¿Hay que hacer algo más?
       if( isset($_GET['delete_cuenta']) ) /// eliminar cuenta bancaria

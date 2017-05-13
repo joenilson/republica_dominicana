@@ -103,15 +103,7 @@ class ncf_rango extends fs_model
         }
         else
         {
-            return $this->db->select("SELECT * FROM ncf_rango WHERE ".
-                    "idempresa = ".$this->intval($this->idempresa)." AND ".
-                    "solicitud = ".$this->intval($this->solicitud)." AND ".
-                    "codalmacen = ".$this->var2str($this->codalmacen)." AND ".
-                    "serie= ".$this->var2str($this->serie)." AND ".
-                    "division= ".$this->var2str($this->division)." AND ".
-                    "punto_emision = ".$this->var2str($this->punto_emision)." AND ".
-                    "area_impresion = ".$this->var2str($this->area_impresion)." AND ".
-                    "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";");
+            return $this->get_by_id($this->idempresa, $this->id);
         }
     }
 
@@ -234,20 +226,33 @@ class ncf_rango extends fs_model
 
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
+        $ncf = array('NCF'=>'NO_DISPONIBLE');
         $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
         $data = $this->db->select("SELECT ".
-        "* ".
-        "FROM ncf_rango ".
-        "WHERE ".
-        "idempresa = ".$this->intval($idempresa)." AND ".
-        "codalmacen = ".$this->var2str($codalmacen)." AND ".
-        "contado = ".$contado." AND ".
-        "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+        " * ".
+        " FROM ".$this->table_name.
+        " WHERE ".
+        " idempresa = ".$this->intval($idempresa)." AND ".
+        " codalmacen = ".$this->var2str($codalmacen)." AND ".
+        " contado = ".$contado." AND ".
+        " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
         if($data){
-            return $this->ncf_number($data[0]);
+            $ncf = $this->ncf_number($data[0]);
         }else{
-            return array('NCF'=>"NO_DISPONIBLE");
+            $data2 = $this->db->select("SELECT ".
+                " * ".
+                " FROM ".$this->table_name.
+                " WHERE ".
+                " idempresa = ".$this->intval($idempresa)." AND ".
+                " codalmacen = ".$this->var2str($codalmacen)." AND ".
+                " contado != ".$contado." AND ".
+                " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+            if($data2)
+            {
+                $ncf = $this->ncf_number($data2[0]);
+            }
         }
+        return $ncf;
     }
 
     public function generate_terminal($idempresa, $codalmacen, $tipo_comprobante, $codpago, $area_impresion)

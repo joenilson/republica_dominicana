@@ -70,11 +70,11 @@ class ventas_albaran extends fbase_controller
    public $ncf_entidad_tipo;
    public $ncf_tipo;
    public $ncf_ventas;
-   
+
    //Para el plugin distribucion
    public $distribucion_clientes;
    public $cliente_rutas;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, FS_ALBARAN.' de cliente', 'ventas', FALSE, FALSE);
@@ -83,7 +83,7 @@ class ventas_albaran extends fbase_controller
    protected function private_core()
    {
       parent::private_core();
-      
+
       $this->ppage = $this->page->get('ventas_albaranes');
       $this->agente = FALSE;
 
@@ -106,7 +106,7 @@ class ventas_albaran extends fbase_controller
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_ventas = new ncf_ventas();
-      
+
       //Para el plugin distribucion
       if(class_exists('distribucion_clientes')){
          $this->distribucion_clientes = new distribucion_clientes();
@@ -202,7 +202,7 @@ class ventas_albaran extends fbase_controller
          {
             $this->albaran->fecha = $_POST['fecha'];
             $this->albaran->hora = $_POST['hora'];
-            
+
             if($this->albaran->codejercicio != $eje0->codejercicio)
             {
                $this->albaran->codejercicio = $eje0->codejercicio;
@@ -560,7 +560,24 @@ class ventas_albaran extends fbase_controller
       */
       //Obtenemos el tipo de comprobante a generar para el cliente
       $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->albaran->codcliente, 'CLI');
-      $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+      $tipo_comprobante = '02';
+      if($tipo_comprobante_d)
+      {
+          $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+      }
+      else
+      {
+          $net0 = new ncf_entidad_tipo();
+          $net0->entidad = $this->albaran->codcliente;
+          $net0->estado = TRUE;
+          $net0->fecha_creacion = \date('Y-m-d H:i:s');
+          $net0->usuario_creacion = $this->user->nick;
+          $net0->idempresa = $this->empresa->id;
+          $net0->tipo_comprobante = '02';
+          $net0->tipo_entidad = 'CLI';
+          $net0->save();
+      }
+
       if(strlen($this->albaran->cifnif)<9 AND $tipo_comprobante == '01'){
          return $this->new_error_msg('El cliente tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
       }
@@ -571,7 +588,7 @@ class ventas_albaran extends fbase_controller
           return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', el '. FS_ALBARAN .' no será facturado.');
       }
       $factura = new factura_cliente();
-      
+
       /**
        * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
        * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
@@ -581,7 +598,7 @@ class ventas_albaran extends fbase_controller
          $factura->codruta = $this->albaran->codruta;
          $factura->codvendedor = $this->albaran->codvendedor;
       }
-      
+
       $factura->apartado = $this->albaran->apartado;
       $factura->cifnif = $this->albaran->cifnif;
       $factura->ciudad = $this->albaran->ciudad;

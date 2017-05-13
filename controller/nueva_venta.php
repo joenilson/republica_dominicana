@@ -74,11 +74,11 @@ class nueva_venta extends fbase_controller
    public $ncf_rango;
    public $ncf_ventas;
    public $ncf_entidad_tipo;
-   
+
    //Para el plugin distribucion
    public $distribucion_clientes;
    public $cliente_rutas;
-   
+
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
@@ -100,12 +100,12 @@ class nueva_venta extends fbase_controller
       $this->ncf_rango = new ncf_rango();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
       $this->ncf_ventas = new ncf_ventas();
-      
+
       //Para el plugin distribucion
       if(class_exists('distribucion_clientes')){
          $this->distribucion_clientes = new distribucion_clientes();
       }
-      
+
       /// cargamos la configuración
       $fsvar = new fs_var();
       $this->nuevocli_setup = $fsvar->array_get(
@@ -172,7 +172,7 @@ class nueva_venta extends fbase_controller
       else if( isset($_POST['cliente']) )
       {
          $this->cliente_s = $this->cliente->get($_POST['cliente']);
-         
+
          /**
           * Nuevo cliente
           */
@@ -573,7 +573,7 @@ class nueva_venta extends fbase_controller
       $this->template = 'ajax/nueva_venta_combinaciones';
 
       $impuestos = $this->impuesto->all();
-      
+
       $this->results = array();
       $comb1 = new articulo_combinacion();
       foreach($comb1->all_from_ref($_POST['referencia4combi']) as $com)
@@ -594,7 +594,7 @@ class nueva_venta extends fbase_controller
                   break;
                }
             }
-            
+
             $this->results[$com->codigo] = array(
                 'ref' => $_POST['referencia4combi'],
                 'desc' => base64_decode($_POST['desc'])."\n".$com->nombreatributo.' - '.$com->valor,
@@ -701,7 +701,7 @@ class nueva_venta extends fbase_controller
 
       if($continuar)
       {
-          
+
          /**
           * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
           * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
@@ -718,7 +718,7 @@ class nueva_venta extends fbase_controller
             $albaran->codruta = $ruta;
             $albaran->codvendedor = $codvendedor;
          }
-         
+
          $albaran->fecha = $_POST['fecha'];
          $albaran->hora = $_POST['hora'];
          $albaran->codalmacen = $almacen->codalmacen;
@@ -983,9 +983,25 @@ class nueva_venta extends fbase_controller
       /*
       * Verificación de disponibilidad del Número de NCF para República Dominicana
       */
-      //Obtenemos el tipo de comprobante a generar para el cliente
+      //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
       $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
-      $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+      $tipo_comprobante = '02';
+      if($tipo_comprobante_d)
+      {
+          $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+      }
+      else
+      {
+          $net0 = new ncf_entidad_tipo();
+          $net0->entidad = $cliente->codcliente;
+          $net0->estado = TRUE;
+          $net0->fecha_creacion = \date('Y-m-d H:i:s');
+          $net0->usuario_creacion = $this->user->nick;
+          $net0->idempresa = $this->empresa->id;
+          $net0->tipo_comprobante = '02';
+          $net0->tipo_entidad = 'CLI';
+          $net0->save();
+      }
 
       //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
       $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
@@ -997,7 +1013,7 @@ class nueva_venta extends fbase_controller
 
       if($continuar)
       {
-          
+
          /**
           * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
           * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
@@ -1010,11 +1026,11 @@ class nueva_venta extends fbase_controller
                 $ruta = \filter_input(INPUT_POST, 'codruta');
                 $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id,$cliente->codcliente,$ruta);
                 $codvendedor = ($ruta_data)?$ruta_data->codagente:'';
-            }             
+            }
             $factura->codruta = $ruta;
             $factura->codvendedor = $codvendedor;
          }
-         
+
          $factura->codejercicio = $ejercicio->codejercicio;
          $factura->codserie = $serie->codserie;
          $factura->set_fecha_hora($_POST['fecha'], $_POST['hora']);
@@ -1512,7 +1528,7 @@ class nueva_venta extends fbase_controller
          $this->new_error_msg('Ejercicio no encontrado.');
          $continuar = FALSE;
       }
-      
+
       $serie = $this->serie->get($_POST['serie']);
       if(!$serie)
       {
@@ -1550,7 +1566,7 @@ class nueva_venta extends fbase_controller
 
       if($continuar)
       {
-          
+
          /**
           * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
           * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente

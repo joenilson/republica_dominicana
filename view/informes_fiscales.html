@@ -48,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <p align="left">Por favor, primero elija el reporte que desea procesar y luegue seleccione el rango de fechas y si tiene multiples almacenes elige uno y proceda a darle click al boton <b>Generar Informaci&oacute;n</b></p>
             </div>
             <div class="col-sm-2 text-right">
-                
+
             </div>
 
         </div>
@@ -355,7 +355,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             </tr>
                             <tr class="text-center">
                                 <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                                <th data-sortable="true">Almacén</th> 
+                                <th data-sortable="true">Almacén</th>
                                 <th data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
                                 <th data-sortable="true">RNC</th>
                                 <th data-sortable="true">Factura - NCF</th>
@@ -609,7 +609,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         countSelectedText: "{0} de {1} marcados",
         selectedTextFormat: 'count'
     };
-    
+
     function runningFormatter(value, row, index) {
         return index;
     }
@@ -657,7 +657,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     $table.bootstrapTable('refreshOptions', {
         exportDataType: 'all'
     });
-    
+
     $('#inicio').datepicker('update', '{$fsc->fecha_inicio}');
     $('#fin').datepicker('update', '{$fsc->fecha_fin}');
 </script>

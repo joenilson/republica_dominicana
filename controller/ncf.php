@@ -68,8 +68,11 @@ class ncf extends fs_controller {
             $estado = (isset($id))?$estado:TRUE;
             $contado_val = \filter_input(INPUT_POST, 'contado');
             $contado = (isset($contado_val))?TRUE:FALSE;
-            $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
-
+            if($id){
+                $ncf0 = $this->ncf_rango->get_by_id($this->empresa->id, $id);
+            }else{
+                $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
+            }
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }

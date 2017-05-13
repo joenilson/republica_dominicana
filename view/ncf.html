@@ -1,12 +1,22 @@
 {include="header"}
 
 <script type="text/javascript">
+
     function delete_datos_solicitud(url)
     {
-        if (confirm("¿Realmente desea eliminar estos datos de la solicitud?"))
-            window.location.href = url;
+        bootbox.confirm({
+            title: 'Eliminar Solicitud de NCF',
+            message: '¿Realmente desea eliminar estos datos de la solicitud?',
+            callback: function(respuesta) {
+                if(respuesta)
+                {
+                    window.location.href = url;
+                }
+            }
+        });
     }
     $(document).ready(function () {
+        bootbox.setLocale('es');
         $("#b_nueva_solicitud_ncf").click(function (event) {
             event.preventDefault();
             $("#modal_nueva_solicitud").modal('show');
@@ -129,7 +139,7 @@
             <div class="form-group">
                 {if="$fsc->allow_delete"}
                 {if="$value->correlativo>$value->secuencia_inicio"}
-                <a class="btn btn-sm btn-warning pull-left" onclick="alert('No puedes eliminar esta información porque ya esta en uso.')">
+                <a class="btn btn-sm btn-warning pull-left" onclick="bootbox.alert('No puedes eliminar esta información porque ya esta en uso.')">
                     <span class="glyphicon glyphicon-lock"></span>
                 </a>
                 {else}
