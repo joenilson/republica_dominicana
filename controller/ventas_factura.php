@@ -219,7 +219,7 @@ class ventas_factura extends fbase_controller
          $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
 
          //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-         $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->cliente->codpago);
+         $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
          if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
          {
              return $this->new_error_msg('No hay números NCF disponibles del tipo '.$tipo_comprobante.', no se podrá generar la Factura.');

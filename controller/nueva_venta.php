@@ -1004,7 +1004,7 @@ class nueva_venta extends fbase_controller
       }
 
       //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $cliente->codpago);
+      $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $forma_pago->codpago);
       if ($numero_ncf['NCF'] == 'NO_DISPONIBLE')
       {
           $continuar = FALSE;
