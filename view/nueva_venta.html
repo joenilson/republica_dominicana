@@ -60,8 +60,8 @@
          <div class="col-sm-2">
             <div class="form-group">
                <a href="{$fsc->distribucion_clientes->url()}" class="text-capitalize">Ruta</a>:
-               <select name="codruta" class="form-control" id="codruta" onchange="document.f_new_albaran.codalmacen.value=(this.value)?$('option:selected',this).attr('almacen'):'ALG';">
-                  <option value="">Elije la ruta</option>
+               <select name="codruta" class="form-control" required id="codruta" onchange="document.f_new_albaran.codalmacen.value=(this.value)?$('option:selected',this).attr('almacen'):'ALG';">
+                <option value="">Elije la ruta</option>
                {loop="$fsc->cliente_rutas"}
                <option value="{$value->ruta}" almacen="{$value->codalmacen}">{$value->ruta}</option>
                {/loop}

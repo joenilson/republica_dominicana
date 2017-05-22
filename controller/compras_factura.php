@@ -306,77 +306,90 @@ class compras_factura extends fbase_controller
 
    private function anular_factura()
    {
-      ///generamos una factura rectificativa a partir de la actual
-      $factura = clone $this->factura;
-      $factura->idfactura = NULL;
-      $factura->numero = NULL;
-      $factura->numproveedor = NULL;
-      $factura->codigo = NULL;
-      $factura->idasiento = NULL;
-      $factura->idasientop = NULL;
-      $factura->numdocs = 0;
-
-      $factura->idfacturarect = $this->factura->idfactura;
-      $factura->codigorect = $this->factura->codigo;
-      $factura->codejercicio = $ejercicio->codejercicio;
-      $factura->codserie = $_POST['codserie'];
-      $factura->set_fecha_hora($this->today(), $this->hour());
-      $factura->observaciones = "Motivo de la anulación:\n".$_POST['motivo'];
-      $factura->neto = 0 - $factura->neto;
-      $factura->totalirpf = 0 - $factura->totalirpf;
-      $factura->totaliva = 0 - $factura->totaliva;
-      $factura->totalrecargo = 0 - $factura->totalrecargo;
-      $factura->total = $factura->neto + $factura->totaliva + $factura->totalrecargo - $factura->totalirpf;
-
-      if( $factura->save() )
+      $ejercicio = $this->ejercicio->get_by_fecha($this->today());
+      if($ejercicio)
       {
-         $articulo = new articulo();
-         $error = FALSE;
+        ///generamos una factura rectificativa a partir de la actual
+        $factura = clone $this->factura;
+        $factura->idfactura = NULL;
+        $factura->numero = NULL;
+        $factura->numproveedor = NULL;
+        $factura->codigo = NULL;
+        $factura->idasiento = NULL;
+        $factura->idasientop = NULL;
+        $factura->numdocs = 0;
 
-         /// copiamos las líneas en negativo
-         foreach($this->factura->get_lineas() as $lin)
-         {
-            /// actualizamos el stock
-            $art = $articulo->get($lin->referencia);
-            if($art)
-            {
-               $art->sum_stock($factura->codalmacen, $lin->cantidad);
-            }
+        $factura->idfacturarect = $this->factura->idfactura;
+        $factura->codigorect = $this->factura->codigo;
+        $factura->codejercicio = $ejercicio->codejercicio;
+        $factura->codserie = $_POST['codserie'];
+        $factura->set_fecha_hora($this->today(), $this->hour());
+        $factura->observaciones = "Motivo de la anulación:\n".$_POST['motivo'];
+        $factura->neto = 0 - $factura->neto;
+        $factura->totalirpf = 0 - $factura->totalirpf;
+        $factura->totaliva = 0 - $factura->totaliva;
+        $factura->totalrecargo = 0 - $factura->totalrecargo;
+        $factura->total = $factura->neto + $factura->totaliva + $factura->totalrecargo - $factura->totalirpf;
 
-            $lin->idlinea = NULL;
-            $lin->idalbaran = NULL;
-            $lin->idfactura = $factura->idfactura;
-            $lin->cantidad = 0 - $lin->cantidad;
-            $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
-            $lin->pvptotal = $lin->pvpunitario * (100 - $lin->dtopor)/100 * $lin->cantidad;
+        if( $factura->save() )
+        {
+           $articulo = new articulo();
+           $error = FALSE;
 
-            if( !$lin->save() )
-            {
-               $error = TRUE;
-            }
-         }
+           /// copiamos las líneas en negativo
+           foreach($this->factura->get_lineas() as $lin)
+           {
+              $lin->idlinea = NULL;
+              $lin->idalbaran = NULL;
+              $lin->idfactura = $factura->idfactura;
+              $lin->cantidad = 0 - $lin->cantidad;
+              $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
+              $lin->pvptotal = $lin->pvpunitario * (100 - $lin->dtopor)/100 * $lin->cantidad;
 
-         if($error)
-         {
-            $factura->delete();
-            $this->new_error_msg('Se han producido errores al crear la '.FS_FACTURA_RECTIFICATIVA);
-         }
-         else
-         {
-            $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamenmte.' );
+              if( $lin->save() )
+              {
+                  if($lin->referencia)
+                  {
+                     /// actualizamos el stock
+                     $art = $articulo->get($lin->referencia);
+                     if($art)
+                     {
+                        $art->sum_stock($factura->codalmacen, $lin->cantidad, TRUE, $lin->codcombinacion);
+                     }
+                  }
+              }
+              else
+              {
+                 $error = TRUE;
+              }
+           }
 
-            if($this->empresa->contintegrada)
-            {
-                $this->generar_asiento($factura);
-            }
+           if($error)
+           {
+              $factura->delete();
+              $this->new_error_msg('Se han producido errores al crear la '.FS_FACTURA_RECTIFICATIVA);
+           }
+           else
+           {
+              $this->new_message( '<a href="'.$factura->url().'">'.ucfirst(FS_FACTURA_RECTIFICATIVA).'</a> creada correctamenmte.' );
 
-            $this->factura->anulada = TRUE;
-            $this->factura->save();
-         }
+              if($this->empresa->contintegrada)
+              {
+                  $this->generar_asiento($factura);
+              }
+
+              $this->factura->anulada = TRUE;
+              $this->factura->save();
+           }
+        }
+        else
+        {
+           $this->new_error_msg('Error al anular la factura.');
+        }
       }
       else
       {
-         $this->new_error_msg('Error al anular la factura.');
+          $this->new_error_msg('No se encuentra un ejercicio abierto para la fecha '.$this->today());
       }
    }
 

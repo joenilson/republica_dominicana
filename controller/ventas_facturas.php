@@ -23,6 +23,8 @@ require_model('almacen.php');
 require_model('articulo.php');
 require_model('cliente.php');
 require_model('factura_cliente.php');
+require_model('forma_pago.php');
+require_model('grupo_clientes.php');
 require_model('linea_factura_cliente.php');
 require_model('asiento_factura.php');
 require_model('ncf_ventas.php');
@@ -40,10 +42,14 @@ class ventas_facturas extends fbase_controller
    public $cliente;
    public $codagente;
    public $codalmacen;
+   public $codgrupo;
+   public $codpago;
    public $codserie;
    public $desde;
    public $estado;
    public $factura;
+   public $forma_pago;
+   public $grupo;
    public $hasta;
    public $huecos;
    public $lineas;
@@ -68,10 +74,12 @@ class ventas_facturas extends fbase_controller
    protected function private_core()
    {
       parent::private_core();
-      
+
       $this->agente = new agente();
       $this->almacenes = new almacen();
       $this->factura = new factura_cliente();
+      $this->forma_pago = new forma_pago();
+      $this->grupo = new grupo_clientes();
       $this->huecos = array();
       $this->serie = new serie();
       $this->ncf_ventas = new ncf_ventas();
@@ -135,6 +143,8 @@ class ventas_facturas extends fbase_controller
          $this->cliente = FALSE;
          $this->codagente = '';
          $this->codalmacen = '';
+         $this->codgrupo = '';
+         $this->codpago = '';
          $this->codserie = '';
          $this->desde = '';
          $this->estado = '';
@@ -177,6 +187,16 @@ class ventas_facturas extends fbase_controller
             if( isset($_REQUEST['codalmacen']) )
             {
                $this->codalmacen = $_REQUEST['codalmacen'];
+            }
+
+            if( isset($_REQUEST['codgrupo']) )
+            {
+               $this->codgrupo = $_REQUEST['codgrupo'];
+            }
+
+            if( isset($_REQUEST['codpago']) )
+            {
+               $this->codpago = $_REQUEST['codpago'];
             }
 
             if( isset($_REQUEST['codserie']) )
@@ -251,6 +271,9 @@ class ventas_facturas extends fbase_controller
                  ."&codagente=".$this->codagente
                  ."&codalmacen=".$this->codalmacen
                  ."&codcliente=".$codcliente
+                 ."&codgrupo=".$this->codgrupo
+                 ."&codpago=".$this->codpago
+                 ."&codserie=".$this->codserie
                  ."&desde=".$this->desde
                  ."&estado=".$this->estado
                  ."&hasta=".$this->hasta;
@@ -373,25 +396,37 @@ class ventas_facturas extends fbase_controller
          $where = ' AND ';
       }
 
-      if($this->codagente)
-      {
-         $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
-         $where = ' AND ';
-      }
-
-      if($this->codalmacen)
-      {
-         $sql .= $where."codalmacen = ".$this->agente->var2str($this->codalmacen);
-         $where = ' AND ';
-      }
-
       if($this->cliente)
       {
          $sql .= $where."codcliente = ".$this->agente->var2str($this->cliente->codcliente);
          $where = ' AND ';
       }
 
-      if($this->codserie)
+      if($this->codagente != '')
+      {
+         $sql .= $where."codagente = ".$this->agente->var2str($this->codagente);
+         $where = ' AND ';
+      }
+
+      if($this->codalmacen != '')
+      {
+         $sql .= $where."codalmacen = ".$this->agente->var2str($this->codalmacen);
+         $where = ' AND ';
+      }
+
+      if($this->codgrupo != '')
+      {
+         $sql .= $where."codcliente IN (SELECT codcliente FROM clientes WHERE codgrupo = ".$this->agente->var2str($this->codgrupo).")";
+         $where = ' AND ';
+      }
+
+      if($this->codpago != '')
+      {
+         $sql .= $where."codpago = ".$this->agente->var2str($this->codpago);
+         $where = ' AND ';
+      }
+
+      if($this->codserie != '')
       {
          $sql .= $where."codserie = ".$this->agente->var2str($this->codserie);
          $where = ' AND ';
@@ -562,7 +597,7 @@ class ventas_facturas extends fbase_controller
       } else
          $this->new_error_msg("Factura no encontrada.");
    }
-   
+
    public function orden()
    {
       return array(

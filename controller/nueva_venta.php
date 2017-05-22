@@ -64,7 +64,6 @@ class nueva_venta extends fbase_controller
    public $forma_pago;
    public $grupo;
    public $impuesto;
-   public $multi_almacen;
    public $nuevocli_setup;
    public $pais;
    public $results;
@@ -86,6 +85,8 @@ class nueva_venta extends fbase_controller
 
    protected function private_core()
    {
+      parent::private_core();
+
       $this->agencia = new agencia_transporte();
       $this->cliente = new cliente();
       $this->cliente_s = FALSE;
