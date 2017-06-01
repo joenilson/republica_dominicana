@@ -524,8 +524,6 @@ class tpv_recambios extends fbase_controller
          $continuar = FALSE;
       }
 
-
-
       $factura = new factura_cliente();
 
       if( $this->duplicated_petition($_POST['petition_id']) )

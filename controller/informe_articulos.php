@@ -126,6 +126,7 @@ class informe_articulos extends fbase_controller
          $this->articulo = new articulo();
          $this->stats = $this->stats();
 
+         /// forzamos la comprobación de las tablas de lineas de facturas
          $linea_fac_cli = new linea_factura_cliente();
          $linea_fac_pro = new linea_factura_proveedor();
 
@@ -196,6 +197,7 @@ class informe_articulos extends fbase_controller
    {
       $this->cantidades = FALSE;
       $this->codfamilia = '';
+      $this->documento = 'facturascli';
       $this->minimo = '';
 
       $this->referencia = '';
