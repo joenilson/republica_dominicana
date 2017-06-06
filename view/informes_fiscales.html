@@ -218,7 +218,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <table id="table-reporte-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
                         <thead>
                             <tr>
-                                <th colspan="10" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="11" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
@@ -226,6 +226,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                               <th data-sortable="true" data-footer-formatter="totalFormatter">Cliente</th>
                               <th data-sortable="true">RNC</th>
                               <th data-sortable="true">NCF</th>
+                              <th data-sortable="true">NCF Modifica</th>
                               <th data-sortable="true">Tipo</th>
                               <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
                               <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
@@ -242,6 +243,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <td>{$value->nombrecliente}</td>
                                 <td>{$value->cifnif}</td>
                                 <td>{$value->ncf}</td>
+                                <td>{$value->ncf_modifica}</td>
                                 <td>{$value->tipo_comprobante}</td>
                                 <td class="text-right">{$value->neto}</td>
                                 <td class="text-right">{$value->totaliva}</td>
@@ -251,7 +253,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             {/loop}
                           {else}
                             <tr>
-                                <td colspan="10" class="alert alert-danger text-center">
+                                <td colspan="11" class="alert alert-danger text-center">
                                     <span>No hay registros con las fechas seleccionadas</span>
                                 </td>
                             </tr>

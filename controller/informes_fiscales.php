@@ -393,6 +393,7 @@ class informes_fiscales extends fs_controller {
                     $item->nombrecliente = $linea->nombrecliente;
                     $item->cifnif = $linea->cifnif;
                     $item->ncf = $linea->ncf;
+                    $item->ncf_modifica = $linea->ncf_modifica;
                     $item->tipo_comprobante = $linea->tipo_comprobante;
                     $item->neto = $linea->neto;
                     $item->totaliva = $linea->totaliva;
@@ -409,11 +410,11 @@ class informes_fiscales extends fs_controller {
         }
         $this->total_resultados_ventas = count($this->resultados_ventas);
         $this->generar_excel(
-            array('Fecha','Almacén','Cliente','RNC','NCF','Tipo','Base Imp.','Itbis','Total','Condicion','Estado'),
+            array('Fecha','Almacén','Cliente','RNC','NCF','NCF Modifica','Tipo','Base Imp.','Itbis','Total','Condicion','Estado'),
             $this->resultados_ventas,
-            array('Total','','','','','',$totalNeto,$totalItbis,$totalMonto,'',''),
+            array('Total','','','','','','',$totalNeto,$totalItbis,$totalMonto,'',''),
             FALSE,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             FALSE
         );
     }
@@ -519,7 +520,6 @@ class informes_fiscales extends fs_controller {
         $this->tMonto=0;
         foreach($this->almacenes_seleccionados as $cod)
         {
-
             $datos_reporte = $facturas->all_activo_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
             if($datos_reporte)
             {
@@ -538,10 +538,9 @@ class informes_fiscales extends fs_controller {
                     $this->tMonto+=$item->neto;
                     $listado[] = $item;
                 }
-            }
-            $this->resultados_607 = array_merge($this->resultados_607, $listado);
+            }    
         }
-
+        $this->resultados_607 = array_merge($this->resultados_607, $listado);
         $this->total_resultados_607 = count($this->resultados_607);
 
         $this->generar_excel(
