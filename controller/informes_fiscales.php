@@ -421,12 +421,13 @@ class informes_fiscales extends fs_controller {
 
     public function compras(){
         $this->resultados_compras = array();
-        $lista = array();
+        
         $totalNeto = 0;
         $totalItbis =0;
         $totalMonto =0;
         foreach($this->almacenes_seleccionados as $cod)
         {
+            $lista = array();
             $datos = $this->facturas_proveedor(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
             if($datos)
             {
@@ -498,8 +499,8 @@ class informes_fiscales extends fs_controller {
                     $lista[] = $item;
                 }
             }
-            $this->resultados_606 = array_merge($this->resultados_606, $lista);
         }
+        $this->resultados_606 = array_merge($this->resultados_606, $lista);
         $this->total_resultados_606 = count($this->resultados_606);
         $this->generar_excel(
             array('RNC/Cédula','Tipo Id','Tipo Bienes o Servicios Comprados','NCF','NCF Modifica','Fecha AAAAMM','Fecha DD','Fecha Pago AAAAMM','Fecha Pago DD','ITBIS Facturado','ITBIS Retenido','Monto Facturado','Retencion Renta'),
@@ -572,8 +573,8 @@ class informes_fiscales extends fs_controller {
                     $lista[] = $item;
                 }
             }
-            $this->resultados_608 = array_merge($this->resultados_608, $lista);
         }
+        $this->resultados_608 = array_merge($this->resultados_608, $lista);
         $this->total_resultados_608 = count($this->resultados_608);
         $this->generar_excel(
             array('NCF','Fecha','Motivo','Estado'),
