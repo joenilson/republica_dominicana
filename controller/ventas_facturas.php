@@ -160,7 +160,7 @@ class ventas_facturas extends fbase_controller
          }
          else
          {
-            if( !isset($_GET['mostrar']) AND (isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie'])) )
+            if( !isset($_GET['mostrar']) AND ($this->query != '' OR isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie'])) )
             {
                /**
                 * si obtenermos un codagente, un codcliente o un codserie pasamos direcatemente
@@ -267,7 +267,6 @@ class ventas_facturas extends fbase_controller
 
          $url = parent::url()."&mostrar=".$this->mostrar
                  ."&query=".$this->query
-                 ."&codserie=".$this->codserie
                  ."&codagente=".$this->codagente
                  ."&codalmacen=".$this->codalmacen
                  ."&codcliente=".$codcliente

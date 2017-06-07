@@ -38,7 +38,7 @@ class tpv_caja extends fbase_controller
 
    public function __construct()
    {
-      parent::__construct(__CLASS__, 'Arqueos y terminales', 'TPV', FALSE, TRUE);
+      parent::__construct(__CLASS__, 'Arqueos y terminales', 'TPV');
    }
 
    protected function private_core()

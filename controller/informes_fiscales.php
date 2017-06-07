@@ -182,9 +182,10 @@ class informes_fiscales extends fs_controller {
         $this->sumaComprasPagadas = 0;
         $this->saldoConsolidadoPagadas = 0;
         $facturas_ventas = new ncf_ventas();
-        $nueva_lista_ventas = array();
+        
         foreach($this->almacenes_seleccionados as $cod)
         {
+            $nueva_lista_ventas = array();
             $lista_facturas_ventas = $facturas_ventas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
             foreach($lista_facturas_ventas as $linea){
                 $nueva_linea = new StdClass();
@@ -207,9 +208,10 @@ class informes_fiscales extends fs_controller {
         }
         $this->total_resultados_ingresos = count($nueva_lista_ventas);
 
-        $nueva_lista_compras = array();
+        
         foreach($this->almacenes_seleccionados as $cod)
         {
+            $nueva_lista_compras = array();
             $lista_facturas_compras = $this->facturas_proveedor(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
             foreach($lista_facturas_compras as $linea){
                 $nueva_linea = new StdClass();
