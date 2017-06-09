@@ -659,13 +659,13 @@ class PDF_MC_Table extends FPDF
         $y1  = 20;
         $y2  = $y1 ;
         $mid = $y1 + ($y2 / 3);
-        $this->RoundedRect($r1, $y1, ($r2 - $r1), $y2-6, 2.5, 'D');
+        $this->RoundedRect($r1, $y1, ($r2 - $r1), $y2-6, 2.5, 'C');
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1+1 );
-        $this->SetFont( "Arial", "B", 9);
+        $this->SetFont( "Arial", "B", 8);
         $this->Cell(10,5, "FECHA", 0, 0, "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1+7 );
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont( "Arial", "", 8);
         $this->Cell(10,5,$date, 0,0, "C");
     }
 

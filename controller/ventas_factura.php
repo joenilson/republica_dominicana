@@ -40,7 +40,8 @@ require_model('ncf_ventas.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('impuesto.php');
 require_once 'helper_ncf.php';
-
+//Para compatibilidad con distribucion
+require_model('distribucion_clientes.php');
 class ventas_factura extends fbase_controller
 {
    public $agencia;
@@ -64,7 +65,7 @@ class ventas_factura extends fbase_controller
    public $ncf_tipo_anulacion;
    public $ncf;
    public $impuesto;
-
+   public $distribucion_clientes;
    public function __construct()
    {
       parent::__construct(__CLASS__, 'Factura de cliente', 'ventas', FALSE, FALSE);
@@ -98,6 +99,11 @@ class ventas_factura extends fbase_controller
       $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
       $this->impuesto = new impuesto();
 
+      //Para el plugin distribucion
+      if(class_exists('distribucion_clientes')){
+         $this->distribucion_clientes = new distribucion_clientes();
+      }
+      
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
        * desactivamos el botón de pagada/sin pagar.
@@ -495,10 +501,13 @@ class ventas_factura extends fbase_controller
       $factura->idasientop = NULL;
       $factura->femail = NULL;
       $factura->numdocs = 0;
-
+      if(isset($this->factura->codruta)){
+          $factura->codruta = $this->factura->codruta;
+          $factura->codvendedor = $this->factura->codvendedor;
+      }
       $factura->idfacturarect = $this->factura->idfactura;
       $factura->codigorect = $this->factura->codigo;
-      $factura->codejercicio = $ejercicio->codejercicio;
+      $factura->codejercicio = $this->factura->codejercicio;
       $factura->codserie = $_POST['codserie'];
       $factura->set_fecha_hora($_POST['fecha'], $this->hour());
       $factura->observaciones = "Anulacion generada por: ".$motivo_anulacion->descripcion;
