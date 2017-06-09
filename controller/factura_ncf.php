@@ -158,7 +158,6 @@ class factura_ncf extends fs_controller {
                         $this->idtransporte = (isset($transporte[0]->idtransporte)) ? str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT) : false;
                     }
                     $cliente = new cliente();
-                    $pdf_doc->pdf->ezStartPageNumbers(40,20,10,'right','Página {PAGENUM} de {TOTALPAGENUM}',1);
                     $this->cliente = $cliente->get($this->documento->codcliente);
                     $this->generar_pdf_factura($pdf_doc);
                     $contador++;
@@ -313,7 +312,6 @@ class factura_ncf extends fs_controller {
                 if ($this->empresa->pie_factura) {
                     $pdf_doc->pdf->addText(10, 10, 8, $pdf_doc->center_text(fs_fix_html($this->empresa->pie_factura), 180));
                 }
-
                 $pagina++;
             }
         } else {
@@ -358,7 +356,7 @@ class factura_ncf extends fs_controller {
             }
         }
         $left = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE')?90:0;
-        $pdf_doc->pdf->ezSetY(765);
+        //$pdf_doc->pdf->ezSetY(765);
         $pdf_doc->pdf->ez['rightMargin'] = 40;
         $pdf_doc->pdf->ezText("<b>" . fs_fix_html($this->empresa->nombre) . "</b>", 12, array('justification' => 'left', 'left'=>$left));
         $pdf_doc->pdf->ezText(FS_CIFNIF . ": " . $this->empresa->cifnif, 8, array('justification' => 'left', 'left'=>$left));
@@ -638,7 +636,7 @@ class factura_ncf extends fs_controller {
             $pdf_doc->pdf->addText(260, 50, 8, 'Firma Emisor', 0);
             
         }
-        $pdf_doc->pdf->ezStopPageNumbers();
+        $pdf_doc->pdf->addText(10, 10, 8, $pdf_doc->center_text('Página ' . $pagina . '/' . $this->numpaginas, 250));
     }
 
     private function generar_pdf_lineas(&$pdf_doc, &$lineas, &$linea_actual, &$lppag) {
