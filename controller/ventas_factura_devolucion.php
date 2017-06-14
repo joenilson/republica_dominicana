@@ -107,7 +107,8 @@ class ventas_factura_devolucion extends fs_controller
         $frec->codigorect = $this->factura->codigo;
         $frec->codejercicio = $ejercicio->codejercicio;
         $frec->codserie = $_POST['codserie'];
-        $frec->set_fecha_hora($_POST['fecha'], $this->hour());
+        $frec->fecha = \date('Y-m-d',strtotime($_POST['fecha']));
+        $frec->hora  = $this->hour();
         $frec->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA)." por ".$motivo_anulacion->descripcion;
         $frec->femail = NULL;
         $frec->numdocs = NULL;
