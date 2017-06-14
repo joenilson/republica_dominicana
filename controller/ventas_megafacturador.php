@@ -95,7 +95,7 @@ class ventas_megafacturador extends fs_controller {
     public $ncf_rango;
     public $ncf_ventas;
     public $ncf_entidad_tipo;
-
+    public $tesoreria;
    //Para el plugin distribucion
    public $distribucion_clientes;
    public $cliente_rutas;
@@ -135,6 +135,17 @@ class ventas_megafacturador extends fs_controller {
         //Para el plugin distribucion
         if(class_exists('distribucion_clientes')){
            $this->distribucion_clientes = new distribucion_clientes();
+        }
+        
+        //revisamos si esta el plugin de tesoreria
+        $disabled = array();
+        if (defined('FS_DISABLED_PLUGINS')) {
+            foreach (explode(',', FS_DISABLED_PLUGINS) as $aux) {
+                $disabled[] = $aux;
+            }
+        }
+        if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
+            $this->tesoreria = TRUE;
         }
 
         $documento = filter_input(INPUT_GET, 'documento');
@@ -475,6 +486,12 @@ class ventas_megafacturador extends fs_controller {
                     $continuar = TRUE;
                     $ncf_controller = new helper_ncf();
                     $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                    if($this->tesoreria){
+                        require_model('pago_recibo_cliente.php');
+                        require_model('recibo_cliente.php');
+                        require_model('recibo_factura.php');
+                        $this->nuevo_recibo($factura);
+                    }
                     foreach ($albaran->get_lineas() as $l) {
                         $n = new linea_factura_cliente();
                         $n->idalbaran = $l->idalbaran;
@@ -507,6 +524,7 @@ class ventas_megafacturador extends fs_controller {
                         $albaran->ptefactura = FALSE;
                         if ($albaran->save()) {
                             $this->generar_asiento_cliente($factura);
+                            
                         } else {
                             $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
                             if ($factura->delete()) {
@@ -528,6 +546,41 @@ class ventas_megafacturador extends fs_controller {
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
+    }
+    
+    private function nuevo_recibo($factura){
+        $recibo = new recibo_cliente();
+        $recibo->apartado = $factura->apartado;
+        $recibo->cifnif = $factura->cifnif;
+        $recibo->ciudad = $factura->ciudad;
+        $recibo->codcliente = $factura->codcliente;
+        $recibo->coddir = $factura->coddir;
+        $recibo->coddivisa = $factura->coddivisa;
+        $recibo->tasaconv = $factura->tasaconv;
+        $recibo->codpago = $factura->codpago;
+        $recibo->codserie = $factura->codserie;
+        $recibo->numero = $recibo->new_numero($factura->idfactura);
+        $recibo->codigo = $factura->codigo . '-' . sprintf('%02s', $recibo->numero);
+        $recibo->codpais = $factura->codpais;
+        $recibo->codpostal = $factura->codpostal;
+        $recibo->direccion = $factura->direccion;
+        $recibo->estado = 'Emitido';
+        $recibo->fecha = $factura->fecha;
+        $recibo->fechav = $factura->vencimiento;
+        $recibo->idfactura = $factura->idfactura;
+        $recibo->importe = floatval($factura->total);
+        $recibo->nombrecliente = $factura->nombrecliente;
+        $recibo->provincia = $factura->provincia;
+
+        $cbc = new cuenta_banco_cliente();
+        foreach ($cbc->all_from_cliente($factura->codcliente) as $cuenta) {
+            if (is_null($recibo->codcuenta) OR $cuenta->principal) {
+                $recibo->codcuenta = $cuenta->codcuenta;
+                $recibo->iban = $cuenta->iban;
+                $recibo->swift = $cuenta->swift;
+            }
+        }
+        $recibo->save();
     }
 
     public function pendientes_venta() {
