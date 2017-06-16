@@ -117,8 +117,8 @@ class informes_fiscales extends fs_controller {
             $this->agente = new agente();
             $cod = $this->agente->get($this->user->codagente);
             $user_almacen = $this->almacenes->get($cod->codalmacen);
-            $this->user->codalmacen = $user_almacen->codalmacen;
-            $this->user->nombrealmacen = $user_almacen->nombre;
+            $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
+            $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
         }
 
         $codalmacen = \filter_input(INPUT_POST, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -182,7 +182,7 @@ class informes_fiscales extends fs_controller {
         $this->sumaComprasPagadas = 0;
         $this->saldoConsolidadoPagadas = 0;
         $facturas_ventas = new ncf_ventas();
-        
+
         foreach($this->almacenes_seleccionados as $cod)
         {
             $nueva_lista_ventas = array();
@@ -208,7 +208,7 @@ class informes_fiscales extends fs_controller {
         }
         $this->total_resultados_ingresos = count($nueva_lista_ventas);
 
-        
+
         foreach($this->almacenes_seleccionados as $cod)
         {
             $nueva_lista_compras = array();
@@ -423,7 +423,7 @@ class informes_fiscales extends fs_controller {
 
     public function compras(){
         $this->resultados_compras = array();
-        
+
         $totalNeto = 0;
         $totalItbis =0;
         $totalMonto =0;
@@ -541,7 +541,7 @@ class informes_fiscales extends fs_controller {
                     $this->tMonto+=$item->neto;
                     $listado[] = $item;
                 }
-            }    
+            }
         }
         $this->resultados_607 = array_merge($this->resultados_607, $listado);
         $this->total_resultados_607 = count($this->resultados_607);

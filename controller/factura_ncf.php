@@ -361,7 +361,7 @@ class factura_ncf extends fs_controller {
         }
 
         // Cabecera Titulos Columnas
-        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DCTO', FS_IVA, 'NETO'));
+        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
         $pdf_doc->SetWidths(array(18, 70,15 ,15, 15, 20, 20, 25));
         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
         //$pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
