@@ -331,11 +331,11 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
         $pdf_doc->fdc_fax = $this->cliente->fax;
         $pdf_doc->fdc_email = $this->cliente->email;
-        $pdf_doc->fdc_factura_codigo = $this->factura->codigo;        
+        $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
         $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
 
         // Conduce asociado
-        
+
         //Si va usar distribucion se agrega el codigo de la ruta
         //$pdf_doc->fdf_ruta = $this->factura->apartado;
 
@@ -361,11 +361,11 @@ class factura_ncf extends fs_controller {
         }
 
         // Cabecera Titulos Columnas
-        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNITARIO', 'DCTO', FS_IVA, 'NETO'));
-        $pdf_doc->SetWidths(array(20, 85,15 ,20, 20, 10, 25));
-        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DCTO', FS_IVA, 'NETO'));
+        $pdf_doc->SetWidths(array(18, 70,15 ,15, 15, 20, 20, 25));
+        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
         //$pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
-        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
         /// Agregamos la pagina inicial de la factura
          $pdf_doc->AddPage();
 
@@ -422,6 +422,9 @@ class factura_ncf extends fs_controller {
                 for ($i = 0; $i < count($lineas); $i++) {
                     $pdf_doc->piepagina = false;
                     $neto += ($lineas[$i]->pvptotal * $negativo);
+                    $linea_importe = ($lineas[$i]->pvpsindto*$negativo);
+                    $linea_impuesto = (($lineas[$i]->pvptotal * $negativo)*($lineas[$i]->iva/100));
+                    $linea_neto = ($lineas[$i]->pvptotal * $negativo)*(1+($lineas[$i]->iva/100));
                     $descuento_linea = ($lineas[$i]->dtopor)?(($lineas[$i]->pvpunitario * $negativo)*($lineas[$i]->cantidad * $negativo))/($lineas[$i]->dtopor/100):0;
                     $descuento += $descuento_linea;
                     $pdf_doc->neto = $this->ckeckEuro($neto);
@@ -439,11 +442,12 @@ class factura_ncf extends fs_controller {
                         '0' => utf8_decode($lineas[$i]->referencia),
                         '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
                         '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
-                        '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
-                        '4' => ($lineas[$i]->dtopor)?$this->ckeckEuro($descuento_linea):'',
+                        '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
+                        '4' => $this->show_numero(($lineas[$i]->pvpsindto*$negativo), FS_NF0),
+                        '5' => ($lineas[$i]->dtopor)?$this->show_numero($descuento_linea, FS_NF0):'',
                         //'4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
-                        '5' => utf8_decode($this->show_numero(($lineas[$i]->iva), 0) . " %"),
-                        '6' => $this->ckeckEuro($lineas[$i]->pvptotal), // Importe con Descuentos aplicados
+                        '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
+                        '7' => $this->ckeckEuro($linea_neto), // Importe con Descuentos aplicados
                         //'6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
                     );
                     $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)

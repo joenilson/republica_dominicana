@@ -91,7 +91,7 @@ class PDF_MC_Table extends FPDF
         if($this->fde_provincia) { $direccion .= ' (' . $this->fde_provincia . ')'; }
         if($this->fde_telefono) { $direccion .= "\n" . $this->fde_telefono; }
         if($this->fde_fax) { $direccion .= "\n" . $this->fde_fax; }
-        
+
         $this->addSociete(utf8_decode($this->fde_nombre), utf8_decode($direccion), utf8_decode($this->fde_email), utf8_decode($this->fde_web));
 
         //Logotipo
@@ -165,13 +165,13 @@ class PDF_MC_Table extends FPDF
         //if($this->fdc_factura_codigo) { $cliente .= ucfirst(FS_FACTURA).": ".$this->fdc_factura_codigo."\n"; }
         $this->addClientAdresse(utf8_decode($cliente));
         */
-        
+
         if(!empty($this->fdf_transporte) OR !empty($this->fdf_ruta)){
             $this->addTransporte(utf8_decode($this->fdf_transporte),utf8_decode($this->fdf_ruta));
         }
         // Forma de Pago de la Factura
         //$this->addPago(utf8_decode($this->fdf_epago));
-        
+
         //if(!empty($this->fdf_ruta)){
         //   $this->addRuta(utf8_decode($this->fdf_ruta));
         //}
@@ -196,7 +196,7 @@ class PDF_MC_Table extends FPDF
 
         // Cabecera Titulos Columnas
         $this->SetXY(10, 75);
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         for($i=0;$i<count($this->datoscab);$i++)
         {
             $this->Cell($this->widths[$i],5,$this->datoscab[$i],1,0,'C',1);
@@ -226,8 +226,7 @@ class PDF_MC_Table extends FPDF
         $this->SetY(-40);
         $this->SetLineWidth(0.1);
         $this->SetTextColor(0);
-        $this->SetFont('Arial','',8);
-        $this->SetFont( "Arial", "", 8);
+        $this->SetFont('Arial','',9);
         $length = 80;
         $this->Line(10, $this->h - 15, 80, $this->h - 15);
         $this->SetXY( 10, $this->h - 13 );
@@ -266,7 +265,7 @@ class PDF_MC_Table extends FPDF
 
     function Row($data, $ultimo='1')
     {
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
 
         // Guardamos la posicion Actual
         $x=$this->GetX();
@@ -590,14 +589,14 @@ class PDF_MC_Table extends FPDF
         $length1 = $this->GetStringWidth( $nom );
         $this->Cell( $length1, 4, $nom);
         $this->SetXY( $x1, $y1 + 4 );
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $length2 = $this->GetStringWidth( $adresse );
         $this->MultiCell($length2, 4, $adresse);
 
         if ($email != '')
         {
             $this->SetXY( $x1, $y1 + 73 );
-            $this->SetFont('Arial','',8);
+            $this->SetFont('Arial','',9);
             $this->Write(5,'Email: ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $email, 'mailto:' . $email);
@@ -608,7 +607,7 @@ class PDF_MC_Table extends FPDF
         if ($web != '')
         {
             $this->SetXY( $x1, $y1 + 77 );
-            $this->SetFont('Arial','',8);
+            $this->SetFont('Arial','',9);
             $this->Write(5,'Web: ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $web, $web);
@@ -618,15 +617,15 @@ class PDF_MC_Table extends FPDF
 
 
     }
-    
+
     function datos_documento($documento, $tipo_documento, $estado){
         $r1  = $this->w - 100;
         $r2  = $r1 + 90;
         $y1  = 6;
         $y2  = $y1 + 20;
 
-        $codigo  = 'Factura: '.$documento->codigo;
-        $ncf  = FS_NUMERO2.': '.$documento->ncf;
+        $codigo  = utf8_decode('Factura: ').$documento->codigo;
+        $ncf  = utf8_decode(ucfirst(FS_NUMERO2)).': '.$documento->ncf;
         $szfont = 9;
         $loop   = 0;
 
@@ -654,7 +653,7 @@ class PDF_MC_Table extends FPDF
         $y1++;$y1++;$y1++;
         $this->SetXY( $r1+1, $y1+3);
         if(empty($estado)){
-            $this->MultiCell( $r2-$r1-1,3, $tipo_documento, 0, "C");
+            $this->MultiCell( $r2-$r1-1,3, utf8_decode($tipo_documento), 0, "C");
         }else{
             $this->MultiCell($r2-$r1-1,3, 'Estado: '.$estado, 0, "C");
         }
@@ -665,7 +664,7 @@ class PDF_MC_Table extends FPDF
             $this->Cell(30,5, "Rectifica: ", 0, 0, "R");
             $this->SetFont("Arial", "", 9);
             $this->Cell(60,5,$documento->ncf_afecta, 0,0, "L");
-        }       
+        }
     }
 
     // Nombre, numero y estado de la factura
@@ -714,16 +713,16 @@ class PDF_MC_Table extends FPDF
         $y2  = $y1+5;
         $this->SetXY( $r1, $y1);
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Fecha: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(20,5,$date, 0,0, "R");
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Forma Pago: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(30,5,$this->fdf_epago, 0,0, "R");
     }
-    
+
      //Transporte Asociado
     function addTransporte($transporte, $codruta)
     {
@@ -734,20 +733,20 @@ class PDF_MC_Table extends FPDF
         //$this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
         $this->SetXY( $r1, $y1 );
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Ruta: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(20,5,$codruta, 0,0, "R");
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(25,5, "Transporte: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(25,5,$transporte, 0,0, "R");
     }
 
-    
+
     /**
      * //Ya no se utiliza
-     * @deprecated 
+     * @deprecated
      * @param type $ref
      */
     function addClient( $ref )
@@ -761,7 +760,7 @@ class PDF_MC_Table extends FPDF
         $this->Rect($r1, $y1, ($r2 - $r1), $y2-6, 'D');
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1+1 );
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(10,5, 'N'.chr(176).' de CLIENTE', 0, 0, "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5, $y1 + 7 );
         $this->SetFont( "Arial", "", 8);
@@ -780,23 +779,23 @@ class PDF_MC_Table extends FPDF
         $y1     = 45;
         $this->SetXY( $r1, $y1);
         $this->SetFont('Arial','B',8);
-        $this->Cell(25,5, 'Cliente:', 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->Cell(25,5, utf8_decode('Cliente:'), 0, 0, "R");
+        $this->SetFont('Arial','',9);
         $this->Cell(120,5, $this->fdf_codcliente. ' - '.$this->fdf_nombrecliente, 0, 0, "L");
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode($this->fdf_FS_CIFNIF.':'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $this->Cell(25,5, $this->fdf_cifnif, 0, 0, "C");
         $this->SetXY( $r1, $y1+4);
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Dirección:'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $this->MultiCell(120, 5, utf8_decode($this->fdf_direccion.$this->fdf_codpostal . " - ".$this->fdf_ciudad . " (".$this->fdf_provincia.")\n"));
         $y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;
         $this->SetXY( $r1, $y1+4);
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Teléfonos:'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $telefonos = '';
         if($this->fdc_telefono1){
             $telefonos.= $this->fdc_telefono1;
@@ -807,22 +806,22 @@ class PDF_MC_Table extends FPDF
         $this->Cell(120,5, $telefonos, 0, 0, "L");
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Fax:'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $this->Cell(30,5, $this->fdc_fax, 0, 0, "L");
         $y1++;$y1++;$y1++;$y1++;
         $this->SetXY( $r1, $y1+4);
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Email:'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Arial','',9);
         $this->Cell(30,5, $this->fdc_email, 0, 0, "L");
         $y1++;$y1++;$y1++;$y1++;
         $this->SetXY( $r1, $y1+4);
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Vendedor:'), 0, 0, "R");
-        $this->SetFont('Arial','',8);
-        $this->Cell(120,5, $this->fde_vendedor, 0, 0, "L");
+        $this->SetFont('Arial','',9);
+        $this->Cell(120,5, utf8_decode($this->fde_vendedor), 0, 0, "L");
     }
-    
+
     // Cliente
     function addClientAdresse( $adresse )
     {
@@ -834,7 +833,7 @@ class PDF_MC_Table extends FPDF
         $this->MultiCell(87, 4, $adresse);
     }
 
-   
+
 
     // Ruta asociada si es que se va utilizar distribucion
     function addRuta( $ruta )
@@ -963,7 +962,7 @@ class PDF_MC_Table extends FPDF
                     if ($i == 1) { $y2  = $y1 + 6; }
                     if ($i == 2) { $y2  = $y1 + 10; }
                     if ($i == 3) { $y2  = $y1 + 14; }
-                    $this->SetFont( "Arial", "B", 8);
+                    $this->SetFont( "Arial", "B", 9);
                     $this->SetXY( $r1, $y2 );
                     $this->Cell(8,4, $datos[$i][0], 0, '', "L");
                     $this->Cell(18,4, $datos[$i][1], 0, '', "R");
@@ -973,7 +972,7 @@ class PDF_MC_Table extends FPDF
                     $this->Cell(18,4, $datos[$i][5], 0, '', "R");
                     $this->Cell(7,4, $datos[$i][6], 0, '', "R");
                     $this->Cell(18,4, $datos[$i][7], 0, '', "R");
-                    $this->SetFont( "Arial", "B", 8);
+                    $this->SetFont( "Arial", "B", 9);
                     $this->Cell(24,4, $datos[$i][8], 0, '', "R");
                 }
             }
@@ -990,10 +989,10 @@ class PDF_MC_Table extends FPDF
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 1.5, 'D');
         //$this->Line( $r1+15,  $y1, $r1+15, $y2);
         //$this->Line( $r1+15, $y1+4, $r2, $y1+4);
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->SetXY( $r1, $y1 );
         $this->Cell(60,4, $this->fdf_divisa, 1, 0, "C");
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->SetXY( $r1, $y1+7 );
         $this->Cell(15,4, "NETO", 0, 0, "C");
 
@@ -1003,14 +1002,14 @@ class PDF_MC_Table extends FPDF
         $this->Cell(43,4, $this->neto, 0, 0, "C");
 
         // Suma y Sigue
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->SetXY( $r1+16, $y1+13 );
         $this->MultiCell(43,3,'(SUMA y SIGUE)',0,'C');
     }
 
     function addTotal()
     {
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $r1  = 10;
         $r2  = $r1 + 125;
         $y1  = $this->h - 50;
@@ -1047,26 +1046,26 @@ class PDF_MC_Table extends FPDF
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
         //$this->Line( $r1+15,  $y1, $r1+15, $y2);
         //$this->Line( $r1, $y1+4, $r2, $y1+4);
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->SetXY( $r1, $y1 );
         $this->Cell(60,4, $this->fdf_divisa, 1, 0, "C");
         $this->SetXY( $r1, $y1+5 );
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(15,4, "NETO", 0, 0, "R");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(43,4, $this->fdf_documento_neto, 0, 0, "R");
         $this->SetXY( $r1, $y1+9 );
-        //$this->SetFont( "Arial", "B", 8);
+        //$this->SetFont( "Arial", "B", 9);
         //$this->Cell(15,4, "DSCTO", 0, 0, "R");
         //$this->SetFont( "Arial", "", 8);
         //$this->Cell(43,4, $this->fdf_documento_descuentos, 0, 0, "R");
         $this->SetXY( $r1, $y1+13 );
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(15,4, FS_IVA, 0, 0, "R");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(43,4, $this->fdf_documento_totaliva, 0, 0, "R");
         $this->SetXY( $r1, $y1+17 );
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->Cell(15,4, "TOTAL", 0, 0, "R");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(43,4, $this->fdf_numtotal, 0, 0, "R");
@@ -1077,7 +1076,7 @@ class PDF_MC_Table extends FPDF
         //$this->Cell(43,4, $this->fdf_numtotal, 0, 0, "R");
         //$this->fdf_documento
         // Total factura en texto
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "Arial", "B", 9);
         $this->SetXY( 12, $y1+4 );
         $texto = $this->numtoletras($this->fdf_textotal);
         $this->MultiCell(120,3,"SON: ".$texto,0,'L');
