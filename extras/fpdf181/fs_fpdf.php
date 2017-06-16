@@ -215,7 +215,7 @@ class PDF_MC_Table extends FPDF
         for($i=0;$i<count($this->datoscab);$i++)
         {
             //$this->RoundedRect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 1, 'D');
-            $this->Rect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 'D');
+            //$this->Rect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 'D');
             $aquiX += $this->widths[$i];
         }
     }
