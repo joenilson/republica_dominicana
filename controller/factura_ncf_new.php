@@ -20,6 +20,8 @@
 
 require_once 'plugins/republica_dominicana/fpdf17/fs_fpdf.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/fpdf17/font/');
+//require_once 'plugins/republica_dominicana/extras/fpdf181/fs_fpdf.php';
+//define('FPDF_FONTPATH', 'plugins/republica_dominicana/extras/fpdf181/font/');
 define('EEURO', chr(128));
 require_model('cliente.php');
 require_model('factura_cliente.php');
@@ -271,8 +273,10 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
         if(in_array('distribucion',$GLOBALS['plugins'])){
-           $pdf_doc->fde_vendedor = 'Vendedor: ('.$vender.')'; //Mostrando iniciales del vendedor.
-           $pdf_doc->fde_ruta = 'Ruta: '.$this->factura->apartado;
+           $pdf_doc->fde_vendedor = $vendedor->nombreap; //Mostrando iniciales del vendedor.
+           $pdf_doc->fdf_ruta = $this->factura->codruta;
+           $pdf_doc->fde_ruta = $this->factura->codruta;
+           $pdf_doc->fdf_transporte = $this->idtransporte;
         }
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
 
@@ -281,7 +285,7 @@ class factura_ncf extends fs_controller {
         {
            $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
            $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
-           $pdf_doc->fdf_Ylogotipo = '40'; // Valor Y para Logotipo
+           $pdf_doc->fdf_Ylogotipo = '5'; // Valor Y para Logotipo
            $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
            $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
            $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
@@ -306,6 +310,7 @@ class factura_ncf extends fs_controller {
         }
 
         // Tipo de Documento
+        $pdf_doc->fdf_documento = $this->factura;
         $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
         $pdf_doc->fdf_codigo = $this->factura->ncf;
         $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
@@ -330,11 +335,10 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fdc_fax = $this->cliente->fax;
         $pdf_doc->fdc_email = $this->cliente->email;
         $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
-
         $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
 
         // Conduce asociado
-        $pdf_doc->fdf_transporte = $this->idtransporte;
+
         //Si va usar distribucion se agrega el codigo de la ruta
         //$pdf_doc->fdf_ruta = $this->factura->apartado;
 
@@ -360,11 +364,11 @@ class factura_ncf extends fs_controller {
         }
 
         // Cabecera Titulos Columnas
-        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'PRECIO', 'DTO', FS_IVA, 'IMPORTE'));
-        $pdf_doc->SetWidths(array(25, 85,15 ,20, 18, 10, 22));
-        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
+        $pdf_doc->SetWidths(array(18, 70,15 ,15, 15, 20, 20, 25));
+        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
         //$pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
-        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
         /// Agregamos la pagina inicial de la factura
          $pdf_doc->AddPage();
 
@@ -383,7 +387,7 @@ class factura_ncf extends fs_controller {
            foreach($lineas_iva as $li)
            {
               $i++;
-              $filaiva[$i][0] = ($li->iva) ? FS_IVA . ($li->iva * $negativo) : '';
+              $filaiva[$i][0] = '';
               $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $negativo)) : '';
               $filaiva[$i][2] = ($li->iva) ? ($li->iva * $negativo) . "%" : '';
               $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $negativo)) : '';
@@ -404,6 +408,8 @@ class factura_ncf extends fs_controller {
         }
 
         // Total factura numerico
+        $pdf_doc->fdf_documento_neto = $this->ckeckEuro(($this->factura->neto * $negativo));
+        $pdf_doc->fdf_documento_totaliva = $this->ckeckEuro(($this->factura->totaliva * $negativo));
         $pdf_doc->fdf_numtotal = $this->ckeckEuro(($this->factura->total * $negativo));
 
         // Total factura numeros a texto
@@ -412,38 +418,48 @@ class factura_ncf extends fs_controller {
 
 
         // Lineas de la Factura
-        $lineas = $this->factura->get_lineas();
-        if ($lineas) {
-           $neto = 0;
-           for ($i = 0; $i < count($lineas); $i++) {
-              $neto += ($lineas[$i]->pvptotal * $negativo);
-              $pdf_doc->neto = $this->ckeckEuro($neto);
-              $articulo = new articulo();
-              $art = $articulo->get($lineas[$i]->referencia);
-              if ($art) {
-                 $observa = "\n" . utf8_decode( $this->fix_html($art->observaciones) );
-              } else {
-                 //$observa = null; // No mostrar mensaje de error
-                 $observa = "\n";
-              }
+            $lineas = $this->factura->get_lineas();
+            if ($lineas) {
+                $neto = 0;
+                $descuento = 0;
+                for ($i = 0; $i < count($lineas); $i++) {
+                    $pdf_doc->piepagina = false;
+                    $neto += ($lineas[$i]->pvptotal * $negativo);
+                    $linea_importe = ($lineas[$i]->pvpsindto*$negativo);
+                    $linea_impuesto = (($lineas[$i]->pvptotal * $negativo)*($lineas[$i]->iva/100));
+                    $linea_neto = ($lineas[$i]->pvptotal * $negativo)*(1+($lineas[$i]->iva/100));
+                    $descuento_linea = ($lineas[$i]->dtopor)?(($lineas[$i]->pvpunitario * $negativo)*($lineas[$i]->cantidad * $negativo))/($lineas[$i]->dtopor/100):0;
+                    $descuento += $descuento_linea;
+                    $pdf_doc->neto = $this->ckeckEuro($neto);
+                    $articulo = new articulo();
+                    $art = $articulo->get($lineas[$i]->referencia);
+                    if ($art) {
+                        $observa = "\n" . utf8_decode($this->fix_html($art->observaciones));
+                    } else {
+                        //$observa = null; // No mostrar mensaje de error
+                        $observa = "\n";
+                    }
 
-              $lafila = array(
-                   // '0' => utf8_decode($lineas[$i]->albaran_codigo() . '-' . $lineas[$i]->albaran_numero()),
-                   '0' => utf8_decode($lineas[$i]->referencia),
-                   '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
-                   '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
-                   '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
-                   '4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
-                   '5' => utf8_decode($this->show_numero(($lineas[$i]->iva), 0) . " %"),
-                  // '6' => $this->ckeckEuro($lineas[$i]->pvptotal), // Importe con Descuentos aplicados
-                   '6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
-               );
-              $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
-           }
-           $pdf_doc->piepagina = true;
+                    $lafila = array(
+                        // '0' => utf8_decode($lineas[$i]->albaran_codigo() . '-' . $lineas[$i]->albaran_numero()),
+                        '0' => utf8_decode($lineas[$i]->referencia),
+                        '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
+                        '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
+                        '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
+                        '4' => $this->show_numero(($lineas[$i]->pvpsindto*$negativo), FS_NF0),
+                        '5' => ($lineas[$i]->dtopor)?$this->show_numero($descuento_linea, FS_NF0):'',
+                        //'4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
+                        '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
+                        '7' => $this->ckeckEuro($linea_neto), // Importe con Descuentos aplicados
+                        //'6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
+                    );
+                    $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
+                }
+                $pdf_doc->fdf_documento_descuentos = ($descuento)?$this->ckeckEuro(($descuento)):'';
+                $pdf_doc->piepagina = true;
+            }
         }
-       }
-   }
+    }
 
    private function share_extensions()
    {
