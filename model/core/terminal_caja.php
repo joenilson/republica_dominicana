@@ -2,7 +2,7 @@
 
 /*
  * This file is part of facturacion_base
- * Copyright (C) 2015-2016  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2015-2017  Carlos Garcia Gomez  neorazorx@gmail.com
  * Copyright (C) 2016-2017  Joe Nilson Zegarra Galvez  joenilson@gmail.com
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -84,17 +84,16 @@ class terminal_caja extends \fs_model
    public $num_tickets;
 
    /**
-    * El punto de emisión configurado en el maestro de NCF
-    * @var type varchar(3)
-    */
-   public $area_impresion;
-
-   /**
     * Desactivar los comandos ESC/POS para comprobaciones de la impresora de tickets.
     * @var type
     */
    public $sin_comandos;
 
+   /**
+    * El punto de emisión configurado en el maestro de NCF
+    * @var type varchar(3)
+    */
+   public $area_impresion;
    public $ncf_tipo;
    public function __construct($t = FALSE)
    {

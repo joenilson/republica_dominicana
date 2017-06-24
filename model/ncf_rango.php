@@ -257,6 +257,7 @@ class ncf_rango extends fs_model
 
     public function generate_terminal($idempresa, $codalmacen, $tipo_comprobante, $codpago, $area_impresion)
     {
+        $ncf = array('NCF'=>'NO_DISPONIBLE');
         $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
         $data = $this->db->select("SELECT ".
         "* ".
@@ -268,10 +269,23 @@ class ncf_rango extends fs_model
         "contado = ".$contado." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
         if($data){
-            return $this->ncf_number($data[0]);
+            $ncf = $this->ncf_number($data[0]);
         }else{
-            return array('NCF'=>"NO_DISPONIBLE");
+            $data2 = $this->db->select("SELECT ".
+                " * ".
+                " FROM ".$this->table_name.
+                " WHERE ".
+                " idempresa = ".$this->intval($idempresa)." AND ".
+                " codalmacen = ".$this->var2str($codalmacen)." AND ".
+                " area_impresion = ".$this->var2str($area_impresion)." AND ".
+                " contado != ".$contado." AND ".
+                " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+            if($data2)
+            {
+                $ncf = $this->ncf_number($data2[0]);
+            }
         }
+        return $ncf;
     }
 
     public function get_by_almacen($idempresa, $almacen){
