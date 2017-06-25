@@ -18,6 +18,7 @@
 require_model('almacen.php');
 require_model('pais.php');
 require_model('ncf_rango.php');
+require_model('ncf_entidad_tipo.php');
 require_model('ncf_tipo.php');
 require_model('ncf_ventas.php');
 /**
@@ -28,6 +29,7 @@ require_model('ncf_ventas.php');
 class helper_ncf extends fs_controller {
     public $ncf_rango;
     public $ncf_tipo;
+    public $ncf_entidad_tipo;
     public $ncf_ventas;
     public $allow_delete;
     public $almacen;
@@ -42,6 +44,7 @@ class helper_ncf extends fs_controller {
         $this->pais = new pais();
         $this->ncf_rango = new ncf_rango();
         $this->ncf_tipo = new ncf_tipo();
+        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->array_series = \range('A', 'U');
     }
 
@@ -70,9 +73,9 @@ class helper_ncf extends fs_controller {
                 $ncf_factura->motivo = $motivo;
             }
             if (!$ncf_factura->save()) {
-                $factura->numero2 = $ncf_factura->ncf;
+                $factura->numero2 = '';
                 $factura->save();
-                return $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->idfactura . ' con el NCF: ' . $numero_ncf['NCF'] . ' Anule la factura e intentelo nuevamente.');
+                $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->codigo . ' con el NCF: ' . $numero_ncf['NCF'] . ' Ingrese a la factura y dele al botón corregir NCF.');
             } else {
                 $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
             }
