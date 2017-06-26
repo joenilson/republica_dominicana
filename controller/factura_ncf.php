@@ -426,7 +426,7 @@ class factura_ncf extends fs_controller {
                     $linea_importe = ($lineas[$i]->pvpsindto*$negativo);
                     $linea_impuesto = (($lineas[$i]->pvptotal * $negativo)*($lineas[$i]->iva/100));
                     $linea_neto = ($lineas[$i]->pvptotal * $negativo)*(1+($lineas[$i]->iva/100));
-                    $descuento_linea = ($lineas[$i]->dtopor)?(($lineas[$i]->pvpunitario * $negativo)*($lineas[$i]->cantidad * $negativo))/($lineas[$i]->dtopor/100):0;
+                    $descuento_linea = ($lineas[$i]->dtopor)?(($lineas[$i]->pvpunitario * $negativo)*($lineas[$i]->cantidad * $negativo))*($lineas[$i]->dtopor/100):0;
                     $descuento += $descuento_linea;
                     $pdf_doc->neto = $this->ckeckEuro($neto);
                     $articulo = new articulo();
