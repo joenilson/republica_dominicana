@@ -304,7 +304,7 @@ class PDF_MC_Table extends FPDF
 
         // Calcular la altura MAXIMA de la fila e ir a la siguiente línea
         $nb = 0;
-        $totalLineas = 27;
+        $totalLineas = 26;
         for($i=0;$i<count($data);$i++)
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
@@ -592,21 +592,22 @@ class PDF_MC_Table extends FPDF
         $this->SetFont('Arial','',9);
         $length2 = $this->GetStringWidth( $adresse );
         $this->MultiCell($length2, 4, $adresse);
-
+        $y1+=($this->getY()-$y1);
         if ($email != '')
         {
-            $this->SetXY( $x1, $y1 + 73 );
+            $this->SetXY( $x1, $y1 );
             $this->SetFont('Arial','',9);
             $this->Write(5,'Email: ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $email, 'mailto:' . $email);
             $this->SetTextColor(0);
             $this->SetFont('');
+            $y1+=4;
         }
 
         if ($web != '')
         {
-            $this->SetXY( $x1, $y1 + 77 );
+            $this->SetXY( $x1, $y1 );
             $this->SetFont('Arial','',9);
             $this->Write(5,'Web: ');
             $this->SetTextColor(0,0,255);
@@ -781,7 +782,7 @@ class PDF_MC_Table extends FPDF
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Cliente:'), 0, 0, "R");
         $this->SetFont('Arial','',9);
-        $this->Cell(120,5, $this->fdf_codcliente. ' - '.$this->fdf_nombrecliente, 0, 0, "L");
+        $this->Cell(120,5, $this->fdf_codcliente. ' - '.utf8_decode($this->fdf_nombrecliente), 0, 0, "L");
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode($this->fdf_FS_CIFNIF.':'), 0, 0, "R");
         $this->SetFont('Arial','',9);
