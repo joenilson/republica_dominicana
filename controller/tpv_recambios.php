@@ -306,7 +306,7 @@ class tpv_recambios extends fbase_controller
    {
       /// desactivamos la plantilla HTML
       $this->template = FALSE;
-      $tipo_comprobante = $_REQUEST['generar_comprobante'];
+      $tipo_comprobante = \filter_input(INPUT_GET, 'generar_comprobante');
       $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $this->cliente_s->codpago, $this->terminal->area_impresion);
       if ($numero_ncf['NCF'] == 'NO_DISPONIBLE'){
          $this->ncf_numero = '';
@@ -315,7 +315,7 @@ class tpv_recambios extends fbase_controller
       }
 
       header('Content-Type: application/json');
-      echo json_encode( array('ncf_numero' => $this->ncf_numero) );
+      echo json_encode( array('ncf_numero' => $this->ncf_numero,'tipo_comprobante'=>$tipo_comprobante, 'terminal'=>$this->terminal, 'cliente'=>$this->cliente_s) );
    }
 
    private function datos_cliente()

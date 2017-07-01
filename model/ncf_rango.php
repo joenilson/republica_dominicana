@@ -265,9 +265,10 @@ class ncf_rango extends fs_model
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
-        "area_impresion = ".$this->var2str($area_impresion)." AND ".
+        "area_impresion = ".$this->var2str(str_pad($area_impresion,3,'0',STR_PAD_LEFT))." AND ".
         "contado = ".$contado." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
+
         if($data){
             $ncf = $this->ncf_number($data[0]);
         }else{
@@ -277,7 +278,7 @@ class ncf_rango extends fs_model
                 " WHERE ".
                 " idempresa = ".$this->intval($idempresa)." AND ".
                 " codalmacen = ".$this->var2str($codalmacen)." AND ".
-                " area_impresion = ".$this->var2str($area_impresion)." AND ".
+                " area_impresion = ".$this->var2str(str_pad($area_impresion,3,'0',STR_PAD_LEFT))." AND ".
                 " contado != ".$contado." AND ".
                 " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
             if($data2)
