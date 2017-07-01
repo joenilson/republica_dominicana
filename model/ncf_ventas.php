@@ -259,11 +259,46 @@ class ncf_ventas extends fs_model {
         if($codalmacen !=''){
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
-        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+        $sql = "SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." ".
-                "ORDER BY idempresa, fecha, ncf");
+                "ORDER BY idempresa, fecha, ncf";
+        $data = $this->db->select($sql);
+        if($data)
+        {
+            foreach($data as $d)
+            {
+                $datos = new ncf_ventas($d);
+                $otros_datos = $this->info_factura($datos->documento);
+                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:FALSE;
+                $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
+                $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
+                $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
+                $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
+                $datos->condicion = ($datos->estado)?"Activo":"Anulado";
+                $datos->cifnif_len = strlen($datos->cifnif);
+                $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
+                $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
+                $lista[] = $datos;
+            }
 
+        }
+
+        return $lista;
+    }
+
+    public function all_desde_hasta_limit($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='',$offset=0,$limit=FS_ITEM_LIMIT)
+    {
+        $lista = array();
+        $extra='';
+        if($codalmacen !=''){
+            $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
+        }
+        $sql = "SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." ".
+                "ORDER BY idempresa, fecha, ncf";
+        $data = $this->db->select_limit($sql,$limit,$offset);
         if($data)
         {
             foreach($data as $d)

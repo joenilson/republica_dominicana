@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2015 darkniisan
+ * Copyright (C) 2017 joenilson at gmail dot com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -26,7 +26,7 @@ require_once 'plugins/facturacion_base/extras/xlsxwriter.class.php';
 /**
  * Description of reportes_fiscales
  *
- * @author darkniisan
+ * @author joenilson
  */
 class informes_fiscales extends fs_controller {
     public $almacen;
@@ -60,14 +60,25 @@ class informes_fiscales extends fs_controller {
     public $sumaComprasPagadas;
     public $saldoConsolidado;
     public $saldoConsolidadoPagadas;
-
+    public $totalCantidad;
+    public $totalNeto;
+    public $totalItbis;
+    public $totalMonto;
     public $archivoXLSX;
+    public $writer;
     public $archivoXLSXPath;
     public $documentosDir;
     public $exportDir;
     public $publicPath;
     public $tItbis;
     public $tMonto;
+
+    //Variables de Busqueda
+    public $limit;
+    public $offset;
+    public $sort;
+    public $order;
+    public $search;
 
     public function __construct() {
         parent::__construct(__CLASS__, 'Informes Fiscales', 'informes', FALSE, TRUE, FALSE);
@@ -116,12 +127,14 @@ class informes_fiscales extends fs_controller {
         if(!$this->user->admin){
             $this->agente = new agente();
             $cod = $this->agente->get($this->user->codagente);
-            $user_almacen = $this->almacenes->get($cod->codalmacen);
+            $user_almacen = ($cod)?$this->almacenes->get($cod->codalmacen):false;
             $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
             $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
         }
 
-        $codalmacen = \filter_input(INPUT_POST, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $codalmacenp = \filter_input(INPUT_POST, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $codalmaceng = \filter_input(INPUT_GET, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $codalmacen = ($codalmacenp)?$codalmacenp:$codalmaceng;
         $almacen_defecto = false;
         if(count($this->almacenes->all())===1)
         {
@@ -131,11 +144,23 @@ class informes_fiscales extends fs_controller {
         $this->codalmacen = ($codalmacen)?$codalmacen:$almacen_defecto;
         $this->almacenes_seleccionados = (is_array($this->codalmacen))?$this->codalmacen:array($this->codalmacen);
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
+        $iniciop = \filter_input(INPUT_POST, 'inicio');
+        $finp = \filter_input(INPUT_POST, 'fin');
+        $iniciog = \filter_input(INPUT_GET, 'inicio');
+        $fing = \filter_input(INPUT_GET, 'fin');
+        $offset = \filter_input(INPUT_GET, 'offset');
+        $limit = \filter_input(INPUT_GET, 'limit');
+        $search = \filter_input(INPUT_GET, 'search');
+        $sort = \filter_input(INPUT_GET, 'sort');
+        $order = \filter_input(INPUT_GET, 'order');
+        $this->fecha_inicio = ($iniciop)?$iniciop:$iniciog;
+        $this->fecha_fin = ($finp)?$finp:$fing;
+        $this->offset = ($offset)?$offset:0;
+        $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
+        $this->search = ($search)?$search:false;
+        $this->sort = ($sort AND $sort!='undefined')?$sort:'fecha, ncf';
+        $this->order = ($order AND $order!='undefined')?$order:'ASC';
         if(!empty($tiporeporte)){
-            $inicio = \filter_input(INPUT_POST, 'inicio');
-            $fin = \filter_input(INPUT_POST, 'fin');
-            $this->fecha_inicio = $inicio;
-            $this->fecha_fin = $fin;
             $this->reporte = $tiporeporte;
             switch ($tiporeporte){
                 case 'reporte-consolidado':
@@ -169,6 +194,277 @@ class informes_fiscales extends fs_controller {
                     break;
             }
         }
+        $tablareporte = \filter_input(INPUT_GET, 'tabla_reporte');
+        if($tablareporte){
+            $this->datos_reporte($tablareporte,TRUE);
+        }
+
+    }
+
+    public function datos_reporte($reporte, $json = false){
+        $resultados = array();
+        $total_informacion = 0;
+        $almacenes = implode("','",$this->almacenes_seleccionados);
+        switch($reporte){
+            case "reporte-consolidado":
+                $sql_consolidado = "( ".
+                    " SELECT 'Venta' as tipo, nv.codalmacen,nv.fecha,f.nombrecliente as nombre, ".
+                    " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+                    " CASE WHEN f.pagada THEN 'Si' ELSE 'No' END as pagada, ".
+                    " ncf, f.totaliva as totaliva, f.neto as neto, f.total as total ".
+                    " FROM ncf_ventas as nv ".
+                    " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
+                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND nv.codalmacen IN ('".$almacenes."') ".
+                    " ) ".
+                    " UNION ALL ".
+                    " ( ".
+                    " SELECT 'Compra' as tipo, codalmacen, fecha, nombre, ".
+                    " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+                    " CASE WHEN pagada THEN 'Si' ELSE 'No' END as pagada, ".
+                    " numproveedor as ncf, totaliva, neto, total from facturasprov ".
+                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND codalmacen IN ('".$almacenes."') ".
+                    " ) ".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_consolidado." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT t1.tipo,sum(CASE WHEN pagada = 'Si' THEN total ELSE 0 END) as total_pagada,sum(total) as total_general FROM (".
+                        $sql_consolidado.") as t1 GROUP BY t1.tipo;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_consolidado, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_consolidado);
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                foreach($data_resumen as $linea){
+                    if($linea['tipo']=='Venta'){
+                        $this->sumaVentasPagadas += $linea['total_pagada'];
+                        $this->sumaVentas += $linea['total_general'];
+                    }elseif($linea['tipo']=='Compra'){
+                        $this->sumaComprasPagadas += $linea['total_pagada'];
+                        $this->sumaCompras += $linea['total_general'];
+                    }
+                }
+                break;
+            case "reporte-ventas":
+                $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, f.neto as neto,  f.totaliva as totaliva, f.total as total,".
+                    " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+                    " nv.estado ".
+                    //" CASE WHEN length(nv.cifnif)=9 THEN 1 ELSE 2 END as cifnif_tipo ".
+                    " FROM ncf_ventas as nv ".
+                    " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
+                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+                    " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND nv.codalmacen IN ('".$almacenes."') ".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(CASE WHEN t1.condicion = 'Activo' then neto else 0 end) as neto, ".
+                        "sum(CASE WHEN t1.condicion = 'Activo' then totaliva else 0 end) as totaliva,".
+                        "sum(CASE WHEN t1.condicion = 'Activo' then total else 0 end) as total FROM (".
+                        $sql_ventas.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_ventas, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_ventas);
+                    $this->totalNeto += $data_resumen[0]['neto'];
+                    $this->totalItbis += $data_resumen[0]['totaliva'];
+                    $this->totalMonto += $data_resumen[0]['total'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "detalle-ventas":
+                $sql_detalle = "SELECT codalmacen, fecha, ncf, documento, referencia, descripcion, cantidad, ".
+                    "pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto ".
+                    " FROM ncf_ventas ".
+                    " JOIN lineasfacturascli on (documento = idfactura)".
+                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id).
+                    " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND estado = TRUE ".
+                    " AND codalmacen IN ('".$almacenes."') ".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_detalle." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
+                        "sum(monto) as total_monto FROM (".
+                        $sql_detalle.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_detalle, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_detalle);
+                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+                    $this->totalMonto += $data_resumen[0]['total_monto'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "resumen-ventas":
+                $sql_rventas = "SELECT codalmacen, ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, ".
+                    "referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto ".
+                    " from ncf_ventas ".
+                    " join lineasfacturascli on (documento = idfactura) ".
+                    " join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante) ".
+                    " where idempresa = ".$this->empresa->intval($this->empresa->id).
+                    " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND ncf_ventas.estado = TRUE ".
+                    " AND codalmacen IN ('".$almacenes."') ".
+                    " GROUP BY codalmacen,ncf_tipo.tipo_comprobante,ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion ".
+                    " ORDER BY codalmacen,ncf_tipo.tipo_comprobante";
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_rventas." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
+                        "sum(monto) as total_monto FROM (".
+                        $sql_rventas.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_rventas, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_rventas);
+                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+                    $this->totalMonto += $data_resumen[0]['total_monto'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "reporte-compras":
+                $sql_compras = " SELECT fecha, codalmacen, nombre, cifnif, ".
+                    " idfactura, numproveedor as ncf, totaliva, neto, total, ".
+                    " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+                    " CASE WHEN anulada THEN 'Si' ELSE 'No' END as estado ".
+                    " FROM facturasprov ".
+                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND codalmacen IN ('".$almacenes."') AND anulada = FALSE".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_compras." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(neto) as neto, sum(totaliva) as totaliva, ".
+                        " sum(total) as total FROM (".
+                        $sql_compras.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_compras, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_compras);
+                    $this->totalNeto += $data_resumen[0]['neto'];
+                    $this->totalItbis += $data_resumen[0]['totaliva'];
+                    $this->totalMonto += $data_resumen[0]['total'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "detalle-compras":
+                $sql_dcompras = "SELECT  codalmacen, fecha, numproveedor as ncf, f.idfactura as documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
+                    " FROM facturasprov as f".
+                    " JOIN lineasfacturasprov as fl on (f.idfactura = fl.idfactura)".
+                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND anulada = FALSE ".
+                    " AND codalmacen IN ('".$almacenes."') ".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_dcompras." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(cantidad) as cantidad, ".
+                        " sum(monto) as total FROM (".
+                        $sql_dcompras.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_dcompras, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_dcompras);
+                    $this->totalCantidad += $data_resumen[0]['cantidad'];
+                    $this->totalMonto += $data_resumen[0]['total'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "reporte-606":
+                $sql_606 = " SELECT fp.cifnif, ".
+                    " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
+                    " CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
+                    " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
+                    " concat(extract(year from fp.fecha),lpad(CAST (extract(month from fp.fecha) as text),2,'0')) as fechaym, ".
+                    " lpad(CAST (extract(day from fp.fecha) as text),2,'0') as fechadd, ".
+                    " concat(extract(year from ca.fecha),lpad(CAST (extract(month from ca.fecha) as text),2,'0')) as fechapym, ".
+                    " lpad(CAST (extract(day from ca.fecha) as text),2,'0') as fechapdd, ".
+                    " fp.totaliva, 0 as totalivaretenido, fp.neto, 0 as totalnetoretenido ".
+                    " FROM facturasprov as fp ".
+                    " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
+                    " left join facturasprov as fp2 ON (fp.idfacturarect = fp2.idfactura) ".
+                    " left join co_asientos as ca on (fp.idasientop = ca.idasiento AND fp.codejercicio = ca.codejercicio) ".
+                    " WHERE fp.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND fp.codalmacen IN ('".$almacenes."') AND fp.anulada = FALSE".
+                    " ORDER BY fp.codalmacen,fp.".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_606." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_606, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_606);
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "reporte-607":
+                $sql_607 = "SELECT ".
+                    " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
+                    " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
+                    " ncf, ncf_modifica, ".
+                    " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha, ".
+                    " totaliva, neto, ".
+                    " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
+                    " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
+                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+                    " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND nv.codalmacen IN ('".$almacenes."') ".
+                    " ORDER BY nv.codalmacen,nv.".$this->sort." ".$this->order;
+                //$this->new_message($sql_607);
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_607." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_607, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_607);
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "reporte-608":
+                $sql_608 = "SELECT ncf, ".
+                " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha,".
+                " motivo,".
+                " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado  FROM ncf_ventas as nv ".
+                " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+                " fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                " AND codalmacen IN ('".$almacenes."') and estado = false ".
+                " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_608." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                if($json){
+                    $resultados = $this->db->select_limit($sql_608, $this->limit, $this->offset);
+                }else{
+                    $resultados = $this->db->select($sql_608);
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            default:
+
+                break;
+        }
+        if($json){
+            $data = array();
+            $this->template = false;
+            header('Content-Type: application/json');
+            $data['rows'] = $resultados;
+            $data['total'] = $total_informacion;
+            echo json_encode($data);
+        }else{
+            return $resultados;
+        }
     }
 
     /**
@@ -181,60 +477,7 @@ class informes_fiscales extends fs_controller {
         $this->sumaVentasPagadas = 0;
         $this->sumaComprasPagadas = 0;
         $this->saldoConsolidadoPagadas = 0;
-        $facturas_ventas = new ncf_ventas();
-
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $nueva_lista_ventas = array();
-            $lista_facturas_ventas = $facturas_ventas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            foreach($lista_facturas_ventas as $linea){
-                $nueva_linea = new StdClass();
-                $nueva_linea->tipo = "Venta";
-                $nueva_linea->codalmacen = $linea->codalmacen;
-                $nueva_linea->fecha = $linea->fecha;
-                $nueva_linea->nombre = $linea->nombrecliente;
-                $nueva_linea->condicion = $linea->condicion;
-                $nueva_linea->pagada = ($linea->pagada== 't')?"Si":"No";
-                $nueva_linea->ncf = $linea->ncf;
-                $nueva_linea->totaliva = $linea->totaliva;
-                $nueva_linea->neto = $linea->neto;
-                $nueva_linea->total = $linea->total;
-                $this->sumaVentas += $linea->total;
-                if($linea->pagada){
-                    $this->sumaVentasPagadas += $linea->total;
-                }
-                array_push($nueva_lista_ventas, $nueva_linea);
-            }
-        }
-        $this->total_resultados_ingresos = count($nueva_lista_ventas);
-
-
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $nueva_lista_compras = array();
-            $lista_facturas_compras = $this->facturas_proveedor(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            foreach($lista_facturas_compras as $linea){
-                $nueva_linea = new StdClass();
-                $nueva_linea->tipo = "Compra";
-                $nueva_linea->codalmacen = $linea->codalmacen;
-                $nueva_linea->fecha = $linea->fecha;
-                $nueva_linea->nombre = $linea->nombre;
-                $nueva_linea->condicion = (!$linea->anulada)?"Activo":"Anulado";
-                $nueva_linea->pagada = ($linea->pagada== 't')?"Si":"No";
-                $nueva_linea->ncf = $linea->numproveedor;
-                $nueva_linea->totaliva = $linea->totaliva;
-                $nueva_linea->neto = $linea->neto;
-                $nueva_linea->total = $linea->total;
-                $this->sumaCompras += $linea->total;
-                if($linea->pagada){
-                    $this->sumaComprasPagadas += $linea->total;
-                }
-                array_push($nueva_lista_compras, $nueva_linea);
-            }
-        }
-        $this->resultados_consolidado = array_merge($nueva_lista_ventas, $nueva_lista_compras);
-        $this->total_resultados_egresos = count($lista_facturas_compras);
-        $this->total_resultados_consolidado = $this->total_resultados_ingresos + $this->total_resultados_egresos;
+        $this->resultados_consolidado = $this->datos_reporte($this->reporte);
         $this->saldoConsolidado = $this->sumaVentas - $this->sumaCompras;
         $this->saldoConsolidadoPagadas = $this->sumaVentasPagadas - $this->sumaComprasPagadas;
 
@@ -249,41 +492,14 @@ class informes_fiscales extends fs_controller {
     }
 
     public function detalle_compras(){
-        $lista = array();
-        $sql = "SELECT  codalmacen, fecha, numproveedor, f.idfactura, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
-        " FROM facturasprov as f".
-        " JOIN lineasfacturasprov as fl on (f.idfactura = fl.idfactura)".
-        " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-        " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-        " AND anulada = FALSE".
-        " AND codalmacen IN ('".implode("','",$this->almacenes_seleccionados)."') ".
-        " ORDER BY codalmacen,fecha,numproveedor";
-        $data = $this->db->select($sql);
-        $totalCantidad = 0;
-        $totalMonto = 0;
-        if($data){
-            foreach ($data as $d){
-                $linea = new stdClass();
-                $linea->codalmacen = $d['codalmacen'];
-                $linea->fecha = $d['fecha'];
-                $linea->ncf = $d['numproveedor'];
-                $linea->documento = $d['idfactura'];
-                $linea->referencia = $d['referencia'];
-                $linea->descripcion = $d['descripcion'];
-                $linea->cantidad = $d['cantidad'];
-                $linea->precio = $d['precio'];
-                $linea->monto = $d['monto'];
-                $lista[] = $linea;
-                $totalCantidad += $d['cantidad'];
-                $totalMonto += $d['monto'];
-            }
-        }
-        $this->resultados_detalle_compras = $lista;
-        $this->total_resultados_detalle_compras = count($lista);
+        $this->totalCantidad = 0;
+        $this->totalMonto = 0;
+        $this->resultados_detalle_compras = $this->datos_reporte($this->reporte);
+        $this->total_resultados_detalle_compras = 0;
         $this->generar_excel(
             array('Almacén','Fecha','NCF','Documento','Referencia','Descripción','Cantidad','Precio','Monto'),
             $this->resultados_detalle_compras,
-            array('Total','','','','','',$totalCantidad,'',$totalMonto),
+            array('Total','','','','','',$this->totalCantidad, '', $this->totalMonto),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
             FALSE
@@ -291,84 +507,29 @@ class informes_fiscales extends fs_controller {
     }
 
     public function detalle_ventas(){
-        $lista = array();
-        $sql = "SELECT  codalmacen, fecha,ncf, documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
-        " FROM ncf_ventas".
-        " JOIN lineasfacturascli on (documento = idfactura)".
-        " WHERE idempresa = ".$this->empresa->id.
-        " AND fecha between '".\date("Y-m-d", strtotime($this->fecha_inicio)).
-        "' AND '".\date("Y-m-d", strtotime($this->fecha_fin)).
-        "' AND estado = true".
-        " AND codalmacen IN ('".implode("','",$this->almacenes_seleccionados)."') ".
-        " ORDER BY codalmacen,fecha,ncf";
-        $data = $this->db->select($sql);
-        $totalCantidad = 0;
-        $totalMonto = 0;
-        if($data){
-            foreach ($data as $d){
-                $linea = new stdClass();
-                $linea->codalmacen = $d['codalmacen'];
-                $linea->fecha = $d['fecha'];
-                $linea->ncf = $d['ncf'];
-                $linea->documento = $d['documento'];
-                $linea->referencia = $d['referencia'];
-                $linea->descripcion = $d['descripcion'];
-                $linea->cantidad = $d['cantidad'];
-                $linea->precio = $d['precio'];
-                $linea->monto = $d['monto'];
-                $lista[] = $linea;
-                $totalCantidad += $d['cantidad'];
-                $totalMonto += $d['monto'];
-            }
-        }
-        $this->resultados_detalle_ventas = $lista;
-        $this->total_resultados_detalle_ventas = count($lista);
+        $this->totalCantidad = 0;
+        $this->totalMonto = 0;
+        $this->resultados_detalle_ventas = $this->datos_reporte($this->reporte);
+        $this->total_resultados_detalle_ventas = 0;
         $this->generar_excel(
-            array('Almacén','Fecha','NCF','Documento','Referencia','Descripción','Cantidad','Precio','Monto'),
+            array('Almacén','Fecha','NCF','Documento','Referencia','Descripción','Cantidad','Precio','Descuento','Monto'),
             $this->resultados_detalle_ventas,
-            array('Total','','','','','',$totalCantidad,'',$totalMonto),
+            array('Total','','','','','',$this->totalCantidad,'', '',$this->totalMonto),
             FALSE,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
             FALSE
         );
     }
 
     public function resumen_ventas(){
-        $lista = array();
-        $sql = "SELECT codalmacen, ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, ".
-        "referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto ".
-        " from ncf_ventas ".
-        " join lineasfacturascli on (documento = idfactura) ".
-        " join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante) ".
-        " where idempresa = ".$this->empresa->id." AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-        " and ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." and ncf_ventas.estado = TRUE ".
-        " AND codalmacen IN ('".implode("','",$this->almacenes_seleccionados)."') ".
-        " group by codalmacen,ncf_tipo.tipo_comprobante,ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion ".
-        " order by codalmacen,ncf_tipo.tipo_comprobante";
-        $data = $this->db->select($sql);
-        $totalCantidad = 0;
-        $totalMonto = 0;
-        if($data){
-            foreach ($data as $d){
-                $linea = new stdClass();
-                $linea->codalmacen = $d['codalmacen'];
-                $linea->tipo_comprobante = $d['tipo_comprobante'];
-                $linea->tc_descripcion = $d['tc_descripcion'];
-                $linea->referencia = $d['referencia'];
-                $linea->descripcion = $d['descripcion'];
-                $linea->cantidad = $d['cantidad'];
-                $linea->monto = $d['monto'];
-                $totalCantidad += $d['cantidad'];
-                $totalMonto += $d['monto'];
-                $lista[] = $linea;
-            }
-        }
-        $this->resultados_resumen_ventas = $lista;
-        $this->total_resultados_resumen_ventas = count($lista);
+        $this->totalCantidad = 0;
+        $this->totalMonto = 0;
+        $this->resultados_resumen_ventas = $this->datos_reporte($this->reporte);
+        $this->total_resultados_resumen_ventas = 0;
         $this->generar_excel(
             array('Almacén','Tipo NCF','Descripción NCF','Referencia','Descripción Artículo','Cantidad','monto'),
-            $lista,
-            array('Total','','','','',$totalCantidad,$totalMonto),
+            $this->resultados_resumen_ventas,
+            array('Total','','','','',$this->totalCantidad,$this->totalMonto),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right')),
             FALSE
@@ -377,44 +538,15 @@ class informes_fiscales extends fs_controller {
 
     public function ventas(){
         $this->resultados_ventas = array();
-        $facturas = new ncf_ventas();
-        $totalNeto = 0;
-        $totalItbis =0;
-        $totalMonto =0;
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $lista = array();
-            $datos = $facturas->all_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            if($datos)
-            {
-                foreach($datos as $linea)
-                {
-                    $item = new stdClass();
-                    $item->fecha = $linea->fecha;
-                    $item->codalmacen = $linea->codalmacen;
-                    $item->nombrecliente = $linea->nombrecliente;
-                    $item->cifnif = $linea->cifnif;
-                    $item->ncf = $linea->ncf;
-                    $item->ncf_modifica = $linea->ncf_modifica;
-                    $item->tipo_comprobante = $linea->tipo_comprobante;
-                    $item->neto = $linea->neto;
-                    $item->totaliva = $linea->totaliva;
-                    $item->total = $linea->total;
-                    $item->condicion = $linea->condicion;
-                    $item->estado = $linea->estado;
-                    $totalNeto += $linea->neto;
-                    $totalItbis += $linea->totaliva;
-                    $totalMonto += $linea->total;
-                    $lista[] = $item;
-                }
-            }
-            $this->resultados_ventas = array_merge($this->resultados_ventas, $lista);
-        }
-        $this->total_resultados_ventas = count($this->resultados_ventas);
+        $this->totalNeto = 0;
+        $this->totalItbis =0;
+        $this->totalMonto =0;
+        $this->resultados_ventas = $this->datos_reporte($this->reporte);
+        $this->total_resultados_ventas = 0;
         $this->generar_excel(
             array('Fecha','Almacén','Cliente','RNC','NCF','NCF Modifica','Tipo','Base Imp.','Itbis','Total','Condicion','Estado'),
             $this->resultados_ventas,
-            array('Total','','','','','','',$totalNeto,$totalItbis,$totalMonto,'',''),
+            array('Total','','','','','','',$this->totalNeto,$this->totalItbis,$this->totalMonto,'',''),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             FALSE
@@ -424,42 +556,15 @@ class informes_fiscales extends fs_controller {
     public function compras(){
         $this->resultados_compras = array();
 
-        $totalNeto = 0;
-        $totalItbis =0;
-        $totalMonto =0;
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $lista = array();
-            $datos = $this->facturas_proveedor(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            if($datos)
-            {
-                foreach($datos as $linea)
-                {
-                    $item = new stdClass();
-                    $item->fecha = $linea->fecha;
-                    $item->codalmacen = $linea->codalmacen;
-                    $item->nombre = $linea->nombre;
-                    $item->cifnif = $linea->cifnif;
-                    $item->idfactura = $linea->idfactura;
-                    $item->numproveedor = $linea->numproveedor;
-                    $item->neto = $linea->neto;
-                    $item->totaliva = $linea->totaliva;
-                    $item->total = $linea->total;
-                    $item->condicion = (!$linea->anulada)?"Activo":"Anulado";
-                    $item->estado = $linea->anulada;
-                    $totalNeto += $linea->neto;
-                    $totalItbis += $linea->totaliva;
-                    $totalMonto += $linea->total;
-                    $lista[] = $item;
-                }
-            }
-            $this->resultados_compras = array_merge($this->resultados_compras, $lista);
-        }
-        $this->total_resultados_compras = count($this->resultados_compras);
+        $this->totalNeto = 0;
+        $this->totalItbis =0;
+        $this->totalMonto =0;
+        $this->resultados_compras = $this->datos_reporte($this->reporte);
+        $this->total_resultados_compras = 0;
         $this->generar_excel(
             array('Fecha','Almacén','Proveedor','RNC','Factura','NCF','Base Imp.','Itbis','Total','Condicion','Anulada'),
             $this->resultados_compras,
-            array('Total','','','','','',$totalNeto,$totalItbis,$totalMonto,'',''),
+            array('Total','','','','','',$this->totalNeto,$this->totalItbis,$this->totalMonto,'',''),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             FALSE
@@ -468,42 +573,8 @@ class informes_fiscales extends fs_controller {
 
     public function dgii606(){
         $this->resultados_606 = array();
-        $lista = array();
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $datos_reporte = $this->facturas_proveedor(\date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            if($datos_reporte)
-            {
-                foreach($datos_reporte as $d)
-                {
-                    $prov = new proveedor();
-                    $proveedor = $prov->get($d->codproveedor);
-                    $factura_modifica = ($d->idfacturarect)?$this->factura_modifica_proveedor($d->idfacturarect):false;
-                    $item = new stdClass();
-                    $item->cifnif = $d->cifnif;
-                    $item->tipo_id = ((strlen($d->cifnif)==9) OR (strlen($d->cifnif)==11))?1:3;
-                    $item->descripcion = ($proveedor->acreedor)?"Servicios":"Bienes y Servicios";
-                    $item->numproveedor = $d->numproveedor;
-                    $item->numproveedor_rect = ($factura_modifica)?$factura_modifica[0]['numproveedor']:'';
-                    $item->periodo = substr($d->fecha,6,4).substr($d->fecha,3,2);
-                    $item->dia = substr($d->fecha,0,2);
-                    $item->periodo_pago = '';
-                    $item->dia_pago = '';
-                    if($d->get_asiento_pago()){
-                        $asiento_pago = $d->get_asiento_pago();
-                        $item->periodo_pago = substr($asiento_pago->fecha,6,4).substr($asiento_pago->fecha,3,2);
-                        $item->dia_pago = substr($asiento_pago->fecha,0,2);
-                    }
-                    $item->totaliva = $d->totaliva;
-                    $item->totalirpf = $d->totalirpf;
-                    $item->neto = $d->neto;
-                    $item->retencionneto = '';
-                    $lista[] = $item;
-                }
-            }
-        }
-        $this->resultados_606 = array_merge($this->resultados_606, $lista);
-        $this->total_resultados_606 = count($this->resultados_606);
+        $this->resultados_606 = $this->datos_reporte($this->reporte);
+        $this->total_resultados_606 = 0;
         $this->generar_excel(
             array('RNC/Cédula','Tipo Id','Tipo Bienes o Servicios Comprados','NCF','NCF Modifica','Fecha AAAAMM','Fecha DD','Fecha Pago AAAAMM','Fecha Pago DD','ITBIS Facturado','ITBIS Retenido','Monto Facturado','Retencion Renta'),
             $this->resultados_606,
@@ -517,39 +588,14 @@ class informes_fiscales extends fs_controller {
     public function dgii607()
     {
         $this->resultados_607 = array();
-        $listado = array();
-        $facturas = new ncf_ventas();
         $this->tItbis=0;
         $this->tMonto=0;
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $datos_reporte = $facturas->all_activo_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            if($datos_reporte)
-            {
-                foreach($datos_reporte as $data)
-                {
-                    $item = new stdClass();
-                    $item->cifnif = ((strlen($data->cifnif)==9) OR (strlen($data->cifnif)==11))?$data->cifnif:'';
-                    $item->tipo_id = ((strlen($data->cifnif)==9) OR (strlen($data->cifnif)==11))?1:3;
-                    $item->ncf = $data->ncf;
-                    $item->ncf_modifica = $data->ncf_modifica;
-                    $item->fecha = $data->fecha;
-                    $item->totaliva = $data->totaliva;
-                    $item->neto = $data->neto;
-                    $item->condicion = ($data->estado)?"Activo":"Anulado";
-                    $this->tItbis+=$item->totaliva;
-                    $this->tMonto+=$item->neto;
-                    $listado[] = $item;
-                }
-            }
-        }
-        $this->resultados_607 = array_merge($this->resultados_607, $listado);
-        $this->total_resultados_607 = count($this->resultados_607);
-
+        $this->resultados_607 = $this->datos_reporte($this->reporte);
+        $this->total_resultados_607 = 0;
         $this->generar_excel(
             array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Fecha','ITBIS Facturado','Monto Facturado','Estado'),
             $this->resultados_607,
-            array('Total',$this->total_resultados_607.' Documentos','','','','','',''),
+            array('Total',count($this->resultados_607).' Documentos','','','','','',''),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),
             FALSE
@@ -558,30 +604,12 @@ class informes_fiscales extends fs_controller {
 
     public function dgii608(){
         $this->resultados_608 = array();
-        $facturas = new ncf_ventas();
-        $lista = array();
-        foreach($this->almacenes_seleccionados as $cod)
-        {
-            $datos_reporte = $facturas->all_anulado_desde_hasta($this->empresa->id, \date("Y-m-d", strtotime($this->fecha_inicio)), \date("Y-m-d", strtotime($this->fecha_fin)), $cod);
-            if($datos_reporte)
-            {
-                foreach($datos_reporte as $d)
-                {
-                    $item = new stdClass();
-                    $item->ncf = $d->ncf;
-                    $item->fecha = $d->fecha;
-                    $item->motivo = $d->motivo;
-                    $item->condicion = $d->condicion;
-                    $lista[] = $item;
-                }
-            }
-        }
-        $this->resultados_608 = array_merge($this->resultados_608, $lista);
-        $this->total_resultados_608 = count($this->resultados_608);
+        $this->resultados_608 = $this->datos_reporte($this->reporte);
+        $this->total_resultados_608 = 0;
         $this->generar_excel(
             array('NCF','Fecha','Motivo','Estado'),
             $this->resultados_608,
-            array('Total',$this->total_resultados_608.' Documentos','',''),
+            array('Total',count($this->resultados_608).' Documentos','',''),
             FALSE,
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left')),
             FALSE
@@ -637,6 +665,7 @@ class informes_fiscales extends fs_controller {
         $estilo_footer = ($estilo_pie)?$estilo_pie:array('border'=>'left,right,top,bottom','font-style'=>'bold','color'=>'#FFFFFF','fill'=>'#000000');
         //Inicializamos la clase
         $this->writer = new XLSXWriter();
+        $this->writer->setAuthor('FacturaScripts '.\date('Y-m-d H:i:s'));
         //Creamos la hoja con todos los clientes organizados por ruta
         $nombre_hoja = ucfirst(str_replace('-',' ',$this->reporte));
         $this->writer->writeSheetHeader($nombre_hoja, array(), true);

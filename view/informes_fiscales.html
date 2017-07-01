@@ -106,7 +106,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </ul>
       </div>
       <div class="col-lg-10 col-md-10 col-sm-9">
-         <form class="form-inline" method="POST" action='{$fsc->url()}'>
+         <form name="f_informes_fiscales" id="f_informes_fiscales" class="form-inline" method="POST" action='{$fsc->url()}'>
             <input type="hidden" name="tipo-reporte" id="tipo-reporte" value='{$fsc->reporte}'>
             <label for='inicio'><b>Fecha Inicio</b></label>
             <input type="text" class="form-control input-sm datepicker" name='inicio' id="inicio">
@@ -169,395 +169,290 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </table>
                     </div>
                     <div class='col-sm-9'>
-                        <table id="table-reporte-consolidado" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="false">
+                        <table id="table-reporte-consolidado"
+                               data-mobile-responsive="true"
+                               data-toggle="table"
+                               data-method="POST"
+                               data-height="500"
+                               data-search="false"
+                               {if="$fsc->reporte=='reporte-consolidado'"}data-ajax="buscarInformacion"{/if}
+                               data-pagination="true"
+                               data-page-size="100"
+                               data-page-list="[100,150,200,250,500]"
+                               data-show-footer="false"
+                               data-show-refresh="true"
+                               data-side-pagination="server">
                             <thead>
-                              <tr>
-                                  <th colspan="10" class="text-center">Reporte Consolidado del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
-                              </tr>
-                              <tr class="text-center">
-                                  <th data-sortable="true">Tipo</th>
-                                  <th data-sortable="true">Almacén</th>
-                                  <th data-sortable="true">Fecha</th>
-                                  <th data-sortable="true">Entidad</th>
-                                  <th data-sortable="true">NCF</th>
-                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">Neto</th>
-                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">{#FS_IVA#}</th>
-                                  <th data-falign="right" data-formatter="numberFormatter" class="text-center">Total</th>
-                                  <th data-sortable="true">Pagada</th>
-                                  <th data-sortable="true">Estado</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {if="$fsc->total_resultados_consolidado!=0"}
-                                {loop="$fsc->resultados_consolidado"}
-                                <tr id="tr-id-{$counter}" {if="$value->condicion=='Anulado'"}class="danger"{/if}>
-                                    <td id="td-id-{$counter}">{$value->tipo}</td>
-                                    <td>{$value->codalmacen}</td>
-                                    <td>{$value->fecha}</td>
-                                    <td>{$value->nombre}</td>
-                                    <td>{$value->ncf}</td>
-                                    <td class="text-right">{$value->neto}</td>
-                                    <td class="text-right">{$value->totaliva}</td>
-                                    <td class="text-right">{$value->total}</td>
-                                    <td class="text-center">{$value->pagada}</td>
-                                    <td class="text-left">{$value->condicion}</td>
-                                </tr>
-                                {/loop}
-                              {else}
                                 <tr>
-                                    <td colspan="10" class="alert alert-danger text-center">
-                                        <span>No hay registros con las fechas seleccionadas</span>
-                                    </td>
+                                    <th data-sortable="true" data-field="tipo">Tipo</th>
+                                    <th data-sortable="true" data-field="codalmacen">Almacén</th>
+                                    <th data-sortable="true" data-field="fecha">Fecha</th>
+                                    <th data-sortable="true" data-field="nombre">Entidad</th>
+                                    <th data-sortable="true" data-field="ncf">NCF</th>
+                                    <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="neto">Neto</th>
+                                    <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="totaliva">{#FS_IVA#}</th>
+                                    <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total">Total</th>
+                                    <th data-sortable="true" data-field="pagada">Pagada</th>
+                                    <th data-sortable="true" data-field="condicion">Estado</th>
                                 </tr>
-                               {/if}
-                            </tbody>
+                            </thead>
                         </table>
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-ventas'"}active{/if}" id="reporte-ventas">
-                    <table id="table-reporte-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-reporte-ventas"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='reporte-ventas'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server"
+                            data-row-style="rowStyle">
                         <thead>
                             <tr>
                                 <th colspan="11" class="text-center">Reporte de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
-                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                              <th data-sortable="true">Almacén</th>
-                              <th data-sortable="true" data-footer-formatter="totalFormatter">Cliente</th>
-                              <th data-sortable="true">RNC</th>
-                              <th data-sortable="true">NCF</th>
-                              <th data-sortable="true">NCF Modifica</th>
-                              <th data-sortable="true">Tipo</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
-                              <th data-sortable="true">Estado</th>
+                              <th data-sortable="true" data-field="fecha" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true" data-field="codalmacen">Almacén</th>
+                              <th data-sortable="true" data-field="nombrecliente" data-footer-formatter="totalFormatter">Cliente</th>
+                              <th data-sortable="true" data-field="cifnif">RNC</th>
+                              <th data-sortable="true" data-field="ncf">NCF</th>
+                              <th data-sortable="true" data-field="ncf_modifica">NCF Modifica</th>
+                              <th data-sortable="true" data-field="tipo_comprobante">Tipo</th>
+                              <th data-align="right" data-falign="right" data-field="neto" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
+                              <th data-align="right" data-falign="right" data-field="totaliva" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
+                              <th data-align="right" data-falign="right" data-field="total" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
+                              <th data-sortable="true" data-field="condicion">Estado</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_ventas!=0"}
-                            {loop="$fsc->resultados_ventas"}
-                            <tr id="tr-id-{$counter}" {if="!$value->estado"}class="danger"{/if}>
-                                <td id="td-id-{$counter}">{$value->fecha}</td>
-                                <td>{$value->codalmacen}</td>
-                                <td>{$value->nombrecliente}</td>
-                                <td>{$value->cifnif}</td>
-                                <td>{$value->ncf}</td>
-                                <td>{$value->ncf_modifica}</td>
-                                <td>{$value->tipo_comprobante}</td>
-                                <td class="text-right">{$value->neto}</td>
-                                <td class="text-right">{$value->totaliva}</td>
-                                <td class="text-right">{$value->total}</td>
-                                <td class="text-center">{$value->condicion}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="11" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-ventas'"}active{/if}" id="detalle-ventas">
-                    <table id="table-detalle-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-detalle-ventas"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='detalle-ventas'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="10" class="text-center">Detalle de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
-                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                              <th data-sortable="true">Almacén</th>
-                              <th data-sortable="true">NCF</th>
-                              <th data-sortable="true">Documento</th>
-                              <th data-sortable="true">Codigo</th>
-                              <th data-sortable="true">Descripci&oacute;n</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                              <th data-sortable="true" data-field="fecha" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-sortable="true" data-field="codalmacen">Almacén</th>
+                              <th data-sortable="true" data-field="ncf">NCF</th>
+                              <th data-sortable="true" data-field="documento">Documento</th>
+                              <th data-sortable="true" data-field="referencia">Codigo</th>
+                              <th data-sortable="true" data-field="descripcion">Descripci&oacute;n</th>
+                              <th data-align="right" data-falign="right" data-field="cantidad" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                              <th data-align="right" data-falign="right" data-field="precio" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
+                              <th data-align="right" data-falign="right" data-field="descuento" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Dscto</th>
+                              <th data-align="right" data-falign="right" data-field="monto" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_detalle_ventas!=0"}
-                            {loop="$fsc->resultados_detalle_ventas"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->fecha}</td>
-                                <td>{$value->codalmacen}</td>
-                                <td>{$value->ncf}</td>
-                                <td><a href="{#FS_PATH#}index.php?page=ventas_factura&id={$value->documento}" target="_blank">{$value->documento}</a></td>
-                                <td><a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a></td>
-                                <td>{$value->descripcion}</td>
-                                <td class="text-right">{$value->cantidad}</td>
-                                <td class="text-right">{$value->precio}</td>
-                                <td class="text-right">{$value->monto}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='resumen-ventas'"}active{/if}" id="resumen-ventas">
-                    <table id="table-resumen-ventas" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-resumen-ventas"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='resumen-ventas'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
                                 <th colspan="7" class="text-center">Resúmen de Ventas del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
-                                <th data-sortable="true">Almacén</th>
-                                <th data-sortable="true">Tipo NCF</th>
-                                <th data-sortable="true">Descripci&oacute;n NCF</th>
-                                <th data-sortable="true">Referencia</th>
-                                <th data-sortable="true">Descripci&oacute;n Artículo</th>
-                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
-                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                                <th data-field="codalmacen" data-sortable="true">Almacén</th>
+                                <th data-field="tipo_comprobante" data-sortable="true">Tipo NCF</th>
+                                <th data-field="tc_descripcion" data-sortable="true">Descripci&oacute;n NCF</th>
+                                <th data-field="referencia" data-sortable="true">Referencia</th>
+                                <th data-field="descripcion" data-sortable="true">Descripci&oacute;n Artículo</th>
+                                <th data-field="cantidad" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                                <th data-field="monto" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
                             </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_resumen_ventas!=0"}
-                            {loop="$fsc->resultados_resumen_ventas"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->codalmacen}</td>
-                                <td>{$value->tipo_comprobante}</td>
-                                <td>{$value->tc_descripcion}</td>
-                                <td>
-                                    {if="$value->referencia"}
-                                    <a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a>
-                                    {else}
-                                    No Aplica
-                                    {/if}
-                                </td>
-                                <td>{$value->descripcion}</td>
-                                <td class="text-right">{$value->cantidad}</td>
-                                <td class="text-right">{$value->monto}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="7" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-compras'"}active{/if}" id="reporte-compras">
-                    <table id="table-reporte-compras" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-reporte-compras"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='reporte-compras'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
                                 <th colspan="8" class="text-center">Reporte de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
-                                <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                                <th data-sortable="true">Almacén</th>
-                                <th data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
-                                <th data-sortable="true">RNC</th>
-                                <th data-sortable="true">Factura - NCF</th>
-                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
-                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
-                                <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
+                                <th data-field="fecha" data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                                <th data-field="codalmacen" data-sortable="true">Almacén</th>
+                                <th data-field="nombre" data-sortable="true" data-footer-formatter="totalFormatter">Proveedor</th>
+                                <th data-field="cifnif" data-sortable="true">RNC</th>
+                                <th data-field="ncf" data-sortable="true">Factura - NCF</th>
+                                <th data-field="neto" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Base Imponible</th>
+                                <th data-field="totaliva" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Itbis</th>
+                                <th data-field="total" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Total</th>
                             </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_compras!=0"}
-                            {loop="$fsc->resultados_compras"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->fecha}</td>
-                                <td>{$value->codalmacen}</td>
-                                <td>{$value->nombre}</td>
-                                <td>{$value->cifnif}</td>
-                                <td><a href="{#FS_PATH#}index.php?page=compras_factura&id={$value->idfactura}" target="_blank">{$value->idfactura} - {$value->numproveedor}</a></td>
-                                <td class="text-right">{$value->neto}</td>
-                                <td class="text-right">{$value->totaliva}</td>
-                                <td class="text-right">{$value->total}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="8" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='detalle-compras'"}active{/if}" id="detalle-compras">
-                    <table id="table-detalle-compras" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-detalle-compras"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='detalle-compras'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
                                 <th colspan="9" class="text-center">Detalle de Compras del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
-                              <th data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
-                              <th data-sortable="true">Almacén</th>
-                              <th data-sortable="true">NCF</th>
-                              <th data-sortable="true">Documento</th>
-                              <th data-sortable="true">Codigo</th>
-                              <th data-sortable="true">Descripci&oacute;n</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
-                              <th data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                              <th data-field="fecha" data-sortable="true" data-footer-formatter="totalTextFormatter">Fecha</th>
+                              <th data-field="codalmacen" data-sortable="true">Almacén</th>
+                              <th data-field="ncf" data-sortable="true">NCF</th>
+                              <th data-field="documento" data-sortable="true">Documento</th>
+                              <th data-field="referencia" data-sortable="true">Codigo</th>
+                              <th data-field="descripcion" data-sortable="true">Descripci&oacute;n</th>
+                              <th data-field="cantidad" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Cantidad</th>
+                              <th data-field="precio" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
+                              <th data-field="monto" data-align="right" data-falign="right" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_detalle_compras!=0"}
-                            {loop="$fsc->resultados_detalle_compras"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->fecha}</td>
-                                <td>{$value->codalmacen}</td>
-                                <td>{$value->ncf}</td>
-                                <td><a href="{#FS_PATH#}index.php?page=compras_factura&id={$value->documento}" target="_blank">{$value->documento}</a></td>
-                                <td><a href="{#FS_PATH#}index.php?page=ventas_articulo&ref={$value->referencia}" target="_blank">{$value->referencia}</a></td>
-                                <td>{$value->descripcion}</td>
-                                <td class="text-right">{$value->cantidad}</td>
-                                <td class="text-right">{$value->precio}</td>
-                                <td class="text-right">{$value->monto}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-606'"}active{/if}" id="reporte-606">
-                    <table id="table-reporte-606" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-reporte-606"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='reporte-606'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
                                 <th colspan="13" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
-                                <th data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
-                                <th>Tipo Id.</th>
-                                <th data-footer-formatter="totalFormatter">Tipo Bienes o Servicios Comprados</th>
-                                <th>NCF</th>
-                                <th>NCF Modifica</th>
-                                <th>Fec. NCF AAAAMM</th>
-                                <th>Fec. NCF DD</th>
-                                <th>Fec. Pago AAAAMM</th>
-                                <th>Fec. Pago DD</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Retenido</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Retencion Renta</th>
+                                <th data-field="cifnif" data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
+                                <th data-field="tipo_id">Tipo Id.</th>
+                                <th data-field="descripcion" data-footer-formatter="totalFormatter">Tipo Bienes o Servicios Comprados</th>
+                                <th data-field="ncf">NCF</th>
+                                <th data-field="ncf_modifica">NCF Modifica</th>
+                                <th data-field="fechaym">Fec. NCF AAAAMM</th>
+                                <th data-field="fechadd">Fec. NCF DD</th>
+                                <th data-field="fechapym">Fec. Pago AAAAMM</th>
+                                <th data-field="fechapdd">Fec. Pago DD</th>
+                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
+                                <th data-field="totalivaretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Retenido</th>
+                                <th data-field="neto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th data-field="totalnetoretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Retencion Renta</th>
                             </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_606!=0"}
-                            {loop="$fsc->resultados_606"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->cifnif}</td>
-                                <td>{$value->tipo_id}</td>
-                                <td>{$value->descripcion}</td>
-                                <td>{$value->numproveedor}</td>
-                                <td>{$value->numproveedor_rect}</td>
-                                <td>{$value->periodo}</td>
-                                <td>{$value->dia}</td>
-                                <td>{$value->periodo_pago}</td>
-                                <td>{$value->dia_pago}</td>
-                                <td class="text-right">{$value->totaliva}</td>
-                                <td class="text-right">{$value->totalirpf}</td>
-                                <td class="text-right">{$value->neto}</td>
-                                <td class="text-right">{$value->retencionneto}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-607'"}active{/if}" id="reporte-607">
-                    <table id="table-reporte-607" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
+                    <table id="table-reporte-607"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='reporte-607'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
                         <thead>
                             <tr>
                                 <th colspan="9" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr>
-                                <th data-footer-formatter="totalTextFormatter">Item</th>
-                                <th data-footer-formatter="totalFormatter">RNC/Cedula</th>
-                                <th>Tipo Ident.</th>
-                                <th>NCF</th>
-                                <th>NCF Modifica</th>
-                                <th>Fecha</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
-                                <th data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
-                                <th>Estado</th>
+                                <th data-formatter="runningFormatter">Item</th>
+                                <th data-field="cifnif" data-footer-formatter="totalFormatter">RNC/Cedula</th>
+                                <th data-field="tipo_id">Tipo Ident.</th>
+                                <th data-field="ncf">NCF</th>
+                                <th data-field="ncf_modifica">NCF Modifica</th>
+                                <th data-field="fecha">Fecha</th>
+                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
+                                <th data-field="neto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th data-field="estado">Estado</th>
                             </tr>
                         </thead>
-                        <tbody>
-                          {if="$fsc->total_resultados_607!=0"}
-                            {loop="$fsc->resultados_607"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$counter+1}</td>
-                                <td>{$value->cifnif}</td>
-                                <td>{$value->tipo_id}</td>
-                                <td>{$value->ncf}</td>
-                                <td>{$value->ncf_modifica}</td>
-                                <td>{$value->fecha}</td>
-                                <td class="text-right">{$value->totaliva}</td>
-                                <td class="text-right">{$value->neto}</td>
-                                <td class="text-center">{$value->condicion}</td>
-                            </tr>
-                            {/loop}
-                          {else}
-                            <tr>
-                                <td colspan="9" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
-                            </tr>
-                           {/if}
-                        </tbody>
                     </table>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-608'"}active{/if}" id="reporte-608">
-                    <table id="table-reporte-608" data-mobile-responsive="true" data-toggle="table" data-height="500" data-show-footer="true">
-                      <thead>
-                          <tr>
-                              <th colspan="4" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
-                          </tr>
-                        <tr>
-                            <th data-footer-formatter="totalTextFormatter">NCF</th>
-                            <th data-footer-formatter="totalFormatter">Fecha</th>
-                            <th>Tipo de Anulación</th>
-                            <th>Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                          {if="$fsc->total_resultados_608!=0"}
-                            {loop="$fsc->resultados_608"}
-                            <tr id="tr-id-{$counter}">
-                                <td id="td-id-{$counter}">{$value->ncf}</td>
-                                <td>{$value->fecha}</td>
-                                <td class="text-left">{$value->motivo}</td>
-                                <td class="text-center">{$value->condicion}</td>
-                            </tr>
-                            {/loop}
-                          {else}
+                    <table id="table-reporte-608"
+                            data-mobile-responsive="true"
+                            data-toggle="table"
+                            data-method="GET"
+                            data-height="500"
+                            data-search="false"
+                            {if="$fsc->reporte=='reporte-608'"}data-ajax="buscarInformacion"{/if}
+                            data-pagination="true"
+                            data-page-size="100"
+                            data-page-list="[100,150,200,250,500,750]"
+                            data-show-footer="true"
+                            data-show-refresh="true"
+                            data-side-pagination="server">
+                        <thead>
                             <tr>
-                                <td colspan="4" class="alert alert-danger text-center">
-                                    <span>No hay registros con las fechas seleccionadas</span>
-                                </td>
+                                <th colspan="4" class="text-center">Reporte DGII 608 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
-                           {/if}
-                        </tbody>
+                            <tr>
+                                <th data-field="ncf" data-footer-formatter="totalTextFormatter">NCF</th>
+                                <th data-field="fecha" data-footer-formatter="totalFormatter">Fecha</th>
+                                <th data-field="motivo">Tipo de Anulación</th>
+                                <th data-field="estado">Estado</th>
+                            </tr>
+                        </thead>
                     </table>
                 </div>
             </div>
@@ -662,5 +557,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     $('#inicio').datepicker('update', '{$fsc->fecha_inicio}');
     $('#fin').datepicker('update', '{$fsc->fecha_fin}');
+
+    function responseHandler(res) {
+        return res;
+    }
+
+    function rowStyle(row, index) {
+        var classes = ['active', 'success', 'info', 'warning', 'danger'];
+        if (row.estado==='f') {
+            return {
+                classes: 'danger'
+            };
+        }
+        return {};
+    }
+
+    function runningFormatter(value, row, index) {
+        var tableOptions = $('#table-{$fsc->reporte}').bootstrapTable('getOptions');
+        return ((tableOptions.pageNumber-1) * tableOptions.pageSize)+(1 + index);
+    }
+
+    function buscarInformacion(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        $.ajax({
+            type: "GET",
+            url: "{$fsc->url()}",
+            data: "tabla_reporte={$fsc->reporte}&"+$("#f_informes_fiscales").serialize()+'&offset='+params.data.offset+'&limit='+params.data.limit+'&search='+search+'&sort='+sort+'&order='+order,
+            dataType: "json",
+            success: function (data) {
+                setTimeout(function() {
+                    params.success({
+                        total: data.total,
+                        rows: data.rows
+                    });
+                }, 1000);
+
+            },
+            error: function (er) {
+                params.error(er);
+            }
+        });
+    }
 </script>
 {include="footer"}
