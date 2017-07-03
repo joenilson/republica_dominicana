@@ -62,10 +62,10 @@ class ventas_clientes extends fbase_controller {
       $this->serie = new serie();
       $this->tarifa = new tarifa();
       $this->tarifas = $this->tarifa->all();
-      
+
       $this->ncf_tipo = new ncf_tipo();
       $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-      
+
       $this->cargar_config();
 
       if (isset($_GET['delete_grupo'])) { /// eliminar un grupo
@@ -303,7 +303,7 @@ class ventas_clientes extends fbase_controller {
       }
 
       if ($cliente->save()) {
-         
+
          if (\filter_input(INPUT_POST, 'tipo_comprobante') != '') {
             $ncf_entidad_tipo = new ncf_entidad_tipo();
             $ncf_entidad_tipo->idempresa = $this->empresa->id;
@@ -351,11 +351,13 @@ class ventas_clientes extends fbase_controller {
 
             /// redireccionamos a la página del cliente
             header('location: ' . $cliente->url());
-         } else
-            $this->new_error_msg("¡Imposible guardar la dirección del cliente!");
-      } else
+            } else {
+                $this->new_error_msg("¡Imposible guardar la dirección del cliente!");
+            }
+        } else {
          $this->new_error_msg("¡Imposible guardar los datos del cliente!");
-   }
+        }
+    }
 
    private function eliminar_cliente() {
       $cliente = $this->cliente->get($_GET['delete']);
@@ -366,45 +368,50 @@ class ventas_clientes extends fbase_controller {
             $this->new_error_msg('No tienes permiso para eliminar en esta página.');
          } else if ($cliente->delete()) {
             $this->new_message('Cliente eliminado correctamente.');
-         } else
+            } else {
             $this->new_error_msg('Ha sido imposible eliminar el cliente.');
-      } else
-         $this->new_error_msg('Cliente no encontrado.');
-   }
+            }
+        } else {
+            $this->new_error_msg('Cliente no encontrado.');
+        }
+    }
 
    private function nuevo_grupo() {
-      $grupo = $this->grupo->get($_POST['codgrupo']);
-      if ($grupo) {
-         $this->new_error_msg('El grupo con código ' . $_POST['codgrupo'] . ' ya existe.');
-      } else {
-        $grupo = new grupo_clientes();
-        $grupo->codgrupo = $_POST['codgrupo'];
-        $grupo->nombre = $_POST['nombre'];
+        $grupo = $this->grupo->get($_POST['codgrupo']);
+        if ($grupo) {
+            $this->new_error_msg('El grupo con código ' . $_POST['codgrupo'] . ' ya existe.');
+        } else {
+            $grupo = new grupo_clientes();
+            $grupo->codgrupo = $_POST['codgrupo'];
+            $grupo->nombre = $_POST['nombre'];
 
-        $grupo->codtarifa = NULL;
-         if ($_POST['codtarifa'] != '---') {
-           $grupo->codtarifa = $_POST['codtarifa'];
+            $grupo->codtarifa = NULL;
+            if ($_POST['codtarifa'] != '---') {
+                $grupo->codtarifa = $_POST['codtarifa'];
+            }
+
+            if ($grupo->save()) {
+                $this->new_message('Grupo guardado correctamente.');
+                header('Location: ' . $grupo->url());
+            } else {
+                $this->new_error_msg('Imposible guardar el grupo.');
+            }
         }
+    }
 
-         if ($grupo->save()) {
-           $this->new_message('Grupo guardado correctamente.');
-            header('Location: ' . $grupo->url());
-         } else
-           $this->new_error_msg('Imposible guardar el grupo.');
-      }
-   }
-
-   private function eliminar_grupo() {
-      $grupo = $this->grupo->get($_GET['delete_grupo']);
-      if ($grupo) {
-         if (!$this->allow_delete) {
-            $this->new_error_msg('No tienes permiso para eliminar en esta página.');
-         } else if ($grupo->delete()) {
-            $this->new_message('Grupo ' . $grupo->codgrupo . ' eliminado correctamente.');
-         } else
-            $this->new_error_msg('Imposible eliminar el grupo.');
-      } else
-         $this->new_error_msg('Grupo no encontrado.');
-   }
+    private function eliminar_grupo() {
+        $grupo = $this->grupo->get($_GET['delete_grupo']);
+        if ($grupo) {
+            if (!$this->allow_delete) {
+                $this->new_error_msg('No tienes permiso para eliminar en esta página.');
+            } else if ($grupo->delete()) {
+                $this->new_message('Grupo ' . $grupo->codgrupo . ' eliminado correctamente.');
+            } else {
+                $this->new_error_msg('Imposible eliminar el grupo.');
+            }
+        } else {
+            $this->new_error_msg('Grupo no encontrado.');
+        }
+    }
 
 }

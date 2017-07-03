@@ -33,6 +33,7 @@ require_model('pais.php');
 require_model('partida.php');
 require_model('serie.php');
 require_model('subcuenta.php');
+
 require_model('ncf_tipo.php');
 require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
@@ -103,7 +104,7 @@ class ventas_factura extends fbase_controller
       if(class_exists('distribucion_clientes')){
          $this->distribucion_clientes = new distribucion_clientes();
       }
-      
+
       /**
        * Si hay alguna extensión de tipo config y texto no_button_pagada,
        * desactivamos el botón de pagada/sin pagar.
@@ -303,7 +304,7 @@ class ventas_factura extends fbase_controller
                $this->new_error_msg("Imposible modificar la fecha del asiento.");
             }
          }
-         
+
          $ncfventas0 = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
          $ncfventas0->fecha = $this->factura->fecha;
          $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
