@@ -58,31 +58,102 @@
     </div>
     <div class="row" style='margin-top: 15px;'>
         <div class="col-sm-12">
-            <form method="POST" action="{$fsc->url()}&opcion=impresion" class='form-inline'>
-                <div class='form-group col-sm-3'>
-                    <label for="rd_imprimir_logo" class='checkbox'>
-                        Imprimir Logo de Empresa en la factura:
-                        <input type="checkbox" name="rd_imprimir_logo" id="rd_imprimir_logo" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_logo']=='TRUE'"}checked{/if}>
-                    </label>
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Opciones de Impresión de Facturas</h3>
                 </div>
-                <div class='form-group col-sm-3'>
-                    <label for="rd_imprimir_marca_agua" class='checkbox'>
-                        Imprimir Marca de agua del logo de la empresa en la factura:
-                        <input type="checkbox" name="rd_imprimir_marca_agua" id="rd_imprimir_marca_agua" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_marca_agua']=='TRUE'"}checked{/if}>
-                    </label>
+                <div class="panel-body">
+                    <form method="POST" action="{$fsc->url()}&opcion=impresion" class='form-inline'>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_logo" class='checkbox'>
+                                Imprimir Logo de Empresa en la factura:
+                                <input type="checkbox" name="rd_imprimir_logo" id="rd_imprimir_logo" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_logo']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_marca_agua" class='checkbox'>
+                                Imprimir Marca de agua del logo de la empresa en la factura:
+                                <input type="checkbox" name="rd_imprimir_marca_agua" id="rd_imprimir_marca_agua" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_marca_agua']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_bn" class='checkbox'>
+                                Imprimir blanco y negro:
+                                <input type="checkbox" name="rd_imprimir_bn" id="rd_imprimir_bn" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_bn']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_cliente_box" class='checkbox'>
+                                Imprimir bordes de datos de cliente:
+                                <input type="checkbox" name="rd_imprimir_cliente_box" id="rd_imprimir_cliente_box" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_cliente_box']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_detalle_box" class='checkbox'>
+                                Imprimir bordes de artículos:
+                                <input type="checkbox" name="rd_imprimir_detalle_box" id="rd_imprimir_detalle_box" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_detalle_box']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_detalle_lineas" class='checkbox'>
+                                Imprimir lineas de artículos:
+                                <input type="checkbox" name="rd_imprimir_detalle_lineas" id="rd_imprimir_detalle_lineas" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_detalle_lineas']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3 hidden'>
+                            <label for="rd_imprimir_detalle_colores" class='checkbox'>
+                                Imprimir lineas de artículos con color de fondo:
+                                <input type="checkbox" name="rd_imprimir_detalle_colores" id="rd_imprimir_detalle_colores" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_detalle_colores']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_cabecera_tcolor" class="label label-warning">Color Texto Cabecera Lineas</label>
+                            <div id="cp1" class="input-group colorpicker-component">
+                                <input type="text" name="rd_imprimir_cabecera_tcolor" value="{$fsc->rd_setup['rd_imprimir_cabecera_tcolor']}" class="form-control" />
+                                <span class="input-group-addon"><i></i></span>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#cp1').colorpicker({ color: '{$fsc->rd_setup['rd_imprimir_cabecera_tcolor']}', format: 'hex' });
+                                });
+                            </script>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_cabecera_fcolor" class="label label-warning">Color Fondo Cabecera Lineas</label>
+                            <div id="cp2" class="input-group colorpicker-component">
+                                <input type="text" name="rd_imprimir_cabecera_fcolor" value="{$fsc->rd_setup['rd_imprimir_cabecera_fcolor']}" class="form-control" />
+                                <span class="input-group-addon"><i></i></span>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#cp2').colorpicker({ color: '{$fsc->rd_setup['rd_imprimir_cabecera_fcolor']}', format: 'hex' });
+                                });
+                            </script>
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_detalle_color" class="label label-warning">Color Texto Lineas</label>
+                            <div id="cp3" class="input-group colorpicker-component">
+                                <input type="text" name="rd_imprimir_detalle_color" value="{$fsc->rd_setup['rd_imprimir_detalle_color']}" class="form-control" />
+                                <span class="input-group-addon"><i></i></span>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#cp3').colorpicker({ color: '{$fsc->rd_setup['rd_imprimir_detalle_color']}', format: 'hex' });
+                                });
+                            </script>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class='form-group col-sm-3 pull-right'>
+                            <br/>
+                            <button class='btn btn-sm btn-success pull-right'>
+                                <span class="fa fa-save"></span>&nbsp;Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class='form-group col-sm-3'>
-                    <label for="rd_imprimir_bn" class='checkbox'>
-                        Imprimir blanco y negro:
-                        <input type="checkbox" name="rd_imprimir_bn" id="rd_imprimir_bn" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_bn']=='TRUE'"}checked{/if}>
-                    </label>
-                </div>
-                <div class='form-group col-sm-3'>
-                    <button class='btn btn-sm btn-success'>
-                        <span class="fa fa-save"></span>&nbsp;Guardar Cambios
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

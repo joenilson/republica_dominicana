@@ -68,11 +68,28 @@ class PDF_MC_Table extends FPDF
 
     function SetColorRelleno($a)
     {
-        $this->SetFillColor(192); // Por defecto Gris
-        if ($a == 'rojo') { $this->SetFillColor(253, 120, 120); }
-        if ($a == 'verde') { $this->SetFillColor(120, 253, 165); }
-        if ($a == 'azul') { $this->SetFillColor(120, 158, 253); }
-        if ($a == 'blanco') { $this->SetFillColor(255, 255, 255); }
+        switch($a){
+            case 'rojo':
+                $this->SetFillColor(253, 120, 120);
+                break;
+            case 'verde':
+                $this->SetFillColor(120, 253, 165);
+                break;
+            case 'azul':
+                $this->SetFillColor(120, 158, 253);
+                break;
+            case 'blanco':
+                $this->SetFillColor(255, 255, 255);
+                break;
+            default:
+                if(substr($a, 0, 1)==='#'){
+                    $rgb = $this->htmlColor2Hex($a);
+                    $this->SetFillColor($rgb[0],$rgb[1],$rgb[2]);
+                }else{
+                    $this->SetFillColor(192);
+                }
+                break;
+        }
     }
 
     //Cabecera de pagina
@@ -197,11 +214,15 @@ class PDF_MC_Table extends FPDF
         // Cabecera Titulos Columnas
         $this->SetXY(10, 75);
         $this->SetFont( "Arial", "B", 9);
+        if($this->fdf_cabecera_tcolor){
+            $rgb = $this->htmlColor2Hex($this->fdf_cabecera_tcolor);
+            $this->SetTextColor($rgb[0],$rgb[1],$rgb[2]);
+        }
         for($i=0;$i<count($this->datoscab);$i++)
         {
             $this->Cell($this->widths[$i],5,$this->datoscab[$i],1,0,'C',1);
         }
-
+        $this->SetTextColor(0);
         // Cuerpo de la Factura
         $this->Ln();
         $aquiY = $this->GetY() + 0.6;
@@ -215,7 +236,9 @@ class PDF_MC_Table extends FPDF
         for($i=0;$i<count($this->datoscab);$i++)
         {
             //$this->RoundedRect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 1, 'D');
-            //$this->Rect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 'D');
+            if($this->fdf_detalle_box == '1'){
+                $this->Rect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 'D');
+            }
             $aquiX += $this->widths[$i];
         }
     }
@@ -300,11 +323,12 @@ class PDF_MC_Table extends FPDF
         $this->SetXY($x1,$y);
         $w=$this->widths[$ultimo];
         $a=isset($this->aligns[$ultimo]) ? $this->aligns[$ultimo] : 'L';
+
         $this->MultiCell($w,5,$data[$ultimo],0,$a);
 
         // Calcular la altura MAXIMA de la fila e ir a la siguiente línea
         $nb = 0;
-        $totalLineas = 26;
+        $totalLineas = 27;
         for($i=0;$i<count($data);$i++)
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
@@ -578,6 +602,11 @@ class PDF_MC_Table extends FPDF
         return $nb_lines;
     }
 
+    function htmlColor2Hex($hex){
+        list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
+        return array($r, $g, $b);
+    }
+
     // Empresa
     function addSociete( $nom, $adresse, $email, $web)
     {
@@ -624,7 +653,10 @@ class PDF_MC_Table extends FPDF
         $r2  = $r1 + 90;
         $y1  = 6;
         $y2  = $y1 + 20;
-
+        if($this->fdf_cabecera_tcolor){
+            $rgb = $this->htmlColor2Hex($this->fdf_cabecera_tcolor);
+            $this->SetTextColor($rgb[0],$rgb[1],$rgb[2]);
+        }
         $codigo  = utf8_decode('Factura: ').$documento->codigo;
         $ncf  = utf8_decode(ucfirst(FS_NUMERO2)).': '.$documento->ncf;
         $szfont = 9;
@@ -666,6 +698,7 @@ class PDF_MC_Table extends FPDF
             $this->SetFont("Arial", "", 9);
             $this->Cell(60,5,$documento->ncf_afecta, 0,0, "L");
         }
+        $this->SetTextColor(0);
     }
 
     // Nombre, numero y estado de la factura
@@ -712,8 +745,12 @@ class PDF_MC_Table extends FPDF
         $r2  = $r1 + 90;
         $y1  = 27;
         $y2  = $y1+5;
+        if($this->fdf_cabecera_tcolor){
+            $rgb = $this->htmlColor2Hex($this->fdf_cabecera_tcolor);
+            $this->SetTextColor($rgb[0],$rgb[1],$rgb[2]);
+        }
         $this->SetXY( $r1, $y1);
-        $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
+        $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'DF');
         $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Fecha: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
@@ -721,7 +758,8 @@ class PDF_MC_Table extends FPDF
         $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Forma Pago: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
-        $this->Cell(30,5,$this->fdf_epago, 0,0, "R");
+        $this->Cell(30,5,utf8_decode($this->fdf_epago), 0,0, "R");
+        $this->SetTextColor(0);
     }
 
      //Transporte Asociado
@@ -731,9 +769,12 @@ class PDF_MC_Table extends FPDF
         $r2  = $r1 + 90;
         $y1  = 32;
         $y2  = $y1+5;
-        //$this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
-        $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
+        if($this->fdf_cabecera_tcolor){
+            $rgb = $this->htmlColor2Hex($this->fdf_cabecera_tcolor);
+            $this->SetTextColor($rgb[0],$rgb[1],$rgb[2]);
+        }
         $this->SetXY( $r1, $y1 );
+        $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'DF');
         $this->SetFont( "Arial", "B", 9);
         $this->Cell(20,5, "Ruta: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
@@ -742,6 +783,7 @@ class PDF_MC_Table extends FPDF
         $this->Cell(25,5, "Transporte: ", 0, 0, "L");
         $this->SetFont( "Arial", "", 8);
         $this->Cell(25,5,$transporte, 0,0, "R");
+        $this->SetTextColor(0);
     }
 
 
@@ -776,8 +818,10 @@ class PDF_MC_Table extends FPDF
     }
 
     function addClienteInfo(){
-        $r1     = $this->w - 205;
-        $y1     = 45;
+        $r1  = $this->w - 205;
+        $r2  = $this->w - 10;
+        $y1  = 45;
+        //$y2  = $y1;
         $this->SetXY( $r1, $y1);
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Cliente:'), 0, 0, "R");
@@ -821,6 +865,9 @@ class PDF_MC_Table extends FPDF
         $this->Cell(25,5, utf8_decode('Vendedor:'), 0, 0, "R");
         $this->SetFont('Arial','',9);
         $this->Cell(120,5, utf8_decode($this->fde_vendedor), 0, 0, "L");
+        if($this->fdf_cliente_box =='1'){
+            $this->Rect($r1-1, 39, ($r2 - ($r1-1)), 33, 'D');
+        }
     }
 
     // Cliente

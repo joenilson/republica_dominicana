@@ -42,6 +42,7 @@ class factura_ncf extends fs_controller {
 
    public $cliente;
    public $factura;
+   public $documento;
    public $ncf_ventas;
    public $distrib_transporte;
    public $idtransporte;
@@ -65,6 +66,13 @@ class factura_ncf extends fs_controller {
             'rd_imprimir_logo' => 'TRUE',
             'rd_imprimir_marca_agua' => 'TRUE',
             'rd_imprimir_bn' => 'FALSE',
+            'rd_imprimir_cliente_box' => 'TRUE',
+            'rd_imprimir_detalle_box' => 'TRUE',
+            'rd_imprimir_detalle_lineas' => 'TRUE',
+            'rd_imprimir_detalle_colores' => 'TRUE',
+            'rd_imprimir_cabecera_fcolor' => '#000000',
+            'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
+            'rd_imprimir_detalle_color' => '#dadada',
         ), FALSE
      );
 
@@ -74,7 +82,6 @@ class factura_ncf extends fs_controller {
       if(class_exists('distribucion_ordenescarga_facturas')){
         $this->distrib_transporte = new distribucion_ordenescarga_facturas();
       }
-
 
       if(class_exists('agente')){
         $this->agente = new agente();
@@ -215,6 +222,7 @@ class factura_ncf extends fs_controller {
                {
                   $this->template = 'ventas_imprimir';
                   $this->new_message('Mensaje enviado correctamente.');
+                  $this->documento = $this->factura;
 
                   /// nos guardamos la fecha de envío
                      $factura_enviar->femail = $this->today();
@@ -248,9 +256,9 @@ class factura_ncf extends fs_controller {
         $pdf_doc->lineaactual = 0;
         $pdf_doc->fdf_observaciones = "";
 
-        // Definimos el color de relleno (gris, rojo, verde, azul)
+        // Definimos el color de relleno (gris, rojo, verde, azul o con un codigo html)
         if($this->rd_setup['rd_imprimir_bn']=='FALSE'){
-            $pdf_doc->SetColorRelleno('gris');
+            $pdf_doc->SetColorRelleno($this->rd_setup['rd_imprimir_cabecera_fcolor']);
         }else{
             $pdf_doc->SetColorRelleno('blanco');
         }
@@ -279,33 +287,21 @@ class factura_ncf extends fs_controller {
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
 
         /// Insertamos el Logo y Marca de Agua si esta configurado así
-        if( file_exists(FS_MYDOCS.'images/logo.png') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
-        {
-           $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
-           $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
-           $pdf_doc->fdf_Ylogotipo = '5'; // Valor Y para Logotipo
-           $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
-           $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
-           $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
-        }
-        elseif( file_exists(FS_MYDOCS.'images/logo.jpg') AND ($this->rd_setup['rd_imprimir_logo']=='TRUE'))
-        {
-           $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
-           $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
-           $pdf_doc->fdf_Ylogotipo = '40'; // Valor Y para Logotipo
-           $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
-           $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
-           $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
-        }
-        else
-        {
-           $pdf_doc->fdf_verlogotipo = '0';
-           $pdf_doc->fdf_Xlogotipo = '0';
-           $pdf_doc->fdf_Ylogotipo = '0';
-           $pdf_doc->fdf_vermarcaagua = '0';
-           $pdf_doc->fdf_Xmarcaagua = '0';
-           $pdf_doc->fdf_Ymarcaagua = '0';
-        }
+        $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'1':'0';
+        $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'10':'0';
+        $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'5':'0';
+        $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'1':'0';
+        $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'25':'0';
+        $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua']=='TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg'))?'110':'0';
+
+        $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn']=='TRUE')?'1':'0';
+        $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box']=='TRUE')?'1':'0';
+        $pdf_doc->fdf_detalle_box = ($this->rd_setup['rd_imprimir_detalle_box']=='TRUE')?'1':'0';
+        $pdf_doc->fdf_detalle_lineas = ($this->rd_setup['rd_imprimir_detalle_lineas']=='TRUE')?'1':'0';
+        $pdf_doc->fdf_detalle_colores = ($this->rd_setup['rd_imprimir_detalle_colores']=='TRUE')?'1':'0';
+        $pdf_doc->fdf_cabecera_fcolor = ($this->rd_setup['rd_imprimir_bn']=='FALSE')?$this->rd_setup['rd_imprimir_cabecera_fcolor']:false;
+        $pdf_doc->fdf_cabecera_tcolor = ($this->rd_setup['rd_imprimir_bn']=='FALSE')?$this->rd_setup['rd_imprimir_cabecera_tcolor']:false;
+        $pdf_doc->fdf_detalle_color = ($this->rd_setup['rd_imprimir_detalle_colores']=='TRUE')?$this->rd_setup['rd_imprimir_detalle_color']:'#000000';
 
         // Tipo de Documento
         $pdf_doc->fdf_documento = $this->factura;
@@ -360,13 +356,14 @@ class factura_ncf extends fs_controller {
         if ($epais) {
            $pdf_doc->fdf_pais = $epais->nombre;
         }
-
+        //$pdf_doc->SetFillColor(120, 253, 165);
+        list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
         // Cabecera Titulos Columnas
         $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
         $pdf_doc->SetWidths(array(18, 70,12 ,15, 15, 20, 20, 25));
         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
-        //$pdf_doc->SetColors(array('6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109', '6|47|109'));
-        $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+        $colores = ($this->rd_setup['rd_imprimir_bn']=='FALSE')?$r.'|'.$g.'|'.$b:'0|0|0';
+        $pdf_doc->SetColors(array($colores, $colores, $colores, $colores, $colores, $colores, $colores, $colores));
         /// Agregamos la pagina inicial de la factura
          $pdf_doc->AddPage();
 
@@ -451,6 +448,7 @@ class factura_ncf extends fs_controller {
                         '7' => $this->ckeckEuro($linea_neto), // Importe con Descuentos aplicados
                         //'6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
                     );
+
                     $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
                 }
                 $pdf_doc->fdf_documento_descuentos = ($descuento)?$this->ckeckEuro(($descuento)):'';

@@ -85,6 +85,13 @@ class admin_rd extends fs_controller {
                 'rd_imprimir_logo' => 'TRUE',
                 'rd_imprimir_marca_agua' => 'TRUE',
                 'rd_imprimir_bn' => 'FALSE',
+                'rd_imprimir_cliente_box' => 'TRUE',
+                'rd_imprimir_detalle_box' => 'TRUE',
+                'rd_imprimir_detalle_lineas' => 'TRUE',
+                'rd_imprimir_detalle_colores' => 'TRUE',
+                'rd_imprimir_cabecera_fcolor' => '#000000',
+                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
+                'rd_imprimir_detalle_color' => '#dadada',
             ), FALSE
         );
 
@@ -108,13 +115,34 @@ class admin_rd extends fs_controller {
                 $op_imprimir_logo = \filter_input(INPUT_POST, 'rd_imprimir_logo');
                 $op_imprimir_marca_agua = \filter_input(INPUT_POST, 'rd_imprimir_marca_agua');
                 $op_imprimir_bn = \filter_input(INPUT_POST, 'rd_imprimir_bn');
+                $op_imprimir_cliente_box = \filter_input(INPUT_POST, 'rd_imprimir_cliente_box');
+                $op_imprimir_detalle_box = \filter_input(INPUT_POST, 'rd_imprimir_detalle_box');
+                $op_imprimir_detalle_lineas = \filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas');
+                $op_imprimir_detalle_colores = \filter_input(INPUT_POST, 'rd_imprimir_detalle_colores');
+                $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
+                $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
+                $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
                 $imprimir_logo = ($op_imprimir_logo)?'TRUE':'FALSE';
                 $imprimir_marca_agua = ($op_imprimir_marca_agua)?'TRUE':'FALSE';
                 $imprimir_bn = ($op_imprimir_bn)?'TRUE':'FALSE';
+                $imprimir_cliente_box =($op_imprimir_cliente_box)?'TRUE':'FALSE';
+                $imprimir_detalle_box =($op_imprimir_detalle_box)?'TRUE':'FALSE';
+                $imprimir_detalle_lineas =($op_imprimir_detalle_lineas)?'TRUE':'FALSE';
+                $imprimir_detalle_colores =($op_imprimir_detalle_colores)?'TRUE':'FALSE';
+                $imprimir_cabecera_fcolor =($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
+                $imprimir_cabecera_tcolor =($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
+                $imprimir_detalle_color =($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
                 $rd_config = array(
                     'rd_imprimir_logo' => $imprimir_logo,
                     'rd_imprimir_marca_agua' => $imprimir_marca_agua,
                     'rd_imprimir_bn' => $imprimir_bn,
+                    'rd_imprimir_cliente_box' => $imprimir_cliente_box,
+                    'rd_imprimir_detalle_box' => $imprimir_detalle_box,
+                    'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
+                    'rd_imprimir_detalle_colores' => $imprimir_detalle_colores,
+                    'rd_imprimir_cabecera_fcolor' => $imprimir_cabecera_fcolor,
+                    'rd_imprimir_cabecera_tcolor' => $imprimir_cabecera_tcolor,
+                    'rd_imprimir_detalle_color' => $imprimir_detalle_color,
                 );
                 if ($fsvar->array_save($rd_config)) {
                     $this->new_message('Opciones de impresión actualizadas correctamente.');
@@ -130,6 +158,13 @@ class admin_rd extends fs_controller {
                 'rd_imprimir_logo' => 'TRUE',
                 'rd_imprimir_marca_agua' => 'TRUE',
                 'rd_imprimir_bn' => 'FALSE',
+                'rd_imprimir_cliente_box' => 'TRUE',
+                'rd_imprimir_detalle_box' => 'TRUE',
+                'rd_imprimir_detalle_lineas' => 'TRUE',
+                'rd_imprimir_detalle_colores' => 'TRUE',
+                'rd_imprimir_cabecera_fcolor' => '#000000',
+                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
+                'rd_imprimir_detalle_color' => '#dadada',
             ), FALSE
         );
 
@@ -354,6 +389,32 @@ class admin_rd extends fs_controller {
         $fsext->text = 'Plan Contable República Dominicana <strong>para pymes</strong>';
         $fsext->params = 'plugins/republica_dominicana/extras/rd_basico.xml';
         $fsext->save();
+
+        $extensiones = array(
+            array(
+                'name' => '001_admin_rd_js',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-colorpicker.min.js" type="text/javascript"></script>',
+                'params' => ''
+            ),
+            array(
+                'name' => '001_admin_rd_css',
+                'page_from' => __CLASS__,
+                'page_to' => __CLASS__,
+                'type' => 'head',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-colorpicker.min.css"/>',
+                'params' => ''
+            ),
+        );
+        foreach($extensiones as $ext){
+            $fext = new fs_extension($ext);
+            if(!$fext->save()){
+                $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
+            }
+        }
+
     }
 
 }
