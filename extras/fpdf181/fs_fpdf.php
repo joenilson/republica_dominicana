@@ -328,14 +328,16 @@ class PDF_MC_Table extends FPDF
     {
         //Computes the number of lines a MultiCell of width w will take
         $cw=&$this->CurrentFont['cw'];
-        if($w==0)
-        $w=$this->w-$this->rMargin-$this->x;
+        if($w==0){
+            $w=$this->w-$this->rMargin-$this->x;
+        }
         $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
         $s=str_replace("\r",'',$txt);
         $nb=strlen($s);
-        if($nb>0 and $s[$nb-1]=="\n")
-        $nb--;
-        $sep=-1;
+        if($nb>0 and $s[$nb-1]=="\n"){
+            $nb--;
+        }
+        $sep=-1;    
         $i=0;
         $j=0;
         $l=0;
@@ -361,11 +363,11 @@ class PDF_MC_Table extends FPDF
                     }
                 } else {
                     $i = $sep + 1;
-                    $sep = -1;
-                    $j = $i;
-                    $l = 0;
-                    $nl++;
                 }
+                $sep = -1;
+                $j = $i;
+                $l = 0;
+                $nl++;
             } else {
                 $i++;
             }
