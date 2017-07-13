@@ -37,113 +37,122 @@ require_model('impuesto.php');
 
 class compras_factura extends fbase_controller {
 
-   public $agente;
-   public $almacen;
-   public $divisa;
-   public $ejercicio;
-   public $factura;
-   public $forma_pago;
-   public $mostrar_boton_pagada;
-   public $proveedor;
-   public $rectificada;
-   public $rectificativa;
-   public $serie;
-   public $ncf_tipo_anulacion;
-   public $impuesto;
+    public $agente;
+    public $almacen;
+    public $divisa;
+    public $ejercicio;
+    public $factura;
+    public $forma_pago;
+    public $mostrar_boton_pagada;
+    public $proveedor;
+    public $rectificada;
+    public $rectificativa;
+    public $serie;
+    public $ncf_tipo_anulacion;
+    public $impuesto;
 
     public function __construct() {
-      parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
-   }
+        parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
+    }
 
     protected function private_core() {
-      parent::private_core();
+        parent::private_core();
 
-      $this->ppage = $this->page->get('compras_facturas');
-      $this->agente = FALSE;
-      $this->almacen = new almacen();
-      $this->divisa = new divisa();
-      $this->ejercicio = new ejercicio();
-      $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
-      $factura = new factura_proveedor();
-      $this->factura = FALSE;
-      $this->forma_pago = new forma_pago();
-      $this->proveedor = FALSE;
-      $this->rectificada = FALSE;
-      $this->rectificativa = FALSE;
-      $this->serie = new serie();
-      $this->impuesto = new impuesto();
+        $this->ppage = $this->page->get('compras_facturas');
+        $this->agente = FALSE;
+        $this->almacen = new almacen();
+        $this->divisa = new divisa();
+        $this->ejercicio = new ejercicio();
+        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+        $factura = new factura_proveedor();
+        $this->factura = FALSE;
+        $this->forma_pago = new forma_pago();
+        $this->proveedor = FALSE;
+        $this->rectificada = FALSE;
+        $this->rectificativa = FALSE;
+        $this->serie = new serie();
+        $this->impuesto = new impuesto();
 
-      /**
-       * Si hay alguna extensión de tipo config y texto no_button_pagada,
-       * desactivamos el botón de pagada/sin pagar.
-       */
-      $this->mostrar_boton_pagada = TRUE;
+        /**
+         * Si hay alguna extensión de tipo config y texto no_button_pagada,
+         * desactivamos el botón de pagada/sin pagar.
+         */
+        $this->mostrar_boton_pagada = TRUE;
         foreach ($this->extensions as $ext) {
             if ($ext->type == 'config' AND $ext->text == 'no_button_pagada') {
-            $this->mostrar_boton_pagada = FALSE;
-            break;
-         }
-      }
-
-        if (isset($_POST['idfactura'])) {
-         $this->factura = $factura->get($_POST['idfactura']);
-         $this->modificar();
-        } else if (isset($_GET['id'])) {
-         $this->factura = $factura->get($_GET['id']);
-      }
+                $this->mostrar_boton_pagada = FALSE;
+                break;
+            }
+        }
+        $idfactura = \filter_input(INPUT_POST, 'idfactura');
+        $id = \filter_input(INPUT_GET, 'id');
+        if ($idfactura) {
+            $this->factura = $factura->get($idfactura);
+            $this->modificar();
+        } elseif ($id) {
+            $this->factura = $factura->get($id);
+        }
 
         if ($this->factura) {
-         $this->page->title = $this->factura->codigo;
+            $this->page->title = $this->factura->codigo;
 
-         /// cargamos el agente
+            /// cargamos el agente
             if (!is_null($this->factura->codagente)) {
-            $agente = new agente();
-            $this->agente = $agente->get($this->factura->codagente);
-         }
-
-         /// cargamos el proveedor
-         $proveedor = new proveedor();
-         $this->proveedor = $proveedor->get($this->factura->codproveedor);
-
-        if (isset($_GET['gen_asiento']) AND isset($_GET['petid'])) {
-            if ($this->duplicated_petition($_GET['petid'])) {
-                $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
-            } else {
-                $this->generar_asiento($this->factura);
+                $agente = new agente();
+                $this->agente = $agente->get($this->factura->codagente);
             }
-        } else if (isset($_REQUEST['pagada'])) {
-            $this->pagar(($_REQUEST['pagada'] == 'TRUE'));
-        } else if (isset($_POST['anular'])) {
-            if ($_POST['rectificativa'] == 'TRUE') {
-                $this->generar_rectificativa();
-            } else {
-                $this->anular_factura();
+
+            /// cargamos el proveedor
+            $proveedor = new proveedor();
+            $this->proveedor = $proveedor->get($this->factura->codproveedor);
+            $gen_asiento = \filter_input(INPUT_GET, 'gen_asiento');
+            $petid = \filter_input(INPUT_GET, 'petid');
+            $pagada_p = \filter_input(INPUT_POST, 'pagada');
+            $pagada_g = \filter_input(INPUT_GET, 'pagada');
+            $pagada = ($pagada_p)?$pagada_p:$pagada_g;
+            $anular = \filter_input(INPUT_POST, 'anular');
+            $rectificativa = \filter_input(INPUT_POST, 'rectificativa');
+            $rectificar = \filter_input(INPUT_POST, 'rectificar');
+            if ($gen_asiento AND $petid) {
+                if ($this->duplicated_petition($petid)) {
+                    $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
+                } else {
+                    $this->generar_asiento($this->factura);
+                }
+            } else if ($pagada) {
+                $this->pagar(($pagada == 'TRUE'));
+            } else if ($anular) {
+                if ($rectificativa == 'TRUE') {
+                    $this->generar_rectificativa();
+                } else {
+                    $this->anular_factura();
+                }
+            } else if (isset($rectificar)) {
+                $this->rectificar_factura();
             }
-         } else if( isset($_POST['rectificar']) ) {
-            $this->rectificar_factura();
-         }
 
-         if ($this->factura->idfacturarect) {
-            $this->rectificada = $factura->get($this->factura->idfacturarect);
-         } else {
-            $this->get_factura_rectificativa();
-         }
+            if ($this->factura->idfacturarect) {
+                $this->rectificada = $factura->get($this->factura->idfacturarect);
+            } else {
+                $this->get_factura_rectificativa();
+            }
 
-         /// comprobamos la factura
-         $this->factura->full_test();
-      } else {
-         $this->new_error_msg("¡Factura de proveedor no encontrada!", 'error', FALSE, FALSE);
-      }
-   }
+            /// comprobamos la factura
+            $this->factura->full_test();
+        } else {
+            $this->new_error_msg("¡Factura de proveedor no encontrada!", 'error', FALSE, FALSE);
+        }
+    }
 
     public function url() {
         if (!isset($this->factura)) {
-         return parent::url();
+            return parent::url();
         } else if ($this->factura) {
-         return $this->factura->url();
-        } else
-         return $this->page->url();
-   }
+            return $this->factura->url();
+        } else {
+            return $this->page->url();
+        }
+    }
 
     private function modificar() {
         $this->factura->numproveedor = $_POST['numproveedor'];
