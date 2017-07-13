@@ -159,52 +159,16 @@ class PDF_MC_Table extends FPDF
 
         // Tipo de Documento y Numero
         $this->datos_documento($this->fdf_documento, $this->fdf_tipodocumento, $this->fdf_estado);
-        //$this->fact_dev($this->fdf_tipodocumento, $this->fdf_codigo, $this->fdf_estado);
 
         // Fecha factura y Codigo Cliente
         $this->addDate($this->fdf_fecha);
-        //$this->addClient($this->fdf_codcliente);
         $this->addPageNumber($this->GroupPageNo().' de '.$this->PageGroupAlias());
 
         // Datos del Cliente
         $this->addClienteInfo();
-        /*
-        $cliente  = 'Cliente: '.$this->fdf_codcliente. ' - '.$this->fdf_nombrecliente . "\n";
-        $cliente .= $this->fdf_FS_CIFNIF . ": ";
-        $cliente .= $this->fdf_cifnif . "\n";
-        $cliente .= 'Dirección: '.$this->fdf_direccion;
-        $cliente .= $this->fdf_codpostal . " - ";
-        $cliente .= $this->fdf_ciudad . " (".$this->fdf_provincia.")\n";
-        $cliente .= "Teléfono: " . $this->fdc_telefono1;
-        if($this->fdc_telefono2) { $cliente .= " - " . $this->fdc_telefono2 . "\n"; } else { $cliente .= "\n"; }
-        if($this->fdc_fax) { $cliente .= "Fax: " . $this->fdc_fax . "\n"; }
-        if($this->fdc_email) { $cliente .= "Email: " . $this->fdc_email . "\n"; }
-        //if($this->fdc_factura_codigo) { $cliente .= ucfirst(FS_FACTURA).": ".$this->fdc_factura_codigo."\n"; }
-        $this->addClientAdresse(utf8_decode($cliente));
-        */
-
         if(!empty($this->fdf_transporte) OR !empty($this->fdf_ruta)){
             $this->addTransporte(utf8_decode($this->fdf_transporte),utf8_decode($this->fdf_ruta));
         }
-        // Forma de Pago de la Factura
-        //$this->addPago(utf8_decode($this->fdf_epago));
-
-        //if(!empty($this->fdf_ruta)){
-        //   $this->addRuta(utf8_decode($this->fdf_ruta));
-        //}
-        //if(!empty($this->fdf_codigorect)){
-            //$this->addDocumentoRectifica(utf8_decode($this->fdf_codigorect));
-        //}
-
-        // Divisa de la Factura
-        //$this->addDivisa(utf8_decode($this->fdf_divisa));
-
-        // Pais de la Factura
-        //$this->addPais(utf8_decode($this->fdf_pais));
-
-        // Pie de la Factura
-        //$this->SetFont('Arial','',5);
-        //$this->RotatedText(6, 210, utf8_decode($this->fde_piefactura), 90);
         $this->SetFont('Arial','',7);
         $this->SetY(-8);
         $this->SetLineWidth(0.1);
@@ -259,25 +223,21 @@ class PDF_MC_Table extends FPDF
         $this->Cell($length,4, str_pad("Firma Emisor",$length, " ",STR_PAD_BOTH));
     }
     //Pie de pagina
-    function Footer()
-    {
+    function Footer() {
         $this->Firmas();
         //Posicion: a 3 cm del final
         $this->SetY(-30);
         $this->SetLineWidth(0.1);
         $this->SetTextColor(0);
-        $this->SetFont('Arial','',10);
-        if ($this->piepagina == true)
-        {
+        $this->SetFont('Arial', '', 10);
+        if ($this->piepagina == true) {
             // Si existen Incluimos las Observaciones
-            if ($this->fdf_observaciones != '')
-            {
+            if ($this->fdf_observaciones != '') {
                 $this->addObservaciones(substr($this->fdf_observaciones, 0, 116));
             }
 
             // Lineas de Impuestos
             //$this->addLineasIva($this->fdf_lineasiva);
-
             // Total factura
             $this->addTotal();
         } else {
@@ -286,22 +246,18 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function Row($data, $ultimo='1')
-    {
+    function Row($data, $ultimo='1') {
         $this->SetFont('Arial','',9);
 
         // Guardamos la posicion Actual
         $x=$this->GetX();
         $y=$this->GetY();
-
         // Imprimimos solo los campos numericos
-        for($i=0;$i<count($data);$i++)
-        {
+        for($i=0;$i<count($data);$i++) {
             if ($i != $ultimo) // La descripcion del articulo la trataremos la ultima. Aqui no.
             {
                 $w=$this->widths[$i];
-                if ($i == ($ultimo-1))
-                {
+                if ($i == ($ultimo-1)) {
                     $x1 = $x+$w;
                     $x += $this->widths[$ultimo]+$w;
                 } else {
@@ -311,7 +267,9 @@ class PDF_MC_Table extends FPDF
                 $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
                 // Seleccionar color
                 $this->SetTextColor(0);
-                if(isset($this->colores[$i][0])) {$this->SetTextColor($this->colores[$i][0], $this->colores[$i][1], $this->colores[$i][2]);}
+                if(isset($this->colores[$i][0])) {
+                    $this->SetTextColor($this->colores[$i][0], $this->colores[$i][1], $this->colores[$i][2]);
+                }
                 // Escribimos el texto
                 $this->MultiCell($w,5,$data[$i],0,$a);
                 // Fijamos la posicion a la derecha de la celda
@@ -328,12 +286,12 @@ class PDF_MC_Table extends FPDF
 
         // Calcular la altura MAXIMA de la fila e ir a la siguiente línea
         $nb = 0;
-        $totalLineas = 27;
+        $totalLineas = 25;
         for($i=0;$i<count($data);$i++)
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
         }
-
+        
         if (($this->lineaactual + $nb) > $totalLineas) // Mas de una Pagina
         {
             $nbp = intval(($this->lineaactual + $nb)/$totalLineas);
@@ -382,37 +340,35 @@ class PDF_MC_Table extends FPDF
         $j=0;
         $l=0;
         $nl=1;
-        while($i<$nb)
-        {
-            $c=$s[$i];
-            if($c=="\n")
-            {
+        while ($i < $nb) {
+            $c = $s[$i];
+            if ($c == "\n") {
                 $i++;
-                $sep=-1;
-                $j=$i;
-                $l=0;
+                $sep = -1;
+                $j = $i;
+                $l = 0;
                 $nl++;
                 continue;
             }
-            if($c==' ')
-                $sep=$i;
-            $l+=$cw[$c];
-            if($l>$wmax)
-            {
-                if($sep==-1)
-                {
-                    if($i==$j)
-                    $i++;
-                }
-                else
-                $i=$sep+1;
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $nl++;
+            if ($c == ' '){
+                $sep = $i;
             }
-            else
+            $l += $cw[$c];
+            if ($l > $wmax) {
+                if ($sep == -1) {
+                    if ($i == $j){
+                        $i++;
+                    }
+                } else {
+                    $i = $sep + 1;
+                    $sep = -1;
+                    $j = $i;
+                    $l = 0;
+                    $nl++;
+                }
+            } else {
                 $i++;
+            }
         }
         return $nl;
     }
@@ -421,12 +377,13 @@ class PDF_MC_Table extends FPDF
     {
         $k = $this->k;
         $hp = $this->h;
-        if($style=='F')
+        if($style=='F'){
             $op='f';
-        elseif($style=='FD' or $style=='DF')
+        }elseif($style=='FD' or $style=='DF'){
             $op='B';
-        else
+        }else{
             $op='S';
+        }
         $MyArc = 4/3 * (sqrt(2) - 1);
         $this->_out(sprintf('%.2f %.2f m',($x+$r)*$k,($hp-$y)*$k ));
         $xc = $x+$w-$r ;
