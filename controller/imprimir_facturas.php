@@ -68,8 +68,9 @@ class imprimir_facturas extends fs_controller {
         $this->ncf_ventas = new ncf_ventas();
         $this->mostrar = 'todo';
         $this->listar = 'todo';
-        if (\filter_input(INPUT_GET, 'mostrar')) {
-            $this->mostrar = \filter_input(INPUT_GET, 'mostrar');
+        $mostrar = \filter_input(INPUT_GET, 'mostrar');
+        if ($mostrar) {
+            $this->mostrar = $mostrar;
             setcookie('ventas_fac_mostrar', $this->mostrar, time() + FS_COOKIES_EXPIRE);
         } else if (isset($_COOKIE['ventas_fac_mostrar'])) {
             $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
@@ -103,18 +104,28 @@ class imprimir_facturas extends fs_controller {
             $this->order = $_COOKIE['ventas_fac_order'];
         }
 
-        if (isset($_POST['buscar_lineas'])) {
+        $buscar_lineas = \filter_input(INPUT_POST, 'buscar_lineas');
+        $ref = \filter_input(INPUT_GET, 'ref');
+        //Variables por REQUEST
+        $buscar_cliente = $this->filter_request('buscar_cliente');
+        $codagente = $this->filter_request('codagente');
+        $codcliente = $this->filter_request('codcliente');
+        $codserie = $this->filter_request('codserie');
+        $codalmacen = $this->filter_request('codalmacen');
+        $desde = $this->filter_request('desde');
+        $hasta = $this->filter_request('hasta');
+        if ($buscar_lineas) {
             $this->buscar_lineas();
-        } else if (isset($_REQUEST['buscar_cliente'])) {
+        } else if ($buscar_cliente) {
             $this->buscar_cliente();
-        } else if (isset($_GET['ref'])) {
+        } else if ($ref) {
             $this->template = 'extension/ventas_facturas_articulo';
 
             $articulo = new articulo();
-            $this->articulo = $articulo->get($_GET['ref']);
+            $this->articulo = $articulo->get($ref);
 
             $linea = new linea_factura_cliente();
-            $this->resultados = $linea->all_from_articulo($_GET['ref'], $this->offset);
+            $this->resultados = $linea->all_from_articulo($ref, $this->offset);
         } else {
             $this->huecos = $this->factura->huecos();
             $this->cliente = FALSE;
@@ -127,38 +138,38 @@ class imprimir_facturas extends fs_controller {
             $this->total_resultados = '';
             $this->total_resultados_comision = 0;
             $this->total_resultados_txt = '';
-
-            if (!isset($_GET['mostrar']) AND ( isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie']))) {
+            
+            if (!$mostrar AND ( $codagente OR $codcliente OR $codserie)) {
                 /**
-                 * si obtenermos un codagente, un codcliente o un codserie pasamos direcatemente
+                 * si obtenermos un codagente, un codcliente o un codserie pasamos directamente
                  * a la pestaña de búsqueda, a menos que tengamos un mostrar, que
                  * entonces nos indica donde tenemos que estar.
                  */
                 $this->mostrar = 'buscar';
             }
 
-            if (isset($_REQUEST['codcliente'])) {
-                if ($_REQUEST['codcliente'] != '') {
+            if ($codcliente) {
+                if ($codcliente != '') {
                     $cli0 = new cliente();
-                    $this->cliente = $cli0->get($_REQUEST['codcliente']);
+                    $this->cliente = $cli0->get($codcliente);
                 }
             }
 
-            if (isset($_REQUEST['codagente'])) {
-                $this->codagente = $_REQUEST['codagente'];
+            if ($codagente) {
+                $this->codagente = $codagente;
             }
 
-            if (isset($_REQUEST['codserie'])) {
-                $this->codserie = $_REQUEST['codserie'];
+            if ($codserie) {
+                $this->codserie = $codserie;
             }
 
-            if (isset($_REQUEST['codalmacen'])) {
-                $this->codalmacen = $_REQUEST['codalmacen'];
+            if ($codalmacen) {
+                $this->codalmacen = $codalmacen;
             }
 
-            if (isset($_REQUEST['desde'])) {
-                $this->desde = $_REQUEST['desde'];
-                $this->hasta = $_REQUEST['hasta'];
+            if ($desde) {
+                $this->desde = $desde;
+                $this->hasta = $hasta;
             }
 
             /// añadimos segundo nivel de ordenación
@@ -180,15 +191,15 @@ class imprimir_facturas extends fs_controller {
     private function buscar_cliente() {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
-
+        $buscar_cliente = $this->filter_request('buscar_cliente');
         $cli0 = new cliente();
         $json = array();
-        foreach ($cli0->search($_REQUEST['buscar_cliente']) as $cli) {
+        foreach ($cli0->search($buscar_cliente) as $cli) {
             $json[] = array('value' => $cli->nombre, 'data' => $cli->codcliente);
         }
 
         header('Content-Type: application/json');
-        echo json_encode(array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json));
+        echo json_encode(array('query' => $buscar_cliente, 'suggestions' => $json));
     }
 
     public function paginas() {
@@ -256,12 +267,14 @@ class imprimir_facturas extends fs_controller {
     public function buscar_lineas() {
         /// cambiamos la plantilla HTML
         $this->template = 'ajax/ventas_lineas_facturas';
-
-        $this->buscar_lineas = $_POST['buscar_lineas'];
+        $codcliente = \filter_input(INPUT_POST, 'codcliente');
+        $buscar_lineas = \filter_input(INPUT_POST, 'buscar_lineas');
+        $buscar_lineas_o = \filter_input(INPUT_POST, 'buscar_lineas_o');
+        $this->buscar_lineas = $buscar_lineas;
         $linea = new linea_factura_cliente();
 
-        if (isset($_POST['codcliente'])) {
-            $this->lineas = $linea->search_from_cliente2($_POST['codcliente'], $this->buscar_lineas, $_POST['buscar_lineas_o']);
+        if ($codcliente) {
+            $this->lineas = $linea->search_from_cliente2($codcliente, $this->buscar_lineas, $buscar_lineas_o);
         } else {
             $this->lineas = $linea->search($this->buscar_lineas);
         }
@@ -370,5 +383,16 @@ class imprimir_facturas extends fs_controller {
             }
         }
     }
+    
+    /**
+    * Función para devolver el valor de una variable pasada ya sea por POST o GET
+    * @param type string
+    * @return type string
+    */
+   private function filter_request($nombre){
+       $nombre_post = \filter_input(INPUT_POST, $nombre);
+       $nombre_get = \filter_input(INPUT_GET, $nombre);
+       return ($nombre_post)?$nombre_post:$nombre_get;
+   }
 
 }
