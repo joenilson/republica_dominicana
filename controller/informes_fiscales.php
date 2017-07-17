@@ -45,6 +45,7 @@ class informes_fiscales extends fs_controller {
     public $resultados_detalle_ventas;
     public $resultados_detalle_compras;
     public $resultados_resumen_ventas;
+    public $resultados_ventas_agente;
     public $total_resultados_consolidado;
     public $total_resultados_ventas;
     public $total_resultados_compras;
@@ -54,12 +55,15 @@ class informes_fiscales extends fs_controller {
     public $total_resultados_detalle_compras;
     public $total_resultados_detalle_ventas;
     public $total_resultados_resumen_ventas;
+    public $total_resultados_ventas_agente;
     public $sumaVentas;
     public $sumaVentasPagadas;
     public $sumaCompras;
     public $sumaComprasPagadas;
     public $saldoConsolidado;
     public $saldoConsolidadoPagadas;
+    public $totalDescuento;
+    public $totalDocumentos;
     public $totalCantidad;
     public $totalNeto;
     public $totalItbis;
@@ -70,8 +74,6 @@ class informes_fiscales extends fs_controller {
     public $documentosDir;
     public $exportDir;
     public $publicPath;
-    public $tItbis;
-    public $tMonto;
 
     //Variables de Busqueda
     public $limit;
@@ -98,6 +100,7 @@ class informes_fiscales extends fs_controller {
         $this->resultados_detalle_compras = '';
         $this->resultados_detalle_ventas = '';
         $this->resultados_resumen_ventas = '';
+        $this->resultados_ventas_agente = '';
         $this->total_resultados_consolidado = 0;
         $this->total_resultados_ventas = 0;
         $this->total_resultados_compras = 0;
@@ -107,6 +110,7 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_detalle_compras = 0;
         $this->total_resultados_detalle_ventas = 0;
         $this->total_resultados_resumen_ventas = 0;
+        $this->total_resultados_ventas_agente = 0;
 
         //Verificamos que exista la carpeta de documentos
         $basepath = dirname(dirname(dirname(__DIR__)));
@@ -169,6 +173,9 @@ class informes_fiscales extends fs_controller {
                 case 'reporte-ventas':
                     $this->ventas();
                     break;
+                case 'detalle-ventas-agente':
+                    $this->ventas_agente();
+                    break;
                 case 'reporte-compras':
                     $this->compras();
                     break;
@@ -211,7 +218,10 @@ class informes_fiscales extends fs_controller {
                     " SELECT 'Venta' as tipo, nv.codalmacen,nv.fecha,f.nombrecliente as nombre, ".
                     " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
                     " CASE WHEN f.pagada THEN 'Si' ELSE 'No' END as pagada, ".
-                    " ncf, f.totaliva as totaliva, f.neto as neto, f.total as total ".
+                    " ncf, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total ".
                     " FROM ncf_ventas as nv ".
                     " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
                     " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
@@ -222,7 +232,11 @@ class informes_fiscales extends fs_controller {
                     " SELECT 'Compra' as tipo, codalmacen, fecha, nombre, ".
                     " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
                     " CASE WHEN pagada THEN 'Si' ELSE 'No' END as pagada, ".
-                    " numproveedor as ncf, totaliva, neto, total from facturasprov ".
+                    " numproveedor as ncf, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else total END as total ".
+                    " FROM facturasprov ".
                     " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
                     " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND codalmacen IN ('".$almacenes."') ".
                     " ) ".
@@ -249,7 +263,10 @@ class informes_fiscales extends fs_controller {
                 }
                 break;
             case "reporte-ventas":
-                $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, f.neto as neto,  f.totaliva as totaliva, f.total as total,".
+                $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total, ".                    
                     " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
                     " nv.estado ".
                     //" CASE WHEN length(nv.cifnif)=9 THEN 1 ELSE 2 END as cifnif_tipo ".
@@ -274,6 +291,34 @@ class informes_fiscales extends fs_controller {
                     $this->totalNeto += $data_resumen[0]['neto'];
                     $this->totalItbis += $data_resumen[0]['totaliva'];
                     $this->totalMonto += $data_resumen[0]['total'];
+                }
+                $total_informacion+=$data_cantidad[0]['total'];
+                break;
+            case "detalle-ventas-agente":
+                $sql_ventas_agente = "SELECT fecha,f.codalmacen,f.codagente, concat(nombre,' ',apellidos,' ',segundo_apellido) as nombre_vendedor, f.nombrecliente, f.cifnif, ".
+                    " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a,  f.codagente, concat(nombre,' ',apellidos,' ',segundo_apellido) as nombre_vendedor, referencia, descripcion, ".
+                    " cantidad, pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto, ".
+                    " case when idfacturarect is null then 'VENTA' else 'DEVOLUCION' end as tipo ".
+                    " FROM facturascli as f ".
+                    " JOIN lineasfacturascli as lf on (f.idfactura = lf.idfactura) ".
+                    " JOIN agentes as a on (f.codagente = a.codagente) ".
+                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+                    " AND anulada = false AND f.codalmacen IN ('".$almacenes."') ".
+                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
+                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas_agente." ) as t1;";
+                $data_cantidad = $this->db->select($sql_cantidad);
+                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, sum(descuento) as total_descuento, ".
+                        "sum(monto) as total_monto FROM (".
+                        $sql_ventas_agente.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if ($json) {
+                    $resultados = $this->db->select_limit($sql_ventas_agente, $this->limit, $this->offset);
+                } else {
+                    $resultados = $this->db->select($sql_ventas_agente);
+                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+                    $this->totalDescuento += $data_resumen[0]['total_descuento'];
+                    $this->totalMonto += $data_resumen[0]['total_monto'];
                 }
                 $total_informacion+=$data_cantidad[0]['total'];
                 break;
@@ -322,9 +367,9 @@ class informes_fiscales extends fs_controller {
                         "sum(monto) as total_monto FROM (".
                         $sql_rventas.") as t1;";
                 $data_resumen = $this->db->select($sql_resumen);
-                if($json){
+                if ($json) {
                     $resultados = $this->db->select_limit($sql_rventas, $this->limit, $this->offset);
-                }else{
+                } else {
                     $resultados = $this->db->select($sql_rventas);
                     $this->totalCantidad += $data_resumen[0]['total_cantidad'];
                     $this->totalMonto += $data_resumen[0]['total_monto'];
@@ -333,7 +378,10 @@ class informes_fiscales extends fs_controller {
                 break;
             case "reporte-compras":
                 $sql_compras = " SELECT fecha, codalmacen, nombre, cifnif, ".
-                    " idfactura, numproveedor as ncf, totaliva, neto, total, ".
+                    " idfactura, numproveedor as ncf, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else total END as total, ".
                     " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
                     " CASE WHEN anulada THEN 'Si' ELSE 'No' END as estado ".
                     " FROM facturasprov ".
@@ -401,10 +449,17 @@ class informes_fiscales extends fs_controller {
                     " ORDER BY fp.codalmacen,fp.".$this->sort." ".$this->order;
                 $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_606." ) as t1;";
                 $data_cantidad = $this->db->select($sql_cantidad);
-                if($json){
+                $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
+                        " sum(neto) as totalneto FROM (".
+                        $sql_606.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if ($json) {
                     $resultados = $this->db->select_limit($sql_606, $this->limit, $this->offset);
-                }else{
+                } else {
                     $resultados = $this->db->select($sql_606);
+                    $this->totalDocumentos += $data_cantidad[0]['total'];
+                    $this->totalItbis += $data_resumen[0]['totaliva'];
+                    $this->totalNeto += $data_resumen[0]['totalneto'];
                 }
                 $total_informacion+=$data_cantidad[0]['total'];
                 break;
@@ -414,7 +469,8 @@ class informes_fiscales extends fs_controller {
                     " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
                     " ncf, ncf_modifica, ".
                     " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha, ".
-                    " totaliva, neto, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
                     " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
                     " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
                     " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
@@ -422,13 +478,19 @@ class informes_fiscales extends fs_controller {
                     " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
                     " AND nv.codalmacen IN ('".$almacenes."') ".
                     " ORDER BY nv.codalmacen,nv.".$this->sort." ".$this->order;
-                //$this->new_message($sql_607);
                 $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_607." ) as t1;";
                 $data_cantidad = $this->db->select($sql_cantidad);
-                if($json){
+                $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
+                        " sum(neto) as totalneto FROM (".
+                        $sql_607.") as t1;";
+                $data_resumen = $this->db->select($sql_resumen);
+                if ($json) {
                     $resultados = $this->db->select_limit($sql_607, $this->limit, $this->offset);
-                }else{
+                } else {
                     $resultados = $this->db->select($sql_607);
+                    $this->totalDocumentos += $data_cantidad[0]['total'];
+                    $this->totalItbis += $data_resumen[0]['totaliva'];
+                    $this->totalNeto += $data_resumen[0]['totalneto'];
                 }
                 $total_informacion+=$data_cantidad[0]['total'];
                 break;
@@ -538,13 +600,13 @@ class informes_fiscales extends fs_controller {
 
     public function ventas(){
         $this->resultados_ventas = array();
-        $this->totalNeto = 0;
-        $this->totalItbis =0;
-        $this->totalMonto =0;
+        $this->totalCantidad = 0;
+        $this->totalDescuento = 0;
+        $this->totalMonto = 0;
         $this->resultados_ventas = $this->datos_reporte($this->reporte);
         $this->total_resultados_ventas = 0;
         $this->generar_excel(
-            array('Fecha','Almacén','Cliente','RNC','NCF','NCF Modifica','Tipo','Base Imp.','Itbis','Total','Condicion','Estado'),
+            array('Fecha','Almacén','Cliente','RNC','NCF','NCF Modifica','Tipo','Base Imp.','Itbis','Total','Condicion','Estado'),            
             $this->resultados_ventas,
             array('Total','','','','','','',$this->totalNeto,$this->totalItbis,$this->totalMonto,'',''),
             FALSE,
@@ -552,13 +614,29 @@ class informes_fiscales extends fs_controller {
             FALSE
         );
     }
+    
+    public function ventas_agente(){
+        $this->resultados_ventas = array();
+        $this->totalCantidad = 0;
+        $this->totaldescuento = 0;
+        $this->totalMonto = 0;
+        $this->resultados_ventas_agente = $this->datos_reporte($this->reporte);
+        $this->total_resultados_ventas = 0;
+        $this->generar_excel(
+            array('Fecha','Almacén','Cod Vend.','Nombre Vendedor','Cliente','RNC','NCF','Id Fact','Afecta A','Articulo','Descripcion','Cantidad','Precio','Descuento','Monto','Tipo'),
+            $this->resultados_ventas_agente,
+            array('Total','','','','','','','','','','',$this->totalCantidad,'',$this->totalDescuento,$this->totalMonto,''),
+            FALSE,
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),                
+            FALSE
+        );
+    }
 
     public function compras(){
         $this->resultados_compras = array();
-
         $this->totalNeto = 0;
-        $this->totalItbis =0;
-        $this->totalMonto =0;
+        $this->totalItbis = 0;
+        $this->totalMonto = 0;
         $this->resultados_compras = $this->datos_reporte($this->reporte);
         $this->total_resultados_compras = 0;
         $this->generar_excel(
@@ -572,6 +650,9 @@ class informes_fiscales extends fs_controller {
     }
 
     public function dgii606(){
+        $this->totalDocumentos = 0;
+        $this->totalNeto = 0;
+        $this->totalItbis = 0;        
         $this->resultados_606 = array();
         $this->resultados_606 = $this->datos_reporte($this->reporte);
         $this->total_resultados_606 = 0;
@@ -585,11 +666,11 @@ class informes_fiscales extends fs_controller {
         );
     }
 
-    public function dgii607()
-    {
+    public function dgii607() {
+        $this->totalDocumentos = 0;
+        $this->totalNeto = 0;
+        $this->totalItbis = 0;                
         $this->resultados_607 = array();
-        $this->tItbis=0;
-        $this->tMonto=0;
         $this->resultados_607 = $this->datos_reporte($this->reporte);
         $this->total_resultados_607 = 0;
         $this->generar_excel(
@@ -602,7 +683,8 @@ class informes_fiscales extends fs_controller {
         );
     }
 
-    public function dgii608(){
+    public function dgii608() {
+        $this->totalDocumentos = 0;
         $this->resultados_608 = array();
         $this->resultados_608 = $this->datos_reporte($this->reporte);
         $this->total_resultados_608 = 0;
@@ -652,35 +734,37 @@ class informes_fiscales extends fs_controller {
      */
     public function generar_excel($cabecera,$datos,$pie,$estilo_cab,$estilo_datos,$estilo_pie)
     {
-        //Revisamos que no haya un archivo ya cargado
-        $archivo = str_replace("-","_",$this->reporte);
-        $this->archivoXLSX = $this->exportDir . DIRECTORY_SEPARATOR . $archivo . "_" . $this->user->nick . ".xlsx";
-        $this->archivoXLSXPath = $this->publicPath . DIRECTORY_SEPARATOR . $archivo . "_" . $this->user->nick . ".xlsx";
-        if (file_exists($this->archivoXLSX)) {
-            unlink($this->archivoXLSX);
+        if($datos){
+            //Revisamos que no haya un archivo ya cargado
+            $archivo = str_replace("-","_",$this->reporte);
+            $this->archivoXLSX = $this->exportDir . DIRECTORY_SEPARATOR . $archivo . "_" . $this->user->nick . ".xlsx";
+            $this->archivoXLSXPath = $this->publicPath . DIRECTORY_SEPARATOR . $archivo . "_" . $this->user->nick . ".xlsx";
+            if (file_exists($this->archivoXLSX)) {
+                unlink($this->archivoXLSX);
+            }
+            //Variables para cada parte del excel
+            $estilo_cabecera = ($estilo_cab)?$estilo_cab:array('border'=>'left,right,top,bottom','font-style'=>'bold');
+            $estilo_cuerpo = ($estilo_datos)?$estilo_datos:array( array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'));
+            $estilo_footer = ($estilo_pie)?$estilo_pie:array('border'=>'left,right,top,bottom','font-style'=>'bold','color'=>'#FFFFFF','fill'=>'#000000');
+            //Inicializamos la clase
+            $this->writer = new XLSXWriter();
+            $this->writer->setAuthor('FacturaScripts '.\date('Y-m-d H:i:s'));
+            //Creamos la hoja con todos los clientes organizados por ruta
+            $nombre_hoja = ucfirst(str_replace('-',' ',$this->reporte));
+            $this->writer->writeSheetHeader($nombre_hoja, array(), true);
+            //Agregamos la linea de Título
+            $this->writer->writeSheetRow($nombre_hoja,$cabecera,$estilo_cabecera);
+            //Agregamos cada linea en forma de Array
+            foreach($datos as $linea){
+                $this->writer->writeSheetRow($nombre_hoja, (array) $linea, $estilo_cuerpo);
+            }
+            if($pie)
+            {
+                $this->writer->writeSheetRow($nombre_hoja, (array) $pie, $estilo_footer);
+            }
+            //Escribimos
+            $this->writer->writeToFile($this->archivoXLSXPath);
         }
-        //Variables para cada parte del excel
-        $estilo_cabecera = ($estilo_cab)?$estilo_cab:array('border'=>'left,right,top,bottom','font-style'=>'bold');
-        $estilo_cuerpo = ($estilo_datos)?$estilo_datos:array( array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'));
-        $estilo_footer = ($estilo_pie)?$estilo_pie:array('border'=>'left,right,top,bottom','font-style'=>'bold','color'=>'#FFFFFF','fill'=>'#000000');
-        //Inicializamos la clase
-        $this->writer = new XLSXWriter();
-        $this->writer->setAuthor('FacturaScripts '.\date('Y-m-d H:i:s'));
-        //Creamos la hoja con todos los clientes organizados por ruta
-        $nombre_hoja = ucfirst(str_replace('-',' ',$this->reporte));
-        $this->writer->writeSheetHeader($nombre_hoja, array(), true);
-        //Agregamos la linea de Título
-        $this->writer->writeSheetRow($nombre_hoja,$cabecera,$estilo_cabecera);
-        //Agregamos cada linea en forma de Array
-        foreach($datos as $linea){
-            $this->writer->writeSheetRow($nombre_hoja, (array) $linea, $estilo_cuerpo);
-        }
-        if($pie)
-        {
-            $this->writer->writeSheetRow($nombre_hoja, (array) $pie, $estilo_footer);
-        }
-        //Escribimos
-        $this->writer->writeToFile($this->archivoXLSXPath);
     }
 
     private function share_extensions() {
