@@ -42,3 +42,33 @@ if(!function_exists('fs_tipos_id_fiscal'))
 function generar_numero2(){
     return '';
 }
+
+/**
+ * 
+ * @param type $cliente
+ * @param type $tipo_comprobante
+ * @param type $terminal
+ * @param type $json
+ * @return type array
+ */
+function generar_comprobante_fiscal($cliente,$tipo_comprobante,$codalmacen,$terminal=false, $json = false) {
+    require_model('ncf_rango.php');
+    $ncf_numero = array();
+    $ncf_rango = new ncf_rango();
+    if($terminal){
+        $numero_ncf = $ncf_rango->generate_terminal($this->empresa->id, $codalmacen, $tipo_comprobante, $cliente->codpago, $terminal->area_impresion);
+    }else{
+        $numero_ncf = $ncf_rango->generate($this->empresa->id, $codalmacen, $tipo_comprobante, $cliente->codpago);
+    }
+    
+    if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
+        $ncf_numero = $numero_ncf['NCF'];
+    }
+    
+    if($json){
+        header('Content-Type: application/json');
+        echo json_encode(array('ncf_numero' => $this->ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $this->terminal, 'cliente' => $this->cliente_s));
+    }else{
+        return $numero_ncf;
+    }
+}

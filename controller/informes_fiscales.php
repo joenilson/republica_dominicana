@@ -264,8 +264,8 @@ class informes_fiscales extends fs_controller {
                 break;
             case "reporte-ventas":
                 $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
                     " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
+                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
                     " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total, ".                    
                     " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
                     " nv.estado ".
@@ -295,13 +295,18 @@ class informes_fiscales extends fs_controller {
                 $total_informacion+=$data_cantidad[0]['total'];
                 break;
             case "detalle-ventas-agente":
-                $sql_ventas_agente = "SELECT fecha,f.codalmacen,f.codagente, concat(nombre,' ',apellidos,' ',segundo_apellido) as nombre_vendedor, f.nombrecliente, f.cifnif, ".
-                    " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a,  f.codagente, concat(nombre,' ',apellidos,' ',segundo_apellido) as nombre_vendedor, referencia, descripcion, ".
+                $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre,' ',a.apellidos,' ',a.segundo_apellido) as nombre_vendedor, ".
+                    " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, ".
+                    " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a, referencia, lf.descripcion, ".
                     " cantidad, pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto, ".
+                    " fp.descripcion as forma_pago, ".
                     " case when idfacturarect is null then 'VENTA' else 'DEVOLUCION' end as tipo ".
                     " FROM facturascli as f ".
                     " JOIN lineasfacturascli as lf on (f.idfactura = lf.idfactura) ".
+                    " JOIN formaspago as fp on (f.codpago = fp.codpago) ".
                     " JOIN agentes as a on (f.codagente = a.codagente) ".
+                    " JOIN clientes as c on (f.codcliente = c.codcliente) ".
+                    " LEFT JOIN gruposclientes as g on (c.codgrupo = g.codgrupo) ".
                     " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
                     " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
                     " AND anulada = false AND f.codalmacen IN ('".$almacenes."') ".
@@ -623,11 +628,11 @@ class informes_fiscales extends fs_controller {
         $this->resultados_ventas_agente = $this->datos_reporte($this->reporte);
         $this->total_resultados_ventas = 0;
         $this->generar_excel(
-            array('Fecha','Almacén','Cod Vend.','Nombre Vendedor','Cliente','RNC','NCF','Id Fact','Afecta A','Articulo','Descripcion','Cantidad','Precio','Descuento','Monto','Tipo'),
+            array('Fecha','Almacén','Cod Vend.','Nombre Vendedor','Grupo de Cliente','Cliente','RNC','NCF','Id Fact','Afecta A','Articulo','Descripcion','Cantidad','Precio','Descuento','Monto','Forma Pago','Tipo'),
             $this->resultados_ventas_agente,
-            array('Total','','','','','','','','','','',$this->totalCantidad,'',$this->totalDescuento,$this->totalMonto,''),
+            array('Total','','','','','','','','','','',$this->totalCantidad,'',$this->totalDescuento,$this->totalMonto,'',''),
             FALSE,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),                
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),                
             FALSE
         );
     }

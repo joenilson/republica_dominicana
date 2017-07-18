@@ -79,22 +79,8 @@ class admin_rd extends fs_controller {
         $this->variables['serie'] = "serie";
         $this->variables['series'] = "series";
 
-        $fsvar = new fs_var();
-        $this->rd_setup = $fsvar->array_get(
-            array(
-                'rd_imprimir_logo' => 'TRUE',
-                'rd_imprimir_marca_agua' => 'TRUE',
-                'rd_imprimir_bn' => 'FALSE',
-                'rd_imprimir_cliente_box' => 'TRUE',
-                'rd_imprimir_detalle_box' => 'TRUE',
-                'rd_imprimir_detalle_lineas' => 'TRUE',
-                'rd_imprimir_detalle_colores' => 'TRUE',
-                'rd_imprimir_cabecera_fcolor' => '#000000',
-                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
-                'rd_imprimir_detalle_color' => '#dadada',
-            ), FALSE
-        );
-
+        $this->get_config();
+        
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
             array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
@@ -102,71 +88,28 @@ class admin_rd extends fs_controller {
             array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '')
         );
 
-        if (isset($_GET['opcion'])) {
-            if ($_GET['opcion'] == 'moneda') {
+        $opcion = \filter_input(INPUT_GET, 'opcion');
+        switch($opcion){
+            case 'moneda':
                 $this->moneda();
-            } else if ($_GET['opcion'] == 'impuestos') {
+                break;
+            case 'impuestos':
                 $this->impuestos();
-            } else if ($_GET['opcion'] == 'pais') {
+                break;
+            case 'pais':
                 $this->pais();
-            } else if ($_GET['opcion'] == 'configuracion_regional') {
+                break;
+            case 'configuracion_regional':
                 $this->configuracion_regional();
-            } else if ($_GET['opcion'] == 'impresion') {
-                $op_imprimir_logo = \filter_input(INPUT_POST, 'rd_imprimir_logo');
-                $op_imprimir_marca_agua = \filter_input(INPUT_POST, 'rd_imprimir_marca_agua');
-                $op_imprimir_bn = \filter_input(INPUT_POST, 'rd_imprimir_bn');
-                $op_imprimir_cliente_box = \filter_input(INPUT_POST, 'rd_imprimir_cliente_box');
-                $op_imprimir_detalle_box = \filter_input(INPUT_POST, 'rd_imprimir_detalle_box');
-                $op_imprimir_detalle_lineas = \filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas');
-                $op_imprimir_detalle_colores = \filter_input(INPUT_POST, 'rd_imprimir_detalle_colores');
-                $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
-                $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
-                $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
-                $imprimir_logo = ($op_imprimir_logo)?'TRUE':'FALSE';
-                $imprimir_marca_agua = ($op_imprimir_marca_agua)?'TRUE':'FALSE';
-                $imprimir_bn = ($op_imprimir_bn)?'TRUE':'FALSE';
-                $imprimir_cliente_box =($op_imprimir_cliente_box)?'TRUE':'FALSE';
-                $imprimir_detalle_box =($op_imprimir_detalle_box)?'TRUE':'FALSE';
-                $imprimir_detalle_lineas =($op_imprimir_detalle_lineas)?'TRUE':'FALSE';
-                $imprimir_detalle_colores =($op_imprimir_detalle_colores)?'TRUE':'FALSE';
-                $imprimir_cabecera_fcolor =($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
-                $imprimir_cabecera_tcolor =($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
-                $imprimir_detalle_color =($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
-                $rd_config = array(
-                    'rd_imprimir_logo' => $imprimir_logo,
-                    'rd_imprimir_marca_agua' => $imprimir_marca_agua,
-                    'rd_imprimir_bn' => $imprimir_bn,
-                    'rd_imprimir_cliente_box' => $imprimir_cliente_box,
-                    'rd_imprimir_detalle_box' => $imprimir_detalle_box,
-                    'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
-                    'rd_imprimir_detalle_colores' => $imprimir_detalle_colores,
-                    'rd_imprimir_cabecera_fcolor' => $imprimir_cabecera_fcolor,
-                    'rd_imprimir_cabecera_tcolor' => $imprimir_cabecera_tcolor,
-                    'rd_imprimir_detalle_color' => $imprimir_detalle_color,
-                );
-                if ($fsvar->array_save($rd_config)) {
-                    $this->new_message('Opciones de impresión actualizadas correctamente.');
-                }else{
-                    $this->new_error_msg('Ocurrió un error al intentar actualizar la información de impresión, por favor revise sus datos.');
-                }
-            }
-
+                break;
+            case 'impresion':
+                $this->impresion();
+                break;
+            default:
+                break;
         }
 
-        $this->rd_setup = $fsvar->array_get(
-            array(
-                'rd_imprimir_logo' => 'TRUE',
-                'rd_imprimir_marca_agua' => 'TRUE',
-                'rd_imprimir_bn' => 'FALSE',
-                'rd_imprimir_cliente_box' => 'TRUE',
-                'rd_imprimir_detalle_box' => 'TRUE',
-                'rd_imprimir_detalle_lineas' => 'TRUE',
-                'rd_imprimir_detalle_colores' => 'TRUE',
-                'rd_imprimir_cabecera_fcolor' => '#000000',
-                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
-                'rd_imprimir_detalle_color' => '#dadada',
-            ), FALSE
-        );
+        $this->get_config();
 
         $this->conf_divisa = ($this->empresa->coddivisa == 'DOP') ? TRUE : FALSE;
         $this->conf_pais = ($this->empresa->codpais == 'DOM') ? TRUE : FALSE;
@@ -224,13 +167,72 @@ class admin_rd extends fs_controller {
 
         $this->load_menu(TRUE);
     }
+    
+    public function get_config(){
+        $fsvar = new fs_var();
+        $this->rd_setup = $fsvar->array_get(
+            array(
+                'rd_imprimir_logo' => 'TRUE',
+                'rd_imprimir_marca_agua' => 'TRUE',
+                'rd_imprimir_bn' => 'FALSE',
+                'rd_imprimir_cliente_box' => 'TRUE',
+                'rd_imprimir_detalle_box' => 'TRUE',
+                'rd_imprimir_detalle_lineas' => 'TRUE',
+                'rd_imprimir_detalle_colores' => 'TRUE',
+                'rd_imprimir_cabecera_fcolor' => '#000000',
+                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
+                'rd_imprimir_detalle_color' => '#dadada',
+            ), FALSE
+        );
+    }
 
+    public function impresion(){
+        $fsvar = new fs_var();
+        $op_imprimir_logo = \filter_input(INPUT_POST, 'rd_imprimir_logo');
+        $op_imprimir_marca_agua = \filter_input(INPUT_POST, 'rd_imprimir_marca_agua');
+        $op_imprimir_bn = \filter_input(INPUT_POST, 'rd_imprimir_bn');
+        $op_imprimir_cliente_box = \filter_input(INPUT_POST, 'rd_imprimir_cliente_box');
+        $op_imprimir_detalle_box = \filter_input(INPUT_POST, 'rd_imprimir_detalle_box');
+        $op_imprimir_detalle_lineas = \filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas');
+        $op_imprimir_detalle_colores = \filter_input(INPUT_POST, 'rd_imprimir_detalle_colores');
+        $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
+        $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
+        $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
+        $imprimir_logo = ($op_imprimir_logo)?'TRUE':'FALSE';
+        $imprimir_marca_agua = ($op_imprimir_marca_agua)?'TRUE':'FALSE';
+        $imprimir_bn = ($op_imprimir_bn)?'TRUE':'FALSE';
+        $imprimir_cliente_box =($op_imprimir_cliente_box)?'TRUE':'FALSE';
+        $imprimir_detalle_box =($op_imprimir_detalle_box)?'TRUE':'FALSE';
+        $imprimir_detalle_lineas =($op_imprimir_detalle_lineas)?'TRUE':'FALSE';
+        $imprimir_detalle_colores =($op_imprimir_detalle_colores)?'TRUE':'FALSE';
+        $imprimir_cabecera_fcolor =($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
+        $imprimir_cabecera_tcolor =($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
+        $imprimir_detalle_color =($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
+        $rd_config = array(
+            'rd_imprimir_logo' => $imprimir_logo,
+            'rd_imprimir_marca_agua' => $imprimir_marca_agua,
+            'rd_imprimir_bn' => $imprimir_bn,
+            'rd_imprimir_cliente_box' => $imprimir_cliente_box,
+            'rd_imprimir_detalle_box' => $imprimir_detalle_box,
+            'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
+            'rd_imprimir_detalle_colores' => $imprimir_detalle_colores,
+            'rd_imprimir_cabecera_fcolor' => $imprimir_cabecera_fcolor,
+            'rd_imprimir_cabecera_tcolor' => $imprimir_cabecera_tcolor,
+            'rd_imprimir_detalle_color' => $imprimir_detalle_color,
+        );
+        if ($fsvar->array_save($rd_config)) {
+            $this->new_message('Opciones de impresión actualizadas correctamente.');
+        }else{
+            $this->new_error_msg('Ocurrió un error al intentar actualizar la información de impresión, por favor revise sus datos.');
+        }
+    }
+    
     public function moneda() {
         $tratamiento = false;
         //Validamos si existe la moneda DOP
         $div0 = new divisa();
-        $divisa = $div0->get('DOP');
-        if (!$divisa) {
+        $divisa1 = $div0->get('DOP');
+        if (!$divisa1) {
             $div0->coddivisa = 'DOP';
             $div0->codiso = '214';
             $div0->descripcion = 'PESOS DOMINICANOS';
@@ -242,8 +244,8 @@ class admin_rd extends fs_controller {
         }
         //Validamos si existe la moneda USD
         //por temas de operaciones en dolares
-        $divisa = $div0->get('USD');
-        if (!$divisa) {
+        $divisa2 = $div0->get('USD');
+        if (!$divisa2) {
             $div0->coddivisa = 'USD';
             $div0->codiso = '840';
             $div0->descripcion = 'DÓLARES EE.UU.';
@@ -265,7 +267,6 @@ class admin_rd extends fs_controller {
                 $this->new_message('Datos de moneda para la empresa guardados correctamente.');
             }
         }
-
     }
 
     public function impuestos() {
@@ -324,16 +325,16 @@ class admin_rd extends fs_controller {
 
     public function pais() {
         $pais0 = new pais();
-        $pais = $pais0->get('DOM');
-        if (!$pais) {
+        $pais1 = $pais0->get('DOM');
+        if (!$pais1) {
             $pais0->codpais = 'DOM';
             $pais0->codiso = 'DO';
             $pais0->nombre = 'República Dominicana';
             $pais0->save();
         }
 
-        $pais = $pais0->get('USA');
-        if (!$pais) {
+        $pais2 = $pais0->get('USA');
+        if (!$pais2) {
             $pais0->codpais = 'USA';
             $pais0->codiso = 'US';
             $pais0->nombre = 'Estados Unidos';

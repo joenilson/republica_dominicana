@@ -309,12 +309,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             data-side-pagination="server">
                         <thead>
                             <tr>
-                                <th colspan="15" class="text-center">Detalle de Ventas por Vendedor del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="17" class="text-center">Detalle de Ventas por Vendedor del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-field="fecha" data-footer-formatter="totalTextFormatter">Fecha</th>
                               <th data-sortable="true" data-field="codalmacen">Almacén</th>
                               <th data-sortable="true" data-field="nombre_vendedor">Vendedor</th>
+                              <th data-sortable="true" data-field="grupo_cliente">Grupo de Clientes</th>
                               <th data-sortable="true" data-field="nombrecliente">Cliente</th>
                               <th data-sortable="true" data-field="cifnif">{#FS_CIFNIF#}</th>
                               <th data-sortable="true" data-field="ncf">NCF</th>
@@ -326,6 +327,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                               <th data-align="right" data-falign="right" data-field="precio" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Precio</th>
                               <th data-align="right" data-falign="right" data-field="descuento" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Dscto</th>
                               <th data-align="right" data-falign="right" data-field="monto" data-formatter="numberFormatter" data-footer-formatter="sumFormatter">Monto</th>
+                              <th data-sortable="true" data-field="forma_pago">Forma Pago</th>
                               <th data-sortable="true" data-field="tipo">Tipo</th>
                           </tr>
                         </thead>

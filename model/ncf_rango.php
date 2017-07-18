@@ -224,6 +224,14 @@ class ncf_rango extends fs_model
         return $lista;
     }
 
+    /**
+     * Genera el NCF para ventas_facturas o nueva_venta
+     * @param type $idempresa
+     * @param type $codalmacen
+     * @param type $tipo_comprobante
+     * @param type $codpago
+     * @return type array
+     */
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
     {
         $ncf = array('NCF'=>'NO_DISPONIBLE');
@@ -255,6 +263,15 @@ class ncf_rango extends fs_model
         return $ncf;
     }
 
+    /**
+     * Genera el NCF para un TPV
+     * @param type $idempresa
+     * @param type $codalmacen
+     * @param type $tipo_comprobante
+     * @param type $codpago
+     * @param type $area_impresion
+     * @return type array
+     */
     public function generate_terminal($idempresa, $codalmacen, $tipo_comprobante, $codpago, $area_impresion)
     {
         $ncf = array('NCF'=>'NO_DISPONIBLE');
