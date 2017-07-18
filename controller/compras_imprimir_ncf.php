@@ -633,19 +633,24 @@ class compras_imprimir_ncf extends fs_controller {
                 $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
             }
 
-            if ($this->empresa->mail_connect($mail)) {
-                if ($mail->send()) {
-                    $this->new_message('Mensaje enviado correctamente.');
-                    $this->empresa->save_mail($mail);
-                } else {
-                    $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-                }
-            } else {
-                $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-            }
+            $this->verificar_envio($mail);
+            
             unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
         } else {
             $this->new_error_msg('Imposible generar el PDF.');
+        }
+    }
+    
+    public function verificar_envio($mail) {
+        if ($this->empresa->mail_connect($mail)) {
+            if ($mail->send()) {
+                $this->new_message('Mensaje enviado correctamente.');
+                $this->empresa->save_mail($mail);
+            } else {
+                $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
+            }
+        } else {
+            $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
         }
     }
     
