@@ -584,68 +584,78 @@ class compras_imprimir_ncf extends fs_controller {
     }
 
     private function enviar_email() {
+
+        if ($this->empresa->can_send_mail()) {
+            $this->verificar_email();
+            $filename = 'albaran_' . $this->documento->codigo . '.pdf';
+            $this->generar_pdf_albaran($filename);
+            
+
+            $this->procesar_email($filename);
+        }
+    }
+    
+    public function procesar_email($filename) {
         $email = \filter_input(INPUT_POST, 'email');
-        $guardar = \filter_input(INPUT_POST, 'guardar');
         $de = \filter_input(INPUT_POST, 'de');
         $email_copia = \filter_input(INPUT_POST, 'email_copia');
         $cco = \filter_input(INPUT_POST, 'cco');        
-        $mensaje = \filter_input(INPUT_POST, 'mensaje');        
-        if ($this->empresa->can_send_mail()) {
-            if ($this->proveedor) {
-                if ($email != $this->proveedor->email AND $guardar) {
-                    $this->proveedor->email = $email;
-                    $this->proveedor->save();
+        $mensaje = \filter_input(INPUT_POST, 'mensaje');
+        if(file_exists('tmp/' . FS_TMP_NAME . 'enviar/' . $filename)) {
+            $razonsocial = $this->documento->nombre;
+            $mail = $this->empresa->new_mail();
+            $mail->FromName = $this->user->get_agente_fullname();
+
+            if ($de != $mail->From) {
+                $mail->addReplyTo($de, $mail->FromName);
+            }
+
+            $mail->addAddress($email, $razonsocial);
+            if ($email_copia) {
+                if ($cco) {
+                    $mail->addBCC($email_copia, $razonsocial);
+                } else {
+                    $mail->addCC($email_copia, $razonsocial);
                 }
             }
 
-            $filename = 'albaran_' . $this->documento->codigo . '.pdf';
-            $this->generar_pdf_albaran($filename);
-            $razonsocial = $this->documento->nombre;
+            $mail->Subject = $this->empresa->nombre . ': Mi ' . FS_ALBARAN . ' ' . $this->documento->codigo;
+            if ($this->is_html($mensaje)) {
+                $mail->AltBody = strip_tags($mensaje);
+                $mail->msgHTML($mensaje);
+                $mail->isHTML(TRUE);
+            } else {
+                $mail->Body = $mensaje;
+            }
 
-            if (file_exists('tmp/' . FS_TMP_NAME . 'enviar/' . $filename)) {
-                $mail = $this->empresa->new_mail();
-                $mail->FromName = $this->user->get_agente_fullname();
+            $mail->addAttachment('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
+            if (is_uploaded_file($_FILES['adjunto']['tmp_name'])) {
+                $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
+            }
 
-                if ($de != $mail->From) {
-                    $mail->addReplyTo($de, $mail->FromName);
-                }
-
-                $mail->addAddress($email, $razonsocial);
-                if ($email_copia) {
-                    if ($cco) {
-                        $mail->addBCC($email_copia, $razonsocial);
-                    } else {
-                        $mail->addCC($email_copia, $razonsocial);
-                    }
-                }
-
-                $mail->Subject = $this->empresa->nombre . ': Mi ' . FS_ALBARAN . ' ' . $this->documento->codigo;
-                if ($this->is_html($mensaje)) {
-                    $mail->AltBody = strip_tags($mensaje);
-                    $mail->msgHTML($mensaje);
-                    $mail->isHTML(TRUE);
-                } else {
-                    $mail->Body = $mensaje;
-                }
-
-                $mail->addAttachment('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
-                if (is_uploaded_file($_FILES['adjunto']['tmp_name'])) {
-                    $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
-                }
-
-                if ($this->empresa->mail_connect($mail)) {
-                    if ($mail->send()) {
-                        $this->new_message('Mensaje enviado correctamente.');
-                        $this->empresa->save_mail($mail);
-                    } else {
-                        $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-                    }
+            if ($this->empresa->mail_connect($mail)) {
+                if ($mail->send()) {
+                    $this->new_message('Mensaje enviado correctamente.');
+                    $this->empresa->save_mail($mail);
                 } else {
                     $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
                 }
-                unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
             } else {
-                $this->new_error_msg('Imposible generar el PDF.');
+                $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
+            }
+            unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
+        } else {
+            $this->new_error_msg('Imposible generar el PDF.');
+        }
+    }
+    
+    public function verificar_email() {
+        $email = \filter_input(INPUT_POST, 'email');
+        $guardar = \filter_input(INPUT_POST, 'guardar');
+        if ($this->proveedor) {
+            if ($email != $this->proveedor->email AND $guardar) {
+                $this->proveedor->email = $email;
+                $this->proveedor->save();
             }
         }
     }
