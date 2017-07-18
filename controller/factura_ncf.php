@@ -210,14 +210,17 @@ class factura_ncf extends fs_controller {
                         $factura_enviar->save();
 
                         $this->empresa->save_mail($mail);
-                    } else
+                    } else {
                         $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-                } else
+                    }
+                } else {
                     $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
+                }
 
                 unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
-            } else
+            } else {
                 $this->new_error_msg('Imposible generar el PDF.');
+            }
         }
     }
 
@@ -243,7 +246,6 @@ class factura_ncf extends fs_controller {
             /// Definimos todos los datos de la cabecera de la factura
             /// Datos de la empresa
             $vendedor = $this->agente->get($this->factura->codagente);
-            $vender = substr($vendedor->nombre, 0, 1) . substr($vendedor->apellidos, 0, 1);
             $pdf_doc->fde_nombre = $this->empresa->nombre;
             $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
             $pdf_doc->fde_cifnif = $this->empresa->cifnif;
@@ -308,9 +310,6 @@ class factura_ncf extends fs_controller {
             $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
             $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
 
-            // Conduce asociado
-            //Si va usar distribucion se agrega el codigo de la ruta
-            //$pdf_doc->fdf_ruta = $this->factura->apartado;
             // Forma de Pago de la Factura
             $pago = new forma_pago();
             $epago = $pago->get($this->factura->codpago);
@@ -331,7 +330,6 @@ class factura_ncf extends fs_controller {
             if ($epais) {
                 $pdf_doc->fdf_pais = $epais->nombre;
             }
-            //$pdf_doc->SetFillColor(120, 253, 165);
             list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
             // Cabecera Titulos Columnas
             $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
@@ -406,20 +404,17 @@ class factura_ncf extends fs_controller {
                     }
 
                     $lafila = array(
-                        // '0' => utf8_decode($lineas[$i]->albaran_codigo() . '-' . $lineas[$i]->albaran_numero()),
                         '0' => utf8_decode($lineas[$i]->referencia),
                         '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
                         '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
                         '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
                         '4' => $this->show_numero(($lineas[$i]->pvpsindto * $negativo), FS_NF0),
                         '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
-                        //'4' => utf8_decode($this->show_numero($lineas[$i]->dtopor, 0) . " %"),
                         '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
                         '7' => $this->ckeckEuro($linea_neto), // Importe con Descuentos aplicados
-                            //'6' => $this->ckeckEuro(($lineas[$i]->total_iva() * $negativo))
                     );
 
-                    $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
+                    $pdf_doc->Row($lafila, '1');
                 }
                 $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
                 $pdf_doc->piepagina = true;
