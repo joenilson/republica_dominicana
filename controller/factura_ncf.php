@@ -50,7 +50,7 @@ class factura_ncf extends fs_controller {
     public $archivo;
     public $rd_setup;
     public $agente;
-
+    public $logo;
     public function __construct() {
         parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
     }
@@ -75,6 +75,13 @@ class factura_ncf extends fs_controller {
             'rd_imprimir_detalle_color' => '#dadada',
                 ), FALSE
         );
+        
+        $this->logo = FALSE;
+        if (file_exists(FS_MYDOCS . 'images/logo.png')) {
+            $this->logo = 'images/logo.png';
+        } else if (file_exists(FS_MYDOCS . 'images/logo.jpg')) {
+            $this->logo = 'images/logo.jpg';
+        }
 
         $val_id = \filter_input(INPUT_GET, 'id');
         $solicitud = \filter_input(INPUT_GET, 'solicitud');
@@ -264,14 +271,14 @@ class factura_ncf extends fs_controller {
                 $pdf_doc->fdf_transporte = $this->idtransporte;
             }
             $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
-
+            
             /// Insertamos el Logo y Marca de Agua si esta configurado así
-            $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '1' : '0';
-            $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '10' : '0';
-            $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '5' : '0';
-            $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '1' : '0';
-            $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '25' : '0';
-            $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND file_exists(FS_MYDOCS . 'images/logo.jpg')) ? '110' : '0';
+            $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '1' : '0';
+            $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '10' : '0';
+            $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '5' : '0';
+            $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '1' : '0';
+            $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '25' : '0';
+            $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '110' : '0';
 
             $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn'] == 'TRUE') ? '1' : '0';
             $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box'] == 'TRUE') ? '1' : '0';
@@ -333,7 +340,7 @@ class factura_ncf extends fs_controller {
             list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
             // Cabecera Titulos Columnas
             $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
-            $pdf_doc->SetWidths(array(18, 70, 12, 15, 15, 20, 20, 25));
+            $pdf_doc->SetWidths(array(20, 68, 12, 15, 20, 20, 16, 25));
             $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
             $colores = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $r . '|' . $g . '|' . $b : '0|0|0';
             $pdf_doc->SetColors(array($colores, $colores, $colores, $colores, $colores, $colores, $colores, $colores));
@@ -382,6 +389,7 @@ class factura_ncf extends fs_controller {
 
             // Lineas de la Factura
             $lineas = $this->factura->get_lineas();
+            $lineas_restantes = count($lineas);
             if ($lineas) {
                 $neto = 0;
                 $descuento = 0;
@@ -411,10 +419,11 @@ class factura_ncf extends fs_controller {
                         '4' => $this->show_numero(($lineas[$i]->pvpsindto * $negativo), FS_NF0),
                         '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
                         '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
-                        '7' => $this->ckeckEuro($linea_neto), // Importe con Descuentos aplicados
+                        '7' => utf8_decode($this->show_numero($linea_neto, FS_NF0)), // Importe con Descuentos aplicados
                     );
 
-                    $pdf_doc->Row($lafila, '1');
+                    $pdf_doc->Row($lafila, '1', $lineas_restantes);
+                    $lineas_restantes--;
                 }
                 $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
                 $pdf_doc->piepagina = true;
