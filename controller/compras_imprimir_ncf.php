@@ -61,26 +61,30 @@ class compras_imprimir_ncf extends fs_controller {
         $fsvar = new fs_var();
         $this->impresion = $fsvar->array_get($this->impresion, FALSE);
 
-        if (isset($_REQUEST['albaran']) AND isset($_REQUEST['id'])) {
+        $albaran = $this->filter_request('albaran');
+        $id = $this->filter_request('id');
+        $factura = $this->filter_request('factura');
+        if ($albaran AND $id) {
             $this->articulo_traza = new articulo_traza();
 
             $alb = new albaran_proveedor();
-            $this->documento = $alb->get($_REQUEST['id']);
+            $this->documento = $alb->get($id);
             if ($this->documento) {
                 $proveedor = new proveedor();
                 $this->proveedor = $proveedor->get($this->documento->codproveedor);
             }
-
-            if (isset($_POST['email'])) {
+            
+            if (\filter_input(INPUT_POST, 'email')) {
                 $this->enviar_email();
-            } else
+            } else {
                 $this->generar_pdf_albaran();
+            }
         }
-        else if (isset($_REQUEST['factura']) AND isset($_REQUEST['id'])) {
+        else if ($factura AND $id) {
             $this->articulo_traza = new articulo_traza();
 
             $fac = new factura_proveedor();
-            $this->documento = $fac->get($_REQUEST['id']);
+            $this->documento = $fac->get($id);
             if ($this->documento) {
                 $proveedor = new proveedor();
                 $this->proveedor = $proveedor->get($this->documento->codproveedor);
@@ -94,25 +98,6 @@ class compras_imprimir_ncf extends fs_controller {
 
     private function share_extensions() {
         $extensiones = array(
-            /*
-              array(
-              'name' => 'imprimir_albaran_proveedor_rd',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_albaran',
-              'type' => 'pdf',
-              'text' => ucfirst(FS_ALBARAN).' RD',
-              'params' => '&albaran=TRUE'
-              ),
-              array(
-              'name' => 'email_albaran_proveedor_rd',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_albaran',
-              'type' => 'email',
-              'text' => ucfirst(FS_ALBARAN).' RD',
-              'params' => '&albaran=TRUE'
-              ),
-             * 
-             */
             array(
                 'name' => 'imprimir_factura_proveedor_ncf',
                 'page_from' => __CLASS__,
@@ -545,8 +530,9 @@ class compras_imprimir_ncf extends fs_controller {
             }
 
             $pdf_doc->save('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo);
-        } else
+        } else {
             $pdf_doc->show(FS_ALBARAN . '_compra_' . $this->documento->codigo . '.pdf');
+        }
     }
 
     private function generar_pdf_factura($archivo = FALSE) {
@@ -592,15 +578,22 @@ class compras_imprimir_ncf extends fs_controller {
             }
 
             $pdf_doc->save('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo);
-        } else
+        } else {
             $pdf_doc->show('factura_compra_' . $this->documento->codigo . '.pdf');
+        }
     }
 
     private function enviar_email() {
+        $email = \filter_input(INPUT_POST, 'email');
+        $guardar = \filter_input(INPUT_POST, 'guardar');
+        $de = \filter_input(INPUT_POST, 'de');
+        $email_copia = \filter_input(INPUT_POST, 'email_copia');
+        $cco = \filter_input(INPUT_POST, 'cco');        
+        $mensaje = \filter_input(INPUT_POST, 'mensaje');        
         if ($this->empresa->can_send_mail()) {
             if ($this->proveedor) {
-                if ($_POST['email'] != $this->proveedor->email AND isset($_POST['guardar'])) {
-                    $this->proveedor->email = $_POST['email'];
+                if ($email != $this->proveedor->email AND $guardar) {
+                    $this->proveedor->email = $email;
                     $this->proveedor->save();
                 }
             }
@@ -613,26 +606,26 @@ class compras_imprimir_ncf extends fs_controller {
                 $mail = $this->empresa->new_mail();
                 $mail->FromName = $this->user->get_agente_fullname();
 
-                if ($_POST['de'] != $mail->From) {
-                    $mail->addReplyTo($_POST['de'], $mail->FromName);
+                if ($de != $mail->From) {
+                    $mail->addReplyTo($de, $mail->FromName);
                 }
 
-                $mail->addAddress($_POST['email'], $razonsocial);
-                if ($_POST['email_copia']) {
-                    if (isset($_POST['cco'])) {
-                        $mail->addBCC($_POST['email_copia'], $razonsocial);
+                $mail->addAddress($email, $razonsocial);
+                if ($email_copia) {
+                    if ($cco) {
+                        $mail->addBCC($email_copia, $razonsocial);
                     } else {
-                        $mail->addCC($_POST['email_copia'], $razonsocial);
+                        $mail->addCC($email_copia, $razonsocial);
                     }
                 }
 
                 $mail->Subject = $this->empresa->nombre . ': Mi ' . FS_ALBARAN . ' ' . $this->documento->codigo;
-                if ($this->is_html($_POST['mensaje'])) {
-                    $mail->AltBody = strip_tags($_POST['mensaje']);
-                    $mail->msgHTML($_POST['mensaje']);
+                if ($this->is_html($mensaje)) {
+                    $mail->AltBody = strip_tags($mensaje);
+                    $mail->msgHTML($mensaje);
                     $mail->isHTML(TRUE);
                 } else {
-                    $mail->Body = $_POST['mensaje'];
+                    $mail->Body = $mensaje;
                 }
 
                 $mail->addAttachment('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
@@ -644,14 +637,16 @@ class compras_imprimir_ncf extends fs_controller {
                     if ($mail->send()) {
                         $this->new_message('Mensaje enviado correctamente.');
                         $this->empresa->save_mail($mail);
-                    } else
+                    } else {
                         $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-                } else
+                    }
+                } else {
                     $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
-
+                }
                 unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
-            } else
+            } else {
                 $this->new_error_msg('Imposible generar el PDF.');
+            }
         }
     }
 
@@ -661,6 +656,17 @@ class compras_imprimir_ncf extends fs_controller {
         } else {
             return TRUE;
         }
+    }
+    
+    /**
+     * Función para devolver el valor de una variable pasada ya sea por POST o GET
+     * @param type string
+     * @return type string
+     */
+    private function filter_request($nombre) {
+        $nombre_post = \filter_input(INPUT_POST, $nombre);
+        $nombre_get = \filter_input(INPUT_GET, $nombre);
+        return ($nombre_post) ? $nombre_post : $nombre_get;
     }
 
 }

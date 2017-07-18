@@ -188,34 +188,24 @@ class admin_rd extends fs_controller {
 
     public function impresion(){
         $fsvar = new fs_var();
-        $op_imprimir_logo = \filter_input(INPUT_POST, 'rd_imprimir_logo');
-        $op_imprimir_marca_agua = \filter_input(INPUT_POST, 'rd_imprimir_marca_agua');
-        $op_imprimir_bn = \filter_input(INPUT_POST, 'rd_imprimir_bn');
-        $op_imprimir_cliente_box = \filter_input(INPUT_POST, 'rd_imprimir_cliente_box');
-        $op_imprimir_detalle_box = \filter_input(INPUT_POST, 'rd_imprimir_detalle_box');
-        $op_imprimir_detalle_lineas = \filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas');
-        $op_imprimir_detalle_colores = \filter_input(INPUT_POST, 'rd_imprimir_detalle_colores');
         $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
         $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
         $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
-        $imprimir_logo = ($op_imprimir_logo)?'TRUE':'FALSE';
-        $imprimir_marca_agua = ($op_imprimir_marca_agua)?'TRUE':'FALSE';
-        $imprimir_bn = ($op_imprimir_bn)?'TRUE':'FALSE';
-        $imprimir_cliente_box =($op_imprimir_cliente_box)?'TRUE':'FALSE';
-        $imprimir_detalle_box =($op_imprimir_detalle_box)?'TRUE':'FALSE';
-        $imprimir_detalle_lineas =($op_imprimir_detalle_lineas)?'TRUE':'FALSE';
-        $imprimir_detalle_colores =($op_imprimir_detalle_colores)?'TRUE':'FALSE';
-        $imprimir_cabecera_fcolor =($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
-        $imprimir_cabecera_tcolor =($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
-        $imprimir_detalle_color =($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
+        $imprimir_logo = (\filter_input(INPUT_POST, 'rd_imprimir_logo'))?'TRUE':'FALSE';
+        $imprimir_marca_agua = (\filter_input(INPUT_POST, 'rd_imprimir_marca_agua'))?'TRUE':'FALSE';
+        $imprimir_bn = (\filter_input(INPUT_POST, 'rd_imprimir_bn'))?'TRUE':'FALSE';
+        $imprimir_cliente_box = (\filter_input(INPUT_POST, 'rd_imprimir_cliente_box'))?'TRUE':'FALSE';
+        $imprimir_detalle_box = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box'))?'TRUE':'FALSE';
+        $imprimir_detalle_lineas = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas'))?'TRUE':'FALSE';
+        $imprimir_detalle_colores = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_colores'))?'TRUE':'FALSE';
+        $imprimir_cabecera_fcolor = ($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
+        $imprimir_cabecera_tcolor = ($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
+        $imprimir_detalle_color = ($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
         $rd_config = array(
-            'rd_imprimir_logo' => $imprimir_logo,
-            'rd_imprimir_marca_agua' => $imprimir_marca_agua,
-            'rd_imprimir_bn' => $imprimir_bn,
-            'rd_imprimir_cliente_box' => $imprimir_cliente_box,
-            'rd_imprimir_detalle_box' => $imprimir_detalle_box,
-            'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
-            'rd_imprimir_detalle_colores' => $imprimir_detalle_colores,
+            'rd_imprimir_logo' => $imprimir_logo, 'rd_imprimir_marca_agua' => $imprimir_marca_agua,
+            'rd_imprimir_bn' => $imprimir_bn, 'rd_imprimir_cliente_box' => $imprimir_cliente_box,
+            'rd_imprimir_detalle_box' => $imprimir_detalle_box, 'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
+            'rd_imprimir_detalle_colores' => $imprimir_detalle_colores, 
             'rd_imprimir_cabecera_fcolor' => $imprimir_cabecera_fcolor,
             'rd_imprimir_cabecera_tcolor' => $imprimir_cabecera_tcolor,
             'rd_imprimir_detalle_color' => $imprimir_detalle_color,
