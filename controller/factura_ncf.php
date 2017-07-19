@@ -128,7 +128,6 @@ class factura_ncf extends fs_controller {
 
             $this->archivo = $archivo;
             $contador = 0;
-            $this->factura = FALSE;
             foreach ($valores_id as $id) {
                 $factura = new factura_cliente();
                 $this->factura = $factura->get($id);
@@ -369,7 +368,7 @@ class factura_ncf extends fs_controller {
                     $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $negativo)) : '';
                 }
 
-                if ($filaiva) {
+                if (!empty($filaiva)) {
                     $filaiva[1][6] = $this->factura->irpf . ' %';
                     $filaiva[1][7] = $this->ckeckEuro(0 - ($this->factura->totalirpf * $negativo));
                 }
@@ -389,45 +388,42 @@ class factura_ncf extends fs_controller {
 
             // Lineas de la Factura
             $lineas = $this->factura->get_lineas();
+            $cantidad_lineas = count($lineas);
             $lineas_restantes = count($lineas);
-            if ($lineas) {
-                $neto = 0;
-                $descuento = 0;
-                for ($i = 0; $i < count($lineas); $i++) {
-                    $pdf_doc->piepagina = false;
-                    $neto += ($lineas[$i]->pvptotal * $negativo);
-                    $linea_importe = ($lineas[$i]->pvpsindto * $negativo);
-                    $linea_impuesto = (($lineas[$i]->pvptotal * $negativo) * ($lineas[$i]->iva / 100));
-                    $linea_neto = ($lineas[$i]->pvptotal * $negativo) * (1 + ($lineas[$i]->iva / 100));
-                    $descuento_linea = ($lineas[$i]->dtopor) ? (($lineas[$i]->pvpunitario * $negativo) * ($lineas[$i]->cantidad * $negativo)) * ($lineas[$i]->dtopor / 100) : 0;
-                    $descuento += $descuento_linea;
-                    $pdf_doc->neto = $this->ckeckEuro($neto);
-                    $articulo = new articulo();
-                    $art = $articulo->get($lineas[$i]->referencia);
-                    if ($art) {
-                        $observa = "\n" . utf8_decode($this->fix_html($art->observaciones));
-                    } else {
-                        //$observa = null; // No mostrar mensaje de error
-                        $observa = "\n";
-                    }
-
-                    $lafila = array(
-                        '0' => utf8_decode($lineas[$i]->referencia),
-                        '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
-                        '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
-                        '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
-                        '4' => $this->show_numero(($lineas[$i]->pvpsindto * $negativo), FS_NF0),
-                        '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
-                        '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
-                        '7' => utf8_decode($this->show_numero($linea_neto, FS_NF0)), // Importe con Descuentos aplicados
-                    );
-
-                    $pdf_doc->Row($lafila, '1', $lineas_restantes);
-                    $lineas_restantes--;
+            $neto = 0;
+            $descuento = 0;
+            for ($i = 0; $i < $cantidad_lineas; $i++) {
+                $pdf_doc->piepagina = false;
+                $neto += ($lineas[$i]->pvptotal * $negativo);
+                $linea_impuesto = (($lineas[$i]->pvptotal * $negativo) * ($lineas[$i]->iva / 100));
+                $linea_neto = ($lineas[$i]->pvptotal * $negativo) * (1 + ($lineas[$i]->iva / 100));
+                $descuento_linea = ($lineas[$i]->dtopor) ? (($lineas[$i]->pvpunitario * $negativo) * ($lineas[$i]->cantidad * $negativo)) * ($lineas[$i]->dtopor / 100) : 0;
+                $descuento += $descuento_linea;
+                $pdf_doc->neto = $this->ckeckEuro($neto);
+                $articulo = new articulo();
+                $art = $articulo->get($lineas[$i]->referencia);
+                if ($art) {
+                    $observa = "\n" . utf8_decode($this->fix_html($art->observaciones));
+                } else {
+                    $observa = "\n";
                 }
-                $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
-                $pdf_doc->piepagina = true;
+
+                $lafila = array(
+                    '0' => utf8_decode($lineas[$i]->referencia),
+                    '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
+                    '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
+                    '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
+                    '4' => $this->show_numero(($lineas[$i]->pvpsindto * $negativo), FS_NF0),
+                    '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
+                    '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
+                    '7' => utf8_decode($this->show_numero($linea_neto, FS_NF0)), // Importe con Descuentos aplicados
+                );
+
+                $pdf_doc->Row($lafila, '1', $lineas_restantes);
+                $lineas_restantes--;
             }
+            $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
+            $pdf_doc->piepagina = true;
         }
     }
 
