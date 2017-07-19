@@ -17,31 +17,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_model('ncf_tipo.php');
+
 /**
  * Description of tipo_ncf
  * Clase para manejar los tipos de NCF configurados
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class tipo_ncf extends fs_controller {
+class tipo_ncf extends fs_controller
+{
+
     public $ncf_tipo;
     public $allow_delete;
-    public function __construct() {
+
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Tipo de NCF', 'contabilidad', FALSE, FALSE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->shared_extensions();
-        $this->allow_delete = ($this->user->admin)?TRUE:$this->user->allow_delete_on(__CLASS__);
-        
+        $this->allow_delete = ($this->user->admin) ? TRUE : $this->user->allow_delete_on(__CLASS__);
+
         $accion = filter_input(INPUT_POST, 'accion');
-        if($accion){
+        if ($accion) {
             $this->tratar_tipos($accion);
         }
-        $this->ncf_tipo = new ncf_tipo();   
+        $this->ncf_tipo = new ncf_tipo();
     }
-    
-    public function tratar_tipos($accion){
-        if($accion=='agregar'){
+
+    public function tratar_tipos($accion)
+    {
+        if ($accion == 'agregar') {
             $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
             $descripcion = filter_input(INPUT_POST, 'descripcion');
             $clase_movimiento = filter_input(INPUT_POST, 'clase_movimiento');
@@ -56,34 +63,35 @@ class tipo_ncf extends fs_controller {
             $tc0->ventas = $ventas;
             $tc0->compras = $compras;
             $tc0->contribuyente = $contribuyente;
-            $tc0->estado = ($estado)?"TRUE":"FALSE";
-            if($tc0->save()){
+            $tc0->estado = ($estado) ? "TRUE" : "FALSE";
+            if ($tc0->save()) {
                 $this->new_message('¡Tipo de comprobante agregado con exito!');
-            }else{
+            } else {
                 $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de comprobante, por favor revise los datos ingresados.');
             }
-        }elseif($accion=='eliminar'){
+        } elseif ($accion == 'eliminar') {
             $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
             $tc1 = new ncf_tipo();
             $registro = $tc1->get($tipo_comprobante);
-            if($registro->delete()){
+            if ($registro->delete()) {
                 $this->new_message('¡Tipo de comprobante eliminado con exito!');
-            }else{
+            } else {
                 $this->new_error_msg('Ocurrio un error al tratar de eliminar el Tipo de comprobante, por favor verifique los datos');
             }
-        }else{
+        } else {
             $this->new_error_msg('Se recibió una solicitud incompleta.');
         }
     }
 
-    public function shared_extensions() {
+    public function shared_extensions()
+    {
         $extensiones = array(
             array(
                 'name' => 'tipo_ncfs',
                 'page_from' => __CLASS__,
                 'page_to' => 'ncf',
                 'type' => 'button',
-                    'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos NCF',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos NCF',
                 'params' => ''
             ),
         );

@@ -17,12 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/republica_dominicana/extras/simple_html_dom.php';
+
 /**
  * Description of buscador_rnc
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class buscador_rnc extends fs_controller{
+class buscador_rnc extends fs_controller
+{
+
     public $dgii_web;
     public $resultados;
     public $total_resultados;
@@ -34,17 +37,19 @@ class buscador_rnc extends fs_controller{
     public $viewstate;
     public $eventvalidation;
 
-    public function __construct($name = '', $title = 'home', $folder = '', $admin = FALSE, $shmenu = TRUE, $important = FALSE) {
+    public function __construct($name = '', $title = 'home', $folder = '', $admin = FALSE, $shmenu = TRUE, $important = FALSE)
+    {
         parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', FALSE, FALSE, TRUE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->resultados = false;
         $this->total_resultados = 0;
-        
+
         $tipo = filter_input(INPUT_POST, 'tipo');
-        if(!empty($tipo)){
-            switch ($tipo){
+        if (!empty($tipo)) {
+            switch ($tipo) {
                 case "buscar":
                     $this->buscar();
                     break;
@@ -56,9 +61,10 @@ class buscador_rnc extends fs_controller{
             }
         }
     }
-    
+
     //Pedimos que nos den el VIEWSTATE y el EVENTVALIDATION a la página de busqueda
-    public function autorizacion(){
+    public function autorizacion()
+    {
         $h = curl_init();
         curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx');
         curl_setopt($h, CURLOPT_HEADER, false);
@@ -66,20 +72,21 @@ class buscador_rnc extends fs_controller{
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE',0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION',0)->value;
+        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
+        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
     }
-    
+
     //Si la busqueda no es por RNC y en su lugar es por nombre actualizamos viewstate y eventvalidation
-    public function actualizacion_autorizacion($tipoBusqueda){
+    public function actualizacion_autorizacion($tipoBusqueda)
+    {
         $post = array(
-            '__EVENTTARGET'=>'rbtnlTipoBusqueda$1',
-            '__EVENTARGUMENT'=>"",
-            '__LASTFOCUS'=>"",
-            '__VIEWSTATE'=>$this->viewstate,
-            '__EVENTVALIDATION'=>$this->eventvalidation,
+            '__EVENTTARGET' => 'rbtnlTipoBusqueda$1',
+            '__EVENTARGUMENT' => "",
+            '__LASTFOCUS' => "",
+            '__VIEWSTATE' => $this->viewstate,
+            '__EVENTVALIDATION' => $this->eventvalidation,
             'rbtnlTipoBusqueda' => $tipoBusqueda,
-            'txtRncCed'=>''
+            'txtRncCed' => ''
         );
         $query = http_build_query($post);
         $h = curl_init();
@@ -91,29 +98,30 @@ class buscador_rnc extends fs_controller{
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE',0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION',0)->value;
+        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
+        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
     }
 
-    public function buscar(){
+    public function buscar()
+    {
         $this->autorizacion();
         $rnc = filter_input(INPUT_POST, 'rnc');
         $nombre = filter_input(INPUT_POST, 'nombre');
-        $tipoBusqueda = (!empty($rnc))?0:1;
-        $valor_a_buscar = (!empty($rnc))?$rnc:strtoupper(trim($nombre));
+        $tipoBusqueda = (!empty($rnc)) ? 0 : 1;
+        $valor_a_buscar = (!empty($rnc)) ? $rnc : strtoupper(trim($nombre));
         $this->rnc = $rnc;
         $this->nombre = $nombre;
-        $campo = (!empty($rnc))?'txtRncCed':'txtRazonSocial';
-        $boton = (!empty($rnc))?'btnBuscaRncCed':'btnBuscaRazonSocial';
-        if($tipoBusqueda == 1){
+        $campo = (!empty($rnc)) ? 'txtRncCed' : 'txtRazonSocial';
+        $boton = (!empty($rnc)) ? 'btnBuscaRncCed' : 'btnBuscaRazonSocial';
+        if ($tipoBusqueda == 1) {
             $this->actualizacion_autorizacion($tipoBusqueda);
         }
         $post = array(
-            '__EVENTTARGET'=>"",
-            '__EVENTARGUMENT'=>"",
-            '__LASTFOCUS'=>"",
-            '__VIEWSTATE'=>$this->viewstate,
-            '__EVENTVALIDATION'=>$this->eventvalidation,
+            '__EVENTTARGET' => "",
+            '__EVENTARGUMENT' => "",
+            '__LASTFOCUS' => "",
+            '__VIEWSTATE' => $this->viewstate,
+            '__EVENTVALIDATION' => $this->eventvalidation,
             'rbtnlTipoBusqueda' => $tipoBusqueda,
             $campo => $valor_a_buscar,
             $boton => 'Buscar'
@@ -129,32 +137,32 @@ class buscador_rnc extends fs_controller{
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $vacio = trim($html->getElementById('#lblMsg',0)->plaintext);
-        if($vacio){
-           $this->resultados = $html->getElementById('#lblMsg',0)->plaintext;
-        }else{
+        $vacio = trim($html->getElementById('#lblMsg', 0)->plaintext);
+        if ($vacio) {
+            $this->resultados = $html->getElementById('#lblMsg', 0)->plaintext;
+        } else {
             $cabeceras = array();
             $detalles = array();
-            foreach($html->find('.tabla_titulo') as $lista){
-               foreach($lista->find('td') as $item){
-                  $cabeceras[]=$item->plaintext;
-               }
+            foreach ($html->find('.tabla_titulo') as $lista) {
+                foreach ($lista->find('td') as $item) {
+                    $cabeceras[] = $item->plaintext;
+                }
             }
             $this->cabecera = $cabeceras;
             $lista_interna = 0;
-            foreach($html->find('.GridItemStyle') as $lista){
+            foreach ($html->find('.GridItemStyle') as $lista) {
 
-               foreach($lista->find('td') as $item){
-                  $detalles[$lista_interna][]=$item->plaintext;
-               }
-               $lista_interna++;
+                foreach ($lista->find('td') as $item) {
+                    $detalles[$lista_interna][] = $item->plaintext;
+                }
+                $lista_interna++;
             }
-            foreach($html->find('.bg_celdas_alt') as $lista){
+            foreach ($html->find('.bg_celdas_alt') as $lista) {
 
-               foreach($lista->find('td') as $item){
-                  $detalles[$lista_interna][]=$item->plaintext;
-               }
-               $lista_interna++;
+                foreach ($lista->find('td') as $item) {
+                    $detalles[$lista_interna][] = $item->plaintext;
+                }
+                $lista_interna++;
             }
             $this->detalle = $detalles;
             $this->total_cabecera = count($cabeceras);
@@ -162,7 +170,9 @@ class buscador_rnc extends fs_controller{
         }
     }
 
-    public function guardar(){
-
+    public function guardar()
+    {
+        
     }
+
 }

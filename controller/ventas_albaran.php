@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -49,7 +48,8 @@ require_once 'helper_ncf.php';
  */
 require_model('distribucion_clientes.php');
 
-class ventas_albaran extends fbase_controller {
+class ventas_albaran extends fbase_controller
+{
 
     public $agencia;
     public $agente;
@@ -75,11 +75,13 @@ class ventas_albaran extends fbase_controller {
     public $distribucion_clientes;
     public $cliente_rutas;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, FS_ALBARAN . ' de cliente', 'ventas', FALSE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         parent::private_core();
 
         $this->ppage = $this->page->get('ventas_albaranes');
@@ -159,7 +161,8 @@ class ventas_albaran extends fbase_controller {
         }
     }
 
-    public function url() {
+    public function url()
+    {
         if (!isset($this->albaran)) {
             return parent::url();
         } else if ($this->albaran) {
@@ -168,7 +171,8 @@ class ventas_albaran extends fbase_controller {
             return $this->page->url();
     }
 
-    private function modificar() {
+    private function modificar()
+    {
         $error = FALSE;
         $this->albaran->numero2 = $_POST['numero2'];
         $this->albaran->observaciones = $_POST['observaciones'];
@@ -447,7 +451,8 @@ class ventas_albaran extends fbase_controller {
     /**
      * Actualizamos el cif/nif en el cliente y los albaranes de este cliente que no tenga cif/nif
      */
-    private function propagar_cifnif() {
+    private function propagar_cifnif()
+    {
         if ($this->albaran->cifnif) {
             /// buscamos el cliente
             $cliente = $this->cliente->get($this->albaran->codcliente);
@@ -473,7 +478,8 @@ class ventas_albaran extends fbase_controller {
         }
     }
 
-    private function generar_factura() {
+    private function generar_factura() 
+    {
         /*
          * Verificación de disponibilidad del Número de NCF para República Dominicana
          */
@@ -644,7 +650,8 @@ class ventas_albaran extends fbase_controller {
             $this->new_error_msg("¡Imposible guardar la factura!");
     }
 
-    private function generar_asiento(&$factura) {
+    private function generar_asiento(&$factura) 
+    {
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
             if ($asiento_factura->generar_asiento_venta($factura)) {
@@ -664,5 +671,4 @@ class ventas_albaran extends fbase_controller {
 
         $this->new_change('Factura ' . $factura->codigo, $factura->url(), TRUE);
     }
-
 }

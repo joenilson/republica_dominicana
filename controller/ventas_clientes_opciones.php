@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2015-2016    Carlos Garcia Gomez        neorazorx@gmail.com
@@ -26,16 +25,19 @@ require_model('grupo_clientes.php');
  *
  * @author Carlos Garcia Gomez
  */
-class ventas_clientes_opciones extends fs_controller {
+class ventas_clientes_opciones extends fs_controller
+{
 
     public $nuevocli_setup;
     public $grupo;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Opciones', 'clientes', FALSE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->share_extension();
 
         $this->grupo = new grupo_clientes();
@@ -92,7 +94,8 @@ class ventas_clientes_opciones extends fs_controller {
         }
     }
 
-    private function share_extension() {
+    private function share_extension()
+    {
         $fsext = new fs_extension();
         $fsext->name = 'opciones_clientes';
         $fsext->from = __CLASS__;
@@ -102,5 +105,4 @@ class ventas_clientes_opciones extends fs_controller {
                 . '<span class="hidden-xs">&nbsp; Opciones</span>';
         $fsext->save();
     }
-
 }

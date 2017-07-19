@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -34,7 +33,8 @@ require_model('ncf_tipo_anulacion.php');
 require_model('albaran_cliente.php');
 require_model('linea_albaran_cliente.php');
 
-class ventas_facturas extends fbase_controller {
+class ventas_facturas extends fbase_controller
+{
 
     public $agente;
     public $almacenes;
@@ -67,11 +67,13 @@ class ventas_facturas extends fbase_controller {
     public $ncf_tipo_anulacion;
     public $albaran;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Facturas', 'ventas');
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         parent::private_core();
 
         $this->agente = new agente();
@@ -217,7 +219,8 @@ class ventas_facturas extends fbase_controller {
         }
     }
 
-    public function url($busqueda = FALSE) {
+    public function url($busqueda = FALSE)
+    {
         if ($busqueda) {
             $codcliente = '';
             if ($this->cliente) {
@@ -242,7 +245,8 @@ class ventas_facturas extends fbase_controller {
         }
     }
 
-    public function paginas() {
+    public function paginas()
+    {
         if ($this->mostrar == 'sinpagar') {
             $total = $this->total_sinpagar();
         } else if ($this->mostrar == 'buscar') {
@@ -254,7 +258,8 @@ class ventas_facturas extends fbase_controller {
         return $this->fbase_paginas($this->url(TRUE), $total, $this->offset);
     }
 
-    public function buscar_lineas() {
+    public function buscar_lineas()
+    {
         /// cambiamos la plantilla HTML
         $this->template = 'ajax/ventas_lineas_facturas';
 
@@ -268,7 +273,8 @@ class ventas_facturas extends fbase_controller {
         }
     }
 
-    private function share_extension() {
+    private function share_extension()
+    {
         /// añadimos las extensiones para clientes, agentes y artículos
         $extensiones = array(
             array(
@@ -304,15 +310,18 @@ class ventas_facturas extends fbase_controller {
         }
     }
 
-    public function total_sinpagar() {
+    public function total_sinpagar()
+    {
         return $this->fbase_sql_total('facturascli', 'idfactura', 'WHERE pagada = false');
     }
 
-    private function total_registros() {
+    private function total_registros()
+    {
         return $this->fbase_sql_total('facturascli', 'idfactura');
     }
 
-    private function buscar($order2) {
+    private function buscar($order2)
+    {
         $this->resultados = array();
         $this->num_resultados = 0;
         $sql = " FROM facturascli ";
@@ -423,7 +432,8 @@ class ventas_facturas extends fbase_controller {
      * Cuando se le da a eliminar factura en realidad se anula
      * generando un albaran con las cantidades en negativo para retornar el stock
      */
-    private function delete_factura() {
+    private function delete_factura() 
+    {
         $delete = \filter_input(INPUT_GET, 'delete');
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $fecha = \filter_input(INPUT_POST, 'fecha');
@@ -508,7 +518,8 @@ class ventas_facturas extends fbase_controller {
         }
     }
 
-    public function orden() {
+    public function orden() 
+    {
         return array(
             'fecha_desc' => array(
                 'icono' => '<span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>',
@@ -547,5 +558,4 @@ class ventas_facturas extends fbase_controller {
             )
         );
     }
-
 }

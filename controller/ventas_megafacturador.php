@@ -51,7 +51,8 @@ require_model('distribucion_clientes.php');
  * no se aplciará a un menu, sino que será un boton dentro de la lista de Albaranes
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class ventas_megafacturador extends fs_controller {
+class ventas_megafacturador extends fs_controller
+{
 
     public $almacenes;
     public $codalmacen;
@@ -96,15 +97,17 @@ class ventas_megafacturador extends fs_controller {
     public $ncf_ventas;
     public $ncf_entidad_tipo;
     public $tesoreria;
-   //Para el plugin distribucion
-   public $distribucion_clientes;
-   public $cliente_rutas;
+    //Para el plugin distribucion
+    public $distribucion_clientes;
+    public $cliente_rutas;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Facturación masiva', 'ventas', FALSE, TRUE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->articulos = new articulo();
         $this->almacenes = new almacen();
         $this->asiento_factura = new asiento_factura();
@@ -133,10 +136,10 @@ class ventas_megafacturador extends fs_controller {
         $this->share_extensions();
 
         //Para el plugin distribucion
-        if(class_exists('distribucion_clientes')){
-           $this->distribucion_clientes = new distribucion_clientes();
+        if (class_exists('distribucion_clientes')) {
+            $this->distribucion_clientes = new distribucion_clientes();
         }
-        
+
         //revisamos si esta el plugin de tesoreria
         $disabled = array();
         if (defined('FS_DISABLED_PLUGINS')) {
@@ -201,20 +204,20 @@ class ventas_megafacturador extends fs_controller {
      * Esta función genera los albaranes del listado de pedidos pendientes
      * generados en base a las series de los pedidos y las fechas elegidas
      */
-    private function generar_albaranes() {
+    private function generar_albaranes()
+    {
         $total_pedidos = $this->total_pedidos_pendientes();
         $total = $total_pedidos['total'];
         $contador = 0;
         $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
-            if( $this->comprobar_stock($pedido) )
-            {
+            if ($this->comprobar_stock($pedido)) {
                 $continuar = FALSE;
                 $albaran = new albaran_cliente();
                 //Para el plugin distribucion
-                if(property_exists('albaran_cliente','codruta')){
-                   $albaran->codruta = $pedido->codruta;
-                   $albaran->codvendedor = $pedido->codvendedor;
+                if (property_exists('albaran_cliente', 'codruta')) {
+                    $albaran->codruta = $pedido->codruta;
+                    $albaran->codvendedor = $pedido->codvendedor;
                 }
 
                 $albaran->apartado = $pedido->apartado;
@@ -281,7 +284,7 @@ class ventas_megafacturador extends fs_controller {
                     $art0 = new articulo();
                     foreach ($pedido->get_lineas() as $l) {
                         //Si el articulo existe
-                        if(!is_null($l->referencia)){
+                        if (!is_null($l->referencia)) {
                             $articulo = $art0->get($l->referencia);
                             $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
                         }
@@ -302,37 +305,31 @@ class ventas_megafacturador extends fs_controller {
                         $n->recargo = $l->recargo;
                         $n->referencia = $l->referencia;
 
-                        if( $n->save() )
-                        {
-                           /// descontamos del stock
-                           if($n->referencia)
-                           {
-                              $articulo = $art0->get($n->referencia);
-                              if($articulo)
-                              {
-                                 $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
-                                 if($articulo->trazabilidad)
-                                 {
-                                    $trazabilidad = TRUE;
-                                 }
-                              }
-                           }
+                        if ($n->save()) {
+                            /// descontamos del stock
+                            if ($n->referencia) {
+                                $articulo = $art0->get($n->referencia);
+                                if ($articulo) {
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
+                                    if ($articulo->trazabilidad) {
+                                        $trazabilidad = TRUE;
+                                    }
+                                }
+                            }
 
-                           $albaran->neto += $n->pvptotal;
-                           $albaran->totaliva += ($n->pvptotal * $n->iva/100);
-                           $albaran->totalirpf += ($n->pvptotal * $n->irpf/100);
-                           $albaran->totalrecargo += ($n->pvptotal * $n->recargo/100);
+                            $albaran->neto += $n->pvptotal;
+                            $albaran->totaliva += ($n->pvptotal * $n->iva / 100);
+                            $albaran->totalirpf += ($n->pvptotal * $n->irpf / 100);
+                            $albaran->totalrecargo += ($n->pvptotal * $n->recargo / 100);
 
-                           if($n->irpf > $albaran->irpf)
-                           {
-                              $albaran->irpf = $n->irpf;
-                           }
-                        }else {
+                            if ($n->irpf > $albaran->irpf) {
+                                $albaran->irpf = $n->irpf;
+                            }
+                        } else {
                             $continuar = FALSE;
                             $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                             break;
                         }
-
                     }
                     //Validamos la información nueva del albarán
                     $albaran->neto = round($albaran->neto, FS_NF0);
@@ -342,28 +339,28 @@ class ventas_megafacturador extends fs_controller {
                     $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
 
                     if ($continuar) {
-                        if($albaran->save()){
+                        if ($albaran->save()) {
                             $pedido->idalbaran = $albaran->idalbaran;
                             $pedido->fechasalida = $albaran->fecha;
                             $contador++;
                             if (!$pedido->save()) {
                                 $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
                                 if ($albaran->delete()) {
-                                    $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el ".FS_PEDIDO." ".$pedido->codigo.".");
+                                    $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el " . FS_PEDIDO . " " . $pedido->codigo . ".");
                                 } else {
                                     $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
                                 }
                             }
-                        }else{
-                            $this->new_error_msg('Ocurrio un error al intentar grabar el '.FS_ALBARAN.', hubo un problema con los artículos del '.FS_PEDIDO.' <a href="'.$pedido->url().'" target="_blank">'.$pedido->codigo.'</a> verifique el mismo e intente generar un albaran');
+                        } else {
+                            $this->new_error_msg('Ocurrio un error al intentar grabar el ' . FS_ALBARAN . ', hubo un problema con los artículos del ' . FS_PEDIDO . ' <a href="' . $pedido->url() . '" target="_blank">' . $pedido->codigo . '</a> verifique el mismo e intente generar un albaran');
                         }
                     } else {
                         //Corregimos el stock si es que los articulos tienen control de stock
-                        foreach($albaran->get_lineas() as $linea){
-                            if($linea->referencia){
+                        foreach ($albaran->get_lineas() as $linea) {
+                            if ($linea->referencia) {
                                 $art1 = $this->articulos->get($linea->referencia);
                                 $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
-                                if(!isset($lista_errores[$linea->referencia])){
+                                if (!isset($lista_errores[$linea->referencia])) {
                                     $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                                 }
                             }
@@ -378,11 +375,11 @@ class ventas_megafacturador extends fs_controller {
                 } else {
                     $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
                 }
-            }else{
-                $this->new_error_msg("¡Artículos del " . FS_PEDIDO ." <a href=\"".$pedido->url()."\" target=\"_blank\">".$pedido->codigo."</a> sin stock suficiente!");
+            } else {
+                $this->new_error_msg("¡Artículos del " . FS_PEDIDO . " <a href=\"" . $pedido->url() . "\" target=\"_blank\">" . $pedido->codigo . "</a> sin stock suficiente!");
             }
         }
-        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y '.$errores.' no se procesaron por errores en stock o la información.');
+        $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y ' . $errores . ' no se procesaron por errores en stock o la información.');
     }
 
     /**
@@ -390,7 +387,8 @@ class ventas_megafacturador extends fs_controller {
      * Esta función genera las facturas del listado de albaranes pendientes
      * generados en base a las series de los albaranes y las fechas elegidas
      */
-    private function generar_facturas() {
+    private function generar_facturas()
+    {
 
         $total_albaranes = $this->total_pendientes_venta();
         $total = $total_albaranes['total'];
@@ -414,9 +412,9 @@ class ventas_megafacturador extends fs_controller {
                 $contador++;
                 $factura = new factura_cliente();
                 //Para el plugin distribucion
-                if(property_exists('factura_cliente','codruta')){
-                   $factura->codruta = $albaran->codruta;
-                   $factura->codvendedor = $albaran->codvendedor;
+                if (property_exists('factura_cliente', 'codruta')) {
+                    $factura->codruta = $albaran->codruta;
+                    $factura->codvendedor = $albaran->codvendedor;
                 }
                 $factura->apartado = $albaran->apartado;
                 $factura->cifnif = $albaran->cifnif;
@@ -486,7 +484,7 @@ class ventas_megafacturador extends fs_controller {
                     $continuar = TRUE;
                     $ncf_controller = new helper_ncf();
                     $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-                    if($this->tesoreria){
+                    if ($this->tesoreria) {
                         require_model('pago_recibo_cliente.php');
                         require_model('recibo_cliente.php');
                         require_model('recibo_factura.php');
@@ -524,7 +522,6 @@ class ventas_megafacturador extends fs_controller {
                         $albaran->ptefactura = FALSE;
                         if ($albaran->save()) {
                             $this->generar_asiento_cliente($factura);
-                            
                         } else {
                             $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
                             if ($factura->delete()) {
@@ -547,8 +544,9 @@ class ventas_megafacturador extends fs_controller {
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
     }
-    
-    private function nuevo_recibo($factura){
+
+    private function nuevo_recibo($factura)
+    {
         $recibo = new recibo_cliente();
         $recibo->apartado = $factura->apartado;
         $recibo->cifnif = $factura->cifnif;
@@ -583,11 +581,12 @@ class ventas_megafacturador extends fs_controller {
         $recibo->save();
     }
 
-    public function pendientes_venta() {
+    public function pendientes_venta()
+    {
         $alblist = array();
 
         $sql = "SELECT * FROM albaranescli WHERE ptefactura = true";
-        if(!empty($this->codalmacen)){
+        if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
         }
         if (!empty($this->series_elegidas_albaranes)) {
@@ -612,11 +611,12 @@ class ventas_megafacturador extends fs_controller {
         return $alblist;
     }
 
-    public function total_pendientes_venta() {
+    public function total_pendientes_venta()
+    {
         $total = 0;
         $subtotal = array();
         $sql = "SELECT fecha, count(idalbaran) as total FROM albaranescli WHERE ptefactura = true";
-        if(!empty($this->codalmacen)){
+        if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
         }
         if (!empty($this->series_elegidas_albaranes)) {
@@ -645,11 +645,12 @@ class ventas_megafacturador extends fs_controller {
         return $resultados;
     }
 
-    public function pedidos_pendientes() {
+    public function pedidos_pendientes()
+    {
         $pedlist = array();
 
         $sql = "SELECT * FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
-        if(!empty($this->codalmacen)){
+        if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
         }
         if (!empty($this->series_elegidas_pedidos)) {
@@ -674,12 +675,13 @@ class ventas_megafacturador extends fs_controller {
         return $pedlist;
     }
 
-    public function total_pedidos_pendientes() {
+    public function total_pedidos_pendientes()
+    {
         $total = 0;
         $subtotal = array();
         $sql = "SELECT fecha, count(idpedido) as total FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
 
-        if(!empty($this->codalmacen)){
+        if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
         }
 
@@ -708,7 +710,8 @@ class ventas_megafacturador extends fs_controller {
         return $resultados;
     }
 
-    private function generar_asiento_cliente($factura, $forzar = FALSE, $soloasiento = FALSE) {
+    private function generar_asiento_cliente($factura, $forzar = FALSE, $soloasiento = FALSE)
+    {
         $ok = TRUE;
 
         if ($this->empresa->contintegrada OR $forzar) {
@@ -728,60 +731,50 @@ class ventas_megafacturador extends fs_controller {
     }
 
     /**
-    * Comprueba el stock de cada uno de los artículos del documento.
-    * Devuelve TRUE si hay suficiente stock.
-    * @return boolean
-    */
-   private function comprobar_stock($documento)
-   {
-      $ok = TRUE;
+     * Comprueba el stock de cada uno de los artículos del documento.
+     * Devuelve TRUE si hay suficiente stock.
+     * @return boolean
+     */
+    private function comprobar_stock($documento)
+    {
+        $ok = TRUE;
 
-      $art0 = new articulo();
-      foreach($documento->get_lineas() as $linea)
-      {
-         if($linea->referencia)
-         {
-            $articulo = $art0->get($linea->referencia);
-            if($articulo)
-            {
-               if(!$articulo->controlstock)
-               {
-                  if($linea->cantidad > $articulo->stockfis)
-                  {
-                     /// si se pide más cantidad de la disponible, es que no hay suficiente
-                     $ok = FALSE;
-                  }
-                  else
-                  {
-                     /// comprobamos el stock en el almacén del pedido
-                     $ok = FALSE;
-                     foreach($articulo->get_stock() as $stock)
-                     {
-                        if($stock->codalmacen == $documento->codalmacen)
-                        {
-                           if($stock->cantidad >= $linea->cantidad)
-                           {
-                              $ok = TRUE;
-                           }
-                           break;
+        $art0 = new articulo();
+        foreach ($documento->get_lineas() as $linea) {
+            if ($linea->referencia) {
+                $articulo = $art0->get($linea->referencia);
+                if ($articulo) {
+                    if (!$articulo->controlstock) {
+                        if ($linea->cantidad > $articulo->stockfis) {
+                            /// si se pide más cantidad de la disponible, es que no hay suficiente
+                            $ok = FALSE;
+                        } else {
+                            /// comprobamos el stock en el almacén del pedido
+                            $ok = FALSE;
+                            foreach ($articulo->get_stock() as $stock) {
+                                if ($stock->codalmacen == $documento->codalmacen) {
+                                    if ($stock->cantidad >= $linea->cantidad) {
+                                        $ok = TRUE;
+                                    }
+                                    break;
+                                }
+                            }
                         }
-                     }
-                  }
 
-                  if(!$ok)
-                  {
-                     $this->new_error_msg('No hay suficiente stock del artículo '.$linea->referencia);
-                     break;
-                  }
-               }
+                        if (!$ok) {
+                            $this->new_error_msg('No hay suficiente stock del artículo ' . $linea->referencia);
+                            break;
+                        }
+                    }
+                }
             }
-         }
-      }
+        }
 
-      return $ok;
-   }
+        return $ok;
+    }
 
-    private function array_to_text(Array $array) {
+    private function array_to_text(Array $array)
+    {
         $substring = "";
         foreach ($array as $item) {
             $substring .= "'" . $item . "',";
@@ -790,7 +783,8 @@ class ventas_megafacturador extends fs_controller {
         return $string;
     }
 
-    private function date_to_text(Array $array) {
+    private function date_to_text(Array $array)
+    {
         $substring = "";
         foreach ($array as $item) {
             $substring .= "'" . \date('Y-m-d', strtotime($item)) . "',";
@@ -799,7 +793,8 @@ class ventas_megafacturador extends fs_controller {
         return $string;
     }
 
-    private function share_extensions() {
+    private function share_extensions()
+    {
         $extensions = array(
             array(
                 'name' => 'daterangepicker_js',

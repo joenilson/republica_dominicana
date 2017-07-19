@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -35,7 +34,8 @@ require_model('subcuenta.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('impuesto.php');
 
-class compras_factura extends fbase_controller {
+class compras_factura extends fbase_controller
+{
 
     public $agente;
     public $almacen;
@@ -51,11 +51,13 @@ class compras_factura extends fbase_controller {
     public $ncf_tipo_anulacion;
     public $impuesto;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         parent::private_core();
 
         $this->ppage = $this->page->get('compras_facturas');
@@ -84,13 +86,12 @@ class compras_factura extends fbase_controller {
                 break;
             }
         }
-        $idfactura = \filter_input(INPUT_POST, 'idfactura');
-        $id = \filter_input(INPUT_GET, 'id');
-        if ($idfactura) {
-            $this->factura = $factura->get($idfactura);
+
+        if (isset($_POST['idfactura'])) {
+            $this->factura = $factura->get($_POST['idfactura']);
             $this->modificar();
-        } elseif ($id) {
-            $this->factura = $factura->get($id);
+        } else if (isset($_GET['id'])) {
+            $this->factura = $factura->get($_GET['id']);
         }
 
         if ($this->factura) {
@@ -144,7 +145,8 @@ class compras_factura extends fbase_controller {
         }
     }
 
-    public function url() {
+    public function url()
+    {
         if (!isset($this->factura)) {
             return parent::url();
         } else if ($this->factura) {
@@ -154,7 +156,8 @@ class compras_factura extends fbase_controller {
         }
     }
 
-    private function modificar() {
+    private function modificar()
+    {
         $this->factura->numproveedor = $_POST['numproveedor'];
         $this->factura->observaciones = $_POST['observaciones'];
         $this->factura->codpago = $_POST['forma_pago'];
@@ -176,7 +179,8 @@ class compras_factura extends fbase_controller {
             $this->new_error_msg("¡Imposible modificar la factura!");
     }
 
-    private function generar_asiento(&$factura) {
+    private function generar_asiento(&$factura)
+    {
         if ($factura->get_asiento()) {
             $this->new_error_msg('Ya hay un asiento asociado a esta factura.');
         } else {
@@ -201,7 +205,8 @@ class compras_factura extends fbase_controller {
         }
     }
 
-    private function pagar($pagada = TRUE) {
+    private function pagar($pagada = TRUE)
+    {
         /// ¿Hay asiento?
         if (is_null($this->factura->idasiento)) {
             $this->factura->pagada = $pagada;
@@ -239,7 +244,7 @@ class compras_factura extends fbase_controller {
 
                 $asiento_factura = new asiento_factura();
                 $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $_POST['fpagada'], $subpro, $importe);
-                if ($this->factura->idasientop) {
+                if ($this->factura->idasientop !== NULL) {
                     $this->factura->pagada = TRUE;
                     if ($this->factura->save()) {
                         $this->new_message('<a href="' . $this->factura->asiento_pago_url() . '">Asiento de pago</a> generado.');
@@ -257,7 +262,8 @@ class compras_factura extends fbase_controller {
         }
     }
 
-    private function anular_factura() {
+    private function anular_factura() 
+    {
         $ejercicio = $this->ejercicio->get_by_fecha($this->today());
         if ($ejercicio) {
             ///generamos una factura rectificativa a partir de la actual
@@ -396,7 +402,8 @@ class compras_factura extends fbase_controller {
         }
     }
 
-    public function get_cuentas_bancarias() {
+    public function get_cuentas_bancarias()
+    {
         $cuentas = array();
 
         $cbp0 = new cuenta_banco_proveedor();

@@ -28,7 +28,8 @@ require_model('asiento_factura.php');
 require_model('ncf_ventas.php');
 require_model('ncf_rango.php');
 
-class imprimir_facturas extends fs_controller {
+class imprimir_facturas extends fs_controller
+{
 
     public $agente;
     public $codalmacen;
@@ -55,11 +56,13 @@ class imprimir_facturas extends fs_controller {
     public $ncf_ventas;
     public $listar;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Imprimir ' . ucfirst(FS_FACTURAS), 'ventas');
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->agente = new agente();
         $this->almacenes = new almacen();
         $this->factura = new factura_cliente();
@@ -138,7 +141,7 @@ class imprimir_facturas extends fs_controller {
             $this->total_resultados = '';
             $this->total_resultados_comision = 0;
             $this->total_resultados_txt = '';
-            
+
             if (!$mostrar AND ( $codagente OR $codcliente OR $codserie)) {
                 /**
                  * si obtenermos un codagente, un codcliente o un codserie pasamos directamente
@@ -188,7 +191,8 @@ class imprimir_facturas extends fs_controller {
         }
     }
 
-    private function buscar_cliente() {
+    private function buscar_cliente()
+    {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
         $buscar_cliente = $this->filter_request('buscar_cliente');
@@ -202,7 +206,8 @@ class imprimir_facturas extends fs_controller {
         echo json_encode(array('query' => $buscar_cliente, 'suggestions' => $json));
     }
 
-    public function paginas() {
+    public function paginas()
+    {
         $codcliente = '';
         if ($this->cliente) {
             $codcliente = $this->cliente->codcliente;
@@ -264,7 +269,8 @@ class imprimir_facturas extends fs_controller {
         }
     }
 
-    public function buscar_lineas() {
+    public function buscar_lineas()
+    {
         /// cambiamos la plantilla HTML
         $this->template = 'ajax/ventas_lineas_facturas';
         $codcliente = \filter_input(INPUT_POST, 'codcliente');
@@ -280,7 +286,8 @@ class imprimir_facturas extends fs_controller {
         }
     }
 
-    private function total_registros() {
+    private function total_registros()
+    {
         $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli;");
         if ($data) {
             return intval($data[0]['total']);
@@ -288,7 +295,8 @@ class imprimir_facturas extends fs_controller {
             return 0;
     }
 
-    private function buscar($order2) {
+    private function buscar($order2)
+    {
         $this->resultados = array();
         $this->num_resultados = 0;
         $query = $this->agente->no_html(strtolower($this->query));
@@ -383,16 +391,17 @@ class imprimir_facturas extends fs_controller {
             }
         }
     }
-    
+
     /**
-    * Función para devolver el valor de una variable pasada ya sea por POST o GET
-    * @param type string
-    * @return type string
-    */
-   private function filter_request($nombre){
-       $nombre_post = \filter_input(INPUT_POST, $nombre);
-       $nombre_get = \filter_input(INPUT_GET, $nombre);
-       return ($nombre_post)?$nombre_post:$nombre_get;
-   }
+     * Función para devolver el valor de una variable pasada ya sea por POST o GET
+     * @param type string
+     * @return type string
+     */
+    private function filter_request($nombre)
+    {
+        $nombre_post = \filter_input(INPUT_POST, $nombre);
+        $nombre_get = \filter_input(INPUT_GET, $nombre);
+        return ($nombre_post) ? $nombre_post : $nombre_get;
+    }
 
 }

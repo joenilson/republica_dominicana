@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -25,7 +24,8 @@ require_model('serie.php');
 require_model('terminal_caja.php');
 require_model('ncf_rango.php');
 
-class tpv_caja extends fbase_controller {
+class tpv_caja extends fbase_controller
+{
 
     public $almacen;
     public $caja;
@@ -36,11 +36,13 @@ class tpv_caja extends fbase_controller {
     public $terminales;
     public $ncf_rango;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Arqueos y terminales', 'TPV');
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         parent::private_core();
 
         $this->almacen = new almacen();
@@ -71,7 +73,8 @@ class tpv_caja extends fbase_controller {
         $this->terminales = $terminal->all();
     }
 
-    private function nuevo_terminal(&$terminal) {
+    private function nuevo_terminal(&$terminal)
+    {
         $terminal->codalmacen = $_POST['codalmacen'];
         $terminal->codserie = $_POST['codserie'];
         $terminal->area_impresion = $_POST['area_impresion'];
@@ -93,7 +96,8 @@ class tpv_caja extends fbase_controller {
             $this->new_error_msg('Error al guardar los datos.');
     }
 
-    private function editar_terminal(&$terminal) {
+    private function editar_terminal(&$terminal)
+    {
         $t2 = $terminal->get($_POST['idt']);
         if ($t2) {
             $t2->codalmacen = $_POST['codalmacen'];
@@ -118,7 +122,8 @@ class tpv_caja extends fbase_controller {
             $this->new_error_msg('Terminal no encontrado.');
     }
 
-    private function eliminar_terminal(&$terminal) {
+    private function eliminar_terminal(&$terminal)
+    {
         if ($this->user->admin) {
             $t2 = $terminal->get($_GET['deletet']);
             if ($t2) {
@@ -132,7 +137,8 @@ class tpv_caja extends fbase_controller {
             $this->new_error_msg("Solamente un administrador puede eliminar terminales.");
     }
 
-    private function eliminar_caja() {
+    private function eliminar_caja()
+    {
         if ($this->user->admin) {
             $caja2 = $this->caja->get($_GET['delete']);
             if ($caja2) {
@@ -146,7 +152,8 @@ class tpv_caja extends fbase_controller {
             $this->new_error_msg("Solamente un administrador puede eliminar arqueos.");
     }
 
-    private function cerrar_caja() {
+    private function cerrar_caja()
+    {
         if ($this->user->admin) {
             $caja2 = $this->caja->get($_GET['cerrar']);
             if ($caja2) {
@@ -164,7 +171,8 @@ class tpv_caja extends fbase_controller {
         }
     }
 
-    public function anterior_url() {
+    public function anterior_url()
+    {
         $url = '';
 
         if ($this->offset > 0) {
@@ -174,7 +182,8 @@ class tpv_caja extends fbase_controller {
         return $url;
     }
 
-    public function siguiente_url() {
+    public function siguiente_url()
+    {
         $url = '';
 
         if (count($this->resultados) == FS_ITEM_LIMIT) {
@@ -183,5 +192,4 @@ class tpv_caja extends fbase_controller {
 
         return $url;
     }
-
 }

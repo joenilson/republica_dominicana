@@ -26,12 +26,14 @@ require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
 require_model('ncf_tipo_anulacion.php');
 require_model('ncf_ventas.php');
+
 /**
  * Description of admin_rd
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class admin_rd extends fs_controller {
+class admin_rd extends fs_controller
+{
 
     public $conf_divisa;
     public $conf_impuestos;
@@ -40,11 +42,14 @@ class admin_rd extends fs_controller {
     public $impuestos_rd;
     public $variables;
     public $rd_setup;
-    public function __construct() {
+
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'República Dominicana', 'admin');
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         //creamos las tablas necesarias si no están ya creadas
         new ncf_tipo();
         new ncf_entidad_tipo();
@@ -80,7 +85,7 @@ class admin_rd extends fs_controller {
         $this->variables['series'] = "series";
 
         $this->get_config();
-        
+
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
             array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
@@ -89,7 +94,7 @@ class admin_rd extends fs_controller {
         );
 
         $opcion = \filter_input(INPUT_GET, 'opcion');
-        switch($opcion){
+        switch ($opcion) {
             case 'moneda':
                 $this->moneda();
                 break;
@@ -122,7 +127,8 @@ class admin_rd extends fs_controller {
     /**
      * Cargamos el menú en la base de datos, pero en varias pasadas.
      */
-    private function check_menu() {
+    private function check_menu()
+    {
         if (file_exists(__DIR__)) {
             $max = 25;
 
@@ -167,57 +173,60 @@ class admin_rd extends fs_controller {
 
         $this->load_menu(TRUE);
     }
-    
-    public function get_config(){
+
+    public function get_config()
+    {
         $fsvar = new fs_var();
         $this->rd_setup = $fsvar->array_get(
-            array(
-                'rd_imprimir_logo' => 'TRUE',
-                'rd_imprimir_marca_agua' => 'TRUE',
-                'rd_imprimir_bn' => 'FALSE',
-                'rd_imprimir_cliente_box' => 'TRUE',
-                'rd_imprimir_detalle_box' => 'TRUE',
-                'rd_imprimir_detalle_lineas' => 'TRUE',
-                'rd_imprimir_detalle_colores' => 'TRUE',
-                'rd_imprimir_cabecera_fcolor' => '#000000',
-                'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
-                'rd_imprimir_detalle_color' => '#dadada',
-            ), FALSE
+                array(
+            'rd_imprimir_logo' => 'TRUE',
+            'rd_imprimir_marca_agua' => 'TRUE',
+            'rd_imprimir_bn' => 'FALSE',
+            'rd_imprimir_cliente_box' => 'TRUE',
+            'rd_imprimir_detalle_box' => 'TRUE',
+            'rd_imprimir_detalle_lineas' => 'TRUE',
+            'rd_imprimir_detalle_colores' => 'TRUE',
+            'rd_imprimir_cabecera_fcolor' => '#000000',
+            'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
+            'rd_imprimir_detalle_color' => '#dadada',
+                ), FALSE
         );
     }
 
-    public function impresion(){
+    public function impresion()
+    {
         $fsvar = new fs_var();
         $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
         $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
         $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
-        $imprimir_logo = (\filter_input(INPUT_POST, 'rd_imprimir_logo'))?'TRUE':'FALSE';
-        $imprimir_marca_agua = (\filter_input(INPUT_POST, 'rd_imprimir_marca_agua'))?'TRUE':'FALSE';
-        $imprimir_bn = (\filter_input(INPUT_POST, 'rd_imprimir_bn'))?'TRUE':'FALSE';
-        $imprimir_cliente_box = (\filter_input(INPUT_POST, 'rd_imprimir_cliente_box'))?'TRUE':'FALSE';
-        $imprimir_detalle_box = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box'))?'TRUE':'FALSE';
-        $imprimir_detalle_lineas = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas'))?'TRUE':'FALSE';
-        $imprimir_detalle_colores = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_colores'))?'TRUE':'FALSE';
-        $imprimir_cabecera_fcolor = ($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:'#dadada';
-        $imprimir_cabecera_tcolor = ($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:'#dadada';
-        $imprimir_detalle_color = ($op_imprimir_detalle_color)?$op_imprimir_detalle_color:'#dadada';
+        $imprimir_logo = (\filter_input(INPUT_POST, 'rd_imprimir_logo')) ? 'TRUE' : 'FALSE';
+        $imprimir_marca_agua = (\filter_input(INPUT_POST, 'rd_imprimir_marca_agua')) ? 'TRUE' : 'FALSE';
+        $imprimir_bn = (\filter_input(INPUT_POST, 'rd_imprimir_bn')) ? 'TRUE' : 'FALSE';
+        $imprimir_cliente_box = (\filter_input(INPUT_POST, 'rd_imprimir_cliente_box')) ? 'TRUE' : 'FALSE';
+        $imprimir_detalle_box = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box')) ? 'TRUE' : 'FALSE';
+        $imprimir_detalle_lineas = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas')) ? 'TRUE' : 'FALSE';
+        $imprimir_detalle_colores = (\filter_input(INPUT_POST, 'rd_imprimir_detalle_colores')) ? 'TRUE' : 'FALSE';
+        $imprimir_cabecera_fcolor = ($op_imprimir_cabecera_fcolor) ? $op_imprimir_cabecera_fcolor : '#dadada';
+        $imprimir_cabecera_tcolor = ($op_imprimir_cabecera_tcolor) ? $op_imprimir_cabecera_tcolor : '#dadada';
+        $imprimir_detalle_color = ($op_imprimir_detalle_color) ? $op_imprimir_detalle_color : '#dadada';
         $rd_config = array(
             'rd_imprimir_logo' => $imprimir_logo, 'rd_imprimir_marca_agua' => $imprimir_marca_agua,
             'rd_imprimir_bn' => $imprimir_bn, 'rd_imprimir_cliente_box' => $imprimir_cliente_box,
             'rd_imprimir_detalle_box' => $imprimir_detalle_box, 'rd_imprimir_detalle_lineas' => $imprimir_detalle_lineas,
-            'rd_imprimir_detalle_colores' => $imprimir_detalle_colores, 
+            'rd_imprimir_detalle_colores' => $imprimir_detalle_colores,
             'rd_imprimir_cabecera_fcolor' => $imprimir_cabecera_fcolor,
             'rd_imprimir_cabecera_tcolor' => $imprimir_cabecera_tcolor,
             'rd_imprimir_detalle_color' => $imprimir_detalle_color,
         );
         if ($fsvar->array_save($rd_config)) {
             $this->new_message('Opciones de impresión actualizadas correctamente.');
-        }else{
+        } else {
             $this->new_error_msg('Ocurrió un error al intentar actualizar la información de impresión, por favor revise sus datos.');
         }
     }
-    
-    public function moneda() {
+
+    public function moneda()
+    {
         $tratamiento = false;
         //Validamos si existe la moneda DOP
         $div0 = new divisa();
@@ -246,7 +255,7 @@ class admin_rd extends fs_controller {
             $tratamiento = true;
         }
 
-        if($tratamiento){
+        if ($tratamiento) {
             $this->new_message('Datos de moneda DOP y USD actualizados correctamente.');
         }
 
@@ -259,24 +268,25 @@ class admin_rd extends fs_controller {
         }
     }
 
-    public function impuestos() {
+    public function impuestos()
+    {
         $tratamiento = false;
         $impuestos = new impuesto();
         //Eliminamos los Impuestos que no son de RD
-        $lista_impuestos =array();
+        $lista_impuestos = array();
         foreach ($this->impuestos_rd as $imp) {
-            $lista_impuestos[]=$imp['porcentaje'];
+            $lista_impuestos[] = $imp['porcentaje'];
         }
 
         foreach ($impuestos->all() as $imp) {
-            if(!in_array($imp->iva, $lista_impuestos)){
+            if (!in_array($imp->iva, $lista_impuestos)) {
                 $imp->delete();
             }
         }
 
         //Agregamos los Impuestos de RD
         foreach ($this->impuestos_rd as $imp) {
-            if(!$impuestos->get_by_iva($imp['porcentaje'])){
+            if (!$impuestos->get_by_iva($imp['porcentaje'])) {
                 $imp0 = new impuesto();
                 $imp0->codimpuesto = $imp['codigo'];
                 $imp0->descripcion = $imp['descripcion'];
@@ -284,36 +294,37 @@ class admin_rd extends fs_controller {
                 $imp0->recargo = $imp['recargo'];
                 $imp0->codsubcuentasop = $imp['subcuenta_compras'];
                 $imp0->codsubcuentarep = $imp['subcuenta_ventas'];
-                if($imp0->save()){
+                if ($imp0->save()) {
                     $tratamiento = true;
                 }
             }
         }
 
         //Corregimos la información de las Cuentas especiales con los nombres correctos
-        $cuentas_especiales_rd['IVAACR']='Cuentas acreedoras de ITBIS en la regularización';
-        $cuentas_especiales_rd['IVASOP']='Cuentas de ITBIS Compras';
-        $cuentas_especiales_rd['IVARXP']='Cuentas de ITBIS exportaciones';
-        $cuentas_especiales_rd['IVASIM']='Cuentas de ITBIS importaciones';
-        $cuentas_especiales_rd['IVAREX']='Cuentas de ITBIS para clientes exentos';
-        $cuentas_especiales_rd['IVAREP']='Cuentas de ITBIS Ventas';
+        $cuentas_especiales_rd['IVAACR'] = 'Cuentas acreedoras de ITBIS en la regularización';
+        $cuentas_especiales_rd['IVASOP'] = 'Cuentas de ITBIS Compras';
+        $cuentas_especiales_rd['IVARXP'] = 'Cuentas de ITBIS exportaciones';
+        $cuentas_especiales_rd['IVASIM'] = 'Cuentas de ITBIS importaciones';
+        $cuentas_especiales_rd['IVAREX'] = 'Cuentas de ITBIS para clientes exentos';
+        $cuentas_especiales_rd['IVAREP'] = 'Cuentas de ITBIS Ventas';
         $cuentas_especiales = new cuenta_especial();
-        foreach($cuentas_especiales_rd as $id=>$desc){
+        foreach ($cuentas_especiales_rd as $id => $desc) {
             $linea = $cuentas_especiales->get($id);
-            if($linea->descripcion!==$desc){
+            if ($linea->descripcion !== $desc) {
                 $linea->descripcion = $desc;
                 $linea->save();
             }
         }
 
-        if($tratamiento){
+        if ($tratamiento) {
             $this->new_message('Información de impuestos actualizada correctamente');
-        }else{
+        } else {
             $this->new_message('No se modificaron datos de impuestos previamente tratados.');
         }
     }
 
-    public function pais() {
+    public function pais()
+    {
         $pais0 = new pais();
         $pais1 = $pais0->get('DOM');
         if (!$pais1) {
@@ -337,7 +348,8 @@ class admin_rd extends fs_controller {
         }
     }
 
-    public function configuracion_regional() {
+    public function configuracion_regional()
+    {
         //Configuramos la información básica para config2.ini
         $guardar = FALSE;
         foreach ($GLOBALS['config2'] as $i => $value) {
@@ -363,7 +375,8 @@ class admin_rd extends fs_controller {
         }
     }
 
-    private function share_extensions() {
+    private function share_extensions()
+    {
         $fsext = new fs_extension();
         $fsext->name = 'pcgr_completo';
         $fsext->from = __CLASS__;
@@ -399,13 +412,12 @@ class admin_rd extends fs_controller {
                 'params' => ''
             ),
         );
-        foreach($extensiones as $ext){
+        foreach ($extensiones as $ext) {
             $fext = new fs_extension($ext);
-            if(!$fext->save()){
+            if (!$fext->save()) {
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
             }
         }
-
     }
 
 }

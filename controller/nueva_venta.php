@@ -50,39 +50,42 @@ require_once 'helper_ncf.php';
  */
 require_model('distribucion_clientes.php');
 
-class nueva_venta extends fbase_controller {
-   public $agencia;
-   public $agente;
-   public $almacen;
-   public $articulo;
-   public $cliente;
-   public $cliente_s;
-   public $direccion;
-   public $divisa;
-   public $fabricante;
-   public $familia;
-   public $forma_pago;
-   public $grupo;
-   public $impuesto;
-   public $nuevocli_setup;
-   public $pais;
-   public $results;
-   public $serie;
-   public $tipo;
-   public $ncf_tipo;
-   public $ncf_rango;
-   public $ncf_ventas;
-   public $ncf_entidad_tipo;
+class nueva_venta extends fbase_controller
+{
 
-   //Para el plugin distribucion
-   public $distribucion_clientes;
-   public $cliente_rutas;
+    public $agencia;
+    public $agente;
+    public $almacen;
+    public $articulo;
+    public $cliente;
+    public $cliente_s;
+    public $direccion;
+    public $divisa;
+    public $fabricante;
+    public $familia;
+    public $forma_pago;
+    public $grupo;
+    public $impuesto;
+    public $nuevocli_setup;
+    public $pais;
+    public $results;
+    public $serie;
+    public $tipo;
+    public $ncf_tipo;
+    public $ncf_rango;
+    public $ncf_ventas;
+    public $ncf_entidad_tipo;
+    //Para el plugin distribucion
+    public $distribucion_clientes;
+    public $cliente_rutas;
 
-   public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         parent::private_core();
 
         $this->agencia = new agencia_transporte();
@@ -324,7 +327,8 @@ class nueva_venta extends fbase_controller {
      * así para añadir tipos no hay que tocar la vista.
      * @return type
      */
-    public function tipos_a_guardar() {
+    public function tipos_a_guardar()
+    {
         $tipos = array();
 
         if ($this->user->have_access_to('ventas_presupuesto') AND class_exists('presupuesto_cliente')) {
@@ -346,11 +350,13 @@ class nueva_venta extends fbase_controller {
         return $tipos;
     }
 
-    public function url() {
+    public function url()
+    {
         return 'index.php?page=' . __CLASS__ . '&tipo=' . $this->tipo;
     }
 
-    private function datos_cliente() {
+    private function datos_cliente()
+    {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
 
@@ -358,7 +364,8 @@ class nueva_venta extends fbase_controller {
         echo json_encode($this->cliente->get($_REQUEST['datoscliente']));
     }
 
-    private function new_articulo() {
+    private function new_articulo()
+    {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
 
@@ -399,7 +406,8 @@ class nueva_venta extends fbase_controller {
         echo json_encode($this->results);
     }
 
-    private function new_search() {
+    private function new_search()
+    {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
 
@@ -471,7 +479,8 @@ class nueva_venta extends fbase_controller {
         echo json_encode($this->results);
     }
 
-    private function get_precios_articulo() {
+    private function get_precios_articulo()
+    {
         /// cambiamos la plantilla HTML
         $this->template = 'ajax/nueva_venta_precios';
 
@@ -479,7 +488,8 @@ class nueva_venta extends fbase_controller {
         $this->articulo = $articulo->get($_POST['referencia4precios']);
     }
 
-    private function get_combinaciones_articulo() {
+    private function get_combinaciones_articulo()
+    {
         /// cambiamos la plantilla HTML
         $this->template = 'ajax/nueva_venta_combinaciones';
 
@@ -516,7 +526,8 @@ class nueva_venta extends fbase_controller {
         }
     }
 
-    public function get_tarifas_articulo($ref) {
+    public function get_tarifas_articulo($ref)
+    {
         $tarlist = array();
         $articulo = new articulo();
         $tarifa = new tarifa();
@@ -534,7 +545,8 @@ class nueva_venta extends fbase_controller {
         return $tarlist;
     }
 
-    private function nuevo_albaran_cliente() {
+    private function nuevo_albaran_cliente()
+    {
         $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
@@ -767,7 +779,8 @@ class nueva_venta extends fbase_controller {
         }
     }
 
-    private function nueva_factura_cliente() {
+    private function nueva_factura_cliente()
+    {
         $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
@@ -1050,7 +1063,8 @@ class nueva_venta extends fbase_controller {
      * Genera el asiento para la factura, si procede
      * @param factura_cliente $factura
      */
-    private function generar_asiento(&$factura) {
+    private function generar_asiento(&$factura)
+    {
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
             $asiento_factura->generar_asiento_venta($factura);
@@ -1068,7 +1082,8 @@ class nueva_venta extends fbase_controller {
         }
     }
 
-    private function nuevo_presupuesto_cliente() {
+    private function nuevo_presupuesto_cliente()
+    {
         $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
@@ -1254,7 +1269,8 @@ class nueva_venta extends fbase_controller {
         }
     }
 
-    private function nuevo_pedido_cliente() {
+    private function nuevo_pedido_cliente()
+    {
         $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
