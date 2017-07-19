@@ -436,6 +436,7 @@ class ventas_facturas extends fbase_controller {
             $albaranes = new albaran_cliente();
             /// ¿Sumamos stock?
             $art0 = new articulo();
+            $idalbaran = false;
             foreach ($lineas as $linea) {
                 /// si la línea pertenece a un albarán no descontamos stock
                 if (is_null($linea->idalbaran)) {
@@ -485,8 +486,9 @@ class ventas_facturas extends fbase_controller {
                 $fact_rectifica = $fact->idfacturarect;
                 $factrectifica = (!empty($fact->idfacturarect)) ? $fact_rectifica : 'NULL';
                 $fact->idfacturarect = ($ncf0->tipo_comprobante == '04') ? null : $fact->idfactura;
+                $albaran_origen = ($idalbaran)?'Del '.FS_ALBARAN . ": ".$new_albaran->idalbaran:'';
                 if ($asiento_factura->generar_asiento_venta($fact)) {
-                    $this->db->exec("UPDATE facturascli set observaciones = '" . ucfirst(FS_FACTURA) . " eliminada por: " . $motivo_anulacion->descripcion . ", " . FS_ALBARAN . ": $new_albaran->idalbaran', anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
+                    $this->db->exec("UPDATE facturascli set observaciones = '" . ucfirst(FS_FACTURA) . " eliminada por: " . $motivo_anulacion->descripcion . ", " . $albaran_origen . "', anulada = true, pagada = true, neto = 0, total = 0, totalirpf = 0, totaleuros = 0, totaliva = 0, idfacturarect = " . $factrectifica . " where idfactura = " . $fact->idfactura . ";");
                     $this->db->exec("DELETE FROM lineasivafactcli where idfactura = " . $fact->idfactura);
                     $fact_lineas = new linea_factura_cliente();
                     $lineas_fact = $fact_lineas->all_from_factura($fact->idfactura);
@@ -498,10 +500,12 @@ class ventas_facturas extends fbase_controller {
                     $this->clean_last_changes();
                 }
                 $this->new_message("<a href='" . $fact->url() . "'>Factura</a> cambiada a estado anulada por error correctamente.");
-            } else
+            } else {
                 $this->new_error_msg("¡Imposible eliminar la factura!");
-        } else
+            }
+        } else {
             $this->new_error_msg("Factura no encontrada.");
+        }
     }
 
     public function orden() {
