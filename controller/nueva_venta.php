@@ -325,7 +325,7 @@ class nueva_venta extends fbase_controller
     /**
      * Devuelve los tipos de documentos a guardar,
      * así para añadir tipos no hay que tocar la vista.
-     * @return type
+     * @return array
      */
     public function tipos_a_guardar()
     {

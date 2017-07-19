@@ -37,7 +37,7 @@ class buscador_rnc extends fs_controller
     public $viewstate;
     public $eventvalidation;
 
-    public function __construct($name = '', $title = 'home', $folder = '', $admin = FALSE, $shmenu = TRUE, $important = FALSE)
+    public function __construct()
     {
         parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', FALSE, FALSE, TRUE);
     }
@@ -48,17 +48,15 @@ class buscador_rnc extends fs_controller
         $this->total_resultados = 0;
 
         $tipo = filter_input(INPUT_POST, 'tipo');
-        if (!empty($tipo)) {
-            switch ($tipo) {
-                case "buscar":
-                    $this->buscar();
-                    break;
-                case "guardar":
-                    $this->guardar();
-                    break;
-                default:
-                    break;
-            }
+        switch ($tipo) {
+            case "buscar":
+                $this->buscar();
+                break;
+            case "guardar":
+                $this->guardar();
+                break;
+            default:
+                break;
         }
     }
 
@@ -98,8 +96,8 @@ class buscador_rnc extends fs_controller
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
+        $this->viewstate = $html->getElementById('#__VIEWSTATE',0)->value;
+        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION',0)->value;
     }
 
     public function buscar()
@@ -133,41 +131,41 @@ class buscador_rnc extends fs_controller
         curl_setopt($h, CURLOPT_POST, true);
         curl_setopt($h, CURLOPT_POSTFIELDS, $query);
         curl_setopt($h, CURLOPT_HEADER, false);
-        curl_setopt($h, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($h, CURLOPT_RETURNTRANSFER,1);
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $vacio = trim($html->getElementById('#lblMsg', 0)->plaintext);
+        $vacio = trim($html->getElementById('#lblMsg',0)->plaintext);
         if ($vacio) {
-            $this->resultados = $html->getElementById('#lblMsg', 0)->plaintext;
+            $this->resultados = $html->getElementById('#lblMsg',0)->plaintext;
         } else {
             $cabeceras = array();
             $detalles = array();
             foreach ($html->find('.tabla_titulo') as $lista) {
-                foreach ($lista->find('td') as $item) {
-                    $cabeceras[] = $item->plaintext;
-                }
+                $cabeceras = $this->loop_lista($lista);
             }
             $this->cabecera = $cabeceras;
             $lista_interna = 0;
             foreach ($html->find('.GridItemStyle') as $lista) {
-
-                foreach ($lista->find('td') as $item) {
-                    $detalles[$lista_interna][] = $item->plaintext;
-                }
+                $detalles[$lista_interna] = $this->loop_lista($lista);
                 $lista_interna++;
             }
             foreach ($html->find('.bg_celdas_alt') as $lista) {
-
-                foreach ($lista->find('td') as $item) {
-                    $detalles[$lista_interna][] = $item->plaintext;
-                }
+                $detalles[$lista_interna] = $this->loop_lista($lista);
                 $lista_interna++;
             }
             $this->detalle = $detalles;
             $this->total_cabecera = count($cabeceras);
             $this->total_resultados = count($this->detalle);
         }
+    }
+    
+    private function loop_lista($lista){
+        $array = array();
+        foreach ($lista->find('td') as $item) {
+            $array[] = $item->plaintext;
+        }
+        return $array;
     }
 
     public function guardar()

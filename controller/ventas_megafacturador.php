@@ -39,6 +39,7 @@ require_model('ncf_entidad_tipo.php');
 require_model('ncf_rango.php');
 require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
+require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 /**
  * Compatibilidad si existe el plugin distribucion
  * esto es para obtener el listado de rutas del cliente
@@ -51,7 +52,7 @@ require_model('distribucion_clientes.php');
  * no se aplciará a un menu, sino que será un boton dentro de la lista de Albaranes
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class ventas_megafacturador extends fs_controller
+class ventas_megafacturador extends fbase_controller
 {
 
     public $almacenes;
@@ -108,6 +109,8 @@ class ventas_megafacturador extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
+        
         $this->articulos = new articulo();
         $this->almacenes = new almacen();
         $this->asiento_factura = new asiento_factura();
@@ -738,34 +741,22 @@ class ventas_megafacturador extends fs_controller
     private function comprobar_stock($documento)
     {
         $ok = TRUE;
-
         $art0 = new articulo();
         foreach ($documento->get_lineas() as $linea) {
-            if ($linea->referencia) {
+            if ($linea->referencia AND $art0->get($linea->referencia)) {
                 $articulo = $art0->get($linea->referencia);
-                if ($articulo) {
-                    if (!$articulo->controlstock) {
-                        if ($linea->cantidad > $articulo->stockfis) {
-                            /// si se pide más cantidad de la disponible, es que no hay suficiente
-                            $ok = FALSE;
-                        } else {
-                            /// comprobamos el stock en el almacén del pedido
-                            $ok = FALSE;
-                            foreach ($articulo->get_stock() as $stock) {
-                                if ($stock->codalmacen == $documento->codalmacen) {
-                                    if ($stock->cantidad >= $linea->cantidad) {
-                                        $ok = TRUE;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!$ok) {
-                            $this->new_error_msg('No hay suficiente stock del artículo ' . $linea->referencia);
-                            break;
-                        }
-                    }
+                $stockfis = $articulo->stockfis;
+                if ($this->multi_almacen) {
+                    $stockfis = $stock0->total_from_articulo($articulo->referencia, $documento->codalmacen);
+                }
+                
+                if(!$articulo->controlstock AND $linea->cantidad > $stockfis){
+                    $ok = false;
+                }
+                
+                if (!$ok) {
+                    $this->new_error_msg('No hay suficiente stock del artículo ' . $linea->referencia);
+                    break;
                 }
             }
         }
