@@ -469,83 +469,101 @@ function AddFont($family, $style='', $file='')
 	$this->fonts[$fontkey] = $info;
 }
 
-function SetFont($family, $style='', $size=0)
+function SetFont($family, $styleval='', $size=0)
 {
-	// Select a font; size given in points
-	if($family=='')
-		$family = $this->FontFamily;
-	else
-		$family = strtolower($family);
-	$style = strtoupper($style);
-	if(strpos($style,'U')!==false)
-	{
-		$this->underline = true;
-		$style = str_replace('U','',$style);
-	}
-	else
-		$this->underline = false;
-	if($style=='IB')
-		$style = 'BI';
-	if($size==0)
-		$size = $this->FontSizePt;
-	// Test if font is already selected
-	if($this->FontFamily==$family && $this->FontStyle==$style && $this->FontSizePt==$size)
-		return;
-	// Test if font is already loaded
-	$fontkey = $family.$style;
-	if(!isset($this->fonts[$fontkey]))
-	{
-		// Test if one of the core fonts
-		if($family=='arial')
-			$family = 'helvetica';
-		if(in_array($family,$this->CoreFonts))
-		{
-			if($family=='symbol' || $family=='zapfdingbats')
-				$style = '';
-			$fontkey = $family.$style;
-			if(!isset($this->fonts[$fontkey]))
-				$this->AddFont($family,$style);
-		}
-		else
-			$this->Error('Undefined font: '.$family.' '.$style);
-	}
-	// Select it
-	$this->FontFamily = $family;
-	$this->FontStyle = $style;
-	$this->FontSizePt = $size;
-	$this->FontSize = $size/$this->k;
-	$this->CurrentFont = &$this->fonts[$fontkey];
-	if($this->page>0)
-		$this->_out(sprintf('BT /F%d %.2F Tf ET',$this->CurrentFont['i'],$this->FontSizePt));
+    // Select a font; size given in points
+    if($family==''){
+        $family = $this->FontFamily;
+    } else {
+        $family = strtolower($family);
+    }
+    $style = strtoupper($styleval);
+    if(strpos($style,'U')!==false)
+    {
+        $this->underline = true;
+        $style = str_replace('U','',$style);
+    } else {
+        $this->underline = false;
+    }
+
+    if($style=='IB'){
+        $style = 'BI';
+    }
+    if($size==0){
+        $size = $this->FontSizePt;
+    }
+    // Test if font is already selected
+    if($this->FontFamily==$family && $this->FontStyle==$style && $this->FontSizePt==$size){
+        return;
+    }
+    // Test if font is already loaded
+    $fontkey = $family.$style;
+    if(!isset($this->fonts[$fontkey]))
+    {
+        $style = $this->ValidateFont($family, $style);
+    }
+    // Select it
+    $this->FontFamily = $family;
+    $this->FontStyle = $style;
+    $this->FontSizePt = $size;
+    $this->FontSize = $size/$this->k;
+    $this->CurrentFont = &$this->fonts[$fontkey];
+    if($this->page>0) {
+        $this->_out(sprintf('BT /F%d %.2F Tf ET',$this->CurrentFont['i'],$this->FontSizePt));
+    }
+}
+
+public function ValidateFont($family, $style){
+    // Test if one of the core fonts
+    if($family=='arial'){
+            $family = 'helvetica';
+    }
+    if(in_array($family,$this->CoreFonts))
+    {
+        if($family=='symbol' OR $family=='zapfdingbats'){
+            $style = '';
+        }
+        $fontkey = $family.$style;
+        if(!isset($this->fonts[$fontkey])){
+            $this->AddFont($family,$style);
+        }
+        return $style;
+    } else {
+        $this->Error('Undefined font: '.$family.' '.$style);
+    }
 }
 
 function SetFontSize($size)
 {
-	// Set font size in points
-	if($this->FontSizePt==$size)
-		return;
-	$this->FontSizePt = $size;
-	$this->FontSize = $size/$this->k;
-	if($this->page>0)
-		$this->_out(sprintf('BT /F%d %.2F Tf ET',$this->CurrentFont['i'],$this->FontSizePt));
+    // Set font size in points
+    if($this->FontSizePt==$size){
+        return;
+    }
+    $this->FontSizePt = $size;
+    $this->FontSize = $size/$this->k;
+    if($this->page>0){
+        $this->_out(sprintf('BT /F%d %.2F Tf ET',$this->CurrentFont['i'],$this->FontSizePt));
+    }
 }
 
 function AddLink()
 {
-	// Create a new internal link
-	$n = count($this->links)+1;
-	$this->links[$n] = array(0, 0);
-	return $n;
+    // Create a new internal link
+    $n = count($this->links)+1;
+    $this->links[$n] = array(0, 0);
+    return $n;
 }
 
 function SetLink($link, $y=0, $page=-1)
 {
-	// Set destination of internal link
-	if($y==-1)
-		$y = $this->y;
-	if($page==-1)
-		$page = $this->page;
-	$this->links[$link] = array($page, $y);
+    // Set destination of internal link
+    if($y==-1){
+        $y = $this->y;
+    }
+    if($page==-1){
+        $page = $this->page;
+    }
+    $this->links[$link] = array($page, $y);
 }
 
 function Link($x, $y, $w, $h, $link)
