@@ -741,6 +741,7 @@ class ventas_megafacturador extends fbase_controller
     private function comprobar_stock($documento)
     {
         $ok = TRUE;
+        $stock0 = new stock();
         $art0 = new articulo();
         foreach ($documento->get_lineas() as $linea) {
             if ($linea->referencia AND $art0->get($linea->referencia)) {

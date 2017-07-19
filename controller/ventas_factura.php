@@ -518,7 +518,6 @@ class ventas_factura extends fbase_controller
         $serie = $this->serie->get($_POST['codserie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
         }
 
         $motivo = \filter_input(INPUT_POST, 'motivo');
@@ -527,7 +526,7 @@ class ventas_factura extends fbase_controller
         $monto = ($monto0 > 0) ? ($monto0 * -1) : $monto0;
         $impuesto0 = \filter_input(INPUT_POST, 'codimpuesto');
         $impuesto = ($impuesto0 > 0) ? ($impuesto0 * -1) : $impuesto0;
-        $monto_total = \filter_input(INPUT_POST, 'monto_total');
+        //$monto_total = \filter_input(INPUT_POST, 'monto_total');
         $fecha = \filter_input(INPUT_POST, 'fecha');
         $irpf = 0;
         $recargo = 0;
@@ -567,8 +566,8 @@ class ventas_factura extends fbase_controller
                 $factura->get_lineas_iva();
                 /*
                  * Grabación del Número de NCF para República Dominicana
+                 * Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                  */
-                //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                 $ncf = new helper_ncf();
                 $ncf->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
                 $this->generar_asiento($factura);
