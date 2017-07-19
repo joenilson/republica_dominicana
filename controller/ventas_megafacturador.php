@@ -787,69 +787,13 @@ class ventas_megafacturador extends fbase_controller
 
     private function share_extensions()
     {
-        $extensions = array(
-            array(
-                'name' => 'daterangepicker_js',
-                'page_from' => __CLASS__,
-                'page_to' => __CLASS__,
-                'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.js" type="text/javascript"></script>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'moment_js',
-                'page_from' => __CLASS__,
-                'page_to' => __CLASS__,
-                'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/1/moment-with-locales.min.js" type="text/javascript"></script>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'daterangepicker_css',
-                'page_from' => __CLASS__,
-                'page_to' => __CLASS__,
-                'type' => 'head',
-                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.css" rel="stylesheet" type="text/css"/>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'republica_dominicana_css',
-                'page_from' => __CLASS__,
-                'page_to' => __CLASS__,
-                'type' => 'head',
-                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/rd.css?build=' . rand(1, 1000) . '" rel="stylesheet" type="text/css"/>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'republica_dominicana_commons_js',
-                'page_from' => __CLASS__,
-                'page_to' => __CLASS__,
-                'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/rd_common.js" type="text/javascript"></script>',
-                'params' => ''
-            ),
-            array(
-                'name' => 'ventas_megafacturador',
-                'page_from' => __CLASS__,
-                'page_to' => 'ventas_albaranes',
-                'type' => 'button',
-                'text' => '<i class="fa fa-check-square-o" aria-hidden="true"></i><span class="hidden-xs">&nbsp; Facturación masiva</span>',
-                'params' => ''
-            )
-        );
-
-        foreach ($extensions as $ext) {
-            $fsext = new fs_extension($ext);
-            $fsext->delete();
-        }
-
         $extensions2 = array(
             array(
                 'name' => '005_daterangepicker_js',
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -865,7 +809,7 @@ class ventas_megafacturador extends fbase_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.css" rel="stylesheet" type="text/css"/>',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.min.css" rel="stylesheet" type="text/css"/>',
                 'params' => ''
             ),
             array(
