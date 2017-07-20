@@ -57,7 +57,8 @@ class PDF_MC_Table extends FPDF
 
     function SetColors($a)
     {
-        for($i=0;$i<count($a);$i++)
+        $contador = count($a);
+        for($i=0;$i<$contador;$i++)
         {
             $datos = explode('|',$a[$i]);
             $this->colores[$i][0] = $datos[0];
@@ -182,7 +183,8 @@ class PDF_MC_Table extends FPDF
             $rgb = $this->htmlColor2Hex($this->fdf_cabecera_tcolor);
             $this->SetTextColor($rgb[0],$rgb[1],$rgb[2]);
         }
-        for($i=0;$i<count($this->datoscab);$i++)
+        $contador_dc = count($this->datoscab);
+        for($i=0;$i<$contador_dc;$i++)
         {
             $this->Cell($this->widths[$i],5,$this->datoscab[$i],1,0,'C',1);
         }
@@ -197,7 +199,7 @@ class PDF_MC_Table extends FPDF
         $this->SetTextColor(0);
         //El marco que se dibujara de items
         $totalItems = 140;
-        for($i=0;$i<count($this->datoscab);$i++)
+        for($i=0;$i<$contador_dc;$i++)
         {
             if($this->fdf_detalle_box == '1'){
                 $this->Rect($aquiX, ($aquiY), $this->widths[$i], $totalItems, 'D');
@@ -250,7 +252,9 @@ class PDF_MC_Table extends FPDF
         $x=$this->GetX();
         $y=$this->GetY();
         // Imprimimos solo los campos numericos
-        for($i=0;$i<count($data);$i++) {
+        $contador_cb = count($this->datoscab);
+        $contador_data = count($data);
+        for($i=0;$i<$contador_data;$i++) {
             if ($i != $ultimo) // La descripcion del articulo la trataremos la ultima. Aqui no.
             {
                 $w=$this->widths[$i];
@@ -284,7 +288,7 @@ class PDF_MC_Table extends FPDF
         // Calcular la altura MAXIMA de la fila e ir a la siguiente línea
         $nb = 0;
         $totalLineas = 28;
-        for($i=0;$i<count($data);$i++)
+        for($i=0;$i<$contador_data;$i++)
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
         }
@@ -313,7 +317,7 @@ class PDF_MC_Table extends FPDF
         $aquiX=$this->GetX()+0.155;
         $aquiY=$this->GetY();
         $this->SetDrawColor(200,200,200);
-        for($i=0;$i<count($this->datoscab);$i++)
+        for($i=0;$i<$contador_cb;$i++)
         {
             $finX = $this->widths[$i]+$aquiX - 0.316;
             $this->Line($aquiX, $aquiY, $finX, $aquiY);
@@ -465,7 +469,8 @@ class PDF_MC_Table extends FPDF
 
     function _putextgstates()
     {
-        for ($i = 1; $i <= count($this->extgstates); $i++)
+        $counter_extgstates = count($this->extgstates);
+        for ($i = 1; $i <= $counter_extgstates; $i++)
         {
             $this->_newobj();
             $this->extgstates[$i]['n'] = $this->n;
@@ -483,8 +488,9 @@ class PDF_MC_Table extends FPDF
     {
         parent::_putresourcedict();
         $this->_out('/ExtGState <<');
-        foreach($this->extgstates as $k=>$extgstate)
-        $this->_out('/GS'.$k.' '.$extgstate['n'].' 0 R');
+        foreach($this->extgstates as $k=>$extgstate){
+            $this->_out('/GS'.$k.' '.$extgstate['n'].' 0 R');
+        }
         $this->_out('>>');
     }
 
@@ -514,12 +520,15 @@ class PDF_MC_Table extends FPDF
 
     function Rotate($angle,$x=-1,$y=-1)
     {
-        if($x==-1)
+        if($x==-1){
             $x=$this->x;
-        if($y==-1)
+        }
+        if($y==-1){
             $y=$this->y;
-        if($this->angle!=0)
+        }
+        if($this->angle!=0){
             $this->_out('Q');
+        }
         $this->angle=$angle;
         if($angle!=0)
         {
@@ -949,10 +958,10 @@ class PDF_MC_Table extends FPDF
     {
         $r1  = 10;
         $y1  = $this->h - 50;
-
+        $cantidad_datos = count($datos);
         if ($datos)
         {
-            if (count($datos) > 3)
+            if ($cantidad_datos > 3)
             {
                 // Comentar o eliminar las siguientes 5 lineas para NO mostrar el error.
                 $this->SetFont( "Arial", "B", 10);
@@ -961,7 +970,7 @@ class PDF_MC_Table extends FPDF
                 $this->SetXY( $r1, $y1 + 12 );
                 $this->Cell(8,4, chr(161).chr(161).chr(161)." Esta plantilla SOLO puede detallar TRES lineas de ".FS_IVA." !!!", 0, '', "L");
             } else {
-                for ($i=1; $i <= count($datos); $i++)
+                for ($i=1; $i <= $cantidad_datos; $i++)
                 {
                     $datos[$i][1]=($datos[$i][1]>0)?$datos[$i][1]*-1:$datos[$i][1];
                     if ($i == 1) { $y2  = $y1 + 6; }
