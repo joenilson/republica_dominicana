@@ -50,7 +50,6 @@ class ventas_factura_devolucion extends fs_controller
         $this->serie = new serie();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $fact0 = new factura_cliente();
-        $this->factura = FALSE;
         if (isset($_REQUEST['id'])) {
             $this->factura = $fact0->get($_REQUEST['id']);
         }

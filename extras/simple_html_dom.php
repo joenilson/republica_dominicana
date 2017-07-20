@@ -674,8 +674,6 @@ class simple_html_dom_node
                     return preg_match($pattern, $value);
                 }
                 return preg_match("/".$pattern."/i", $value);
-            default:
-                return false;
         }
     }
 
