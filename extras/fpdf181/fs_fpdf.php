@@ -231,7 +231,7 @@ class PDF_MC_Table extends FPDF
         $this->SetLineWidth(0.1);
         $this->SetTextColor(0);
         $this->SetFont('Arial', '', 10);
-        if ($this->piepagina == true) {
+        if ($this->piepagina) {
             // Si existen Incluimos las Observaciones
             if ($this->fdf_observaciones != '') {
                 $this->addObservaciones(substr($this->fdf_observaciones, 0, 116));

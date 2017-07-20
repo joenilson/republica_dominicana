@@ -301,6 +301,7 @@ class admin_rd extends fs_controller
         }
 
         //Corregimos la información de las Cuentas especiales con los nombres correctos
+        $cuentas_especiales_rd = array();
         $cuentas_especiales_rd['IVAACR'] = 'Cuentas acreedoras de ITBIS en la regularización';
         $cuentas_especiales_rd['IVASOP'] = 'Cuentas de ITBIS Compras';
         $cuentas_especiales_rd['IVARXP'] = 'Cuentas de ITBIS exportaciones';
