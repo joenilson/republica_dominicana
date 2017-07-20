@@ -37,25 +37,25 @@ class PDF_MC_Table extends FPDF
     var $PageGroups;     // variable containing the number of pages of the groups
     var $CurrPageGroup;  // variable containing the alias of the current page group
 
-    function Setdatoscab($v)
+    public function Setdatoscab($v)
     {
         //Set the array
         $this->datoscab=$v;
     }
 
-    function SetWidths($w)
+    public function SetWidths($w)
     {
         //Set the array
         $this->widths=$w;
     }
 
-    function SetAligns($a)
+    public function SetAligns($a)
     {
         //Set the array
         $this->aligns=$a;
     }
 
-    function SetColors($a)
+    public function SetColors($a)
     {
         $contador = count($a);
         for($i=0;$i<$contador;$i++)
@@ -67,7 +67,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function SetColorRelleno($a)
+    public function SetColorRelleno($a)
     {
         switch($a){
             case 'rojo':
@@ -94,7 +94,7 @@ class PDF_MC_Table extends FPDF
     }
 
     //Cabecera de pagina
-    function Header()
+    public function Header()
     {
         // Datos de la empresa
         $direccion = $this->fde_FS_CIFNIF . ": " . utf8_decode($this->fde_cifnif) . "\n" . $this->fde_direccion;
@@ -208,7 +208,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function Firmas()
+    public function Firmas()
     {
         //Posicion: a 3 cm del final
         $this->SetY(-40);
@@ -224,7 +224,7 @@ class PDF_MC_Table extends FPDF
         $this->Cell($length,4, str_pad("Firma Emisor",$length, " ",STR_PAD_BOTH));
     }
     //Pie de pagina
-    function Footer() {
+    public function Footer() {
         $this->Firmas();
         //Posicion: a 3 cm del final
         $this->SetY(-30);
@@ -245,7 +245,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function Row($data, $ultimo='1', $cantidad_lineas = 0) {
+    public function Row($data, $ultimo='1', $cantidad_lineas = 0) {
         $this->SetFont('Verdana','',9);
 
         // Guardamos la posicion Actual
@@ -292,12 +292,9 @@ class PDF_MC_Table extends FPDF
         {
             $nb = max($nb,$this->NbLines($this->widths[$i],$data[$i]));
         }
-        //$this->Cell(0,4, utf8_decode($this->lineaactual.' + '.$nb. ' = '.($this->lineaactual+$nb). ' -- '.$cantidad_lineas).' 00 '.intval((($this->lineaactual + $nb)/$totalLineas)), 0, 0, "C");
         if ((($this->lineaactual + $nb) > $totalLineas) AND $cantidad_lineas > 1) // Mas de una Pagina
         {
             $this->AddPage($this->CurOrientation);
-            //$nbp = intval(($this->lineaactual + $nb)/$totalLineas);
-            //$this->lineaactual = ($this->lineaactual + $nb) - ($nbp*$totalLineas);
             $this->lineaactual = 0;
         } else {
             if ((($this->lineaactual + $nb) == $totalLineas) AND $cantidad_lineas > 1) // Pagina completa
@@ -327,7 +324,7 @@ class PDF_MC_Table extends FPDF
         $this->SetTextColor(0);
     }
 
-    function NbLines($w,$txt)
+    public function NbLines($w,$txt)
     {
         //Computes the number of lines a MultiCell of width w will take
         $cw=&$this->CurrentFont['cw'];
@@ -387,7 +384,7 @@ class PDF_MC_Table extends FPDF
      * @param type $r
      * @param type $style
      */
-    function RoundedRect($x, $y, $w, $h,$r, $style = '')
+    public function RoundedRect($x, $y, $w, $h,$r, $style = '')
     {
         $k = $this->k;
         $hp = $this->h;
@@ -420,7 +417,7 @@ class PDF_MC_Table extends FPDF
         $this->_out($op);
     }
 
-    function _Arc($x1, $y1, $x2, $y2, $x3, $y3)
+    public function _Arc($x1, $y1, $x2, $y2, $x3, $y3)
     {
         $h = $this->h;
         $this->_out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c ', $x1*$this->k, ($h-$y1)*$this->k,
@@ -441,33 +438,33 @@ class PDF_MC_Table extends FPDF
     // bm:    blend mode, one of the following:
     //          Normal, Multiply, Screen, Overlay, Darken, Lighten, ColorDodge, ColorBurn,
     //          HardLight, SoftLight, Difference, Exclusion, Hue, Saturation, Color, Luminosity
-    function SetAlpha($alpha, $bm='Normal')
+    public function SetAlpha($alpha, $bm='Normal')
     {
         // set alpha for stroking (CA) and non-stroking (ca) operations
         $gs = $this->AddExtGState(array('ca'=>$alpha, 'CA'=>$alpha, 'BM'=>'/'.$bm));
         $this->SetExtGState($gs);
     }
 
-    function AddExtGState($parms)
+    public function AddExtGState($parms)
     {
         $n = count($this->extgstates)+1;
         $this->extgstates[$n]['parms'] = $parms;
         return $n;
     }
 
-    function SetExtGState($gs)
+    public function SetExtGState($gs)
     {
         $this->_out(sprintf('/GS%d gs', $gs));
     }
 
-    function _enddoc()
+    public function _enddoc()
     {
         if(!empty($this->extgstates) && $this->PDFVersion<'1.4')
         $this->PDFVersion='1.4';
         parent::_enddoc();
     }
 
-    function _putextgstates()
+    public function _putextgstates()
     {
         $counter_extgstates = count($this->extgstates);
         for ($i = 1; $i <= $counter_extgstates; $i++)
@@ -484,7 +481,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function _putresourcedict()
+    public function _putresourcedict()
     {
         parent::_putresourcedict();
         $this->_out('/ExtGState <<');
@@ -494,7 +491,7 @@ class PDF_MC_Table extends FPDF
         $this->_out('>>');
     }
 
-    function _putresources()
+    public function _putresources()
     {
         $this->_putextgstates();
         parent::_putresources();
@@ -502,7 +499,7 @@ class PDF_MC_Table extends FPDF
     // END-class AlphaPDF
 
     // Girar Texto o Imagen
-    function RotatedText($x,$y,$txt,$angle)
+    public function RotatedText($x,$y,$txt,$angle)
     {
         //Text rotated around its origin
         $this->Rotate($angle,$x,$y);
@@ -510,7 +507,7 @@ class PDF_MC_Table extends FPDF
         $this->Rotate(0);
     }
 
-    function RotatedImage($file,$x,$y,$w,$h,$angle)
+    public function RotatedImage($file,$x,$y,$w,$h,$angle)
     {
         //Image rotated around its upper-left corner
         $this->Rotate($angle,$x,$y);
@@ -518,7 +515,7 @@ class PDF_MC_Table extends FPDF
         $this->Rotate(0);
     }
 
-    function Rotate($angle,$x=-1,$y=-1)
+    public function Rotate($angle,$x=-1,$y=-1)
     {
         if($x==-1){
             $x=$this->x;
@@ -541,7 +538,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function _endpage()
+    public function _endpage()
     {
         if($this->angle!=0)
         {
@@ -553,7 +550,7 @@ class PDF_MC_Table extends FPDF
     // END - Girar Texto o Imagen
 
     // Factura
-    function sizeOfText( $texte, $largeur )
+    public function sizeOfText( $texte, $largeur )
     {
         $index    = 0;
         $nb_lines = 0;
@@ -574,13 +571,13 @@ class PDF_MC_Table extends FPDF
         return $nb_lines;
     }
 
-    function htmlColor2Hex($hex){
+    public function htmlColor2Hex($hex){
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return array($r, $g, $b);
     }
 
     // Empresa
-    function addSociete( $nom, $adresse, $email, $web)
+    public function addSociete( $nom, $adresse, $email, $web)
     {
         
         $x1 = ($this->fdf_verlogotipo == '1')?45:10;
@@ -623,7 +620,7 @@ class PDF_MC_Table extends FPDF
 
     }
 
-    function datos_documento($documento, $tipo_documento, $estado){
+    public function datos_documento($documento, $tipo_documento, $estado){
         $r1  = $this->w - 80;
         $r2  = $r1 + 70;
         $y1  = 6;
@@ -676,7 +673,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Nombre, numero y estado de la factura
-    function fact_dev( $libelle, $num, $estado )
+    public function fact_dev( $libelle, $num, $estado )
     {
         $r1  = $this->w - 80;
         $r2  = $r1 + 70;
@@ -711,7 +708,7 @@ class PDF_MC_Table extends FPDF
         $this->MultiCell( $r2-$r1-1,3, $estado, 0, "C");
     }
 
-    function addDate( $date )
+    public function addDate( $date )
     {
         $r1  = $this->w - 80;
         $r2  = $r1 + 70;
@@ -735,7 +732,7 @@ class PDF_MC_Table extends FPDF
     }
 
      //Transporte Asociado
-    function addTransporte($transporte, $codruta)
+    public function addTransporte($transporte, $codruta)
     {
         $r1  = $this->w - 80;
         $r2  = $r1 + 70;
@@ -764,7 +761,7 @@ class PDF_MC_Table extends FPDF
      * @deprecated
      * @param type $ref
      */
-    function addClient( $ref )
+    public function addClient( $ref )
     {
         $r1  = $this->w - 50;
         $r2  = $r1 + 40;
@@ -781,14 +778,14 @@ class PDF_MC_Table extends FPDF
         $this->Cell(10,5,$ref, 0,0, "C");
     }
 
-    function addPageNumber( $page )
+    public function addPageNumber( $page )
     {
         $this->SetXY( ($this->w-20)/2, $this->h - 10 );
         $this->SetFont( "Arial", "", 9);
         $this->Cell(10,5, "Pagina ".$page, 0, 0, "C");
     }
 
-    function addClienteInfo(){
+    public function addClienteInfo(){
         $r1  = $this->w - 205;
         $r2  = $this->w - 10;
         $y1  = 45;
@@ -842,7 +839,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Cliente
-    function addClientAdresse( $adresse )
+    public function addClientAdresse( $adresse )
     {
         $r1     = $this->w - 205;
         $y1     = 40;
@@ -855,7 +852,7 @@ class PDF_MC_Table extends FPDF
 
 
     // Ruta asociada si es que se va utilizar distribucion
-    function addRuta( $ruta )
+    public function addRuta( $ruta )
     {
         $r1  = 120;
         $r2  = $r1 + 30;
@@ -873,7 +870,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Transporte Asociado
-    function addDocumentoRectifica( $mode )
+    public function addDocumentoRectifica( $mode )
     {
         $r1  = 150;
         $r2  = $r1 + 50;
@@ -891,7 +888,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Forma de Pago
-    function addPago( $mode )
+    public function addPago( $mode )
     {
         $r1  = 150;
         $r2  = $r1 + 50;
@@ -909,7 +906,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Divisa
-    function addDivisa( $divisa )
+    public function addDivisa( $divisa )
     {
         $r1  = 140;
         $r2  = $r1 + 30;
@@ -927,7 +924,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Pais
-    function addPais($pais)
+    public function addPais($pais)
     {
         $r1  = 170;
         $r2  = $r1 + 30;
@@ -945,7 +942,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Incluir Observaciones
-    function addObservaciones($observa)
+    public function addObservaciones($observa)
     {
         $this->SetFont( "Arial", "I", 8);
         $length = $this->GetStringWidth( "Observaciones: " . $observa );
@@ -954,7 +951,7 @@ class PDF_MC_Table extends FPDF
     }
 
     // Incluir Lineas de Iva
-    function addLineasIva($datos)
+    public function addLineasIva($datos)
     {
         $r1  = 10;
         $y1  = $this->h - 50;
@@ -993,7 +990,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    function addNeto()
+    public function addNeto()
     {
         $r1  = $this->w - 70;
         $r2  = $r1 + 60;
@@ -1018,7 +1015,7 @@ class PDF_MC_Table extends FPDF
         $this->MultiCell(43,3,'(SUMA y SIGUE)',0,'C');
     }
 
-    function addTotal()
+    public function addTotal()
     {
         $this->SetFont( "Arial", "B", 9);
         $rr1  = 10;
@@ -1067,7 +1064,7 @@ class PDF_MC_Table extends FPDF
     //------    Máxima cifra soportada: 18 dígitos con 2 decimales
     //------    999,999,999,999,999,999.99
     // NOVECIENTOS NOVENTA Y NUEVE MIL NOVECIENTOS NOVENTA Y NUEVE con 99/100
-    function numtoletras($xcifra)
+    public function numtoletras($xcifra1)
     {
         $xarray = array(0 => "Cero",
                 1 => "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE",
@@ -1076,8 +1073,8 @@ class PDF_MC_Table extends FPDF
                 100 => "CIENTO", 200 => "DOSCIENTOS", 300 => "TRESCIENTOS", 400 => "CUATROCIENTOS", 500 => "QUINIENTOS", 600 => "SEISCIENTOS", 700 => "SETECIENTOS", 800 => "OCHOCIENTOS", 900 => "NOVECIENTOS"
         );
     //
-        $xcifra = ($xcifra<0)?($xcifra*-1):$xcifra;
-        $xcifra = trim($xcifra);
+        $xcifra2 = ($xcifra1<0)?($xcifra1*-1):$xcifra1;
+        $xcifra = trim($xcifra2);
         $xlength = strlen($xcifra);
         $xpos_punto = strpos($xcifra, ".");
         $xaux_int = $xcifra;
@@ -1216,7 +1213,7 @@ class PDF_MC_Table extends FPDF
 
     // END FUNCTION
 
-    function subfijo($xx)
+    public function subfijo($xx)
     { // esta función genera un subfijo para la cifra
         $xx = trim($xx);
         $xstrlen = strlen($xx);
@@ -1232,24 +1229,24 @@ class PDF_MC_Table extends FPDF
     // END FUNCTION
 
     // create a new page group; call this before calling AddPage()
-    function StartPageGroup()
+    public function StartPageGroup()
     {
         $this->NewPageGroup=true;
     }
 
     // current page in the group
-    function GroupPageNo()
+    public function GroupPageNo()
     {
         return $this->PageGroups[$this->CurrPageGroup];
     }
 
     // alias of the current page group -- will be replaced by the total number of pages in this group
-    function PageGroupAlias()
+    public function PageGroupAlias()
     {
         return $this->CurrPageGroup;
     }
 
-    function _beginpage($orientation, $size = null, $rotation = 0)
+    public function _beginpage($orientation, $size = null, $rotation = 0)
     {
         parent::_beginpage($orientation, $size, $rotation);
         if($this->NewPageGroup)
@@ -1265,7 +1262,7 @@ class PDF_MC_Table extends FPDF
             $this->PageGroups[$this->CurrPageGroup]++;
     }
 
-    function _putpages()
+    public function _putpages()
     {
         $nb = $this->page;
         if (!empty($this->PageGroups))
@@ -1282,4 +1279,3 @@ class PDF_MC_Table extends FPDF
         parent::_putpages();
     }
 }
-?>
