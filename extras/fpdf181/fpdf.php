@@ -505,7 +505,21 @@ class FPDF
         $fontkey = $family.$style;
         if(!isset($this->fonts[$fontkey]))
         {
-            $style = $this->ValidateFont($family, $style);
+            if($family=='arial'){
+                $family = 'helvetica';
+            }
+            if(in_array($family,$this->CoreFonts))
+            {
+                if($family=='symbol' OR $family=='zapfdingbats'){
+                    $style = '';
+                }
+                $fontkey = $family.$style;
+                if(!isset($this->fonts[$fontkey])){
+                    $this->AddFont($family,$style);
+                }
+            } else {
+                $this->Error('Undefined font: '.$family.' '.$style);
+            }
         }
         // Select it
         $this->FontFamily = $family;

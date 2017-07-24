@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2014-2017  Carlos Garcia Gomez       neorazorx@gmail.com
@@ -1464,5 +1463,4 @@ class nueva_venta extends fbase_controller
                 $this->new_error_msg("¡Imposible guardar el " . FS_PEDIDO . "!");
         }
     }
-
 }

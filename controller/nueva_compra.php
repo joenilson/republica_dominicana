@@ -1027,5 +1027,4 @@ class nueva_compra extends fbase_controller
 
         return $artilist;
     }
-
 }

@@ -413,5 +413,4 @@ class compras_factura extends fbase_controller
 
         return $cuentas;
     }
-
 }
