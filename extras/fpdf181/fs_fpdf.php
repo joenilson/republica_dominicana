@@ -101,7 +101,7 @@ class PDF_MC_Table extends FPDF
 
         if($this->fde_codpostal && $this->fde_ciudad)
         {
-            $direccion .= $this->fde_codpostal . ' - ' . $this->fde_ciudad;
+            $direccion .= ' - ' .$this->fde_codpostal . ' - ' . $this->fde_ciudad;
         } else {
             if($this->fde_codpostal) { $direccion .= "\n" . $this->fde_codpostal; }
             if($this->fde_ciudad) { $direccion .= "\n" . $this->fde_ciudad; }
@@ -337,7 +337,7 @@ class PDF_MC_Table extends FPDF
         if($nb>0 and $s[$nb-1]=="\n"){
             $nb--;
         }
-        $sep=-1;    
+        $sep=-1;
         $i=0;
         $j=0;
         $l=0;
@@ -579,7 +579,7 @@ class PDF_MC_Table extends FPDF
     // Empresa
     public function addSociete( $nom, $adresse, $email, $web)
     {
-        
+
         $x1 = ($this->fdf_verlogotipo == '1')?45:10;
         $r1  = $x1;
         $r2  = $r1 + 90;
@@ -803,7 +803,7 @@ class PDF_MC_Table extends FPDF
         $this->SetFont('Arial','B',8);
         $this->Cell(25,5, utf8_decode('Dirección:'), 0, 0, "R");
         $this->SetFont('Arial','',9);
-        $this->MultiCell(120, 5, utf8_decode($this->fdf_direccion.$this->fdf_codpostal . " - ".$this->fdf_ciudad . " (".$this->fdf_provincia.")\n"));
+        $this->MultiCell(120, 5, utf8_decode($this->fdf_direccion. " - ".$this->fdf_codpostal . " - ".$this->fdf_ciudad . " (".$this->fdf_provincia.")\n"));
         $y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;$y1++;
         $this->SetXY( $r1, $y1+4);
         $this->SetFont('Arial','B',8);
