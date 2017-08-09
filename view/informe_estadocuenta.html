@@ -1,0 +1,357 @@
+{include="header"}
+<!--
+Copyright (C) 2017 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="container-fluid">
+   <form name="listado_general" action="{$fsc->url()}" method="post" class="form">
+      {if="$fsc->cliente"}
+      <input type="hidden" name="codcliente" value="{$fsc->cliente->codcliente}"/>
+      {else}
+      <input type="hidden" name="codcliente"/>
+      {/if}
+      {if="$fsc->proveedor"}
+      <input type="hidden" name="codproveedor" value="{$fsc->proveedor->codproveedor}"/>
+      {else}
+      <input type="hidden" name="codproveedor"/>
+      {/if}
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="page-header">
+               <h1>
+                  <i class="fa fa-area-chart" aria-hidden="true"></i> Informe de Estado de Cuenta
+                  <span class="btn-group">
+                     <a class="btn btn-xs btn-default" href="{$fsc->url()}" title="Recargar la página">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                     </a>
+                  </span>
+                  <span class="btn-group">
+                     {loop="$fsc->extensions"}
+                     {if condition="$value->type=='button'"}
+                     <a href="index.php?page={$value->from}{$value->params}" class="btn btn-xs btn-default">{$value->text}</a>
+                     {elseif="$value->type=='modal'"}
+                     <a href="#" class="btn btn-xs btn-default" onclick="fs_modal('{$txt}', '{$url}')">{$value->text}</a>
+                     {/if}
+                     {/loop}
+                  </span>
+               </h1>
+            </div>
+         </div>
+      </div>
+      <div class="row">
+         <div class="col-sm-2">
+            <div class="form-group">
+               Hasta:
+               <input class="form-control datepicker" type="text" name="hasta" value="{$fsc->hasta}" autocomplete="off" onchange="this.form.submit()"/>
+            </div>
+         </div>
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->agente->url()}">Empleado</a>:
+               <select name="codagente" class="form-control" onchange="this.form.submit()">
+                  <option value="">Todos</option>
+                  <option value="">------</option>
+                  {loop="$fsc->agente->all()"}
+                     {if="$fsc->codagente==$value->codagente"}
+                     <option value="{$value->codagente}" selected="">{$value->get_fullname()}</option>
+                     {else}
+                     <option value="{$value->codagente}">{$value->get_fullname()}</option>
+                     {/if}
+                  {/loop}
+               </select>
+            </div>
+         </div>
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->serie->url()}" class="text-capitalize">{#FS_SERIE#}</a>:
+               <select class="form-control" name="codserie" onchange="this.form.submit()">
+                  <option value="">Todas</option>
+                  <option value="">-----</option>
+                  {loop="$fsc->serie->all()"}
+                     {if="$fsc->codserie==$value->codserie"}
+                     <option value="{$value->codserie}" selected="">{$value->descripcion}</option>
+                     {else}
+                     <option value="{$value->codserie}">{$value->descripcion}</option>
+                     {/if}
+                  {/loop}
+               </select>
+            </div>
+         </div>
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->divisa->url()}">Divisa</a>:
+               <select name="coddivisa" class="form-control" onchange="this.form.submit()">
+                  {loop="$fsc->divisa->all()"}
+                     {if="$fsc->coddivisa==$value->coddivisa"}
+                     <option value="{$value->coddivisa}" selected="">{$value->descripcion}</option>
+                     {else}
+                     <option value="{$value->coddivisa}">{$value->descripcion}</option>
+                     {/if}
+                     {/loop}
+               </select>
+            </div>
+         </div>
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->forma_pago->url()}">Forma de pago</a>:
+               <select name="codpago" class="form-control" onchange="this.form.submit()">
+                  <option value="">Todas</option>
+                  <option value="">------</option>
+                  {loop="$fsc->forma_pago->all()"}
+                     {if="$fsc->codpago==$value->codpago"}
+                     <option value="{$value->codpago}" selected="">{$value->descripcion}</option>
+                     {else}
+                     <option value="{$value->codpago}">{$value->descripcion}</option>
+                     {/if}
+                  {/loop}
+               </select>
+            </div>
+         </div>
+      </div>
+      <div class="row">
+         {if="$fsc->multi_almacen"}
+         <div class="col-sm-2">
+            <div class="form-group">
+               <a href="{$fsc->almacen->url()}">Almacén</a>:
+               <select name="codalmacen" class="form-control" onchange="this.form.submit()">
+                  <option value="">Todos</option>
+                  <option value="">------</option>
+                  {loop="$fsc->almacen->all()"}
+                     {if="$fsc->codalmacen==$value->codalmacen"}
+                     <option value="{$value->codalmacen}" selected="">{$value->nombre}</option>
+                     {else}
+                     <option value="{$value->codalmacen}">{$value->nombre}</option>
+                     {/if}
+                  {/loop}
+               </select>
+            </div>
+         </div>
+         {else}
+         <input type="hidden" name="codalmacen" value=""/>
+         {/if}
+         <div class="col-sm-2">
+            <div class="form-group">
+               Estado:
+               <select class="form-control" name="estado" onchange="this.form.submit()">
+                  <option value="">Todos</option>
+                  <option value="pagada"{if="$fsc->estado=='pagada'"} selected=""{/if}>Pagada</option>
+                  <option value="sinpagar"{if="$fsc->estado=='sinpagar'"} selected=""{/if}>Sin pagar</option>
+               </select>
+            </div>
+         </div>
+         <div class="col-sm-3">
+            Proveedor:
+            <div class="input-group">
+               {if="$fsc->proveedor"}
+               <input class="form-control" type="text" name="ac_proveedor" value="{$fsc->proveedor->nombre}" id="ac_proveedor" placeholder="Cualquier Proveedor" autocomplete="off"/>
+               {else}
+               <input class="form-control" type="text" name="ac_proveedor" id="ac_proveedor" placeholder="Cualquier proveedor" autocomplete="off"/>
+               {/if}
+               <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" onclick="clean_proveedor()">
+                     <span class="glyphicon glyphicon-remove"></span>
+                  </button>
+               </span>
+            </div>
+         </div>
+         <div class="col-sm-3">
+            Cliente:
+            <div class="input-group">
+               {if="$fsc->cliente"}
+               <input class="form-control" type="text" name="ac_cliente" value="{$fsc->cliente->nombre}" id="ac_cliente" placeholder="Cualquier cliente" autocomplete="off"/>
+               {else}
+               <input class="form-control" type="text" name="ac_cliente" id="ac_cliente" placeholder="Cualquier cliente" autocomplete="off"/>
+               {/if}
+               <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" onclick="clean_cliente()">
+                     <span class="glyphicon glyphicon-remove"></span>
+                  </button>
+               </span>
+            </div>
+         </div>
+         {if="!$fsc->multi_almacen"}
+         <div class="col-sm-2"></div>
+         {/if}
+         <div class="col-sm-2">
+             &nbsp;<br/>
+             <button name="generar" value="TRUE" class="btn btn-sm btn-primary">
+                 <span class="fa fa-play"></span>&nbsp;Generar
+             </button>
+             <button class="btn btn-sm btn-success">
+                 <span class="fa fa-file-pdf-o"></span>&nbsp;Descargar
+             </button>
+         </div>
+      </div>
+   </form>
+   <div class="row">
+      <div class="col-sm-12">
+         <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+               <a href="#facturas" aria-controls="facturas" role="tab" data-toggle="tab">Facturas</a>
+            </li>
+            {loop="$fsc->extensions"}
+            {if condition="$value->type=='tab'"}
+            <li role="presentation">
+               <a href="#ext_{$value->name}" aria-controls="ext_{$value->name}" role="tab" data-toggle="tab">{$value->text}</a>
+            </li>
+            {/if}
+            {/loop}
+         </ul>
+         <br/>
+      </div>
+   </div>
+   <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="facturas">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Facturas</h3>
+                  </div>
+                   <div class="panel-body">
+                        <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Almacén</th>
+                                    <th class="text-center">0 - 30 días</th>
+                                    <th class="text-center">31 - 60 días</th>
+                                    <th class="text-center">61 - 90 días</th>
+                                    <th class="text-center">91 - 120 días</th>
+                                    <th class="text-center">más de 120 días</th>
+                                    <th class="text-center">Total Deuda</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loop="$fsc->resultados"}
+                                <tr>
+                                    <td>{$value->nombre_almacen}</td>
+                                    <td class="text-right">{$fsc->show_numero($value->d30)} <span class="badge">{$value->d30_pcj}%</span></td>
+                                    <td class="text-right">{$fsc->show_numero($value->d60)} <span class="badge">{$value->d60_pcj}%</span></td>
+                                    <td class="text-right">{$fsc->show_numero($value->d90)} <span class="badge">{$value->d90_pcj}%</span></td>
+                                    <td class="text-right">{$fsc->show_numero($value->d120)} <span class="badge">{$value->d120_pcj}%</span></td>
+                                    <td class="text-right">{$fsc->show_numero($value->mas120)} <span class="badge">{$value->mas120_pcj}%</span></td>
+                                    <th class="text-right">{$fsc->show_numero($value->totaldeuda)}</th>
+                                </tr>
+                                {else}
+                                <tr>
+                                    <td colspan="7" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
+                                </tr>
+                                {/loop}
+                            </tbody>
+                        </table>
+                        </div>
+                   </div>
+               </div>               
+            </div>
+         </div>
+      </div>
+      {loop="$fsc->extensions"}
+      {if condition="$value->type=='tab'"}
+      <div role="tabpanel" class="tab-pane" id="ext_{$value->name}">
+         <iframe src="index.php?page={$value->from}{$value->params}" width="100%" scrolling="no" frameborder="0" onload="resizeIframe(this);" allowfullscreen ></iframe>
+      </div>
+      {/if}
+      {/loop}
+   </div>
+</div>
+
+<script src="{#FS_PATH#}view/js/chart.bundle.min.js"></script>
+<script type="text/javascript">
+    function clean_cliente()
+    {
+       document.listado_general.codcliente.value = '';
+       document.listado_general.submit();
+    }
+    function clean_proveedor()
+    {
+       document.listado_general.codproveedor.value = '';
+       document.listado_general.submit();
+    }
+    /**
+     * Redimensiona un iframe
+     */
+    function resizeIframe(obj) {
+       obj.style.height = (obj.contentWindow.document.body.scrollHeight + 100) + 'px';
+    }
+    /**
+     *  Workarround para Firefox (siempre dice que el height es 0)
+     */
+    function resize(frame) {
+       var b = frame.contentWindow.document.body || frame.contentDocument.body,
+               cHeight = $(b).height();
+
+       if (frame.oHeight !== cHeight) {
+          $(frame).height(0);
+          frame.style.height = 0;
+
+          $(frame).height(cHeight + 100);
+          frame.style.height = (cHeight + 100) + "px";
+
+          frame.oHeight = cHeight;
+       }
+
+       // Call again to check whether the content height has changed.
+       setTimeout(function () {
+          resize(frame);
+       }, 250);
+    }
+    $(document).ready(function () {
+        /**
+        * El resize para Firefox lo llamamos cuando se ha cargado la página completamente
+        */
+        window.onload = function () {
+            var frame,
+                frames = document.getElementsByTagName('iframe'),
+                i = frames.length - 1;
+
+             while (i >= 0) {
+                frame = frames[i];
+                frame.onload = resize(frame);
+                i -= 1;
+             }
+          };
+
+          $("#ac_cliente").autocomplete({
+             serviceUrl: '{$fsc->url()}',
+             paramName: 'buscar_cliente',
+             onSelect: function (suggestion) {
+                if(suggestion)
+                {
+                   if(document.listado_general.codcliente.value != suggestion.data && suggestion.data != '')
+                   {
+                      document.listado_general.codcliente.value = suggestion.data;
+                      document.listado_general.submit();
+                   }
+                }
+             }
+          });
+          $("#ac_proveedor").autocomplete({
+             serviceUrl: '{$fsc->url()}',
+             paramName: 'buscar_proveedor',
+             onSelect: function (suggestion) {
+                if(suggestion)
+                {
+                   if(document.listado_general.codproveedor.value != suggestion.data && suggestion.data != '')
+                   {
+                      document.listado_general.codproveedor.value = suggestion.data;
+                      document.listado_general.submit();
+                   }
+                }
+            }
+        });
+    });
+</script>
+{include="footer"}
