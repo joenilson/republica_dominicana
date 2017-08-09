@@ -39,10 +39,10 @@ if(!function_exists('fs_tipos_id_fiscal'))
  * el campo numero2
  * @return string
  */
+
 function generar_numero2(){
     return '';
 }
-
 /**
  * 
  * @param type $cliente
