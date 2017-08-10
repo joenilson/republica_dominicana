@@ -152,21 +152,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </div>
          </div>
          <div class="col-sm-3">
-            Proveedor:
-            <div class="input-group">
-               {if="$fsc->proveedor"}
-               <input class="form-control" type="text" name="ac_proveedor" value="{$fsc->proveedor->nombre}" id="ac_proveedor" placeholder="Cualquier Proveedor" autocomplete="off"/>
-               {else}
-               <input class="form-control" type="text" name="ac_proveedor" id="ac_proveedor" placeholder="Cualquier proveedor" autocomplete="off"/>
-               {/if}
-               <span class="input-group-btn">
-                  <button class="btn btn-default" type="button" onclick="clean_proveedor()">
-                     <span class="glyphicon glyphicon-remove"></span>
-                  </button>
-               </span>
-            </div>
-         </div>
-         <div class="col-sm-3">
             Cliente:
             <div class="input-group">
                {if="$fsc->cliente"}
@@ -317,38 +302,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 frames = document.getElementsByTagName('iframe'),
                 i = frames.length - 1;
 
-             while (i >= 0) {
+            while (i >= 0) {
                 frame = frames[i];
                 frame.onload = resize(frame);
                 i -= 1;
-             }
-          };
+            }
+        };
 
-          $("#ac_cliente").autocomplete({
-             serviceUrl: '{$fsc->url()}',
-             paramName: 'buscar_cliente',
-             onSelect: function (suggestion) {
+        $("#ac_cliente").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_cliente',
+            onSelect: function (suggestion) {
                 if(suggestion)
                 {
-                   if(document.listado_general.codcliente.value != suggestion.data && suggestion.data != '')
-                   {
-                      document.listado_general.codcliente.value = suggestion.data;
-                      document.listado_general.submit();
-                   }
-                }
-             }
-          });
-          $("#ac_proveedor").autocomplete({
-             serviceUrl: '{$fsc->url()}',
-             paramName: 'buscar_proveedor',
-             onSelect: function (suggestion) {
-                if(suggestion)
-                {
-                   if(document.listado_general.codproveedor.value != suggestion.data && suggestion.data != '')
-                   {
-                      document.listado_general.codproveedor.value = suggestion.data;
-                      document.listado_general.submit();
-                   }
+                    if(document.listado_general.codcliente.value !== suggestion.data && suggestion.data !== '')
+                    {
+                       document.listado_general.codcliente.value = suggestion.data;
+                       document.listado_general.submit();
+                    }
                 }
             }
         });

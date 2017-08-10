@@ -143,43 +143,17 @@ class informe_estadocuenta extends rd_controller
     
     public function sql_aux()
     {
+        $estado = ($this->estado == 'pagada')?TRUE:FALSE;
         $sql = '';
-        if ($this->hasta) {
-            $sql .= ' AND fecha <= '.$this->empresa->var2str(\date('Y-m-d',strtotime($this->hasta)));
-        }
-
-        if ($this->codserie) {
-            $sql .= ' AND codserie = '.$this->empresa->var2str($this->codserie);
-        }
-
-        if ($this->codpago) {
-            $sql .= ' AND codpago = '.$this->empresa->var2str($this->codpago);
-        }
-
-        if ($this->codagente) {
-            $sql .= ' AND codagente = '.$this->empresa->var2str($this->codagente);
-        }
-
-        if ($this->codalmacen) {
-            $sql .= ' AND codalmacen = '.$this->empresa->var2str($this->codalmacen);
-        }
-
-        if ($this->coddivisa) {
-            $sql .= ' AND coddivisa = '.$this->empresa->var2str($this->coddivisa);
-        }
-        
-        if ($this->cliente) {
-            $sql .= ' AND codcliente = '.$this->empresa->var2str($this->cliente->codcliente);
-        }
-
-        if ($this->proveedor) {
-            $sql .= ' AND codproveedor = '.$this->empresa->var2str($this->proveedor->codproveedor);
-        }
-        
-        if ($this->estado) {
-            $estado = ($this->estado == 'pagada')?TRUE:FALSE;
-            $sql .= ' AND pagada = '.$this->empresa->var2str($estado);
-        }        
+        $sql .= ($this->hasta)?' AND fecha <= '.$this->empresa->var2str(\date('Y-m-d',strtotime($this->hasta))):'';
+        $sql .= ($this->codserie)?' AND codserie = '.$this->empresa->var2str($this->codserie):'';
+        $sql .= ($this->codpago)?' AND codpago = '.$this->empresa->var2str($this->codpago):'';
+        $sql .= ($this->codagente)?' AND codagente = '.$this->empresa->var2str($this->codagente):'';
+        $sql .= ($this->codalmacen)?' AND codalmacen = '.$this->empresa->var2str($this->codalmacen):'';
+        $sql .= ($this->coddivisa)?' AND coddivisa = '.$this->empresa->var2str($this->coddivisa):'';
+        $sql .= ($this->cliente)?' AND codcliente = '.$this->empresa->var2str($this->cliente->codcliente):'';
+        $sql .= ($this->proveedor)?' AND codproveedor = '.$this->empresa->var2str($this->proveedor->codproveedor):'';
+        $sql .= ($this->estado)?' AND pagada = '.$this->empresa->var2str($estado):'';
         return $sql;
     }
 }
