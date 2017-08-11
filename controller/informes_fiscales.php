@@ -103,17 +103,13 @@ class informes_fiscales extends rd_controller {
     public function verificar_tipo_reporte()
     {
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
-        $iniciop = \filter_input(INPUT_POST, 'inicio');
-        $finp = \filter_input(INPUT_POST, 'fin');
-        $iniciog = \filter_input(INPUT_GET, 'inicio');
-        $fing = \filter_input(INPUT_GET, 'fin');
         $offset = \filter_input(INPUT_GET, 'offset');
         $limit = \filter_input(INPUT_GET, 'limit');
         $search = \filter_input(INPUT_GET, 'search');
         $sort = \filter_input(INPUT_GET, 'sort');
         $order = \filter_input(INPUT_GET, 'order');
-        $this->fecha_inicio = ($iniciop)?$iniciop:$iniciog;
-        $this->fecha_fin = ($finp)?$finp:$fing;
+        $this->fecha_inicio = $this->filter_request('inicio');
+        $this->fecha_fin = $this->filter_request('fin');
         $this->offset = ($offset)?$offset:0;
         $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
         $this->search = ($search)?$search:false;
@@ -123,9 +119,8 @@ class informes_fiscales extends rd_controller {
             $this->reporte = $tiporeporte;
             $this->mostrar_reporte();
         }
-        $tablareporte = \filter_input(INPUT_GET, 'tabla_reporte');
-        if($tablareporte){
-            $this->datos_reporte($tablareporte,TRUE);
+        if(\filter_input(INPUT_GET, 'tabla_reporte')){
+            $this->datos_reporte(\filter_input(INPUT_GET, 'tabla_reporte'),TRUE);
         }
     }
     
