@@ -17,16 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_model('divisa.php');
-require_model('pais.php');
-require_model('impuesto.php');
-require_model('cuenta_especial.php');
-require_model('ncf_tipo.php');
-require_model('ncf_entidad_tipo.php');
-require_model('ncf_rango.php');
-require_model('ncf_tipo_anulacion.php');
-require_model('ncf_ventas.php');
-
 /**
  * Description of admin_rd
  *
@@ -59,31 +49,7 @@ class admin_rd extends fs_controller
 
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
-        $this->variables = array();
-        $this->variables['zona_horaria'] = "America/Santo_Domingo";
-        $this->variables['nf0'] = "2";
-        $this->variables['nf0_art'] = "4";
-        $this->variables['nf1'] = ".";
-        $this->variables['nf2'] = ",";
-        $this->variables['pos_divisa'] = "left";
-        $this->variables['factura'] = "factura";
-        $this->variables['facturas'] = "facturas";
-        $this->variables['factura_simplificada'] = "factura simplificada";
-        $this->variables['factura_rectificativa'] = "nota de credito";
-        $this->variables['albaran'] = "conduce";
-        $this->variables['albaranes'] = "conduces";
-        $this->variables['pedido'] = "pedido";
-        $this->variables['pedidos'] = "pedidos";
-        $this->variables['presupuesto'] = "presupuesto";
-        $this->variables['presupuestos'] = "presupuestos";
-        $this->variables['provincia'] = "provincia";
-        $this->variables['apartado'] = "apartado";
-        $this->variables['cifnif'] = "Cedula/RNC";
-        $this->variables['iva'] = "ITBIS";
-        $this->variables['numero2'] = "NCF";
-        $this->variables['serie'] = "serie";
-        $this->variables['series'] = "series";
-
+        $this->init_variables();
         $this->get_config();
 
         $this->impuestos_rd = array(
@@ -122,6 +88,34 @@ class admin_rd extends fs_controller
         $this->conf_impuestos = ($impuesto_empresa->get_by_iva(18)) ? TRUE : FALSE;
         //Cargamos el menu
         $this->check_menu();
+    }
+    
+    public function init_variables()
+    {
+        $this->variables = array();
+        $this->variables['zona_horaria'] = "America/Santo_Domingo";
+        $this->variables['nf0'] = "2";
+        $this->variables['nf0_art'] = "4";
+        $this->variables['nf1'] = ".";
+        $this->variables['nf2'] = ",";
+        $this->variables['pos_divisa'] = "left";
+        $this->variables['factura'] = "factura";
+        $this->variables['facturas'] = "facturas";
+        $this->variables['factura_simplificada'] = "factura simplificada";
+        $this->variables['factura_rectificativa'] = "nota de credito";
+        $this->variables['albaran'] = "conduce";
+        $this->variables['albaranes'] = "conduces";
+        $this->variables['pedido'] = "pedido";
+        $this->variables['pedidos'] = "pedidos";
+        $this->variables['presupuesto'] = "presupuesto";
+        $this->variables['presupuestos'] = "presupuestos";
+        $this->variables['provincia'] = "provincia";
+        $this->variables['apartado'] = "apartado";
+        $this->variables['cifnif'] = "Cedula/RNC";
+        $this->variables['iva'] = "ITBIS";
+        $this->variables['numero2'] = "NCF";
+        $this->variables['serie'] = "serie";
+        $this->variables['series'] = "series";
     }
 
     /**

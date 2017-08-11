@@ -16,35 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('articulo.php');
-require_model('almacen.php');
-require_model('albaran_cliente.php');
-require_model('pedido_cliente.php');
-require_model('albaran_proveedor.php');
-require_model('asiento.php');
-require_model('asiento_factura.php');
-require_model('cliente.php');
-require_model('ejercicio.php');
-require_model('factura_cliente.php');
-require_model('factura_proveedor.php');
-require_model('forma_pago.php');
-require_model('partida.php');
-require_model('proveedor.php');
-require_model('regularizacion_iva.php');
-require_model('serie.php');
-require_model('subcuenta.php');
-require_model('stock.php');
-require_model('ncf_tipo.php');
-require_model('ncf_entidad_tipo.php');
-require_model('ncf_rango.php');
-require_model('ncf_ventas.php');
 require_once 'helper_ncf.php';
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-/**
- * Compatibilidad si existe el plugin distribucion
- * esto es para obtener el listado de rutas del cliente
- */
-require_model('distribucion_clientes.php');
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 /**
  * Esta es una copia de funcionalidades minimas del plugin MegaFacturador
@@ -52,7 +25,7 @@ require_model('distribucion_clientes.php');
  * no se aplciará a un menu, sino que será un boton dentro de la lista de Albaranes
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class ventas_megafacturador extends fbase_controller
+class ventas_megafacturador extends rd_controller
 {
 
     public $almacenes;
@@ -82,17 +55,17 @@ class ventas_megafacturador extends fbase_controller
     public $lista_pedidos_pendientes_total;
     public $lista_albaranes_pendientes;
     public $lista_albaranes_pendientes_total;
-    private $asiento_factura;
-    private $articulos;
-    private $cliente;
-    private $ejercicio;
-    private $ejercicios;
-    private $forma_pago;
-    private $formas_pago;
-    private $proveedor;
-    private $regularizacion;
-    private $total;
-    private $stock;
+    public $asiento_factura;
+    public $articulos;
+    public $cliente;
+    public $ejercicio;
+    public $ejercicios;
+    public $forma_pago;
+    public $formas_pago;
+    public $proveedor;
+    public $regularizacion;
+    public $total;
+    public $stock;
     public $ncf_tipo;
     public $ncf_rango;
     public $ncf_ventas;
@@ -111,6 +84,56 @@ class ventas_megafacturador extends fbase_controller
     {
         parent::private_core();
         
+        $this->init_variables();
+
+        $documento = filter_input(INPUT_GET, 'documento');
+        $this->codalmacen = filter_input(INPUT_POST, 'codalmacen');
+
+        $fecha_pedido_desde = \filter_input(INPUT_POST, 'fecha_pedido_desde');
+        $fecha_pedido_hasta = \filter_input(INPUT_POST, 'fecha_pedido_hasta');
+        $fecha_albaran_desde = \filter_input(INPUT_POST, 'fecha_albaran_desde');
+        $fecha_albaran_hasta = \filter_input(INPUT_POST, 'fecha_albaran_hasta');
+        $fecha_albaranes_gen = \filter_input(INPUT_POST, 'fecha_albaranes_gen');
+        $fecha_facturas_gen = \filter_input(INPUT_POST, 'fecha_facturas_gen');
+
+        $this->fecha_pedido_desde = ($fecha_pedido_desde) ? $fecha_pedido_desde : \date('Y-m-01');
+        $this->fecha_pedido_hasta = ($fecha_pedido_hasta) ? $fecha_pedido_hasta : \date('Y-m-d');
+        $this->fecha_albaran_desde = ($fecha_albaran_desde) ? $fecha_albaran_desde : \date('Y-m-01');
+        $this->fecha_albaran_hasta = ($fecha_albaran_hasta) ? $fecha_albaran_hasta : \date('Y-m-d');
+        $this->fecha_albaranes_gen = ($fecha_albaranes_gen) ? $fecha_albaranes_gen : $this->fecha_albaranes_gen;
+        $this->fecha_facturas_gen = ($fecha_facturas_gen) ? $fecha_facturas_gen : $this->fecha_facturas_gen;
+
+        $procesar = $this->filter_request('procesar');
+
+        if ($documento == 'pedidos') {
+            $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->fechas_elegidas_pedidos = filter_input(INPUT_POST, 'fecha_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->codalmacen_ped = filter_input(INPUT_POST, 'codalmacen');
+            $accion = filter_input(INPUT_POST, 'accion');
+            if ($accion == 'buscar_pedidos') {
+                $buscar = $this->total_pedidos_pendientes();
+                $this->lista_pedidos_pendientes = $buscar['lista'];
+                $this->lista_pedidos_pendientes_total = $buscar['total'];
+            } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
+                $this->generar_albaranes();
+            }
+        } elseif ($documento == 'albaranes') {
+            $this->series_elegidas_albaranes = (array) filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->fechas_elegidas_albaranes = (array) filter_input(INPUT_POST, 'fecha_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            $this->codalmacen_alb = filter_input(INPUT_POST, 'codalmacen');
+            $accion = filter_input(INPUT_POST, 'accion');
+            if ($accion == 'buscar_albaranes') {
+                $buscar = $this->total_pendientes_venta();
+                $this->lista_albaranes_pendientes = $buscar['lista'];
+                $this->lista_albaranes_pendientes_total = $buscar['total'];
+            } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
+                $this->generar_facturas();
+            }
+        }
+    }
+    
+    public function init_variables()
+    {
         $this->articulos = new articulo();
         $this->almacenes = new almacen();
         $this->asiento_factura = new asiento_factura();
@@ -123,7 +146,6 @@ class ventas_megafacturador extends fbase_controller
         $this->numasientos = 0;
         $this->proveedor = new proveedor();
         $this->regularizacion = new regularizacion_iva();
-        $this->serie = new serie();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_rango = new ncf_rango();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
@@ -152,53 +174,6 @@ class ventas_megafacturador extends fbase_controller
         }
         if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
             $this->tesoreria = TRUE;
-        }
-
-        $documento = filter_input(INPUT_GET, 'documento');
-        $procesar_g = filter_input(INPUT_GET, 'procesar');
-        $procesar_p = filter_input(INPUT_POST, 'procesar');
-        $this->codalmacen = filter_input(INPUT_POST, 'codalmacen');
-
-        $fecha_pedido_desde = filter_input(INPUT_POST, 'fecha_pedido_desde');
-        $fecha_pedido_hasta = filter_input(INPUT_POST, 'fecha_pedido_hasta');
-        $fecha_albaran_desde = filter_input(INPUT_POST, 'fecha_albaran_desde');
-        $fecha_albaran_hasta = filter_input(INPUT_POST, 'fecha_albaran_hasta');
-        $fecha_albaranes_gen = filter_input(INPUT_POST, 'fecha_albaranes_gen');
-        $fecha_facturas_gen = filter_input(INPUT_POST, 'fecha_facturas_gen');
-
-        $this->fecha_pedido_desde = ($fecha_pedido_desde) ? $fecha_pedido_desde : \date('Y-m-01');
-        $this->fecha_pedido_hasta = ($fecha_pedido_hasta) ? $fecha_pedido_hasta : \date('Y-m-d');
-        $this->fecha_albaran_desde = ($fecha_albaran_desde) ? $fecha_albaran_desde : \date('Y-m-01');
-        $this->fecha_albaran_hasta = ($fecha_albaran_hasta) ? $fecha_albaran_hasta : \date('Y-m-d');
-        $this->fecha_albaranes_gen = ($fecha_albaranes_gen) ? $fecha_albaranes_gen : $this->fecha_albaranes_gen;
-        $this->fecha_facturas_gen = ($fecha_facturas_gen) ? $fecha_facturas_gen : $this->fecha_facturas_gen;
-
-        $procesar = ($procesar_g) ? $procesar_g : $procesar_p;
-
-        if ($documento == 'pedidos') {
-            $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->fechas_elegidas_pedidos = filter_input(INPUT_POST, 'fecha_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->codalmacen_ped = filter_input(INPUT_POST, 'codalmacen');
-            $accion = filter_input(INPUT_POST, 'accion');
-            if ($accion == 'buscar_pedidos') {
-                $buscar = $this->total_pedidos_pendientes();
-                $this->lista_pedidos_pendientes = $buscar['lista'];
-                $this->lista_pedidos_pendientes_total = $buscar['total'];
-            } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
-                $this->generar_albaranes();
-            }
-        } elseif ($documento == 'albaranes') {
-            $this->series_elegidas_albaranes = (array) filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->fechas_elegidas_albaranes = (array) filter_input(INPUT_POST, 'fecha_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->codalmacen_alb = filter_input(INPUT_POST, 'codalmacen');
-            $accion = filter_input(INPUT_POST, 'accion');
-            if ($accion == 'buscar_albaranes') {
-                $buscar = $this->total_pendientes_venta();
-                $this->lista_albaranes_pendientes = $buscar['lista'];
-                $this->lista_albaranes_pendientes_total = $buscar['total'];
-            } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
-                $this->generar_facturas();
-            }
         }
     }
 
@@ -362,7 +337,7 @@ class ventas_megafacturador extends fbase_controller
                         foreach ($albaran->get_lineas() as $linea) {
                             if ($linea->referencia) {
                                 $art1 = $this->articulos->get($linea->referencia);
-                                $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $albaran->codalmacen);
+                                $articulo_stock = $this->stock->total_from_articulo($linea->referencia, $albaran->codalmacen);
                                 if (!isset($lista_errores[$linea->referencia])) {
                                     $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                                 }

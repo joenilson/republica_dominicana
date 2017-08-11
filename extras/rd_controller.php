@@ -58,7 +58,7 @@ class rd_controller extends fbase_controller
     public $pais;
     public $serie;
     public $array_series;
-    
+    public $tesoreria;
     protected function private_core() 
     {
         /// ¿El usuario tiene permiso para eliminar en esta página?
@@ -79,6 +79,7 @@ class rd_controller extends fbase_controller
         $fsvar = new fs_var();
         $this->multi_almacen = $fsvar->simple_get('multi_almacen');
         $this->periodos = range(2016,\date('Y'));
+        $this->existe_tesoreria();
         
     }
     
@@ -113,6 +114,32 @@ class rd_controller extends fbase_controller
             } else {
                 $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
             }
+        }
+    }
+    
+    /**
+     * Función para devolver el valor de una variable pasada ya sea por POST o GET
+     * @param type string
+     * @return type string
+     */
+    public function filter_request($nombre) {
+        $nombre_post = \filter_input(INPUT_POST, $nombre);
+        $nombre_get = \filter_input(INPUT_GET, $nombre);
+        return ($nombre_post) ? $nombre_post : $nombre_get;
+    }
+    
+    public function existe_tesoreria()
+    {
+        $this->tesoreria = FALSE;
+        //revisamos si esta el plugin de tesoreria
+        $disabled = array();
+        if (defined('FS_DISABLED_PLUGINS')) {
+            foreach (explode(',', FS_DISABLED_PLUGINS) as $aux) {
+                $disabled[] = $aux;
+            }
+        }
+        if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
+            $this->tesoreria = TRUE;
         }
     }
 }
