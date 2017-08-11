@@ -16,16 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-require_model('articulo.php');
-require_model('asiento_factura.php');
-require_model('factura_cliente.php');
-require_model('serie.php');
-require_model('ncf_rango.php');
-require_model('ncf_tipo_anulacion.php');
-
 require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
-
 /**
  * Description of ventas_factura_devolucion
  *
@@ -46,10 +37,12 @@ class ventas_factura_devolucion extends fs_controller
     protected function private_core()
     {
         $this->share_extension();
+        $this->template = 'tab/' . __CLASS__;
 
         $this->serie = new serie();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $fact0 = new factura_cliente();
+        $this->factura = FALSE;
         if (isset($_REQUEST['id'])) {
             $this->factura = $fact0->get($_REQUEST['id']);
         }

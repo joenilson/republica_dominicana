@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of facturacion_base
  * Copyright (C) 2014-2017  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -19,18 +18,6 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('almacen.php');
-require_model('articulo_combinacion.php');
-require_model('articulo_proveedor.php');
-require_model('asiento_factura.php');
-require_model('fabricante.php');
-require_model('familia.php');
-require_model('forma_pago.php');
-require_model('pedido_proveedor.php');
-require_model('proveedor.php');
-require_model('regularizacion_iva.php');
-require_model('ncf_tipo.php');
-require_model('ncf_rango.php');
 
 class nueva_compra extends fbase_controller
 {
@@ -127,8 +114,9 @@ class nueva_compra extends fbase_controller
             if (isset($_POST['codagente'])) {
                 $agente = new agente();
                 $this->agente = $agente->get($_POST['codagente']);
-            } else
+            } else {
                 $this->agente = $this->user->get_agente();
+            }
 
             $this->almacen = new almacen();
             $this->serie = new serie();
@@ -136,16 +124,12 @@ class nueva_compra extends fbase_controller
             $this->divisa = new divisa();
 
             if (isset($_POST['tipo'])) {
-                if ($_POST['tipo'] == 'pedido') {
-                    if (class_exists('pedido_proveedor')) {
-                        $this->nuevo_pedido_proveedor();
-                    } else
-                        $this->new_error_msg('Clase pedido_proveedor no encontrada.');
-                }
-                else if ($_POST['tipo'] == 'albaran') {
-                    $this->nuevo_albaran_proveedor();
-                } else if ($_POST['tipo'] == 'factura') {
+                if ($_POST['tipo'] == 'factura') {
                     $this->nueva_factura_proveedor();
+                } else if ($_POST['tipo'] == 'albaran') {
+                    $this->nuevo_albaran_proveedor();
+                } else if ($_POST['tipo'] == 'pedido' && class_exists('pedido_proveedor')) {
+                    $this->nuevo_pedido_proveedor();
                 }
             }
         }
@@ -292,12 +276,10 @@ class nueva_compra extends fbase_controller
             }
 
             /// convertimos la divisa
-            if (isset($_REQUEST['coddivisa'])) {
-                if ($_REQUEST['coddivisa'] != $this->empresa->coddivisa) {
-                    $this->results[$i]->coddivisa = $_REQUEST['coddivisa'];
-                    $this->results[$i]->coste = $this->divisa_convert($value->coste, $this->empresa->coddivisa, $_REQUEST['coddivisa']);
-                    $this->results[$i]->pvp = $this->divisa_convert($value->pvp, $this->empresa->coddivisa, $_REQUEST['coddivisa']);
-                }
+            if (isset($_REQUEST['coddivisa']) && $_REQUEST['coddivisa'] != $this->empresa->coddivisa) {
+                $this->results[$i]->coddivisa = $_REQUEST['coddivisa'];
+                $this->results[$i]->coste = $this->divisa_convert($value->coste, $this->empresa->coddivisa, $_REQUEST['coddivisa']);
+                $this->results[$i]->pvp = $this->divisa_convert($value->pvp, $this->empresa->coddivisa, $_REQUEST['coddivisa']);
             }
         }
 
@@ -337,7 +319,7 @@ class nueva_compra extends fbase_controller
                 $this->results[$com->codigo] = array(
                     'ref' => $_POST['referencia4combi'],
                     'desc' => base64_decode($_POST['desc']) . "\n" . $com->nombreatributo . ' - ' . $com->valor,
-                    'pvp' => floatval($_POST['pvp']),
+                    'pvp' => floatval($_POST['pvp']) + $com->impactoprecio,
                     'dto' => floatval($_POST['dto']),
                     'codimpuesto' => $_POST['codimpuesto'],
                     'txt' => $com->nombreatributo . ' - ' . $com->valor,
@@ -460,15 +442,13 @@ class nueva_compra extends fbase_controller
                         }
 
                         if ($linea->save()) {
-                            if ($articulo) {
-                                if (isset($_POST['costemedio'])) {
-                                    if ($articulo->costemedio == 0 AND $linea->cantidad > 0) {
-                                        $articulo->costemedio = $linea->pvptotal / $linea->cantidad;
-                                        $articulo->save();
-                                    }
-
-                                    $this->actualizar_precio_proveedor($pedido->codproveedor, $linea);
+                            if ($articulo && isset($_POST['costemedio'])) {
+                                if ($articulo->costemedio == 0 AND $linea->cantidad > 0) {
+                                    $articulo->costemedio = $linea->pvptotal / $linea->cantidad;
+                                    $articulo->save();
                                 }
+
+                                $this->actualizar_precio_proveedor($pedido->codproveedor, $linea);
                             }
 
                             $pedido->neto += $linea->pvptotal;
@@ -505,15 +485,17 @@ class nueva_compra extends fbase_controller
                         if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $pedido->url());
                         }
-                    } else
+                    } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");
-                }
-                else if ($pedido->delete()) {
+                    }
+                } else if ($pedido->delete()) {
                     $this->new_message(ucfirst(FS_PEDIDO) . " eliminado correctamente.");
-                } else
+                } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");
-            } else
+                }
+            } else {
                 $this->new_error_msg("¡Imposible guardar el " . FS_PEDIDO . "!");
+            }
         }
     }
 
@@ -687,15 +669,17 @@ class nueva_compra extends fbase_controller
                         } else if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $albaran->url());
                         }
-                    } else
+                    } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $albaran->url() . "'>" . FS_ALBARAN . "</a>!");
-                }
-                else if ($albaran->delete()) {
+                    }
+                } else if ($albaran->delete()) {
                     $this->new_message(FS_ALBARAN . " eliminado correctamente.");
-                } else
+                } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $albaran->url() . "'>" . FS_ALBARAN . "</a>!");
-            } else
+                }
+            } else {
                 $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
+            }
         }
     }
 
@@ -891,15 +875,17 @@ class nueva_compra extends fbase_controller
                         } else if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $factura->url());
                         }
-                    } else
+                    } else {
                         $this->new_error_msg("¡Imposible actualizar la <a href='" . $factura->url() . "'>factura</a>!");
-                }
-                else if ($factura->delete()) {
+                    }
+                } else if ($factura->delete()) {
                     $this->new_message("Factura eliminada correctamente.");
-                } else
+                } else {
                     $this->new_error_msg("¡Imposible eliminar la <a href='" . $factura->url() . "'>factura</a>!");
-            } else
+                }
+            } else {
                 $this->new_error_msg("¡Imposible guardar la factura!");
+            }
         }
     }
 

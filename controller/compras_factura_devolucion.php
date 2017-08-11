@@ -17,14 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_model('articulo.php');
-require_model('asiento_factura.php');
-require_model('factura_proveedor.php');
-require_model('serie.php');
-require_model('ncf_rango.php');
-require_model('ncf_tipo_anulacion.php');
 require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
-
 /**
  * Description of compras_factura_devolucion
  *
@@ -45,6 +38,7 @@ class compras_factura_devolucion extends fs_controller
     protected function private_core()
     {
         $this->share_extension();
+        $this->template = 'tab/' . __CLASS__;
 
         $this->serie = new serie();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();

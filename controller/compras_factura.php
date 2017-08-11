@@ -18,21 +18,6 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('almacen.php');
-require_model('articulo.php');
-require_model('asiento.php');
-require_model('asiento_factura.php');
-require_model('cuenta_banco_proveedor.php');
-require_model('divisa.php');
-require_model('ejercicio.php');
-require_model('factura_proveedor.php');
-require_model('forma_pago.php');
-require_model('partida.php');
-require_model('proveedor.php');
-require_model('serie.php');
-require_model('subcuenta.php');
-require_model('ncf_tipo_anulacion.php');
-require_model('impuesto.php');
 
 class compras_factura extends fbase_controller
 {
@@ -106,24 +91,17 @@ class compras_factura extends fbase_controller
             /// cargamos el proveedor
             $proveedor = new proveedor();
             $this->proveedor = $proveedor->get($this->factura->codproveedor);
-            $gen_asiento = \filter_input(INPUT_GET, 'gen_asiento');
-            $petid = \filter_input(INPUT_GET, 'petid');
-            $pagada_p = \filter_input(INPUT_POST, 'pagada');
-            $pagada_g = \filter_input(INPUT_GET, 'pagada');
-            $pagada = ($pagada_p)?$pagada_p:$pagada_g;
-            $anular = \filter_input(INPUT_POST, 'anular');
-            $rectificativa = \filter_input(INPUT_POST, 'rectificativa');
-            $rectificar = \filter_input(INPUT_POST, 'rectificar');
-            if ($gen_asiento AND $petid) {
-                if ($this->duplicated_petition($petid)) {
+
+            if (isset($_GET['gen_asiento']) AND isset($_GET['petid'])) {
+                if ($this->duplicated_petition($_GET['petid'])) {
                     $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
                 } else {
                     $this->generar_asiento($this->factura);
                 }
-            } else if ($pagada) {
-                $this->pagar(($pagada == 'TRUE'));
-            } else if ($anular) {
-                if ($rectificativa == 'TRUE') {
+            } else if (isset($_REQUEST['pagada'])) {
+                $this->pagar(($_REQUEST['pagada'] == 'TRUE'));
+            } else if (isset($_POST['anular'])) {
+                if ($_POST['rectificativa'] == 'TRUE') {
                     $this->generar_rectificativa();
                 } else {
                     $this->anular_factura();
@@ -151,9 +129,8 @@ class compras_factura extends fbase_controller
             return parent::url();
         } else if ($this->factura) {
             return $this->factura->url();
-        } else {
+        } else
             return $this->page->url();
-        }
     }
 
     private function modificar()

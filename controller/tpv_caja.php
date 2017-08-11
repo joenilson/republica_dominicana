@@ -18,11 +18,6 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('almacen.php');
-require_model('caja.php');
-require_model('serie.php');
-require_model('terminal_caja.php');
-require_model('ncf_rango.php');
 
 class tpv_caja extends fbase_controller
 {

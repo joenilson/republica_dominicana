@@ -18,35 +18,7 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('agencia_transporte.php');
-require_model('albaran_cliente.php');
-require_model('almacen.php');
-require_model('articulo.php');
-require_model('asiento.php');
-require_model('asiento_factura.php');
-require_model('cliente.php');
-require_model('divisa.php');
-require_model('ejercicio.php');
-require_model('fabricante.php');
-require_model('factura_cliente.php');
-require_model('familia.php');
-require_model('forma_pago.php');
-require_model('impuesto.php');
-require_model('pais.php');
-require_model('partida.php');
-require_model('regularizacion_iva.php');
-require_model('serie.php');
-require_model('subcuenta.php');
-require_model('ncf_entidad_tipo.php');
-require_model('ncf_tipo.php');
-require_model('ncf_ventas.php');
-require_model('ncf_rango.php');
 require_once 'helper_ncf.php';
-/**
- * Compatibilidad si existe el plugin distribucion
- * esto es para obtener el listado de rutas del cliente
- */
-require_model('distribucion_clientes.php');
 
 class ventas_albaran extends fbase_controller
 {

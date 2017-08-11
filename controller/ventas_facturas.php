@@ -18,20 +18,6 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('agente.php');
-require_model('almacen.php');
-require_model('articulo.php');
-require_model('cliente.php');
-require_model('factura_cliente.php');
-require_model('forma_pago.php');
-require_model('grupo_clientes.php');
-require_model('linea_factura_cliente.php');
-require_model('asiento_factura.php');
-require_model('ncf_ventas.php');
-require_model('ncf_rango.php');
-require_model('ncf_tipo_anulacion.php');
-require_model('albaran_cliente.php');
-require_model('linea_albaran_cliente.php');
 
 class ventas_facturas extends fbase_controller
 {

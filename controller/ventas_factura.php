@@ -18,32 +18,7 @@
  */
 
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_model('agencia_transporte.php');
-require_model('almacen.php');
-require_model('articulo.php');
-require_model('asiento.php');
-require_model('asiento_factura.php');
-require_model('cliente.php');
-require_model('cuenta_banco_cliente.php');
-require_model('divisa.php');
-require_model('ejercicio.php');
-require_model('factura_cliente.php');
-require_model('forma_pago.php');
-require_model('pais.php');
-require_model('partida.php');
-require_model('serie.php');
-require_model('subcuenta.php');
-
-require_model('ncf_tipo.php');
-require_model('ncf_entidad_tipo.php');
-require_model('ncf_rango.php');
-require_model('ncf_ventas.php');
-require_model('ncf_tipo_anulacion.php');
-require_model('impuesto.php');
 require_once 'helper_ncf.php';
-//Para compatibilidad con distribucion
-require_model('distribucion_clientes.php');
-
 class ventas_factura extends fbase_controller 
 {
 

@@ -146,11 +146,6 @@ class terminal_caja extends \fs_model
         }
     }
 
-    protected function install() 
-    {
-        return '';
-    }
-
     public function disponible() 
     {
         if ($this->db->select("SELECT * FROM cajas WHERE f_fin IS NULL AND fs_id = " . $this->var2str($this->id) . ";")) {
