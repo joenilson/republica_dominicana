@@ -55,6 +55,7 @@ class rd_controller extends fbase_controller
     public $ncf_ventas;
     public $agente;
     public $almacen;
+    public $almacenes;
     public $pais;
     public $serie;
     public $array_series;
@@ -67,6 +68,7 @@ class rd_controller extends fbase_controller
         //Datos de NCF
         $this->agente = new agente();
         $this->almacen = new almacen();
+        $this->almacenes = new almacen();
         $this->divisa = new divisa();
         $this->forma_pago = new forma_pago();
         $this->pais = new pais();
@@ -80,7 +82,20 @@ class rd_controller extends fbase_controller
         $this->multi_almacen = $fsvar->simple_get('multi_almacen');
         $this->periodos = range(2016,\date('Y'));
         $this->existe_tesoreria();
+        $this->control_usuarios();
         
+    }
+    
+    public function control_usuarios()
+    {
+        //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
+        if(!$this->user->admin){
+            $this->agente = new agente();
+            $cod = $this->agente->get($this->user->codagente);
+            $user_almacen = ($cod)?$this->almacenes->get($cod->codalmacen):false;
+            $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
+            $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
+        }
     }
     
     public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false) {
@@ -122,9 +137,17 @@ class rd_controller extends fbase_controller
      * @param type string
      * @return type string
      */
-    public function filter_request($nombre) {
+    public function filter_request($nombre) 
+    {
         $nombre_post = \filter_input(INPUT_POST, $nombre);
         $nombre_get = \filter_input(INPUT_GET, $nombre);
+        return ($nombre_post) ? $nombre_post : $nombre_get;
+    }
+    
+    public function filter_request_array($nombre)
+    {
+        $nombre_post = \filter_input(INPUT_POST, $nombre, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $nombre_get = \filter_input(INPUT_GET, $nombre, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
         return ($nombre_post) ? $nombre_post : $nombre_get;
     }
     

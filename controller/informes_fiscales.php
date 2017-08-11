@@ -16,19 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('almacen.php');
-require_model('proveedor.php');
-require_model('factura_cliente.php');
-require_model('factura_proveedor.php');
-require_model('ncf_ventas.php');
-require_model('ncf_tipo.php');
 require_once 'plugins/facturacion_base/extras/xlsxwriter.class.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 /**
  * Description of reportes_fiscales
  *
  * @author joenilson
  */
-class informes_fiscales extends fs_controller {
+class informes_fiscales extends rd_controller {
     public $almacen;
     public $almacenes;
     public $almacenes_seleccionados;
@@ -87,8 +82,93 @@ class informes_fiscales extends fs_controller {
     }
 
     protected function private_core() {
+        parent::private_core();
         $this->share_extensions();
         $this->almacenes = new almacen();
+        $this->init_variables();
+        $this->crear_carpetas_reportes();
+        $codalmacen = $this->filter_request_array('codalmacen');
+        $almacen_defecto = false;
+        if(count($this->almacenes->all())===1)
+        {
+            $almacen_defecto = $this->empresa->codalmacen;
+        }
+
+        $this->codalmacen = ($codalmacen)?$codalmacen:$almacen_defecto;
+        $this->almacenes_seleccionados = (is_array($this->codalmacen))?$this->codalmacen:array($this->codalmacen);
+        
+        $this->verificar_tipo_reporte();
+    }
+    
+    public function verificar_tipo_reporte()
+    {
+        $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
+        $iniciop = \filter_input(INPUT_POST, 'inicio');
+        $finp = \filter_input(INPUT_POST, 'fin');
+        $iniciog = \filter_input(INPUT_GET, 'inicio');
+        $fing = \filter_input(INPUT_GET, 'fin');
+        $offset = \filter_input(INPUT_GET, 'offset');
+        $limit = \filter_input(INPUT_GET, 'limit');
+        $search = \filter_input(INPUT_GET, 'search');
+        $sort = \filter_input(INPUT_GET, 'sort');
+        $order = \filter_input(INPUT_GET, 'order');
+        $this->fecha_inicio = ($iniciop)?$iniciop:$iniciog;
+        $this->fecha_fin = ($finp)?$finp:$fing;
+        $this->offset = ($offset)?$offset:0;
+        $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
+        $this->search = ($search)?$search:false;
+        $this->sort = ($sort AND $sort!='undefined')?$sort:'fecha, ncf';
+        $this->order = ($order AND $order!='undefined')?$order:'ASC';
+        if(!empty($tiporeporte)){
+            $this->reporte = $tiporeporte;
+            $this->mostrar_reporte();
+        }
+        $tablareporte = \filter_input(INPUT_GET, 'tabla_reporte');
+        if($tablareporte){
+            $this->datos_reporte($tablareporte,TRUE);
+        }
+    }
+    
+    private function mostrar_reporte()
+    {
+        switch ($this->reporte){
+            case 'reporte-consolidado':
+                $this->consolidado();
+                break;
+            case 'reporte-ventas':
+                $this->ventas();
+                break;
+            case 'detalle-ventas-agente':
+                $this->ventas_agente();
+                break;
+            case 'reporte-compras':
+                $this->compras();
+                break;
+            case 'detalle-compras':
+                $this->detalle_compras();
+                break;
+            case 'reporte-606':
+                $this->dgii606();
+                break;
+            case 'reporte-607':
+                $this->dgii607();
+                break;
+            case 'reporte-608':
+                $this->dgii608();
+                break;
+            case 'detalle-ventas':
+                $this->detalle_ventas();
+                break;
+            case 'resumen-ventas':
+                $this->resumen_ventas();
+                break;
+            default :
+                break;
+        }
+    }
+    
+    private function init_variables()
+    {
         $this->fecha_inicio = \date('01-m-Y');
         $this->fecha_fin = \date('d-m-Y');
         $this->reporte = '';
@@ -111,7 +191,10 @@ class informes_fiscales extends fs_controller {
         $this->total_resultados_detalle_ventas = 0;
         $this->total_resultados_resumen_ventas = 0;
         $this->total_resultados_ventas_agente = 0;
-
+    }
+    
+    private function crear_carpetas_reportes()
+    {
         //Verificamos que exista la carpeta de documentos
         $basepath = dirname(dirname(dirname(__DIR__)));
         $this->documentosDir = $basepath . DIRECTORY_SEPARATOR . FS_MYDOCS . 'documentos';
@@ -125,87 +208,6 @@ class informes_fiscales extends fs_controller {
         if (!is_dir($this->exportDir)) {
             mkdir($this->exportDir);
         }
-
-
-        //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
-        if(!$this->user->admin){
-            $this->agente = new agente();
-            $cod = $this->agente->get($this->user->codagente);
-            $user_almacen = ($cod)?$this->almacenes->get($cod->codalmacen):false;
-            $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
-            $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
-        }
-
-        $codalmacenp = \filter_input(INPUT_POST, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-        $codalmaceng = \filter_input(INPUT_GET, 'codalmacen', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-        $codalmacen = ($codalmacenp)?$codalmacenp:$codalmaceng;
-        $almacen_defecto = false;
-        if(count($this->almacenes->all())===1)
-        {
-            $almacen_defecto = $this->empresa->codalmacen;
-        }
-
-        $this->codalmacen = ($codalmacen)?$codalmacen:$almacen_defecto;
-        $this->almacenes_seleccionados = (is_array($this->codalmacen))?$this->codalmacen:array($this->codalmacen);
-        $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
-        $iniciop = \filter_input(INPUT_POST, 'inicio');
-        $finp = \filter_input(INPUT_POST, 'fin');
-        $iniciog = \filter_input(INPUT_GET, 'inicio');
-        $fing = \filter_input(INPUT_GET, 'fin');
-        $offset = \filter_input(INPUT_GET, 'offset');
-        $limit = \filter_input(INPUT_GET, 'limit');
-        $search = \filter_input(INPUT_GET, 'search');
-        $sort = \filter_input(INPUT_GET, 'sort');
-        $order = \filter_input(INPUT_GET, 'order');
-        $this->fecha_inicio = ($iniciop)?$iniciop:$iniciog;
-        $this->fecha_fin = ($finp)?$finp:$fing;
-        $this->offset = ($offset)?$offset:0;
-        $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
-        $this->search = ($search)?$search:false;
-        $this->sort = ($sort AND $sort!='undefined')?$sort:'fecha, ncf';
-        $this->order = ($order AND $order!='undefined')?$order:'ASC';
-        if(!empty($tiporeporte)){
-            $this->reporte = $tiporeporte;
-            switch ($tiporeporte){
-                case 'reporte-consolidado':
-                    $this->consolidado();
-                    break;
-                case 'reporte-ventas':
-                    $this->ventas();
-                    break;
-                case 'detalle-ventas-agente':
-                    $this->ventas_agente();
-                    break;
-                case 'reporte-compras':
-                    $this->compras();
-                    break;
-                case 'detalle-compras':
-                    $this->detalle_compras();
-                    break;
-                case 'reporte-606':
-                    $this->dgii606();
-                    break;
-                case 'reporte-607':
-                    $this->dgii607();
-                    break;
-                case 'reporte-608':
-                    $this->dgii608();
-                    break;
-                case 'detalle-ventas':
-                    $this->detalle_ventas();
-                    break;
-                case 'resumen-ventas':
-                    $this->resumen_ventas();
-                    break;
-                default :
-                    break;
-            }
-        }
-        $tablareporte = \filter_input(INPUT_GET, 'tabla_reporte');
-        if($tablareporte){
-            $this->datos_reporte($tablareporte,TRUE);
-        }
-
     }
 
     public function datos_reporte($reporte, $json = false){
