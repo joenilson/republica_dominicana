@@ -25,11 +25,15 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 class informe_estadocuenta extends rd_controller
 {
     public $cliente;
-    public $proveedor;
     public $desde;
     public $hasta;
     public $estado;
     public $resultados;
+    public $resultados_d30;
+    public $resultados_d60;
+    public $resultados_d90;
+    public $resultados_d120;
+    public $resultados_md120;
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Estado de Cuenta Clientes', 'informes', FALSE, TRUE, FALSE);
@@ -41,8 +45,6 @@ class informe_estadocuenta extends rd_controller
         $this->init_filters();
         if (isset($_REQUEST['buscar_cliente'])) {
             $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
-        } else if (isset($_REQUEST['buscar_proveedor'])) {
-            $this->fbase_buscar_proveedor($_REQUEST['buscar_proveedor']);
         } else {
             $this->vencimiento_facturas();
         }
@@ -50,70 +52,28 @@ class informe_estadocuenta extends rd_controller
     
     protected function init_filters()
     {
-        $this->hasta = Date('d-m-Y');
-        if (isset($_REQUEST['hasta'])) {
-            $this->hasta = $_REQUEST['hasta'];
-        }
-
-        $this->codserie = FALSE;
-        if (isset($_REQUEST['codserie'])) {
-            $this->codserie = $_REQUEST['codserie'];
-        }
-
-        $this->codpago = FALSE;
-        if (isset($_REQUEST['codpago'])) {
-            $this->codpago = $_REQUEST['codpago'];
-        }
-
-        $this->codagente = FALSE;
-        if (isset($_REQUEST['codagente'])) {
-            $this->codagente = $_REQUEST['codagente'];
-        }
-
-        $this->codalmacen = FALSE;
-        if (isset($_REQUEST['codalmacen'])) {
-            $this->codalmacen = $_REQUEST['codalmacen'];
-        }
-
-        $this->coddivisa = $this->empresa->coddivisa;
-        if (isset($_REQUEST['coddivisa'])) {
-            $this->coddivisa = $_REQUEST['coddivisa'];
-        }
-
-        $this->cliente = FALSE;
-        if (isset($_REQUEST['codcliente'])) {
-            if ($_REQUEST['codcliente'] != '') {
-                $cli0 = new cliente();
-                $this->cliente = $cli0->get($_REQUEST['codcliente']);
-            }
-        }
-
-        $this->proveedor = FALSE;
-        if (isset($_REQUEST['codproveedor'])) {
-            if ($_REQUEST['codproveedor'] != '') {
-                $prov0 = new proveedor();
-                $this->proveedor = $prov0->get($_REQUEST['codproveedor']);
-            }
-        }
-        
-        $this->estado = FALSE;
-        if (isset($_REQUEST['estado'])) {
-            $this->estado = $_REQUEST['estado'];
-        }
+        $cli0 = new cliente();
+        $this->hasta = (isset($_REQUEST['hasta']))?$_REQUEST['hasta']:Date('d-m-Y');
+        $this->codserie = (isset($_REQUEST['codserie']))?$_REQUEST['codserie']:FALSE;
+        $this->codpago = (isset($_REQUEST['codpago']))?$_REQUEST['codpago']:FALSE;
+        $this->codagente = (isset($_REQUEST['codagente']))?$_REQUEST['codagente']:FALSE;
+        $this->codalmacen = (isset($_REQUEST['codalmacen']))?$_REQUEST['codalmacen']:FALSE;
+        $this->coddivisa = (isset($_REQUEST['coddivisa']))?$_REQUEST['coddivisa']:$this->empresa->coddivisa;
+        $this->estado = (isset($_REQUEST['estado']))?$_REQUEST['estado']:FALSE;
+        $this->cliente = (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '')?$cli0->get($_REQUEST['codcliente']):FALSE;
     }
     
     public function vencimiento_facturas()
     {
         $sql_aux = $this->sql_aux();
         $current_date = $this->empresa->var2str(\date('Y-m-d',strtotime($this->hasta)));
-        $tabla = ($this->proveedor)?"facturasprov":"facturascli";
         $sql = "select codalmacen, ".
         " sum(case when (".$current_date." - vencimiento) < 30 then totaleuros else 0 end) as d30, ".
         " sum(case when (".$current_date." - vencimiento) > 30 and (".$current_date." - vencimiento) < 60 then totaleuros else 0 end) as d60, ".
         " sum(case when (".$current_date." - vencimiento) > 60 and (".$current_date." - vencimiento) < 90 then totaleuros else 0 end) as d90, ". 
         " sum(case when (".$current_date." - vencimiento) > 90 and (".$current_date." - vencimiento) < 120 then totaleuros else 0 end) as d120, ".
         " sum(case when (".$current_date." - vencimiento) > 120 then totaleuros else 0 end) as mas120 ".
-        " from ".$tabla.
+        " from facturascli".
         " where anulada = false and idfacturarect IS NULL ".$sql_aux.
         " group by codalmacen;";
         $data = $this->db->select($sql);
@@ -152,7 +112,6 @@ class informe_estadocuenta extends rd_controller
         $sql .= ($this->codalmacen)?' AND codalmacen = '.$this->empresa->var2str($this->codalmacen):'';
         $sql .= ($this->coddivisa)?' AND coddivisa = '.$this->empresa->var2str($this->coddivisa):'';
         $sql .= ($this->cliente)?' AND codcliente = '.$this->empresa->var2str($this->cliente->codcliente):'';
-        $sql .= ($this->proveedor)?' AND codproveedor = '.$this->empresa->var2str($this->proveedor->codproveedor):'';
         $sql .= ($this->estado)?' AND pagada = '.$this->empresa->var2str($estado):'';
         return $sql;
     }
