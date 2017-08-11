@@ -114,7 +114,7 @@ class imprimir_facturas extends rd_controller
         }
     }
     
-    private function init_Variables()
+    private function init_variables()
     {
         $this->agente = new agente();
         $this->almacenes = new almacen();
@@ -132,15 +132,9 @@ class imprimir_facturas extends rd_controller
             $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
         }
 
-        if (\filter_input(INPUT_POST, 'listar')) {
-            $listar = \filter_input(INPUT_POST, 'listar');
-            $this->listar = ($listar) ? $listar : $this->listar;
-        }
-
-        $this->offset = 0;
-        if (isset($_REQUEST['offset'])) {
-            $this->offset = intval($_REQUEST['offset']);
-        }
+        $listar = \filter_input(INPUT_POST, 'listar');
+        $this->listar = ($listar) ? $listar : $this->listar;
+        $this->offset = (isset($_REQUEST['offset']))?intval($_REQUEST['offset']):0;
 
         $this->order = 'facturascli.fecha DESC';
         $order = \filter_input(INPUT_GET, 'order');

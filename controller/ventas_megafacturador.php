@@ -70,7 +70,6 @@ class ventas_megafacturador extends rd_controller
     public $ncf_rango;
     public $ncf_ventas;
     public $ncf_entidad_tipo;
-    public $tesoreria;
     //Para el plugin distribucion
     public $distribucion_clientes;
     public $cliente_rutas;
@@ -104,31 +103,40 @@ class ventas_megafacturador extends rd_controller
         $this->fecha_facturas_gen = ($fecha_facturas_gen) ? $fecha_facturas_gen : $this->fecha_facturas_gen;
 
         $procesar = $this->filter_request('procesar');
-
         if ($documento == 'pedidos') {
-            $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->fechas_elegidas_pedidos = filter_input(INPUT_POST, 'fecha_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->codalmacen_ped = filter_input(INPUT_POST, 'codalmacen');
-            $accion = filter_input(INPUT_POST, 'accion');
-            if ($accion == 'buscar_pedidos') {
-                $buscar = $this->total_pedidos_pendientes();
-                $this->lista_pedidos_pendientes = $buscar['lista'];
-                $this->lista_pedidos_pendientes_total = $buscar['total'];
-            } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
-                $this->generar_albaranes();
-            }
+            $this->procesar_pedidos($procesar);
         } elseif ($documento == 'albaranes') {
-            $this->series_elegidas_albaranes = (array) filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->fechas_elegidas_albaranes = (array) filter_input(INPUT_POST, 'fecha_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-            $this->codalmacen_alb = filter_input(INPUT_POST, 'codalmacen');
-            $accion = filter_input(INPUT_POST, 'accion');
-            if ($accion == 'buscar_albaranes') {
-                $buscar = $this->total_pendientes_venta();
-                $this->lista_albaranes_pendientes = $buscar['lista'];
-                $this->lista_albaranes_pendientes_total = $buscar['total'];
-            } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
-                $this->generar_facturas();
-            }
+            $this->procesar_albaranes($procesar);
+        }
+    }
+    
+    public function procesar_pedidos($procesar)
+    {
+        $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $this->fechas_elegidas_pedidos = filter_input(INPUT_POST, 'fecha_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $this->codalmacen_ped = filter_input(INPUT_POST, 'codalmacen');
+        $accion = filter_input(INPUT_POST, 'accion');
+        if ($accion == 'buscar_pedidos') {
+            $buscar = $this->total_pedidos_pendientes();
+            $this->lista_pedidos_pendientes = $buscar['lista'];
+            $this->lista_pedidos_pendientes_total = $buscar['total'];
+        } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
+            $this->generar_albaranes();
+        }
+    }
+    
+    public function procesar_albaranes($procesar)
+    {
+        $this->series_elegidas_albaranes = (array) filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $this->fechas_elegidas_albaranes = (array) filter_input(INPUT_POST, 'fecha_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $this->codalmacen_alb = filter_input(INPUT_POST, 'codalmacen');
+        $accion = filter_input(INPUT_POST, 'accion');
+        if ($accion == 'buscar_albaranes') {
+            $buscar = $this->total_pendientes_venta();
+            $this->lista_albaranes_pendientes = $buscar['lista'];
+            $this->lista_albaranes_pendientes_total = $buscar['total'];
+        } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
+            $this->generar_facturas();
         }
     }
     
@@ -163,17 +171,6 @@ class ventas_megafacturador extends rd_controller
         //Para el plugin distribucion
         if (class_exists('distribucion_clientes')) {
             $this->distribucion_clientes = new distribucion_clientes();
-        }
-
-        //revisamos si esta el plugin de tesoreria
-        $disabled = array();
-        if (defined('FS_DISABLED_PLUGINS')) {
-            foreach (explode(',', FS_DISABLED_PLUGINS) as $aux) {
-                $disabled[] = $aux;
-            }
-        }
-        if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
-            $this->tesoreria = TRUE;
         }
     }
 
