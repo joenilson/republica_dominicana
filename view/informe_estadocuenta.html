@@ -16,7 +16,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <div class="container-fluid">
-    <form name="listado_general" action="{$fsc->url()}" method="post" class="form">
+    <form name="listado_general" id="listado_general" action="{$fsc->url()}" method="post" class="form">
         {if="$fsc->cliente"}
         <input type="hidden" name="codcliente" value="{$fsc->cliente->codcliente}"/>
         {else}
@@ -231,7 +231,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <a href="#facturas90" aria-controls="facturas90" role="tab" data-toggle="tab">Facturas de 61 a 90 días</a>
                 </li>
                 <li role="presentation">
-                    <a href="#facturas1200" aria-controls="facturas120" role="tab" data-toggle="tab">Facturas de 91 a 120 días</a>
+                    <a href="#facturas120" aria-controls="facturas120" role="tab" data-toggle="tab">Facturas de 91 a 120 días</a>
                 </li>
                 <li role="presentation">
                     <a href="#facturasm120" aria-controls="facturasm120" role="tab" data-toggle="tab">Más de 120 días</a>
@@ -249,203 +249,153 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="facturas30">
-            <div class="row">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Almacén</th>
-                                <th class="text-center">Cliente</th>
-                                <th class="text-center">Factura</th>
-                                <th class="text-center">{#FS_NUMERO2#}</th>
-                                <th class="text-center">Importe</th>
-                                <th class="text-center">Fecha Emisión</th>
-                                <th class="text-center">Vencimiento</th>
-                                <th class="text-center">Atraso</th>
-                                <th class="text-center">Pagada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loop="$fsc->resultados_d30"}
-                            <tr>
-                                <td>{$value->nombre_almacen}</td>
-                                <td>{$value->nombre_cliente}</td>
-                                <td>{$value->codigo}</td>
-                                <td>{$value->numero2}</td>
-                                <td class="text-right">{$value->totaleuros}</td>
-                                <td class="text-center">{$value->fecha}</td>
-                                <td class="text-center">{$value->vencimiento}</td>
-                                <td class="text-center">{$value->atraso}</td>
-                                <td class="text-center">{$value->esta_pagada}</td>
-                            </tr>
-                            {else}
-                            <tr>
-                                <td colspan="9" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
-                            </tr>
-                            {/loop}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-sm-12">
+                <table id="table-reporte-facturas30"
+                    data-mobile-responsive="true"
+                    data-toggle="table"
+                    data-method="POST"
+                    data-height="500"
+                    data-search="false"
+                    {if="$fsc->resultados"}data-ajax="buscarInformacion30"{/if}
+                    data-pagination="true"
+                    data-page-size="100"
+                    data-page-list="[100,150,200,250,500]"
+                    data-show-footer="false"
+                    data-show-refresh="false"
+                    data-side-pagination="server">
+                    <thead>
+                        <tr>
+                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas60">
-            <div class="row">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Almacén</th>
-                                <th class="text-center">Cliente</th>
-                                <th class="text-center">Factura</th>
-                                <th class="text-center">{#FS_NUMERO2#}</th>
-                                <th class="text-center">Importe</th>
-                                <th class="text-center">Fecha Emisión</th>
-                                <th class="text-center">Vencimiento</th>
-                                <th class="text-center">Atraso</th>
-                                <th class="text-center">Pagada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loop="$fsc->resultados_d60"}
-                            <tr>
-                                <td>{$value->nombre_almacen}</td>
-                                <td>{$value->nombre_cliente}</td>
-                                <td>{$value->codigo}</td>
-                                <td>{$value->numero2}</td>
-                                <td class="text-right">{$value->totaleuros}</td>
-                                <td class="text-center">{$value->fecha}</td>
-                                <td class="text-center">{$value->vencimiento}</td>
-                                <td class="text-center">{$value->atraso}</td>
-                                <td class="text-center">{$value->esta_pagada}</td>
-                            </tr>
-                            {else}
-                            <tr>
-                                <td colspan="9" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
-                            </tr>
-                            {/loop}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-sm-12">
+                <table id="table-reporte-facturas60"
+                    data-mobile-responsive="true"
+                    data-toggle="table"
+                    data-method="POST"
+                    data-height="500"
+                    data-search="false"
+                    {if="$fsc->resultados"}data-ajax="buscarInformacion60"{/if}
+                    data-pagination="true"
+                    data-page-size="100"
+                    data-page-list="[100,150,200,250,500]"
+                    data-show-footer="false"
+                    data-show-refresh="false"
+                    data-side-pagination="server">
+                    <thead>
+                        <tr>
+                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas90">
-            <div class="row">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Almacén</th>
-                                <th class="text-center">Cliente</th>
-                                <th class="text-center">Factura</th>
-                                <th class="text-center">{#FS_NUMERO2#}</th>
-                                <th class="text-center">Importe</th>
-                                <th class="text-center">Fecha Emisión</th>
-                                <th class="text-center">Vencimiento</th>
-                                <th class="text-center">Atraso</th>
-                                <th class="text-center">Pagada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loop="$fsc->resultados_d90"}
-                            <tr>
-                                <td>{$value->nombre_almacen}</td>
-                                <td>{$value->nombre_cliente}</td>
-                                <td>{$value->codigo}</td>
-                                <td>{$value->numero2}</td>
-                                <td class="text-right">{$value->totaleuros}</td>
-                                <td class="text-center">{$value->fecha}</td>
-                                <td class="text-center">{$value->vencimiento}</td>
-                                <td class="text-center">{$value->atraso}</td>
-                                <td class="text-center">{$value->esta_pagada}</td>
-                            </tr>
-                            {else}
-                            <tr>
-                                <td colspan="9" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
-                            </tr>
-                            {/loop}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-sm-12">
+                <table id="table-reporte-facturas90"
+                    data-mobile-responsive="true"
+                    data-toggle="table"
+                    data-method="POST"
+                    data-height="500"
+                    data-search="false"
+                    {if="$fsc->resultados"}data-ajax="buscarInformacion90"{/if}
+                    data-pagination="true"
+                    data-page-size="100"
+                    data-page-list="[100,150,200,250,500]"
+                    data-show-footer="false"
+                    data-show-refresh="false"
+                    data-side-pagination="server">
+                    <thead>
+                        <tr>
+                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas120">
-            <div class="row">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Almacén</th>
-                                <th class="text-center">Cliente</th>
-                                <th class="text-center">Factura</th>
-                                <th class="text-center">{#FS_NUMERO2#}</th>
-                                <th class="text-center">Importe</th>
-                                <th class="text-center">Fecha Emisión</th>
-                                <th class="text-center">Vencimiento</th>
-                                <th class="text-center">Atraso</th>
-                                <th class="text-center">Pagada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loop="$fsc->resultados_d120"}
-                            <tr>
-                                <td>{$value->nombre_almacen}</td>
-                                <td>{$value->nombre_cliente}</td>
-                                <td>{$value->codigo}</td>
-                                <td>{$value->numero2}</td>
-                                <td class="text-right">{$value->totaleuros}</td>
-                                <td class="text-center">{$value->fecha}</td>
-                                <td class="text-center">{$value->vencimiento}</td>
-                                <td class="text-center">{$value->atraso}</td>
-                                <td class="text-center">{$value->esta_pagada}</td>
-                            </tr>
-                            {else}
-                            <tr>
-                                <td colspan="9" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
-                            </tr>
-                            {/loop}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-sm-12">
+                <table id="table-reporte-facturas120"
+                    data-mobile-responsive="true"
+                    data-toggle="table"
+                    data-method="POST"
+                    data-height="500"
+                    data-search="false"
+                    {if="$fsc->resultados"}data-ajax="buscarInformacion120"{/if}
+                    data-pagination="true"
+                    data-page-size="100"
+                    data-page-list="[100,150,200,250,500]"
+                    data-show-footer="false"
+                    data-show-refresh="false"
+                    data-side-pagination="server">
+                    <thead>
+                        <tr>
+                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturasm120">
-            <div class="row">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Almacén</th>
-                                <th class="text-center">Cliente</th>
-                                <th class="text-center">Factura</th>
-                                <th class="text-center">{#FS_NUMERO2#}</th>
-                                <th class="text-center">Importe</th>
-                                <th class="text-center">Fecha Emisión</th>
-                                <th class="text-center">Vencimiento</th>
-                                <th class="text-center">Atraso</th>
-                                <th class="text-center">Pagada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loop="$fsc->resultados_md120"}
-                            <tr>
-                                <td>{$value->nombre_almacen}</td>
-                                <td>{$value->nombre_cliente}</td>
-                                <td>{$value->codigo}</td>
-                                <td>{$value->numero2}</td>
-                                <td class="text-right">{$value->totaleuros}</td>
-                                <td class="text-center">{$value->fecha}</td>
-                                <td class="text-center">{$value->vencimiento}</td>
-                                <td class="text-center">{$value->atraso}</td>
-                                <td class="text-center">{$value->esta_pagada}</td>
-                            </tr>
-                            {else}
-                            <tr>
-                                <td colspan="9" class="text-center text-warning bg-warning">No se encontraron resultados.</td>
-                            </tr>
-                            {/loop}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-sm-12">
+                <table id="table-reporte-facturasm120"
+                    data-mobile-responsive="true"
+                    data-toggle="table"
+                    data-method="POST"
+                    data-height="500"
+                    data-search="false"
+                    {if="$fsc->resultados"}data-ajax="buscarInformacion121"{/if}
+                    data-pagination="true"
+                    data-page-size="100"
+                    data-page-list="[100,150,200,250,500]"
+                    data-show-footer="false"
+                    data-show-refresh="false"
+                    data-side-pagination="server">
+                    <thead>
+                        <tr>
+                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         {loop="$fsc->extensions"}
@@ -460,69 +410,153 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <script src="{#FS_PATH#}view/js/chart.bundle.min.js"></script>
 <script type="text/javascript">
-                function clean_cliente()
-                {
-                    document.listado_general.codcliente.value = '';
-                    document.listado_general.submit();
-                }
-                /**
-                 * Redimensiona un iframe
-                 */
-                function resizeIframe(obj) {
-                    obj.style.height = (obj.contentWindow.document.body.scrollHeight + 100) + 'px';
-                }
-                /**
-                 *  Workarround para Firefox (siempre dice que el height es 0)
-                 */
-                function resize(frame) {
-                    var b = frame.contentWindow.document.body || frame.contentDocument.body,
-                            cHeight = $(b).height();
+    function numberFormatter(value, row, index) {
+        return parseFloat(value).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
 
-                    if (frame.oHeight !== cHeight) {
-                        $(frame).height(0);
-                        frame.style.height = 0;
+    function sumFormatter(data) {
+        field = this.field;
+        return parseFloat(data.reduce(function(sum, row) {
+            return sum + (+row[field]);
+        }, 0)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
 
-                        $(frame).height(cHeight + 100);
-                        frame.style.height = (cHeight + 100) + "px";
+    function sumNormalFormatter(data) {
+        field = this.field;
+        return parseFloat(data.reduce(function(sum, row) {
+            return sum + (+row[field]);
+        }, 0)).toFixed(2);
+    }
+    
+    function clean_cliente()
+    {
+        document.listado_general.codcliente.value = '';
+        document.listado_general.submit();
+    }
+    
+    /**
+     * Redimensiona un iframe
+     */
+    function resizeIframe(obj) {
+        obj.style.height = (obj.contentWindow.document.body.scrollHeight + 100) + 'px';
+    }
+    
+    /**
+     *  Workarround para Firefox (siempre dice que el height es 0)
+     */
+    function resize(frame) {
+        var b = frame.contentWindow.document.body || frame.contentDocument.body,
+                cHeight = $(b).height();
 
-                        frame.oHeight = cHeight;
-                    }
+        if (frame.oHeight !== cHeight) {
+            $(frame).height(0);
+            frame.style.height = 0;
 
-                    // Call again to check whether the content height has changed.
-                    setTimeout(function () {
-                        resize(frame);
-                    }, 250);
-                }
-                $(document).ready(function () {
-                    /**
-                     * El resize para Firefox lo llamamos cuando se ha cargado la página completamente
-                     */
-                    window.onload = function () {
-                        var frame,
-                                frames = document.getElementsByTagName('iframe'),
-                                i = frames.length - 1;
+            $(frame).height(cHeight + 100);
+            frame.style.height = (cHeight + 100) + "px";
 
-                        while (i >= 0) {
-                            frame = frames[i];
-                            frame.onload = resize(frame);
-                            i -= 1;
-                        }
-                    };
+            frame.oHeight = cHeight;
+        }
 
-                    $("#ac_cliente").autocomplete({
-                        serviceUrl: '{$fsc->url()}',
-                        paramName: 'buscar_cliente',
-                        onSelect: function (suggestion) {
-                            if (suggestion)
-                            {
-                                if (document.listado_general.codcliente.value !== suggestion.data && suggestion.data !== '')
-                                {
-                                    document.listado_general.codcliente.value = suggestion.data;
-                                    document.listado_general.submit();
-                                }
-                            }
-                        }
+        // Call again to check whether the content height has changed.
+        setTimeout(function () {
+            resize(frame);
+        }, 250);
+    }
+    
+    function regresar_informacion(search,sort,order,dias,params)
+    {
+        $.ajax({
+            type: "POST",
+            url: "{$fsc->url()}",
+            data: "listado_facturas=TRUE&"+$("#listado_general").serialize()+'&offset='+params.data.offset+'&limit='+params.data.limit+'&search='+search+'&sort='+sort+'&order='+order+'&dias='+dias,
+            dataType: "json",
+            success: function (data) {
+                setTimeout(function() {
+                    params.success({
+                        total: data.total,
+                        rows: data.rows
                     });
-                });
+                }, 1000);
+
+            },
+            error: function (er) {
+                params.error(er);
+            }
+        });
+    }
+    
+    function buscarInformacion30(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        var dias = 30;
+        regresar_informacion(search,sort,order,dias,params);
+    }
+    
+    function buscarInformacion60(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        var dias = 60;
+        regresar_informacion(search,sort,order,dias,params);
+    }
+    
+    function buscarInformacion90(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        var dias = 90;
+        regresar_informacion(search,sort,order,dias,params);
+    }
+    
+    function buscarInformacion120(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        var dias = 120;
+        regresar_informacion(search,sort,order,dias,params);
+    }
+    
+    function buscarInformacion121(params){
+        var search = (params.data.search!=='undefined')?params.data.search:'';
+        var sort = (params.data.sort!=='undefined')?params.data.sort:'';
+        var order = (params.data.order!=='undefined')?params.data.order:'';
+        var dias = 121;
+        regresar_informacion(search,sort,order,dias,params);
+    }
+    
+    
+    $(document).ready(function () {
+        /**
+         * El resize para Firefox lo llamamos cuando se ha cargado la página completamente
+         */
+        window.onload = function () {
+            var frame,
+                    frames = document.getElementsByTagName('iframe'),
+                    i = frames.length - 1;
+
+            while (i >= 0) {
+                frame = frames[i];
+                frame.onload = resize(frame);
+                i -= 1;
+            }
+        };
+
+        $("#ac_cliente").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_cliente',
+            onSelect: function (suggestion) {
+                if (suggestion)
+                {
+                    if (document.listado_general.codcliente.value !== suggestion.data && suggestion.data !== '')
+                    {
+                        document.listado_general.codcliente.value = suggestion.data;
+                        document.listado_general.submit();
+                    }
+                }
+            }
+        });
+    });
 </script>
 {include="footer"}
