@@ -21,6 +21,8 @@
 
 require_once 'plugins/republica_dominicana/extras/fpdf181/fs_fpdf.php';
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+require_once 'extras/phpmailer/class.phpmailer.php';
+require_once 'extras/phpmailer/class.smtp.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/extras/fpdf181/font/');
 define('EEURO', chr(128));
 require_model('cliente.php');
@@ -36,9 +38,6 @@ require_model('agente.php');
 
 //Compatibilidad con plugin distribucion
 require_model('distribucion_ordenescarga_facturas.php');
-
-require_once 'extras/phpmailer/class.phpmailer.php';
-require_once 'extras/phpmailer/class.smtp.php';
 
 class factura_ncf extends rd_controller
 {
@@ -61,25 +60,18 @@ class factura_ncf extends rd_controller
     protected function private_core()
     {
         parent::private_core();
-        $this->template = false;
+        $this->template = false;                
+        $this->agente = new agente();
+
         $this->share_extensions();
-        
-        $this->logo = false;
-        if (file_exists(FS_MYDOCS . 'images/logo.png')) {
-            $this->logo = 'images/logo.png';
-        } elseif (file_exists(FS_MYDOCS . 'images/logo.jpg')) {
-            $this->logo = 'images/logo.jpg';
-        }
+        $this->checkLogo();
 
         $val_id = \filter_input(INPUT_GET, 'id');
         $solicitud = \filter_input(INPUT_GET, 'solicitud');
         $valores_id = explode(',', $val_id);
+        
         if (class_exists('distribucion_ordenescarga_facturas')) {
             $this->distrib_transporte = new distribucion_ordenescarga_facturas();
-        }
-
-        if (class_exists('agente')) {
-            $this->agente = new agente();
         }
 
         if (!empty($valores_id[0]) and $solicitud == 'imprimir') {
@@ -88,18 +80,40 @@ class factura_ncf extends rd_controller
             $this->enviar_email($valores_id[0]);
         }
     }
+    
+    public function checkLogo()
+    {
+        $this->logo = false;
+        if (file_exists(FS_MYDOCS . 'images/logo.png')) {
+            $this->logo = 'images/logo.png';
+        } elseif (file_exists(FS_MYDOCS . 'images/logo.jpg')) {
+            $this->logo = 'images/logo.jpg';
+        }
+    }
 
     // Corregir el Bug de fpdf con el Simbolo del Euro ---> €
     public function ckeckEuro($cadena)
     {
-        $mostrar = $this->show_precio($cadena, $this->factura->coddivisa);
-        $pos = strpos($mostrar, '€');
-        if ($pos !== false) {
-            if (FS_POS_DIVISA == 'right') {
-                return number_format($cadena, FS_NF0, FS_NF1, FS_NF2) . ' ' . EEURO;
-            } else {
-                return EEURO . ' ' . number_format($cadena, FS_NF0, FS_NF1, FS_NF2);
+        $mostrar = '';
+        if(!empty($cadena)){
+            $mostrar = $this->show_precio($cadena, $this->factura->coddivisa);
+            $pos = strpos($mostrar, '€');
+            if ($pos !== false) {
+                if (FS_POS_DIVISA == 'right') {
+                    return number_format($cadena, FS_NF0, FS_NF1, FS_NF2) . ' ' . EEURO;
+                } else {
+                    return EEURO . ' ' . number_format($cadena, FS_NF0, FS_NF1, FS_NF2);
+                }
             }
+        }
+        return $mostrar;
+    }
+    
+    public function checkPorcentaje($cadena)
+    {
+        $mostrar = '';
+        if(!empty($cadena)){
+            $mostrar = $cadena.'%';
         }
         return $mostrar;
     }
@@ -345,14 +359,14 @@ class factura_ncf extends rd_controller
             foreach ($lineas_iva as $li) {
                 $i++;
                 $filaiva[$i][0] = '';
-                $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $this->negativo)) : '';
-                $filaiva[$i][2] = ($li->iva) ? ($li->iva * $this->negativo) . "%" : '';
-                $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $this->negativo)) : '';
-                $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
-                $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $this->negativo)) : '';
+                $filaiva[$i][1] = $this->ckeckEuro(($li->neto * $this->negativo));
+                $filaiva[$i][2] = $this->checkPorcentaje(($li->iva * $this->negativo));
+                $filaiva[$i][3] = $this->ckeckEuro(($li->totaliva * $this->negativo));
+                $filaiva[$i][4] = $this->checkPorcentaje($li->recargo);
+                $filaiva[$i][5] = $this->ckeckEuro(($li->totalrecargo * $this->negativo));
                 $filaiva[$i][6] = ''; 
                 $filaiva[$i][7] = ''; 
-                $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $this->negativo)) : '';
+                $filaiva[$i][8] = $this->ckeckEuro(($li->totallinea * $this->negativo));
             }
             if (!empty($filaiva)) {
                 $filaiva[1][6] = $this->factura->irpf . ' %';
