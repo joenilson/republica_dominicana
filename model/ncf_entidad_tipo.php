@@ -27,47 +27,47 @@ class ncf_entidad_tipo extends fs_model
 {
     /**
      *
-     * @var type integer
+     * @var integer
      */
     public $idempresa;
     /**
      *
-     * @var type varchar(6)
+     * @var varchar(6)
      */
     public $entidad;
     /**
      *
-     * @var type varchar(2)
+     * @var varchar(2)
      */
     public $tipo_entidad;
     /**
      *
-     * @var type varchar(2)
+     * @var varchar(2)
      */
     public $tipo_comprobante;
     /**
      *
-     * @var type boolean
+     * @var boolean
      */
     public $estado;
     /**
      *
-     * @var type varchar(10)
+     * @var varchar(10)
      */
     public $usuario_creacion;
     /**
      *
-     * @var type datetime
+     * @var datetime
      */
     public $fecha_creacion;
     /**
      *
-     * @var type varchar(10)
+     * @var varchar(10)
      */
     public $usuario_modificacion;
     /**
      *
-     * @var type datetime
+     * @var datetime
      */
     public $fecha_modificacion;
 
