@@ -51,6 +51,7 @@ class factura_ncf extends rd_controller
     public $archivo;
     public $agente;
     public $logo;
+    public $negativo;
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Factura NCF', 'ventas', false, false);
@@ -218,6 +219,192 @@ class factura_ncf extends rd_controller
             }
         }
     }
+    
+    public function pdf_informacion_empresa($pdf_doc)
+    {
+        /// Definimos todos los datos de la cabecera de la factura
+        /// Datos de la empresa
+        $vendedor = $this->agente->get($this->factura->codagente);
+        $pdf_doc->fde_nombre = $this->empresa->nombre;
+        $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
+        $pdf_doc->fde_cifnif = $this->empresa->cifnif;
+        $pdf_doc->fde_direccion = $this->empresa->direccion;
+        $pdf_doc->fde_codpostal = $this->empresa->codpostal;
+        $pdf_doc->fde_ciudad = $this->empresa->ciudad;
+        $pdf_doc->fde_provincia = $this->empresa->provincia;
+        $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
+        $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+        $pdf_doc->fde_email = $this->empresa->email;
+        $pdf_doc->fde_web = $this->empresa->web;
+        if (in_array('distribucion', $GLOBALS['plugins'])) {
+            $pdf_doc->fde_vendedor = $vendedor->nombreap; //Mostrando iniciales del vendedor.
+            $pdf_doc->fdf_ruta = $this->factura->codruta;
+            $pdf_doc->fde_ruta = $this->factura->codruta;
+            $pdf_doc->fdf_transporte = $this->idtransporte;
+        }
+        $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
+    }
+    
+    public function configuracion_pdf($pdf_doc)
+    {
+        /// Insertamos el Logo y Marca de Agua si esta configurado así
+        $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '1' : '0';
+        $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '10' : '0';
+        $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '5' : '0';
+        $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '1' : '0';
+        $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '25' : '0';
+        $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '110' : '0';
+
+        $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_detalle_box = ($this->rd_setup['rd_imprimir_detalle_box'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_detalle_lineas = ($this->rd_setup['rd_imprimir_detalle_lineas'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_detalle_colores = ($this->rd_setup['rd_imprimir_detalle_colores'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_cabecera_fcolor = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $this->rd_setup['rd_imprimir_cabecera_fcolor'] : false;
+        $pdf_doc->fdf_cabecera_tcolor = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $this->rd_setup['rd_imprimir_cabecera_tcolor'] : false;
+        $pdf_doc->fdf_detalle_color = ($this->rd_setup['rd_imprimir_detalle_colores'] == 'TRUE') ? $this->rd_setup['rd_imprimir_detalle_color'] : '#000000';
+    }
+    
+    public function pdf_tipo_documento($pdf_doc)
+    {
+        // Tipo de Documento
+        $pdf_doc->fdf_documento = $this->factura;
+        $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante;
+        $pdf_doc->fdf_codigo = $this->factura->ncf;
+        $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
+        $pdf_doc->fdf_estado = ($this->factura->estado) ? "" : "DOCUMENTO ANULADO";
+    }
+    
+    public function pdf_datos_cliente($pdf_doc)
+    {
+        // Fecha, Codigo Cliente y observaciones de la factura
+        $pdf_doc->fdf_fecha = $this->factura->fecha;
+        $pdf_doc->fdf_codcliente = $this->factura->codcliente;
+        $pdf_doc->fdf_observaciones = utf8_decode($this->fix_html($this->factura->observaciones));
+
+
+        // Datos del Cliente
+        $pdf_doc->fdf_nombrecliente = $this->fix_html($this->factura->nombrecliente);
+        $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
+        $pdf_doc->fdf_cifnif = $this->factura->cifnif;
+        $pdf_doc->fdf_direccion = $this->fix_html($this->factura->direccion);
+        $pdf_doc->fdf_codpostal = $this->factura->codpostal;
+        $pdf_doc->fdf_ciudad = $this->factura->ciudad;
+        $pdf_doc->fdf_provincia = $this->factura->provincia;
+        $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
+        $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
+        $pdf_doc->fdc_fax = $this->cliente->fax;
+        $pdf_doc->fdc_email = $this->cliente->email;
+        $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
+        $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
+    }
+    
+    public function pdf_divisa_pago_pais($pdf_doc)
+    {
+        // Forma de Pago de la Factura
+        $pago = new forma_pago();
+        $epago = $pago->get($this->factura->codpago);
+        if ($epago) {
+            $pdf_doc->fdf_epago = $epago->descripcion;
+        }
+
+        // Divisa de la Factura
+        $divisa = new divisa();
+        $edivisa = $divisa->get($this->factura->coddivisa);
+        if ($edivisa) {
+            $pdf_doc->fdf_divisa = $edivisa->descripcion;
+        }
+
+        // Pais de la Factura
+        $pais = new pais();
+        $epais = $pais->get($this->factura->codpais);
+        if ($epais) {
+            $pdf_doc->fdf_pais = $epais->nombre;
+        }
+    }
+    
+    public function pdf_cabecera_titulo_columnas($pdf_doc)
+    {
+        list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
+        // Cabecera Titulos Columnas
+        $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
+        $pdf_doc->SetWidths(array(20, 68, 12, 15, 20, 20, 16, 25));
+        $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
+        $colores = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $r . '|' . $g . '|' . $b : '0|0|0';
+        $pdf_doc->SetColors(array($colores, $colores, $colores, $colores, $colores, $colores, $colores, $colores));
+    }
+    
+    public function pdf_lineas_iva($pdf_doc)
+    {
+        /// Definimos todos los datos del PIE de la factura
+        /// Lineas de IVA
+        $lineas_iva = $this->factura->get_lineas_iva();
+        $this->negativo = (!empty($this->factura->idfacturarect)) ? -1 : 1;
+        if (count($lineas_iva) > 3) {
+            $pdf_doc->fdf_lineasiva = $lineas_iva;
+        } else {
+            $filaiva = array();
+            $i = 0;
+            foreach ($lineas_iva as $li) {
+                $i++;
+                $filaiva[$i][0] = '';
+                $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $this->negativo)) : '';
+                $filaiva[$i][2] = ($li->iva) ? ($li->iva * $this->negativo) . "%" : '';
+                $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $this->negativo)) : '';
+                $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
+                $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $this->negativo)) : '';
+                $filaiva[$i][6] = ''; //// POR CREARRRRRR
+                $filaiva[$i][7] = ''; //// POR CREARRRRRR
+                $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $this->negativo)) : '';
+            }
+            if (!empty($filaiva)) {
+                $filaiva[1][6] = $this->factura->irpf . ' %';
+                $filaiva[1][7] = $this->ckeckEuro(0 - ($this->factura->totalirpf * $this->negativo));
+            }
+            $pdf_doc->fdf_lineasiva = $filaiva;
+        }
+    }
+    
+    public function pdf_lineas_factura($pdf_doc)
+    {
+         // Lineas de la Factura
+        $lineas = $this->factura->get_lineas();
+        $cantidad_lineas = count($lineas);
+        $lineas_restantes = count($lineas);
+        $neto = 0;
+        $descuento = 0;
+        for ($i = 0; $i < $cantidad_lineas; $i++) {
+            $pdf_doc->piepagina = false;
+            $neto += ($lineas[$i]->pvptotal * $this->negativo);
+            $linea_impuesto = (($lineas[$i]->pvptotal * $this->negativo) * ($lineas[$i]->iva / 100));
+            $linea_neto = ($lineas[$i]->pvptotal * $this->negativo) * (1 + ($lineas[$i]->iva / 100));
+            $descuento_linea = ($lineas[$i]->dtopor) ? (($lineas[$i]->pvpunitario * $this->negativo) * ($lineas[$i]->cantidad * $this->negativo)) * ($lineas[$i]->dtopor / 100) : 0;
+            $descuento += $descuento_linea;
+            $pdf_doc->neto = $this->ckeckEuro($neto);
+            $articulo = new articulo();
+            $art = $articulo->get($lineas[$i]->referencia);
+            if ($art) {
+                $observa = "\n" . utf8_decode($this->fix_html($art->observaciones));
+            } else {
+                $observa = "\n";
+            }
+
+            $lafila = array(
+                '0' => utf8_decode($lineas[$i]->referencia),
+                '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
+                '2' => utf8_decode(($lineas[$i]->cantidad * $this->negativo)),
+                '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
+                '4' => $this->show_numero(($lineas[$i]->pvpsindto * $this->negativo), FS_NF0),
+                '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
+                '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
+                '7' => utf8_decode($this->show_numero($linea_neto, FS_NF0)), // Importe con Descuentos aplicados
+            );
+
+            $pdf_doc->Row($lafila, '1', $lineas_restantes);
+            $lineas_restantes--;
+        }
+        $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
+    }
 
     public function generar_pdf($pdf_doc)
     {
@@ -238,180 +425,28 @@ class factura_ncf extends rd_controller
                 $pdf_doc->SetColorRelleno('blanco');
             }
 
-            /// Definimos todos los datos de la cabecera de la factura
-            /// Datos de la empresa
-            $vendedor = $this->agente->get($this->factura->codagente);
-            $pdf_doc->fde_nombre = $this->empresa->nombre;
-            $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
-            $pdf_doc->fde_cifnif = $this->empresa->cifnif;
-            $pdf_doc->fde_direccion = $this->empresa->direccion;
-            $pdf_doc->fde_codpostal = $this->empresa->codpostal;
-            $pdf_doc->fde_ciudad = $this->empresa->ciudad;
-            $pdf_doc->fde_provincia = $this->empresa->provincia;
-            $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
-            $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
-            $pdf_doc->fde_email = $this->empresa->email;
-            $pdf_doc->fde_web = $this->empresa->web;
-            if (in_array('distribucion', $GLOBALS['plugins'])) {
-                $pdf_doc->fde_vendedor = $vendedor->nombreap; //Mostrando iniciales del vendedor.
-                $pdf_doc->fdf_ruta = $this->factura->codruta;
-                $pdf_doc->fde_ruta = $this->factura->codruta;
-                $pdf_doc->fdf_transporte = $this->idtransporte;
-            }
-            $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
+            $this->pdf_informacion_empresa($pdf_doc);        
+            $this->configuracion_pdf($pdf_doc);
+            $this->pdf_tipo_documento($pdf_doc);
+            $this->pdf_datos_cliente($pdf_doc);
+            $this->pdf_divisa_pago_pais($pdf_doc);
+            $this->pdf_cabecera_titulo_columnas($pdf_doc);
             
-            /// Insertamos el Logo y Marca de Agua si esta configurado así
-            $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '1' : '0';
-            $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '10' : '0';
-            $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '5' : '0';
-            $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '1' : '0';
-            $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '25' : '0';
-            $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '110' : '0';
-
-            $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn'] == 'TRUE') ? '1' : '0';
-            $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box'] == 'TRUE') ? '1' : '0';
-            $pdf_doc->fdf_detalle_box = ($this->rd_setup['rd_imprimir_detalle_box'] == 'TRUE') ? '1' : '0';
-            $pdf_doc->fdf_detalle_lineas = ($this->rd_setup['rd_imprimir_detalle_lineas'] == 'TRUE') ? '1' : '0';
-            $pdf_doc->fdf_detalle_colores = ($this->rd_setup['rd_imprimir_detalle_colores'] == 'TRUE') ? '1' : '0';
-            $pdf_doc->fdf_cabecera_fcolor = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $this->rd_setup['rd_imprimir_cabecera_fcolor'] : false;
-            $pdf_doc->fdf_cabecera_tcolor = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $this->rd_setup['rd_imprimir_cabecera_tcolor'] : false;
-            $pdf_doc->fdf_detalle_color = ($this->rd_setup['rd_imprimir_detalle_colores'] == 'TRUE') ? $this->rd_setup['rd_imprimir_detalle_color'] : '#000000';
-
-            // Tipo de Documento
-            $pdf_doc->fdf_documento = $this->factura;
-            $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
-            $pdf_doc->fdf_codigo = $this->factura->ncf;
-            $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
-            $pdf_doc->fdf_estado = ($this->factura->estado) ? "" : "DOCUMENTO ANULADO";
-
-            // Fecha, Codigo Cliente y observaciones de la factura
-            $pdf_doc->fdf_fecha = $this->factura->fecha;
-            $pdf_doc->fdf_codcliente = $this->factura->codcliente;
-            $pdf_doc->fdf_observaciones = utf8_decode($this->fix_html($this->factura->observaciones));
-
-
-            // Datos del Cliente
-            $pdf_doc->fdf_nombrecliente = $this->fix_html($this->factura->nombrecliente);
-            $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
-            $pdf_doc->fdf_cifnif = $this->factura->cifnif;
-            $pdf_doc->fdf_direccion = $this->fix_html($this->factura->direccion);
-            $pdf_doc->fdf_codpostal = $this->factura->codpostal;
-            $pdf_doc->fdf_ciudad = $this->factura->ciudad;
-            $pdf_doc->fdf_provincia = $this->factura->provincia;
-            $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
-            $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
-            $pdf_doc->fdc_fax = $this->cliente->fax;
-            $pdf_doc->fdc_email = $this->cliente->email;
-            $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
-            $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
-
-            // Forma de Pago de la Factura
-            $pago = new forma_pago();
-            $epago = $pago->get($this->factura->codpago);
-            if ($epago) {
-                $pdf_doc->fdf_epago = $epago->descripcion;
-            }
-
-            // Divisa de la Factura
-            $divisa = new divisa();
-            $edivisa = $divisa->get($this->factura->coddivisa);
-            if ($edivisa) {
-                $pdf_doc->fdf_divisa = $edivisa->descripcion;
-            }
-
-            // Pais de la Factura
-            $pais = new pais();
-            $epais = $pais->get($this->factura->codpais);
-            if ($epais) {
-                $pdf_doc->fdf_pais = $epais->nombre;
-            }
-            list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
-            // Cabecera Titulos Columnas
-            $pdf_doc->Setdatoscab(array('ARTICULO', 'DESCRIPCION', 'CANT', 'P. UNIT', 'IMPORTE', 'DSCTO', FS_IVA, 'NETO'));
-            $pdf_doc->SetWidths(array(20, 68, 12, 15, 20, 20, 16, 25));
-            $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
-            $colores = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $r . '|' . $g . '|' . $b : '0|0|0';
-            $pdf_doc->SetColors(array($colores, $colores, $colores, $colores, $colores, $colores, $colores, $colores));
             /// Agregamos la pagina inicial de la factura
             $pdf_doc->AddPage();
-
-            /// Definimos todos los datos del PIE de la factura
-            /// Lineas de IVA
-            $lineas_iva = $this->factura->get_lineas_iva();
-            $negativo = (!empty($this->factura->idfacturarect)) ? -1 : 1;
-            if (count($lineas_iva) > 3) {
-                $pdf_doc->fdf_lineasiva = $lineas_iva;
-            } else {
-                $filaiva = array();
-                $i = 0;
-                foreach ($lineas_iva as $li) {
-                    $i++;
-                    $filaiva[$i][0] = '';
-                    $filaiva[$i][1] = ($li->neto) ? $this->ckeckEuro(($li->neto * $negativo)) : '';
-                    $filaiva[$i][2] = ($li->iva) ? ($li->iva * $negativo) . "%" : '';
-                    $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $negativo)) : '';
-                    $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
-                    $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $negativo)) : '';
-                    $filaiva[$i][6] = ''; //// POR CREARRRRRR
-                    $filaiva[$i][7] = ''; //// POR CREARRRRRR
-                    $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $negativo)) : '';
-                }
-
-                if (!empty($filaiva)) {
-                    $filaiva[1][6] = $this->factura->irpf . ' %';
-                    $filaiva[1][7] = $this->ckeckEuro(0 - ($this->factura->totalirpf * $negativo));
-                }
-
-                $pdf_doc->fdf_lineasiva = $filaiva;
-            }
+            
+            $this->pdf_lineas_iva($pdf_doc);
 
             // Total factura numerico
-            $pdf_doc->fdf_documento_neto = $this->ckeckEuro(($this->factura->neto * $negativo));
-            $pdf_doc->fdf_documento_totaliva = $this->ckeckEuro(($this->factura->totaliva * $negativo));
-            $pdf_doc->fdf_numtotal = $this->ckeckEuro(($this->factura->total * $negativo));
+            $pdf_doc->fdf_documento_neto = $this->ckeckEuro(($this->factura->neto * $this->negativo));
+            $pdf_doc->fdf_documento_totaliva = $this->ckeckEuro(($this->factura->totaliva * $this->negativo));
+            $pdf_doc->fdf_numtotal = $this->ckeckEuro(($this->factura->total * $this->negativo));
 
             // Total factura numeros a texto
-            $pdf_doc->fdf_textotal = ($this->factura->total * $negativo);
+            $pdf_doc->fdf_textotal = ($this->factura->total * $this->negativo);
 
-
-
-            // Lineas de la Factura
-            $lineas = $this->factura->get_lineas();
-            $cantidad_lineas = count($lineas);
-            $lineas_restantes = count($lineas);
-            $neto = 0;
-            $descuento = 0;
-            for ($i = 0; $i < $cantidad_lineas; $i++) {
-                $pdf_doc->piepagina = false;
-                $neto += ($lineas[$i]->pvptotal * $negativo);
-                $linea_impuesto = (($lineas[$i]->pvptotal * $negativo) * ($lineas[$i]->iva / 100));
-                $linea_neto = ($lineas[$i]->pvptotal * $negativo) * (1 + ($lineas[$i]->iva / 100));
-                $descuento_linea = ($lineas[$i]->dtopor) ? (($lineas[$i]->pvpunitario * $negativo) * ($lineas[$i]->cantidad * $negativo)) * ($lineas[$i]->dtopor / 100) : 0;
-                $descuento += $descuento_linea;
-                $pdf_doc->neto = $this->ckeckEuro($neto);
-                $articulo = new articulo();
-                $art = $articulo->get($lineas[$i]->referencia);
-                if ($art) {
-                    $observa = "\n" . utf8_decode($this->fix_html($art->observaciones));
-                } else {
-                    $observa = "\n";
-                }
-
-                $lafila = array(
-                    '0' => utf8_decode($lineas[$i]->referencia),
-                    '1' => utf8_decode(strtoupper($lineas[$i]->descripcion)) . $observa,
-                    '2' => utf8_decode(($lineas[$i]->cantidad * $negativo)),
-                    '3' => $this->show_numero($lineas[$i]->pvpunitario, FS_NF0),
-                    '4' => $this->show_numero(($lineas[$i]->pvpsindto * $negativo), FS_NF0),
-                    '5' => ($lineas[$i]->dtopor) ? $this->show_numero($descuento_linea, FS_NF0) : '',
-                    '6' => utf8_decode($this->show_numero($linea_impuesto, FS_NF0)),
-                    '7' => utf8_decode($this->show_numero($linea_neto, FS_NF0)), // Importe con Descuentos aplicados
-                );
-
-                $pdf_doc->Row($lafila, '1', $lineas_restantes);
-                $lineas_restantes--;
-            }
-            $pdf_doc->fdf_documento_descuentos = ($descuento) ? $this->ckeckEuro(($descuento)) : '';
+            $this->pdf_lineas_factura($pdf_doc);
+            
             $pdf_doc->piepagina = true;
         }
     }
