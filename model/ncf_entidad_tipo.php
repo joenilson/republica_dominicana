@@ -57,7 +57,7 @@ class ncf_entidad_tipo extends fs_model
     public $usuario_creacion;
     /**
      *
-     * @var datetime
+     * @var string
      */
     public $fecha_creacion;
     /**
@@ -67,7 +67,7 @@ class ncf_entidad_tipo extends fs_model
     public $usuario_modificacion;
     /**
      *
-     * @var datetime
+     * @var string
      */
     public $fecha_modificacion;
 
