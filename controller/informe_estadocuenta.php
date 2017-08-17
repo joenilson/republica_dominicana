@@ -42,7 +42,7 @@ class informe_estadocuenta extends rd_controller
     public $order;
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Estado de Cuenta Clientes', 'informes', FALSE, TRUE, FALSE);
+        parent::__construct(__CLASS__, 'Estado de Cuenta Clientes', 'informes', false, true, false);
     }
     
     protected function private_core()
@@ -64,13 +64,13 @@ class informe_estadocuenta extends rd_controller
     {
         $cli0 = new cliente();
         $this->hasta = (isset($_REQUEST['hasta']))?$_REQUEST['hasta']:Date('d-m-Y');
-        $this->codserie = (isset($_REQUEST['codserie']))?$_REQUEST['codserie']:FALSE;
-        $this->codpago = (isset($_REQUEST['codpago']))?$_REQUEST['codpago']:FALSE;
-        $this->codagente = (isset($_REQUEST['codagente']))?$_REQUEST['codagente']:FALSE;
-        $this->codalmacen = (isset($_REQUEST['codalmacen']))?$_REQUEST['codalmacen']:FALSE;
+        $this->codserie = (isset($_REQUEST['codserie']))?$_REQUEST['codserie']:false;
+        $this->codpago = (isset($_REQUEST['codpago']))?$_REQUEST['codpago']:false;
+        $this->codagente = (isset($_REQUEST['codagente']))?$_REQUEST['codagente']:false;
+        $this->codalmacen = (isset($_REQUEST['codalmacen']))?$_REQUEST['codalmacen']:false;
         $this->coddivisa = (isset($_REQUEST['coddivisa']))?$_REQUEST['coddivisa']:$this->empresa->coddivisa;
-        $this->cliente = (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '')?$cli0->get($_REQUEST['codcliente']):FALSE;
-        $this->current_date = $this->empresa->var2str(\date('Y-m-d',strtotime($this->hasta)));
+        $this->cliente = (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '')?$cli0->get($_REQUEST['codcliente']):false;
+        $this->current_date = $this->empresa->var2str(\date('Y-m-d', strtotime($this->hasta)));
     }
     
     public function vencimiento_facturas()
@@ -78,7 +78,7 @@ class informe_estadocuenta extends rd_controller
         $sql = "select codalmacen, ".
         " sum(case when (".$this->current_date." - vencimiento) < 30 then totaleuros else 0 end) as d30, ".
         " sum(case when (".$this->current_date." - vencimiento) > 30 and (".$this->current_date." - vencimiento) < 60 then totaleuros else 0 end) as d60, ".
-        " sum(case when (".$this->current_date." - vencimiento) > 60 and (".$this->current_date." - vencimiento) < 90 then totaleuros else 0 end) as d90, ". 
+        " sum(case when (".$this->current_date." - vencimiento) > 60 and (".$this->current_date." - vencimiento) < 90 then totaleuros else 0 end) as d90, ".
         " sum(case when (".$this->current_date." - vencimiento) > 90 and (".$this->current_date." - vencimiento) < 120 then totaleuros else 0 end) as d120, ".
         " sum(case when (".$this->current_date." - vencimiento) > 120 then totaleuros else 0 end) as mas120 ".
         " from facturascli ".
@@ -86,30 +86,31 @@ class informe_estadocuenta extends rd_controller
         " group by codalmacen;";
         $data = $this->db->select($sql);
         $this->resultados = array();
-        if(!empty($data)){
+        if (!empty($data)) {
             $totalDeuda = 0;
-            foreach($data as $d){
+            foreach ($data as $d) {
                 $totalDeuda = $d['d30']+$d['d60']+$d['d90']+$d['d120']+$d['mas120'];
                 $item = new stdClass();
                 $item->codalmacen = $d['codalmacen'];
                 $item->nombre_almacen = $this->almacen->get($d['codalmacen'])->nombre;
                 $item->d30 = $d['d30'];
-                $item->d30_pcj = round(($d['d30']/$totalDeuda)*100,0);
+                $item->d30_pcj = round(($d['d30']/$totalDeuda)*100, 0);
                 $item->d60 = $d['d60'];
-                $item->d60_pcj = round(($d['d60']/$totalDeuda)*100,0);                
+                $item->d60_pcj = round(($d['d60']/$totalDeuda)*100, 0);
                 $item->d90 = $d['d90'];
-                $item->d90_pcj = round(($d['d90']/$totalDeuda)*100,0);
+                $item->d90_pcj = round(($d['d90']/$totalDeuda)*100, 0);
                 $item->d120 = $d['d120'];
-                $item->d120_pcj = round(($d['d120']/$totalDeuda)*100,0);
+                $item->d120_pcj = round(($d['d120']/$totalDeuda)*100, 0);
                 $item->mas120 = $d['mas120'];
-                $item->mas120_pcj = round(($d['mas120']/$totalDeuda)*100,0);
+                $item->mas120_pcj = round(($d['mas120']/$totalDeuda)*100, 0);
                 $item->totaldeuda = $totalDeuda;
                 $this->resultados[] = $item;
             }
         }
     }
     
-    public function tabla_de_datos(){
+    public function tabla_de_datos()
+    {
         $data = array();
         $this->template = false;
         $dias = \filter_input(INPUT_POST, 'dias');
@@ -118,9 +119,9 @@ class informe_estadocuenta extends rd_controller
         $order = \filter_input(INPUT_POST, 'order');
         $limit = \filter_input(INPUT_POST, 'limit');
         $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
-        $this->sort = ($sort AND $sort!='undefined')?$sort:'codalmacen, fecha, idfactura ';
-        $this->order = ($order AND $order!='undefined')?$order:'ASC';
-        $datos = $this->listado_facturas($dias,$offset);
+        $this->sort = ($sort and $sort!='undefined')?$sort:'codalmacen, fecha, idfactura ';
+        $this->order = ($order and $order!='undefined')?$order:'ASC';
+        $datos = $this->listado_facturas($dias, $offset);
         $resultados = $datos['resultados'];
         $total_informacion = $datos['total'];
         header('Content-Type: application/json');
@@ -129,7 +130,7 @@ class informe_estadocuenta extends rd_controller
         echo json_encode($data);
     }
     
-    public function listado_facturas($dias,$offset)
+    public function listado_facturas($dias, $offset)
     {
         $intervalo = $this->intervalo_tiempo($dias);
         $sql = "SELECT codalmacen, idfactura, codigo, numero2, nombrecliente, fecha, vencimiento, coddivisa, total, pagada, (".$this->current_date." - vencimiento) as atraso ".
@@ -146,8 +147,8 @@ class informe_estadocuenta extends rd_controller
     
     public function intervalo_tiempo($dias)
     {
-        $intervalo = '';        
-        switch($dias){
+        $intervalo = '';
+        switch ($dias) {
             case 30:
                 $intervalo = " AND (".$this->current_date." - vencimiento) <= 30 and (".$this->current_date." - vencimiento) > 0";
                 break;
@@ -169,9 +170,9 @@ class informe_estadocuenta extends rd_controller
     
     public function sql_aux()
     {
-        $estado = ($this->estado == 'pagada')?TRUE:FALSE;
+        $estado = ($this->estado == 'pagada')?true:false;
         $sql = '';
-        $sql .= ($this->hasta)?' AND fecha <= '.$this->empresa->var2str(\date('Y-m-d',strtotime($this->hasta))):'';
+        $sql .= ($this->hasta)?' AND fecha <= '.$this->empresa->var2str(\date('Y-m-d', strtotime($this->hasta))):'';
         $sql .= ($this->codserie)?' AND codserie = '.$this->empresa->var2str($this->codserie):'';
         $sql .= ($this->codpago)?' AND codpago = '.$this->empresa->var2str($this->codpago):'';
         $sql .= ($this->codagente)?' AND codagente = '.$this->empresa->var2str($this->codagente):'';
@@ -182,7 +183,8 @@ class informe_estadocuenta extends rd_controller
         $this->sql_aux = $sql;
     }
     
-    private function share_extensions() {
+    private function share_extensions()
+    {
         $extensiones = array(
             array(
                 'name' => '001_informe_estadocuenta_js',
@@ -234,9 +236,9 @@ class informe_estadocuenta extends rd_controller
             ),
         );
 
-        foreach($extensiones as $ext){
+        foreach ($extensiones as $ext) {
             $fext = new fs_extension($ext);
-            if(!$fext->save()){
+            if (!$fext->save()) {
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
             }
         }

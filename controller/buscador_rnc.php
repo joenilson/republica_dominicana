@@ -25,7 +25,6 @@ require_once 'plugins/republica_dominicana/extras/simple_html_dom.php';
  */
 class buscador_rnc extends fs_controller
 {
-
     public $dgii_web;
     public $resultados;
     public $total_resultados;
@@ -39,7 +38,7 @@ class buscador_rnc extends fs_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', FALSE, FALSE, TRUE);
+        parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', false, false, true);
     }
 
     protected function private_core()
@@ -96,8 +95,8 @@ class buscador_rnc extends fs_controller
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE',0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION',0)->value;
+        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
+        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
     }
 
     public function buscar()
@@ -131,13 +130,13 @@ class buscador_rnc extends fs_controller
         curl_setopt($h, CURLOPT_POST, true);
         curl_setopt($h, CURLOPT_POSTFIELDS, $query);
         curl_setopt($h, CURLOPT_HEADER, false);
-        curl_setopt($h, CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($h, CURLOPT_RETURNTRANSFER, 1);
         $result = curl_exec($h);
         curl_close($h);
         $html = str_get_html($result);
-        $vacio = trim($html->getElementById('#lblMsg',0)->plaintext);
+        $vacio = trim($html->getElementById('#lblMsg', 0)->plaintext);
         if ($vacio) {
-            $this->resultados = $html->getElementById('#lblMsg',0)->plaintext;
+            $this->resultados = $html->getElementById('#lblMsg', 0)->plaintext;
         } else {
             $cabeceras = array();
             $detalles = array();
@@ -160,7 +159,8 @@ class buscador_rnc extends fs_controller
         }
     }
     
-    private function loop_lista($lista){
+    private function loop_lista($lista)
+    {
         $array = array();
         foreach ($lista->find('td') as $item) {
             $array[] = $item->plaintext;
@@ -170,7 +170,5 @@ class buscador_rnc extends fs_controller
 
     public function guardar()
     {
-        
     }
-
 }

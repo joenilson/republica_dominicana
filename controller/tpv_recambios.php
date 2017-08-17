@@ -22,7 +22,6 @@ require_once 'helper_ncf.php';
 
 class tpv_recambios extends fbase_controller
 {
-
     public $agente;
     public $almacen;
     public $articulo;
@@ -61,7 +60,7 @@ class tpv_recambios extends fbase_controller
 
         $this->articulo = new articulo();
         $this->cliente = new cliente();
-        $this->cliente_s = FALSE;
+        $this->cliente_s = false;
         $this->fabricante = new fabricante();
         $this->familia = new familia();
         $this->impuesto = new impuesto();
@@ -73,13 +72,13 @@ class tpv_recambios extends fbase_controller
 
         if (isset($_REQUEST['buscar_cliente'])) {
             $this->buscar_cliente();
-        } else if (isset($_REQUEST['datoscliente'])) {
+        } elseif (isset($_REQUEST['datoscliente'])) {
             $this->datos_cliente();
-        } else if ($this->query != '') {
+        } elseif ($this->query != '') {
             $this->new_search();
-        } else if (isset($_REQUEST['referencia4precios'])) {
+        } elseif (isset($_REQUEST['referencia4precios'])) {
             $this->get_precios_articulo();
-        } else if (isset($_POST['referencia4combi'])) {
+        } elseif (isset($_POST['referencia4combi'])) {
             $this->get_combinaciones_articulo();
         } else {
             $this->agente = $this->user->get_agente();
@@ -92,8 +91,8 @@ class tpv_recambios extends fbase_controller
             $this->comprobar_opciones();
 
             if ($this->agente) {
-                $this->caja = FALSE;
-                $this->terminal = FALSE;
+                $this->caja = false;
+                $this->terminal = false;
                 $caja = new caja();
                 $terminal0 = new terminal_caja();
                 foreach ($caja->all_by_agente($this->agente->codagente) as $cj) {
@@ -109,7 +108,7 @@ class tpv_recambios extends fbase_controller
                         $this->terminal = $terminal0->get($_POST['terminal']);
                         if (!$this->terminal) {
                             $this->new_error_msg('Terminal no encontrado.');
-                        } else if ($this->terminal->disponible()) {
+                        } elseif ($this->terminal->disponible()) {
                             $this->caja = new caja();
                             $this->caja->fs_id = $this->terminal->id;
                             $this->caja->codagente = $this->agente->codagente;
@@ -117,25 +116,27 @@ class tpv_recambios extends fbase_controller
                             $this->caja->dinero_fin = floatval($_POST['d_inicial']);
                             if ($this->caja->save()) {
                                 $this->new_message("Caja iniciada con " . $this->show_precio($this->caja->dinero_inicial));
-                            } else
+                            } else {
                                 $this->new_error_msg("¡Imposible guardar los datos de caja!");
-                        } else
+                            }
+                        } else {
                             $this->new_error_msg('El terminal ya no está disponible.');
-                    }
-                    else if (isset($_GET['terminal'])) {
+                        }
+                    } elseif (isset($_GET['terminal'])) {
                         $this->terminal = $terminal0->get($_GET['terminal']);
                         if ($this->terminal) {
                             $this->terminal->abrir_cajon();
                             $this->terminal->save();
-                        } else
+                        } else {
                             $this->new_error_msg('Terminal no encontrado.');
+                        }
                     }
                 }
 
                 if ($this->caja) {
                     if (isset($_POST['cliente'])) {
                         $this->cliente_s = $this->cliente->get($_POST['cliente']);
-                    } else if ($this->terminal) {
+                    } elseif ($this->terminal) {
                         $this->cliente_s = $this->cliente->get($this->terminal->codcliente);
                     }
 
@@ -148,15 +149,15 @@ class tpv_recambios extends fbase_controller
 
                     if (isset($_GET['abrir_caja'])) {
                         $this->abrir_caja();
-                    } else if (isset($_GET['cerrar_caja'])) {
+                    } elseif (isset($_GET['cerrar_caja'])) {
                         $this->cerrar_caja();
-                    } else if (isset($_POST['cliente'])) {
+                    } elseif (isset($_POST['cliente'])) {
                         if (intval($_POST['numlineas']) > 0) {
                             $this->nueva_factura_cliente();
                         }
-                    } else if (isset($_GET['reticket'])) {
+                    } elseif (isset($_GET['reticket'])) {
                         $this->reimprimir_ticket();
-                    } else if (isset($_REQUEST['generar_comprobante'])) {
+                    } elseif (isset($_REQUEST['generar_comprobante'])) {
                         $this->generar_comprobante_fiscal();
                     }
 
@@ -181,9 +182,10 @@ class tpv_recambios extends fbase_controller
         }
     }
 
-    private function buscar_cliente() {
+    private function buscar_cliente()
+    {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         $json = array();
         foreach ($this->cliente->search($_REQUEST['buscar_cliente']) as $cli) {
@@ -196,7 +198,7 @@ class tpv_recambios extends fbase_controller
         echo json_encode(array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json));
     }
 
-    private function comprobar_opciones() 
+    private function comprobar_opciones()
     {
         $fsvar = new fs_var();
 
@@ -208,18 +210,18 @@ class tpv_recambios extends fbase_controller
          */
         if (isset($_POST['cliente'])) {
             if (isset($_POST['imprimir_desc'])) {
-                $this->imprimir_descripciones = TRUE;
+                $this->imprimir_descripciones = true;
                 $fsvar->simple_save('tpv_gen_descripcion', '1');
             } else {
-                $this->imprimir_descripciones = FALSE;
+                $this->imprimir_descripciones = false;
                 $fsvar->simple_delete('tpv_gen_descripcion');
             }
 
             if (isset($_POST['imprimir_obs'])) {
-                $this->imprimir_observaciones = TRUE;
+                $this->imprimir_observaciones = true;
                 $fsvar->simple_save('tpv_gen_observaciones', '1');
             } else {
-                $this->imprimir_observaciones = FALSE;
+                $this->imprimir_observaciones = false;
                 $fsvar->simple_delete('tpv_gen_observaciones');
             }
         }
@@ -228,7 +230,7 @@ class tpv_recambios extends fbase_controller
     private function generar_comprobante_fiscal()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
         $tipo_comprobante = \filter_input(INPUT_GET, 'generar_comprobante');
         $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $this->cliente_s->codpago, $this->terminal->area_impresion);
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
@@ -241,10 +243,10 @@ class tpv_recambios extends fbase_controller
         echo json_encode(array('ncf_numero' => $this->ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $this->terminal, 'cliente' => $this->cliente_s));
     }
 
-    private function datos_cliente() 
+    private function datos_cliente()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         header('Content-Type: application/json');
         echo json_encode($this->cliente->get($_REQUEST['datoscliente']));
@@ -253,7 +255,7 @@ class tpv_recambios extends fbase_controller
     private function new_search()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         $codfamilia = '';
         if (isset($_REQUEST['codfamilia'])) {
@@ -278,7 +280,7 @@ class tpv_recambios extends fbase_controller
 
         /// ejecutamos las funciones de las extensiones
         foreach ($this->extensions as $ext) {
-            if ($ext->type == 'function' AND $ext->params == 'new_search') {
+            if ($ext->type == 'function' and $ext->params == 'new_search') {
                 $name = $ext->text;
                 $name($this->db, $this->results);
             }
@@ -301,7 +303,7 @@ class tpv_recambios extends fbase_controller
             $this->results[$i]->cantidad = 1;
 
             $this->results[$i]->stockalm = $value->stockfis;
-            if ($this->multi_almacen AND isset($_REQUEST['codalmacen'])) {
+            if ($this->multi_almacen and isset($_REQUEST['codalmacen'])) {
                 $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
             }
         }
@@ -392,18 +394,18 @@ class tpv_recambios extends fbase_controller
 
     private function nueva_factura_cliente()
     {
-        $continuar = TRUE;
+        $continuar = true;
 
         $ejercicio = $this->ejercicio->get_by_fecha($_POST['fecha']);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado o está cerrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -411,13 +413,13 @@ class tpv_recambios extends fbase_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $factura = new factura_cliente();
@@ -426,7 +428,7 @@ class tpv_recambios extends fbase_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón Guardar
                y se han enviado dos peticiones. Mira en <a href="' . $factura->url() . '">Facturas</a>
                para ver si la factura se ha guardado correctamente.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         if ($continuar) {
@@ -449,7 +451,7 @@ class tpv_recambios extends fbase_controller
             $factura->porcomision = $this->agente->porcomision;
 
             if ($forma_pago->genrecibos == 'Pagados') {
-                $factura->pagada = TRUE;
+                $factura->pagada = true;
             }
 
             $factura->vencimiento = Date('d-m-Y', strtotime($factura->fecha . ' ' . $forma_pago->vencimiento));
@@ -479,8 +481,8 @@ class tpv_recambios extends fbase_controller
             if ($regularizacion->get_fecha_inside($factura->fecha)) {
                 $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado."
                         . " No se pueden añadir más facturas en esa fecha.");
-            } else if ($factura->save()) {
-                $trazabilidad = FALSE;
+            } elseif ($factura->save()) {
+                $trazabilidad = false;
                 $n = floatval($_POST['numlineas']);
                 for ($i = 1; $i <= $n; $i++) {
                     if (isset($_POST['referencia_' . $i])) {
@@ -491,7 +493,7 @@ class tpv_recambios extends fbase_controller
                             $linea->referencia = $articulo->referencia;
                             $linea->descripcion = $_POST['desc_' . $i];
 
-                            if (!$serie->siniva OR $this->cliente_s->regimeniva != 'Exento') {
+                            if (!$serie->siniva or $this->cliente_s->regimeniva != 'Exento') {
                                 $linea->codimpuesto = $articulo->codimpuesto;
                                 $linea->iva = floatval($_POST['iva_' . $i]);
                                 $linea->recargo = floatval($_POST['recargo_' . $i]);
@@ -506,7 +508,7 @@ class tpv_recambios extends fbase_controller
 
                             if ($articulo) {
                                 if ($articulo->trazabilidad) {
-                                    $trazabilidad = TRUE;
+                                    $trazabilidad = true;
                                 }
 
                                 if ($_POST['codcombinacion_' . $i]) {
@@ -516,7 +518,7 @@ class tpv_recambios extends fbase_controller
 
                             if ($linea->save()) {
                                 /// descontamos del stock
-                                $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
+                                $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
 
                                 $factura->neto += $linea->pvptotal;
                                 $factura->totaliva += ($linea->pvptotal * $linea->iva / 100);
@@ -528,11 +530,11 @@ class tpv_recambios extends fbase_controller
                                 }
                             } else {
                                 $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                                $continuar = FALSE;
+                                $continuar = false;
                             }
                         } else {
                             $this->new_error_msg("Artículo no encontrado: " . $_POST['referencia_' . $i]);
-                            $continuar = FALSE;
+                            $continuar = false;
                         }
                     }
                 }
@@ -549,7 +551,7 @@ class tpv_recambios extends fbase_controller
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" . $_POST['tpv_total2'] .
                                 " frente a " . $factura->total . "). Debes informar del error.");
                         $factura->delete();
-                    } else if ($factura->save()) {
+                    } elseif ($factura->save()) {
                         /*
                          * Luego de que todo este correcto verificamos que el NCF generado sea el correcto
                          * Esto solo para confirmar que no se haya registrado otra terminal con la misma area de impresión
@@ -584,15 +586,17 @@ class tpv_recambios extends fbase_controller
                         } else {
                             $this->new_error_msg("¡Imposible actualizar la caja!");
                         }
-                    } else
+                    } else {
                         $this->new_error_msg("¡Imposible actualizar la <a href='" . $factura->url() . "'>factura</a>!");
-                }
-                else if ($factura->delete()) {
+                    }
+                } elseif ($factura->delete()) {
                     $this->new_message("Factura eliminada correctamente.");
-                } else
+                } else {
                     $this->new_error_msg("¡Imposible eliminar la <a href='" . $factura->url() . "'>factura</a>!");
-            } else
+                }
+            } else {
                 $this->new_error_msg("¡Imposible guardar la factura!");
+            }
         }
     }
 
@@ -603,8 +607,9 @@ class tpv_recambios extends fbase_controller
                 $this->terminal->abrir_cajon();
                 $this->terminal->save();
             }
-        } else
+        } else {
             $this->new_error_msg('Sólo un administrador puede abrir la caja.');
+        }
     }
 
     private function cerrar_caja()
@@ -616,10 +621,10 @@ class tpv_recambios extends fbase_controller
                 $this->terminal->add_linea("Empleado: " . $this->user->codagente . " " . $this->agente->get_fullname() . "\n");
                 $this->terminal->add_linea("Caja: " . $this->caja->fs_id . "\n");
                 $this->terminal->add_linea("Fecha inicial: " . $this->caja->fecha_inicial . "\n");
-                $this->terminal->add_linea("Dinero inicial: " . $this->show_precio($this->caja->dinero_inicial, FALSE, FALSE) . "\n");
+                $this->terminal->add_linea("Dinero inicial: " . $this->show_precio($this->caja->dinero_inicial, false, false) . "\n");
                 $this->terminal->add_linea("Fecha fin: " . $this->caja->show_fecha_fin() . "\n");
-                $this->terminal->add_linea("Dinero fin: " . $this->show_precio($this->caja->dinero_fin, FALSE, FALSE) . "\n");
-                $this->terminal->add_linea("Diferencia: " . $this->show_precio($this->caja->diferencia(), FALSE, FALSE) . "\n");
+                $this->terminal->add_linea("Dinero fin: " . $this->show_precio($this->caja->dinero_fin, false, false) . "\n");
+                $this->terminal->add_linea("Diferencia: " . $this->show_precio($this->caja->diferencia(), false, false) . "\n");
                 $this->terminal->add_linea("Tickets: " . $this->caja->tickets . "\n\n");
                 $this->terminal->add_linea("Dinero pesado:\n\n\n");
                 $this->terminal->add_linea("Observaciones:\n\n\n\n");
@@ -634,27 +639,30 @@ class tpv_recambios extends fbase_controller
                 /// recargamos la página
                 header('location: ' . $this->url());
             }
-        } else
+        } else {
             $this->new_error_msg("¡Imposible cerrar la caja!");
+        }
     }
 
     private function reimprimir_ticket()
     {
         $factura = new factura_cliente();
-        $fac0 = FALSE;
+        $fac0 = false;
 
         if ($_GET['reticket'] == '') {
             foreach ($factura->all() as $fac) {
                 $fac0 = $fac;
                 break;
             }
-        } else
+        } else {
             $fac0 = $factura->get_by_codigo($_GET['reticket']);
+        }
 
         if ($fac0) {
-            $this->imprimir_ticket($fac0, 1, FALSE);
-        } else
+            $this->imprimir_ticket($fac0, 1, false);
+        } else {
             $this->new_error_msg("Ticket no encontrado.");
+        }
     }
 
     /**
@@ -663,7 +671,7 @@ class tpv_recambios extends fbase_controller
      * @param type $num_tickets
      * @param type $cajon
      */
-    private function imprimir_ticket($factura, $num_tickets = 1, $cajon = TRUE)
+    private function imprimir_ticket($factura, $num_tickets = 1, $cajon = true)
     {
         if ($this->terminal) {
             if ($cajon) {
@@ -691,7 +699,7 @@ class tpv_recambios extends fbase_controller
      * @param type $num_tickets
      * @param type $cajon
      */
-    private function imprimir_ticket_regalo($factura, $num_tickets = 1, $cajon = TRUE)
+    private function imprimir_ticket_regalo($factura, $num_tickets = 1, $cajon = true)
     {
         if ($this->terminal) {
             if ($cajon) {

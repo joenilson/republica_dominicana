@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 /**
  * Description of admin_rd
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class admin_rd extends fs_controller
+class admin_rd extends rd_controller
 {
-
     public $conf_divisa;
     public $conf_impuestos;
     public $conf_pais;
     public $conf_regional;
     public $impuestos_rd;
     public $variables;
-    public $rd_setup;
-
     public function __construct()
     {
         parent::__construct(__CLASS__, 'República Dominicana', 'admin');
@@ -40,6 +37,7 @@ class admin_rd extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
         //creamos las tablas necesarias si no están ya creadas
         new ncf_tipo();
         new ncf_entidad_tipo();
@@ -50,7 +48,6 @@ class admin_rd extends fs_controller
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
         $this->init_variables();
-        $this->get_config();
 
         $this->impuestos_rd = array(
             array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
@@ -82,10 +79,10 @@ class admin_rd extends fs_controller
 
         $this->get_config();
 
-        $this->conf_divisa = ($this->empresa->coddivisa == 'DOP') ? TRUE : FALSE;
-        $this->conf_pais = ($this->empresa->codpais == 'DOM') ? TRUE : FALSE;
-        $this->conf_regional = ($GLOBALS['config2']['iva'] == 'ITBIS') ? TRUE : FALSE;
-        $this->conf_impuestos = ($impuesto_empresa->get_by_iva(18)) ? TRUE : FALSE;
+        $this->conf_divisa = ($this->empresa->coddivisa == 'DOP') ? true : false;
+        $this->conf_pais = ($this->empresa->codpais == 'DOM') ? true : false;
+        $this->conf_regional = ($GLOBALS['config2']['iva'] == 'ITBIS') ? true : false;
+        $this->conf_impuestos = ($impuesto_empresa->get_by_iva(18)) ? true : false;
         //Cargamos el menu
         $this->check_menu();
     }
@@ -128,15 +125,15 @@ class admin_rd extends fs_controller
 
             /// leemos todos los controladores del plugin
             foreach (scandir(__DIR__) as $f) {
-                if ($f != '.' AND $f != '..' AND is_string($f) AND strlen($f) > 4 AND ! is_dir($f) AND $f != __CLASS__ . '.php') {
+                if ($f != '.' and $f != '..' and is_string($f) and strlen($f) > 4 and ! is_dir($f) and $f != __CLASS__ . '.php') {
                     /// obtenemos el nombre
                     $page_name = substr($f, 0, -4);
 
                     /// lo buscamos en el menú
-                    $encontrado = FALSE;
+                    $encontrado = false;
                     foreach ($this->menu as $m) {
                         if ($m->name == $page_name) {
-                            $encontrado = TRUE;
+                            $encontrado = true;
                             break;
                         }
                     }
@@ -154,7 +151,7 @@ class admin_rd extends fs_controller
                         if ($max > 0) {
                             $max--;
                         } else {
-                            $this->recargar = TRUE;
+                            $this->recargar = true;
                             $this->new_message('Instalando las entradas al menú para el plugin... &nbsp; <i class="fa fa-refresh fa-spin"></i>');
                             break;
                         }
@@ -165,26 +162,7 @@ class admin_rd extends fs_controller
             $this->new_error_msg('No se encuentra el directorio ' . __DIR__);
         }
 
-        $this->load_menu(TRUE);
-    }
-
-    public function get_config()
-    {
-        $fsvar = new fs_var();
-        $this->rd_setup = $fsvar->array_get(
-                array(
-            'rd_imprimir_logo' => 'TRUE',
-            'rd_imprimir_marca_agua' => 'TRUE',
-            'rd_imprimir_bn' => 'FALSE',
-            'rd_imprimir_cliente_box' => 'TRUE',
-            'rd_imprimir_detalle_box' => 'TRUE',
-            'rd_imprimir_detalle_lineas' => 'TRUE',
-            'rd_imprimir_detalle_colores' => 'TRUE',
-            'rd_imprimir_cabecera_fcolor' => '#000000',
-            'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
-            'rd_imprimir_detalle_color' => '#dadada',
-                ), FALSE
-        );
+        $this->load_menu(true);
     }
 
     public function impresion()
@@ -194,16 +172,16 @@ class admin_rd extends fs_controller
         $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
         $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
         $rd_config = array(
-            'rd_imprimir_logo' => (\filter_input(INPUT_POST, 'rd_imprimir_logo')) ? 'TRUE' : 'FALSE', 
+            'rd_imprimir_logo' => (\filter_input(INPUT_POST, 'rd_imprimir_logo')) ? 'TRUE' : 'FALSE',
             'rd_imprimir_marca_agua' => (\filter_input(INPUT_POST, 'rd_imprimir_marca_agua')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_bn' => (\filter_input(INPUT_POST, 'rd_imprimir_bn')) ? 'TRUE' : 'FALSE', 
+            'rd_imprimir_bn' => (\filter_input(INPUT_POST, 'rd_imprimir_bn')) ? 'TRUE' : 'FALSE',
             'rd_imprimir_cliente_box' => (\filter_input(INPUT_POST, 'rd_imprimir_cliente_box')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_detalle_box' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box')) ? 'TRUE' : 'FALSE', 
+            'rd_imprimir_detalle_box' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box')) ? 'TRUE' : 'FALSE',
             'rd_imprimir_detalle_lineas' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas')) ? 'TRUE' : 'FALSE',
             'rd_imprimir_detalle_colores' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas')) ? 'TRUE' : 'FALSE',
             'rd_imprimir_cabecera_fcolor' => ($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:"#000000",
-            'rd_imprimir_cabecera_tcolor' => ($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:"#FFFFFF",
-            'rd_imprimir_detalle_color' => ($op_imprimir_detalle_color)?$op_imprimir_detalle_color:"#dadada",
+            'rd_imprimir_cabecera_tcolor' => ($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:"#dadada",
+            'rd_imprimir_detalle_color' => ($op_imprimir_detalle_color)?$op_imprimir_detalle_color:"#000000",
         );
         if ($fsvar->array_save($rd_config)) {
             $this->new_message('Opciones de impresión actualizadas correctamente.');
@@ -339,11 +317,11 @@ class admin_rd extends fs_controller
     public function configuracion_regional()
     {
         //Configuramos la información básica para config2.ini
-        $guardar = FALSE;
+        $guardar = false;
         foreach ($GLOBALS['config2'] as $i => $value) {
             if (isset($this->variables[$i])) {
                 $GLOBALS['config2'][$i] = $this->variables[$i];
-                $guardar = TRUE;
+                $guardar = true;
             }
         }
 
@@ -407,5 +385,4 @@ class admin_rd extends fs_controller
             }
         }
     }
-
 }

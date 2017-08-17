@@ -25,19 +25,18 @@ require_model('ncf_tipo.php');
  */
 class tipo_ncf extends fs_controller
 {
-
     public $ncf_tipo;
     public $allow_delete;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Tipo de NCF', 'contabilidad', FALSE, FALSE, FALSE);
+        parent::__construct(__CLASS__, 'Tipo de NCF', 'contabilidad', false, false, false);
     }
 
     protected function private_core()
     {
         $this->shared_extensions();
-        $this->allow_delete = ($this->user->admin) ? TRUE : $this->user->allow_delete_on(__CLASS__);
+        $this->allow_delete = ($this->user->admin) ? true : $this->user->allow_delete_on(__CLASS__);
 
         $accion = filter_input(INPUT_POST, 'accion');
         if ($accion) {
@@ -102,5 +101,4 @@ class tipo_ncf extends fs_controller
             }
         }
     }
-
 }

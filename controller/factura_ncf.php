@@ -20,6 +20,7 @@
  */
 
 require_once 'plugins/republica_dominicana/extras/fpdf181/fs_fpdf.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/extras/fpdf181/font/');
 define('EEURO', chr(128));
 require_model('cliente.php');
@@ -39,8 +40,8 @@ require_model('distribucion_ordenescarga_facturas.php');
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 
-class factura_ncf extends fs_controller {
-
+class factura_ncf extends rd_controller
+{
     public $cliente;
     public $factura;
     public $documento;
@@ -48,38 +49,23 @@ class factura_ncf extends fs_controller {
     public $distrib_transporte;
     public $idtransporte;
     public $archivo;
-    public $rd_setup;
     public $agente;
     public $logo;
-    public function __construct() {
-        parent::__construct(__CLASS__, 'Factura NCF', 'ventas', FALSE, FALSE);
+    public function __construct()
+    {
+        parent::__construct(__CLASS__, 'Factura NCF', 'ventas', false, false);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
+        parent::private_core();
         $this->template = false;
         $this->share_extensions();
-
-        //Obtenemos las configuraciones de impresión de las facturas de RD
-        $fsvar = new fs_var();
-        $this->rd_setup = $fsvar->array_get(
-                array(
-            'rd_imprimir_logo' => 'TRUE',
-            'rd_imprimir_marca_agua' => 'TRUE',
-            'rd_imprimir_bn' => 'FALSE',
-            'rd_imprimir_cliente_box' => 'TRUE',
-            'rd_imprimir_detalle_box' => 'TRUE',
-            'rd_imprimir_detalle_lineas' => 'TRUE',
-            'rd_imprimir_detalle_colores' => 'TRUE',
-            'rd_imprimir_cabecera_fcolor' => '#000000',
-            'rd_imprimir_cabecera_tcolor' => '#FFFFFF',
-            'rd_imprimir_detalle_color' => '#dadada',
-                ), FALSE
-        );
         
-        $this->logo = FALSE;
+        $this->logo = false;
         if (file_exists(FS_MYDOCS . 'images/logo.png')) {
             $this->logo = 'images/logo.png';
-        } else if (file_exists(FS_MYDOCS . 'images/logo.jpg')) {
+        } elseif (file_exists(FS_MYDOCS . 'images/logo.jpg')) {
             $this->logo = 'images/logo.jpg';
         }
 
@@ -94,15 +80,16 @@ class factura_ncf extends fs_controller {
             $this->agente = new agente();
         }
 
-        if (!empty($valores_id[0]) AND $solicitud == 'imprimir') {
+        if (!empty($valores_id[0]) and $solicitud == 'imprimir') {
             $this->procesar_facturas($valores_id);
-        } elseif (!empty($valores_id[0]) AND $solicitud == 'email') {
+        } elseif (!empty($valores_id[0]) and $solicitud == 'email') {
             $this->enviar_email($valores_id[0]);
         }
     }
 
     // Corregir el Bug de fpdf con el Simbolo del Euro ---> €
-    public function ckeckEuro($cadena) {
+    public function ckeckEuro($cadena)
+    {
         $mostrar = $this->show_precio($cadena, $this->factura->coddivisa);
         $pos = strpos($mostrar, '€');
         if ($pos !== false) {
@@ -115,7 +102,8 @@ class factura_ncf extends fs_controller {
         return $mostrar;
     }
 
-    public function procesar_facturas($valores_id, $archivo = FALSE) {
+    public function procesar_facturas($valores_id, $archivo = false)
+    {
         if (!empty($valores_id)) {
             if (ob_get_status()) {
                 ob_end_clean();
@@ -166,11 +154,12 @@ class factura_ncf extends fs_controller {
         }
     }
 
-    private function enviar_email($doc, $tipo = 'ncf') {
+    private function enviar_email($doc, $tipo = 'ncf')
+    {
         $factura = new factura_cliente();
         $factura_enviar = $factura->get($doc);
         if ($this->empresa->can_send_mail()) {
-            if ($_POST['email'] != $this->cliente->email AND isset($_POST['guardar'])) {
+            if ($_POST['email'] != $this->cliente->email and isset($_POST['guardar'])) {
                 $this->cliente->email = $_POST['email'];
                 $this->cliente->save();
             }
@@ -198,7 +187,7 @@ class factura_ncf extends fs_controller {
 
                 $mail->AltBody = $_POST['mensaje'];
                 $mail->msgHTML(nl2br($_POST['mensaje']));
-                $mail->isHTML(TRUE);
+                $mail->isHTML(true);
 
                 $mail->addAttachment('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
                 if (is_uploaded_file($_FILES['adjunto']['tmp_name'])) {
@@ -230,8 +219,8 @@ class factura_ncf extends fs_controller {
         }
     }
 
-    public function generar_pdf($pdf_doc) {
-
+    public function generar_pdf($pdf_doc)
+    {
         if (!empty($pdf_doc)) {
             ///// INICIO - Factura Detallada
             /// Creamos el PDF y escribimos sus metadatos
@@ -272,12 +261,12 @@ class factura_ncf extends fs_controller {
             $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
             
             /// Insertamos el Logo y Marca de Agua si esta configurado así
-            $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '1' : '0';
-            $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '10' : '0';
-            $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' AND $this->logo) ? '5' : '0';
-            $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '1' : '0';
-            $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '25' : '0';
-            $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' AND $this->logo) ? '110' : '0';
+            $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '1' : '0';
+            $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '10' : '0';
+            $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '5' : '0';
+            $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '1' : '0';
+            $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '25' : '0';
+            $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '110' : '0';
 
             $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn'] == 'TRUE') ? '1' : '0';
             $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box'] == 'TRUE') ? '1' : '0';
@@ -427,7 +416,8 @@ class factura_ncf extends fs_controller {
         }
     }
 
-    private function share_extensions() {
+    private function share_extensions()
+    {
         $extensiones = array(
             array(
                 'name' => 'factura_ncf',
@@ -452,12 +442,12 @@ class factura_ncf extends fs_controller {
         }
     }
 
-    private function fix_html($txt) {
+    private function fix_html($txt)
+    {
         $newt = str_replace('&lt;', '<', $txt);
         $newt = str_replace('&gt;', '>', $newt);
         $newt = str_replace('&quot;', '"', $newt);
         $newt = str_replace('&#39;', "'", $newt);
         return $newt;
     }
-
 }

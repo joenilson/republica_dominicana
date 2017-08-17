@@ -43,10 +43,10 @@ class ncf_rango extends fs_model
     public $estado;
     public $contado;
 
-    public function __construct($t = false) {
+    public function __construct($t = false)
+    {
         parent::__construct('ncf_rango', 'plugins/republica_dominicana/');
-        if($t)
-        {
+        if ($t) {
             $this->id = $t['id'];
             $this->idempresa = $t['idempresa'];
             $this->solicitud = $t['solicitud'];
@@ -65,9 +65,7 @@ class ncf_rango extends fs_model
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = $this->str2bool($t['estado']);
             $this->contado = $this->str2bool($t['contado']);
-        }
-        else
-        {
+        } else {
             $this->id = null;
             $this->idempresa = null;
             $this->solicitud = null;
@@ -89,25 +87,24 @@ class ncf_rango extends fs_model
         }
     }
 
-    protected function install() {
+    protected function install()
+    {
         /*
          * se puede insertar datos en formato SQL
          */
         return '';
     }
 
-    public function exists() {
-        if(is_null($this->id))
-        {
+    public function exists()
+    {
+        if (is_null($this->id)) {
             return false;
-        }
-        else
-        {
+        } else {
             return $this->get_by_id($this->idempresa, $this->id);
         }
     }
 
-    public function get($idempresa,$solicitud,$codalmacen,$serie,$division,$punto_emision,$area_impresion,$tipo_comprobante)
+    public function get($idempresa, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
                     "idempresa = ".$this->intval($idempresa)." AND ".
@@ -118,34 +115,28 @@ class ncf_rango extends fs_model
                     "punto_emision = ".$this->var2str($punto_emision)." AND ".
                     "area_impresion = ".$this->var2str($area_impresion)." AND ".
                     "tipo_comprobante = ".$this->var2str($tipo_comprobante).";");
-        if($data)
-        {
+        if ($data) {
             return new ncf_rango($data[0]);
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 
-    public function get_by_id($idempresa,$id)
+    public function get_by_id($idempresa, $id)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
                     "idempresa = ".$this->intval($idempresa)." AND ".
                     "id = ".$this->intval($id).";");
-        if($data)
-        {
+        if ($data) {
             return new ncf_rango($data[0]);
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 
-    public function save() {
-        if ($this->exists())
-        {
+    public function save()
+    {
+        if ($this->exists()) {
             $sql = "UPDATE ncf_rango SET ".
                     "solicitud = ".$this->intval($this->solicitud).", ".
                     "codalmacen = ".$this->var2str($this->codalmacen).", ".
@@ -166,9 +157,7 @@ class ncf_rango extends fs_model
                     "idempresa = ".$this->intval($this->idempresa).";";
 
             return $this->db->exec($sql);
-        }
-        else
-        {
+        } else {
             $sql = "INSERT INTO ncf_rango (idempresa, solicitud,  codalmacen, serie, division, punto_emision, area_impresion, tipo_comprobante, secuencia_inicio, secuencia_fin, correlativo, estado, contado, usuario_creacion, fecha_creacion ) ".
                     "VALUES ".
                     "(".
@@ -189,13 +178,10 @@ class ncf_rango extends fs_model
                     $this->var2str($this->fecha_creacion).
                     ")";
 
-            if($this->db->exec($sql))
-            {
+            if ($this->db->exec($sql)) {
                 $this->solicitud = $this->solicitud;
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
@@ -213,13 +199,10 @@ class ncf_rango extends fs_model
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE idempresa = ".$this->intval($idempresa)." ORDER BY codalmacen,tipo_comprobante, division, solicitud");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_rango($d);
             }
-
         }
         return $lista;
     }
@@ -244,9 +227,9 @@ class ncf_rango extends fs_model
         " codalmacen = ".$this->var2str($codalmacen)." AND ".
         " contado = ".$contado." AND ".
         " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
-        if($data){
+        if ($data) {
             $ncf = $this->ncf_number($data[0]);
-        }else{
+        } else {
             $data2 = $this->db->select("SELECT ".
                 " * ".
                 " FROM ".$this->table_name.
@@ -255,8 +238,7 @@ class ncf_rango extends fs_model
                 " codalmacen = ".$this->var2str($codalmacen)." AND ".
                 " contado != ".$contado." AND ".
                 " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
-            if($data2)
-            {
+            if ($data2) {
                 $ncf = $this->ncf_number($data2[0]);
             }
         }
@@ -282,54 +264,55 @@ class ncf_rango extends fs_model
         "WHERE ".
         "idempresa = ".$this->intval($idempresa)." AND ".
         "codalmacen = ".$this->var2str($codalmacen)." AND ".
-        "area_impresion = ".$this->var2str(str_pad($area_impresion,3,'0',STR_PAD_LEFT))." AND ".
+        "area_impresion = ".$this->var2str(str_pad($area_impresion, 3, '0', STR_PAD_LEFT))." AND ".
         "contado = ".$contado." AND ".
         "tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
 
-        if($data){
+        if ($data) {
             $ncf = $this->ncf_number($data[0]);
-        }else{
+        } else {
             $data2 = $this->db->select("SELECT ".
                 " * ".
                 " FROM ".$this->table_name.
                 " WHERE ".
                 " idempresa = ".$this->intval($idempresa)." AND ".
                 " codalmacen = ".$this->var2str($codalmacen)." AND ".
-                " area_impresion = ".$this->var2str(str_pad($area_impresion,3,'0',STR_PAD_LEFT))." AND ".
+                " area_impresion = ".$this->var2str(str_pad($area_impresion, 3, '0', STR_PAD_LEFT))." AND ".
                 " contado != ".$contado." AND ".
                 " tipo_comprobante = ".$this->var2str($tipo_comprobante)." AND estado = true ;");
-            if($data2)
-            {
+            if ($data2) {
                 $ncf = $this->ncf_number($data2[0]);
             }
         }
         return $ncf;
     }
 
-    public function get_by_almacen($idempresa, $almacen){
+    public function get_by_almacen($idempresa, $almacen)
+    {
         $sql = "SELECT * FROM ".$this->table_name." WHERE idempresa = ".$this->intval($idempresa)." AND codalmacen = ".$this->var2str($almacen).";";
         $data = $this->db->exec($sql);
-        if($data){
+        if ($data) {
             $lista = array();
-            foreach($data as $d){
+            foreach ($data as $d) {
                 $lista[] = new ncf_rango($d);
             }
             return $lista;
-        }else{
+        } else {
             return false;
         }
     }
 
-    protected function ncf_number($data){
+    protected function ncf_number($data)
+    {
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->division.$solicitud->punto_emision.$solicitud->area_impresion.$solicitud->tipo_comprobante;
-        $correlativo = str_pad($solicitud->correlativo,8,'0',STR_PAD_LEFT);
+        $correlativo = str_pad($solicitud->correlativo, 8, '0', STR_PAD_LEFT);
         $ncf_number = ($correlativo == $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
         return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
     }
 
-    public function update($idempresa, $codalmacen, $solicitud, $ncf, $usuario){
-
+    public function update($idempresa, $codalmacen, $solicitud, $ncf, $usuario)
+    {
         $sql = "UPDATE ncf_rango SET ".
 
             "correlativo = ".$this->intval((\substr($ncf, 11, 18))+1).", ".

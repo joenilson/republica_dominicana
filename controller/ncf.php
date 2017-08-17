@@ -27,8 +27,8 @@ require_model('ncf_ventas.php');
  *
  * @author Joe Nilson <joenilson@gmail.com>
  */
-class ncf extends fs_controller {
-
+class ncf extends fs_controller
+{
     public $ncf_rango;
     public $ncf_tipo;
     public $ncf_ventas;
@@ -37,11 +37,13 @@ class ncf extends fs_controller {
     public $pais;
     public $array_series;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(__CLASS__, 'Maestro de NCF', 'contabilidad');
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->almacen = new almacen();
         $this->pais = new pais();
         $this->ncf_rango = new ncf_rango();
@@ -51,7 +53,7 @@ class ncf extends fs_controller {
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         $delete = \filter_input(INPUT_GET, 'delete');
-        if (isset($_POST['solicitud']) AND isset($_POST['codalmacen']) AND isset($_POST['serie']) AND isset($_POST['division']) AND isset($_POST['punto_emision']) AND isset($_POST['area_impresion']) AND isset($_POST['tipo_comprobante']) AND isset($_POST['secuencia_inicio']) AND isset($_POST['secuencia_fin'])) {
+        if (isset($_POST['solicitud']) and isset($_POST['codalmacen']) and isset($_POST['serie']) and isset($_POST['division']) and isset($_POST['punto_emision']) and isset($_POST['area_impresion']) and isset($_POST['tipo_comprobante']) and isset($_POST['secuencia_inicio']) and isset($_POST['secuencia_fin'])) {
             $id = \filter_input(INPUT_POST, 'id');
             $solicitud = \filter_input(INPUT_POST, 'solicitud');
             $codalmacen = \filter_input(INPUT_POST, 'codalmacen');
@@ -64,22 +66,22 @@ class ncf extends fs_controller {
             $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
             $correlativo = \filter_input(INPUT_POST, 'correlativo');
             $estado_val = \filter_input(INPUT_POST, 'estado');
-            $estado = (isset($estado_val))?TRUE:FALSE;
-            $estado = (isset($id))?$estado:TRUE;
+            $estado = (isset($estado_val))?true:false;
+            $estado = (isset($id))?$estado:true;
             $contado_val = \filter_input(INPUT_POST, 'contado');
-            $contado = (isset($contado_val))?TRUE:FALSE;
-            if($id){
+            $contado = (isset($contado_val))?true:false;
+            if ($id) {
                 $ncf0 = $this->ncf_rango->get_by_id($this->empresa->id, $id);
-            }else{
+            } else {
                 $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
             }
             if (!$ncf0) {
                 $ncf0 = new ncf_rango();
             }
             $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
-            if ($verificacion+1 > $correlativo AND $verificacion!=0) {
+            if ($verificacion+1 > $correlativo and $verificacion!=0) {
                 return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, y el ultimo correlativo es ".$verificacion." no se puede retroceder el correlativo!");
-            }else{
+            } else {
                 $ncf0->idempresa = $this->empresa->id;
                 $ncf0->id = $id;
                 $ncf0->solicitud = $solicitud;
@@ -104,36 +106,35 @@ class ncf extends fs_controller {
                     $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
                 }
             }
-        }
-        elseif ($delete) {
+        } elseif ($delete) {
             $id = $delete;
-            if(!is_null($id)){
+            if (!is_null($id)) {
                 $data_borrar = $this->ncf_rango->get_by_id($this->empresa->id, $id);
                 $ncf0 = new ncf_rango();
                 $ncf0->idempresa = $this->empresa->id;
                 $ncf0->id = $id;
-                if($ncf0->delete()){
+                if ($ncf0->delete()) {
                     $this->new_message("Datos de la Solicitud " . $data_borrar->solicitud . " con tipo de comprobante ".$data_borrar->tipo_comprobante." eliminados correctamente.");
-                }else{
+                } else {
                     $this->new_error_msg("¡Ocurrió un error, por favor revise la información enviada!");
                 }
-            }else{
+            } else {
                 $this->new_error_msg("¡Existen " . ($data_borrar->correlativo-$data_borrar->secuencia_inicio) . " NCF generados, no se puede eliminar esta secuencia!");
             }
         }
     }
 
-    protected function verifica_correlativo($ncf, $correlativo) {
+    protected function verifica_correlativo($ncf, $correlativo)
+    {
         $ultimo_correlativo = 0;
-        if (($ncf->correlativo != $correlativo) AND ($ncf->correlativo > $ncf->secuencia_inicio)) {
+        if (($ncf->correlativo != $correlativo) and ($ncf->correlativo > $ncf->secuencia_inicio)) {
             $this->ncf_ventas = new ncf_ventas();
             $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
-            if($facturas){
+            if ($facturas) {
                 $ultimo_documento = end($facturas);
-                $ultimo_correlativo = substr($ultimo_documento->ncf,12,8)+0;
+                $ultimo_correlativo = substr($ultimo_documento->ncf, 12, 8)+0;
             }
         }
         return $ultimo_correlativo;
     }
-
 }

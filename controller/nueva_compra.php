@@ -21,7 +21,6 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class nueva_compra extends fbase_controller
 {
-
     public $agente;
     public $almacen;
     public $articulo;
@@ -42,7 +41,7 @@ class nueva_compra extends fbase_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Nueva compra...', 'compras', FALSE, FALSE, TRUE);
+        parent::__construct(__CLASS__, 'Nueva compra...', 'compras', false, false, true);
     }
 
     protected function private_core()
@@ -56,7 +55,7 @@ class nueva_compra extends fbase_controller
         $this->proveedor = new proveedor();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_rango = new ncf_rango();
-        $this->proveedor_s = FALSE;
+        $this->proveedor_s = false;
         $this->results = array();
 
         if (isset($_REQUEST['tipo'])) {
@@ -70,22 +69,22 @@ class nueva_compra extends fbase_controller
 
         if (isset($_REQUEST['buscar_proveedor'])) {
             $this->fbase_buscar_proveedor($_REQUEST['buscar_proveedor']);
-        } else if (isset($_REQUEST['datosproveedor'])) {
+        } elseif (isset($_REQUEST['datosproveedor'])) {
             $this->datos_proveedor();
-        } else if (isset($_REQUEST['new_articulo'])) {
+        } elseif (isset($_REQUEST['new_articulo'])) {
             $this->new_articulo();
-        } else if ($this->query != '') {
+        } elseif ($this->query != '') {
             $this->new_search();
-        } else if (isset($_POST['referencia4precios'])) {
+        } elseif (isset($_POST['referencia4precios'])) {
             $this->get_precios_articulo();
-        } else if (isset($_POST['referencia4combi'])) {
+        } elseif (isset($_POST['referencia4combi'])) {
             $this->get_combinaciones_articulo();
-        } else if (isset($_POST['proveedor'])) {
+        } elseif (isset($_POST['proveedor'])) {
             $this->proveedor_s = $this->proveedor->get($_POST['proveedor']);
 
             if (isset($_POST['nuevo_proveedor'])) {
                 if ($_POST['nuevo_proveedor'] != '') {
-                    $this->proveedor_s = FALSE;
+                    $this->proveedor_s = false;
                     if ($_POST['nuevo_cifnif'] != '') {
                         $this->proveedor_s = $this->proveedor->get_by_cifnif($_POST['nuevo_cifnif']);
                         if ($this->proveedor_s) {
@@ -126,9 +125,9 @@ class nueva_compra extends fbase_controller
             if (isset($_POST['tipo'])) {
                 if ($_POST['tipo'] == 'factura') {
                     $this->nueva_factura_proveedor();
-                } else if ($_POST['tipo'] == 'albaran') {
+                } elseif ($_POST['tipo'] == 'albaran') {
                     $this->nuevo_albaran_proveedor();
-                } else if ($_POST['tipo'] == 'pedido' && class_exists('pedido_proveedor')) {
+                } elseif ($_POST['tipo'] == 'pedido' && class_exists('pedido_proveedor')) {
                     $this->nuevo_pedido_proveedor();
                 }
             }
@@ -144,7 +143,7 @@ class nueva_compra extends fbase_controller
     {
         $tipos = array();
 
-        if ($this->user->have_access_to('compras_pedido') AND class_exists('pedido_proveedor')) {
+        if ($this->user->have_access_to('compras_pedido') and class_exists('pedido_proveedor')) {
             $tipos[] = array('tipo' => 'pedido', 'nombre' => ucfirst(FS_PEDIDO) . ' de compra');
         }
 
@@ -167,7 +166,7 @@ class nueva_compra extends fbase_controller
     private function datos_proveedor()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         header('Content-Type: application/json');
         echo json_encode($this->proveedor->get($_REQUEST['datosproveedor']));
@@ -176,7 +175,7 @@ class nueva_compra extends fbase_controller
     private function new_articulo()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         $art0 = new articulo();
         if ($_REQUEST['referencia'] != '') {
@@ -208,7 +207,7 @@ class nueva_compra extends fbase_controller
                 $art0->codfabricante = $_REQUEST['codfabricante'];
             }
 
-            if ($_POST['refproveedor'] != '' AND $_POST['refproveedor'] != $_POST['referencia']) {
+            if ($_POST['refproveedor'] != '' and $_POST['refproveedor'] != $_POST['referencia']) {
                 $art0->equivalencia = $_POST['refproveedor'];
             }
 
@@ -247,7 +246,7 @@ class nueva_compra extends fbase_controller
     private function new_search()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
 
         $stock = new stock();
         $this->results = $this->search_from_proveedor();
@@ -271,7 +270,7 @@ class nueva_compra extends fbase_controller
 
             /// añadimos el stock del almacén y el general
             $this->results[$i]->stockalm = $this->results[$i]->stockfis;
-            if ($this->multi_almacen AND isset($_REQUEST['codalmacen'])) {
+            if ($this->multi_almacen and isset($_REQUEST['codalmacen'])) {
                 $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
             }
 
@@ -285,7 +284,7 @@ class nueva_compra extends fbase_controller
 
         /// ejecutamos las funciones de las extensiones
         foreach ($this->extensions as $ext) {
-            if ($ext->type == 'function' AND $ext->params == 'new_search') {
+            if ($ext->type == 'function' and $ext->params == 'new_search') {
                 $name = $ext->text;
                 $name($this->db, $this->results);
             }
@@ -332,12 +331,12 @@ class nueva_compra extends fbase_controller
 
     private function nuevo_pedido_proveedor()
     {
-        $continuar = TRUE;
+        $continuar = true;
 
         $proveedor = $this->proveedor->get($_POST['proveedor']);
         if (!$proveedor) {
             $this->new_error_msg('Proveedor no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -345,20 +344,20 @@ class nueva_compra extends fbase_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $eje0 = new ejercicio();
-        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], FALSE);
+        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], false);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -366,13 +365,13 @@ class nueva_compra extends fbase_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $pedido = new pedido_proveedor();
@@ -381,7 +380,7 @@ class nueva_compra extends fbase_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $pedido->url() . '">' . FS_PEDIDOS . '</a>
                para ver si el ' . FS_PEDIDO . ' se ha guardado correctamente.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         if ($continuar) {
@@ -414,7 +413,7 @@ class nueva_compra extends fbase_controller
                         $linea->idpedido = $pedido->idpedido;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva AND $proveedor->regimeniva != 'Exento') {
+                        if (!$serie->siniva and $proveedor->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -443,7 +442,7 @@ class nueva_compra extends fbase_controller
 
                         if ($linea->save()) {
                             if ($articulo && isset($_POST['costemedio'])) {
-                                if ($articulo->costemedio == 0 AND $linea->cantidad > 0) {
+                                if ($articulo->costemedio == 0 and $linea->cantidad > 0) {
                                     $articulo->costemedio = $linea->pvptotal / $linea->cantidad;
                                     $articulo->save();
                                 }
@@ -461,7 +460,7 @@ class nueva_compra extends fbase_controller
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = FALSE;
+                            $continuar = false;
                         }
                     }
                 }
@@ -478,9 +477,9 @@ class nueva_compra extends fbase_controller
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" .
                                 $_POST['atotal'] . " frente a " . $pedido->total . "). Debes informar del error.");
                         $pedido->delete();
-                    } else if ($pedido->save()) {
+                    } elseif ($pedido->save()) {
                         $this->new_message("<a href='" . $pedido->url() . "'>" . ucfirst(FS_PEDIDO) . "</a> guardado correctamente.");
-                        $this->new_change(ucfirst(FS_PEDIDO) . ' Proveedor ' . $pedido->codigo, $pedido->url(), TRUE);
+                        $this->new_change(ucfirst(FS_PEDIDO) . ' Proveedor ' . $pedido->codigo, $pedido->url(), true);
 
                         if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $pedido->url());
@@ -488,7 +487,7 @@ class nueva_compra extends fbase_controller
                     } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");
                     }
-                } else if ($pedido->delete()) {
+                } elseif ($pedido->delete()) {
                     $this->new_message(ucfirst(FS_PEDIDO) . " eliminado correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");
@@ -501,12 +500,12 @@ class nueva_compra extends fbase_controller
 
     private function nuevo_albaran_proveedor()
     {
-        $continuar = TRUE;
+        $continuar = true;
 
         $proveedor = $this->proveedor->get($_POST['proveedor']);
         if (!$proveedor) {
             $this->new_error_msg('Proveedor no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -514,20 +513,20 @@ class nueva_compra extends fbase_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $eje0 = new ejercicio();
-        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], FALSE);
+        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], false);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -535,13 +534,13 @@ class nueva_compra extends fbase_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $albaran = new albaran_proveedor();
@@ -550,7 +549,7 @@ class nueva_compra extends fbase_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $albaran->url() . '">' . FS_ALBARANES . '</a>
                para ver si el ' . FS_ALBARAN . ' se ha guardado correctamente.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         if ($continuar) {
@@ -575,7 +574,7 @@ class nueva_compra extends fbase_controller
             $albaran->observaciones = $_POST['observaciones'];
 
             if ($albaran->save()) {
-                $trazabilidad = FALSE;
+                $trazabilidad = false;
 
                 $art0 = new articulo();
                 $n = floatval($_POST['numlineas']);
@@ -585,7 +584,7 @@ class nueva_compra extends fbase_controller
                         $linea->idalbaran = $albaran->idalbaran;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva AND $proveedor->regimeniva != 'Exento') {
+                        if (!$serie->siniva and $proveedor->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -608,7 +607,7 @@ class nueva_compra extends fbase_controller
                         if ($articulo) {
                             $linea->referencia = $articulo->referencia;
                             if ($articulo->trazabilidad) {
-                                $trazabilidad = TRUE;
+                                $trazabilidad = true;
                             }
 
                             if ($_POST['codcombinacion_' . $i]) {
@@ -620,7 +619,7 @@ class nueva_compra extends fbase_controller
                             if ($articulo) {
                                 if (isset($_POST['stock'])) {
                                     $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, isset($_POST['costemedio']), $linea->codcombinacion);
-                                } else if (isset($_POST['costemedio'])) {
+                                } elseif (isset($_POST['costemedio'])) {
                                     /// modificamos virtualmente el stock para que se recalcule el coste medio
                                     $articulo->stockfis += $linea->cantidad;
                                     $articulo->costemedio = $articulo->get_costemedio();
@@ -643,7 +642,7 @@ class nueva_compra extends fbase_controller
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = FALSE;
+                            $continuar = false;
                         }
                     }
                 }
@@ -660,19 +659,19 @@ class nueva_compra extends fbase_controller
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" .
                                 $_POST['atotal'] . " frente a " . $albaran->total . "). Debes informar del error.");
                         $albaran->delete();
-                    } else if ($albaran->save()) {
+                    } elseif ($albaran->save()) {
                         $this->new_message("<a href='" . $albaran->url() . "'>" . ucfirst(FS_ALBARAN) . "</a> guardado correctamente.");
-                        $this->new_change(ucfirst(FS_ALBARAN) . ' Proveedor ' . $albaran->codigo, $albaran->url(), TRUE);
+                        $this->new_change(ucfirst(FS_ALBARAN) . ' Proveedor ' . $albaran->codigo, $albaran->url(), true);
 
                         if ($trazabilidad) {
                             header('Location: index.php?page=compras_trazabilidad&doc=albaran&id=' . $albaran->idalbaran);
-                        } else if ($_POST['redir'] == 'TRUE') {
+                        } elseif ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $albaran->url());
                         }
                     } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $albaran->url() . "'>" . FS_ALBARAN . "</a>!");
                     }
-                } else if ($albaran->delete()) {
+                } elseif ($albaran->delete()) {
                     $this->new_message(FS_ALBARAN . " eliminado correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $albaran->url() . "'>" . FS_ALBARAN . "</a>!");
@@ -685,12 +684,12 @@ class nueva_compra extends fbase_controller
 
     private function nueva_factura_proveedor()
     {
-        $continuar = TRUE;
+        $continuar = true;
 
         $proveedor = $this->proveedor->get($_POST['proveedor']);
         if (!$proveedor) {
             $this->new_error_msg('Proveedor no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -698,7 +697,7 @@ class nueva_compra extends fbase_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
@@ -706,10 +705,10 @@ class nueva_compra extends fbase_controller
             $ncf = $this->ncf_rango->generate($this->empresa->id, \filter_input(INPUT_POST, 'almacen'), '11', $proveedor->codpago);
             if ($ncf['NCF'] != 'NO_DISPONIBLE') {
                 $this->ncf_numero = $ncf;
-                $continuar = TRUE;
+                $continuar = true;
             } else {
                 $this->new_error_msg('No se puede guardar la factura porque no hay NCF para Proveedores Informales disponibles, revise su Maestro de NCF.');
-                $continuar = FALSE;
+                $continuar = false;
             }
         }
 
@@ -717,13 +716,13 @@ class nueva_compra extends fbase_controller
         $ejercicio = $eje0->get_by_fecha($_POST['fecha']);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado o está cerrado.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -731,13 +730,13 @@ class nueva_compra extends fbase_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $factura = new factura_proveedor();
@@ -746,7 +745,7 @@ class nueva_compra extends fbase_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $factura->url() . '">Facturas</a>
                para ver si la factura se ha guardado correctamente.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         if ($continuar) {
@@ -771,15 +770,15 @@ class nueva_compra extends fbase_controller
             $factura->observaciones = $_POST['observaciones'];
 
             if ($forma_pago->genrecibos == 'Pagados') {
-                $factura->pagada = TRUE;
+                $factura->pagada = true;
             }
 
             $regularizacion = new regularizacion_iva();
             if ($regularizacion->get_fecha_inside($factura->fecha)) {
                 $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado."
                         . " No se pueden añadir más facturas en esa fecha.");
-            } else if ($factura->save()) {
-                $trazabilidad = FALSE;
+            } elseif ($factura->save()) {
+                $trazabilidad = false;
 
                 $art0 = new articulo();
                 $n = floatval($_POST['numlineas']);
@@ -789,7 +788,7 @@ class nueva_compra extends fbase_controller
                         $linea->idfactura = $factura->idfactura;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva AND $proveedor->regimeniva != 'Exento') {
+                        if (!$serie->siniva and $proveedor->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -812,7 +811,7 @@ class nueva_compra extends fbase_controller
                         if ($articulo) {
                             $linea->referencia = $articulo->referencia;
                             if ($articulo->trazabilidad) {
-                                $trazabilidad = TRUE;
+                                $trazabilidad = true;
                             }
 
                             if ($_POST['codcombinacion_' . $i]) {
@@ -824,7 +823,7 @@ class nueva_compra extends fbase_controller
                             if ($articulo) {
                                 if (isset($_POST['stock'])) {
                                     $articulo->sum_stock($factura->codalmacen, $linea->cantidad, isset($_POST['costemedio']), $linea->codcombinacion);
-                                } else if (isset($_POST['costemedio'])) {
+                                } elseif (isset($_POST['costemedio'])) {
                                     /// modificamos virtualmente el stock para que se recalcule el coste medio
                                     $articulo->stockfis += $linea->cantidad;
                                     $articulo->costemedio = $articulo->get_costemedio();
@@ -847,7 +846,7 @@ class nueva_compra extends fbase_controller
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = FALSE;
+                            $continuar = false;
                         }
                     }
                 }
@@ -864,21 +863,21 @@ class nueva_compra extends fbase_controller
                         $this->new_error_msg("El total difiere entre el controlador y la vista (" .
                                 $factura->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
                         $factura->delete();
-                    } else if ($factura->save()) {
+                    } elseif ($factura->save()) {
                         $this->generar_asiento($factura);
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> con NCF " . $this->ncf_numero['NCF'] . " guardada correctamente.");
-                        $this->new_change('Factura Proveedor ' . $factura->codigo, $factura->url(), TRUE);
+                        $this->new_change('Factura Proveedor ' . $factura->codigo, $factura->url(), true);
                         $this->ncf_rango->update($this->empresa->id, $factura->codalmacen, $this->ncf_numero['SOLICITUD'], $this->ncf_numero['NCF'], $this->user->nick);
 
                         if ($trazabilidad) {
                             header('Location: index.php?page=compras_trazabilidad&doc=factura&id=' . $factura->idfactura);
-                        } else if ($_POST['redir'] == 'TRUE') {
+                        } elseif ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $factura->url());
                         }
                     } else {
                         $this->new_error_msg("¡Imposible actualizar la <a href='" . $factura->url() . "'>factura</a>!");
                     }
-                } else if ($factura->delete()) {
+                } elseif ($factura->delete()) {
                     $this->new_message("Factura eliminada correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible eliminar la <a href='" . $factura->url() . "'>factura</a>!");
@@ -957,7 +956,7 @@ class nueva_compra extends fbase_controller
             $sql .= $separador . " stockfis > 0";
         }
 
-        if (isset($_REQUEST['solo_proveedor']) AND isset($_REQUEST['codproveedor'])) {
+        if (isset($_REQUEST['solo_proveedor']) and isset($_REQUEST['codproveedor'])) {
             $sql .= $separador . " referencia IN (SELECT referencia FROM articulosprov WHERE codproveedor = "
                     . $this->articulo_prov->var2str($_REQUEST['codproveedor']) . ")";
         }

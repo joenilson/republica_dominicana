@@ -20,7 +20,6 @@
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 class imprimir_facturas extends rd_controller
 {
-
     public $agente;
     public $codalmacen;
     public $almacenes;
@@ -53,6 +52,7 @@ class imprimir_facturas extends rd_controller
 
     protected function private_core()
     {
+        parent::private_core();
         $this->init_variables();
         $mostrar = \filter_input(INPUT_GET, 'mostrar');
         $buscar_lineas = \filter_input(INPUT_POST, 'buscar_lineas');
@@ -68,9 +68,9 @@ class imprimir_facturas extends rd_controller
         $cli0 = new cliente();
         if ($buscar_lineas) {
             $this->buscar_lineas();
-        } else if ($buscar_cliente) {
+        } elseif ($buscar_cliente) {
             $this->buscar_cliente();
-        } else if ($ref) {
+        } elseif ($ref) {
             $this->template = 'extension/ventas_facturas_articulo';
             $articulo = new articulo();
             $this->articulo = $articulo->get($ref);
@@ -78,7 +78,7 @@ class imprimir_facturas extends rd_controller
             $this->resultados = $linea->all_from_articulo($ref, $this->offset);
         } else {
             $this->huecos = $this->factura->huecos();
-            $this->cliente = ($codcliente != '')?$cli0->get($codcliente):FALSE;
+            $this->cliente = ($codcliente != '')?$cli0->get($codcliente):false;
             $this->codagente = ($codagente)?$codagente:'';
             $this->codalmacen = ($codalmacen)?$codalmacen:'';
             $this->codserie = ($codserie)?$codserie:'';
@@ -89,7 +89,7 @@ class imprimir_facturas extends rd_controller
             $this->total_resultados_comision = 0;
             $this->total_resultados_txt = '';
 
-            if (!$mostrar AND ( $codagente OR $codcliente OR $codserie)) {
+            if (!$mostrar and ($codagente or $codcliente or $codserie)) {
                 /**
                  * si obtenermos un codagente, un codcliente o un codserie pasamos directamente
                  * a la pestaña de búsqueda, a menos que tengamos un mostrar, que
@@ -128,7 +128,7 @@ class imprimir_facturas extends rd_controller
         if ($mostrar) {
             $this->mostrar = $mostrar;
             setcookie('ventas_fac_mostrar', $this->mostrar, time() + FS_COOKIES_EXPIRE);
-        } else if (isset($_COOKIE['ventas_fac_mostrar'])) {
+        } elseif (isset($_COOKIE['ventas_fac_mostrar'])) {
             $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
         }
 
@@ -141,15 +141,15 @@ class imprimir_facturas extends rd_controller
         if ($order) {
             if ($order == 'fecha_desc') {
                 $this->order = 'facturascli.fecha DESC';
-            } else if ($order == 'fecha_asc') {
+            } elseif ($order == 'fecha_asc') {
                 $this->order = 'facturascli.fecha ASC';
-            } else if ($order == 'vencimiento_desc') {
+            } elseif ($order == 'vencimiento_desc') {
                 $this->order = 'vencimiento DESC';
-            } else if ($order == 'vencimiento_asc') {
+            } elseif ($order == 'vencimiento_asc') {
                 $this->order = 'vencimiento ASC';
             }
             setcookie('ventas_fac_order', $this->order, time() + FS_COOKIES_EXPIRE);
-        } else if (isset($_COOKIE['ventas_fac_order'])) {
+        } elseif (isset($_COOKIE['ventas_fac_order'])) {
             $this->order = $_COOKIE['ventas_fac_order'];
         }
     }
@@ -157,7 +157,7 @@ class imprimir_facturas extends rd_controller
     private function buscar_cliente()
     {
         /// desactivamos la plantilla HTML
-        $this->template = FALSE;
+        $this->template = false;
         $buscar_cliente = $this->filter_request('buscar_cliente');
         $cli0 = new cliente();
         $json = array();
@@ -220,7 +220,7 @@ class imprimir_facturas extends rd_controller
              * descartamos todo excepto la primera, la última, la de enmedio,
              * la actual, las 5 anteriores y las 5 siguientes
              */
-            if (($j > 1 AND $j < $actual - 5 AND $j != $enmedio) OR ( $j > $actual + 5 AND $j < $i - 1 AND $j != $enmedio)) {
+            if (($j > 1 and $j < $actual - 5 and $j != $enmedio) or ($j > $actual + 5 and $j < $i - 1 and $j != $enmedio)) {
                 unset($paginas[$j]);
             }
         }
@@ -254,8 +254,9 @@ class imprimir_facturas extends rd_controller
         $data = $this->db->select("SELECT COUNT(idfactura) as total FROM facturascli;");
         if ($data) {
             return intval($data[0]['total']);
-        } else
+        } else {
             return 0;
+        }
     }
 
     private function buscar($order2)
@@ -279,7 +280,7 @@ class imprimir_facturas extends rd_controller
         
         $this->aplicar_filtros($sql, $where);
 
-        $this->listar($sql , $where);
+        $this->listar($sql, $where);
 
         $data = $this->db->select("SELECT COUNT(idfactura) as total" . $sql);
         if ($data) {

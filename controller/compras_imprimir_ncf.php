@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,8 +31,8 @@ require_model('ncf_tipo.php');
  * e imprimir facturas de proveedor adecuados para República Dominicana.
  * @since 50
  */
-class compras_imprimir_ncf extends fs_controller {
-
+class compras_imprimir_ncf extends fs_controller
+{
     public $documento;
     public $impresion;
     public $impuesto;
@@ -42,15 +42,17 @@ class compras_imprimir_ncf extends fs_controller {
     private $articulo_traza;
     private $numpaginas;
 
-    public function __construct() {
-        parent::__construct(__CLASS__, 'imprimir_ncf', 'compras', FALSE, FALSE);
+    public function __construct()
+    {
+        parent::__construct(__CLASS__, 'imprimir_ncf', 'compras', false, false);
     }
 
-    protected function private_core() {
+    protected function private_core()
+    {
         $this->articulo_proveedor = new articulo_proveedor();
-        $this->documento = FALSE;
+        $this->documento = false;
         $this->impuesto = new impuesto();
-        $this->proveedor = FALSE;
+        $this->proveedor = false;
         $this->ncf_tipo = new ncf_tipo();
         /// obtenemos los datos de configuración de impresión
         $this->impresion = array(
@@ -59,12 +61,12 @@ class compras_imprimir_ncf extends fs_controller {
             'print_alb' => '0'
         );
         $fsvar = new fs_var();
-        $this->impresion = $fsvar->array_get($this->impresion, FALSE);
+        $this->impresion = $fsvar->array_get($this->impresion, false);
 
         $albaran = $this->filter_request('albaran');
         $id = $this->filter_request('id');
         $factura = $this->filter_request('factura');
-        if ($albaran AND $id) {
+        if ($albaran and $id) {
             $this->articulo_traza = new articulo_traza();
 
             $alb = new albaran_proveedor();
@@ -79,8 +81,7 @@ class compras_imprimir_ncf extends fs_controller {
             } else {
                 $this->generar_pdf_albaran();
             }
-        }
-        else if ($factura AND $id) {
+        } elseif ($factura and $id) {
             $this->articulo_traza = new articulo_traza();
 
             $fac = new factura_proveedor();
@@ -96,7 +97,8 @@ class compras_imprimir_ncf extends fs_controller {
         $this->share_extensions();
     }
 
-    private function share_extensions() {
+    private function share_extensions()
+    {
         $extensiones = array(
             array(
                 'name' => 'imprimir_factura_proveedor_ncf',
@@ -115,7 +117,8 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
 
-    private function generar_pdf_lineas(&$pdf_doc, &$lineas, &$linea_actual, &$lppag) {
+    private function generar_pdf_lineas(&$pdf_doc, &$lineas, &$linea_actual, &$lppag)
+    {
         /// calculamos el número de páginas
         if (!isset($this->numpaginas)) {
             $this->numpaginas = 0;
@@ -123,7 +126,7 @@ class compras_imprimir_ncf extends fs_controller {
             while ($linea_a < count($lineas)) {
                 $lppag2 = $lppag;
                 foreach ($lineas as $i => $lin) {
-                    if ($i >= $linea_a AND $i < $linea_a + $lppag2) {
+                    if ($i >= $linea_a and $i < $linea_a + $lppag2) {
                         $linea_size = 1;
                         $len = mb_strlen($lin->referencia . ' ' . $lin->descripcion);
                         while ($len > 85) {
@@ -133,7 +136,7 @@ class compras_imprimir_ncf extends fs_controller {
 
                         $aux = explode("\n", $lin->descripcion);
                         if (count($aux) > 1) {
-                            $linea_size += 0.5 * ( count($aux) - 1);
+                            $linea_size += 0.5 * (count($aux) - 1);
                         }
 
                         if ($linea_size > 1) {
@@ -152,50 +155,50 @@ class compras_imprimir_ncf extends fs_controller {
         }
 
         if ($this->impresion['print_dto']) {
-            $this->impresion['print_dto'] = FALSE;
+            $this->impresion['print_dto'] = false;
 
             /// leemos las líneas para ver si de verdad mostramos los descuentos
             foreach ($lineas as $lin) {
                 if ($lin->dtopor != 0) {
-                    $this->impresion['print_dto'] = TRUE;
+                    $this->impresion['print_dto'] = true;
                     break;
                 }
             }
         }
 
         $dec_cantidad = 0;
-        $multi_iva = FALSE;
-        $multi_re = FALSE;
-        $multi_irpf = FALSE;
-        $iva = FALSE;
-        $re = FALSE;
-        $irpf = FALSE;
+        $multi_iva = false;
+        $multi_re = false;
+        $multi_irpf = false;
+        $iva = false;
+        $re = false;
+        $irpf = false;
         /// leemos las líneas para ver si hay que mostrar los tipos de iva, re o irpf
         foreach ($lineas as $i => $lin) {
             if ($lin->cantidad != intval($lin->cantidad)) {
                 $dec_cantidad = 2;
             }
 
-            if ($iva === FALSE) {
+            if ($iva === false) {
                 $iva = $lin->iva;
-            } else if ($lin->iva != $iva) {
-                $multi_iva = TRUE;
+            } elseif ($lin->iva != $iva) {
+                $multi_iva = true;
             }
 
-            if ($re === FALSE) {
+            if ($re === false) {
                 $re = $lin->recargo;
-            } else if ($lin->recargo != $re) {
-                $multi_re = TRUE;
+            } elseif ($lin->recargo != $re) {
+                $multi_re = true;
             }
 
-            if ($irpf === FALSE) {
+            if ($irpf === false) {
                 $irpf = $lin->irpf;
-            } else if ($lin->irpf != $irpf) {
-                $multi_irpf = TRUE;
+            } elseif ($lin->irpf != $irpf) {
+                $multi_irpf = true;
             }
 
             /// restamos líneas al documento en función del tamaño de la descripción
-            if ($i >= $linea_actual AND $i < $linea_actual + $lppag) {
+            if ($i >= $linea_actual and $i < $linea_actual + $lppag) {
                 $linea_size = 1;
                 $len = mb_strlen($lin->referencia . ' ' . $lin->descripcion);
                 while ($len > 85) {
@@ -205,7 +208,7 @@ class compras_imprimir_ncf extends fs_controller {
 
                 $aux = explode("\n", $lin->descripcion);
                 if (count($aux) > 1) {
-                    $linea_size += 0.5 * ( count($aux) - 1);
+                    $linea_size += 0.5 * (count($aux) - 1);
                 }
 
                 if ($linea_size > 1) {
@@ -243,7 +246,7 @@ class compras_imprimir_ncf extends fs_controller {
         $table_header['importe'] = '<b>Importe</b>';
         $pdf_doc->add_table_header($table_header);
 
-        for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) AND ( $linea_actual < count($lineas)));) {
+        for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) and ($linea_actual < count($lineas)));) {
             $descripcion = $pdf_doc->fix_html($lineas[$linea_actual]->descripcion);
             if (!is_null($lineas[$linea_actual]->referencia)) {
                 $descripcion = '<b>' . $this->get_referencia_proveedor($lineas[$linea_actual]->referencia)
@@ -256,7 +259,7 @@ class compras_imprimir_ncf extends fs_controller {
             $fila = array(
                 'cantidad' => $this->show_numero($lineas[$linea_actual]->cantidad, $dec_cantidad),
                 'descripcion' => $descripcion,
-                'pvp' => $this->show_precio($lineas[$linea_actual]->pvpunitario, $this->documento->coddivisa, TRUE, FS_NF0_ART),
+                'pvp' => $this->show_precio($lineas[$linea_actual]->pvpunitario, $this->documento->coddivisa, true, FS_NF0_ART),
                 'dto' => $this->show_numero($lineas[$linea_actual]->dtopor) . " %",
                 'iva' => $this->show_numero($lineas[$linea_actual]->iva) . " %",
                 're' => $this->show_numero($lineas[$linea_actual]->recargo) . " %",
@@ -309,12 +312,14 @@ class compras_imprimir_ncf extends fs_controller {
         $pdf_doc->set_y(80);
     }
 
-    private function get_referencia_proveedor($ref) {
+    private function get_referencia_proveedor($ref)
+    {
         $artprov = $this->articulo_proveedor->get_by($ref, $this->documento->codproveedor);
         if ($artprov) {
             return $artprov->refproveedor;
-        } else
+        } else {
             return $ref;
+        }
     }
 
     /**
@@ -322,7 +327,8 @@ class compras_imprimir_ncf extends fs_controller {
      * @param linea_albaran_compra $linea
      * @return string
      */
-    private function generar_trazabilidad($linea) {
+    private function generar_trazabilidad($linea)
+    {
         $lineast = array();
         if (get_class_name($linea) == 'linea_albaran_proveedor') {
             $lineast = $this->articulo_traza->all_from_linea('idlalbcompra', $linea->idlinea);
@@ -345,13 +351,14 @@ class compras_imprimir_ncf extends fs_controller {
         return $txt;
     }
 
-    private function generar_pdf_datos_proveedor(&$pdf_doc) {
+    private function generar_pdf_datos_proveedor(&$pdf_doc)
+    {
         $tipo_doc = ucfirst(FS_ALBARAN);
-        $rectificativa = FALSE;
+        $rectificativa = false;
         if (get_class_name($this->documento) == 'factura_proveedor') {
             if ($this->documento->idfacturarect) {
                 $tipo_doc = ucfirst(FS_FACTURA_RECTIFICATIVA);
-                $rectificativa = TRUE;
+                $rectificativa = true;
             } else {
                 $tipo_doc = 'Factura';
             }
@@ -395,7 +402,7 @@ class compras_imprimir_ncf extends fs_controller {
                 )
         );
 
-        if (!empty($this->documento->numproveedor) AND strlen($this->documento->numproveedor) == 19) {
+        if (!empty($this->documento->numproveedor) and strlen($this->documento->numproveedor) == 19) {
             $pdf_doc->add_table_row(
                     array(
                         'campo1' => "<b>" . FS_NUMERO2 . ":</b>",
@@ -435,10 +442,11 @@ class compras_imprimir_ncf extends fs_controller {
         $pdf_doc->pdf->ezText("\n", 10);
     }
 
-    private function generar_pdf_totales(&$pdf_doc, &$lineas_iva, $pagina) {
+    private function generar_pdf_totales(&$pdf_doc, &$lineas_iva, $pagina)
+    {
         /*
          * Rellenamos la última tabla de la página:
-         * 
+         *
          * Página            Neto    IVA   Total
          */
         $pdf_doc->new_table();
@@ -461,8 +469,9 @@ class compras_imprimir_ncf extends fs_controller {
             $imp = $this->impuesto->get($li['codimpuesto']);
             if ($imp) {
                 $titulo['iva' . $li['iva']] = '<b>' . $imp->descripcion . '</b>';
-            } else
+            } else {
                 $titulo['iva' . $li['iva']] = '<b>' . FS_IVA . ' ' . $li['iva'] . '%</b>';
+            }
 
             $fila['iva' . $li['iva']] = $this->show_precio($li['totaliva'], $this->documento->coddivisa);
 
@@ -487,10 +496,11 @@ class compras_imprimir_ncf extends fs_controller {
         $pdf_doc->save_table($opciones);
     }
 
-    private function generar_pdf_albaran($archivo = FALSE) {
+    private function generar_pdf_albaran($archivo = false)
+    {
         if (!$archivo) {
             /// desactivamos la plantilla HTML
-            $this->template = FALSE;
+            $this->template = false;
         }
 
         /// Creamos el PDF y escribimos sus metadatos
@@ -535,10 +545,11 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
 
-    private function generar_pdf_factura($archivo = FALSE) {
+    private function generar_pdf_factura($archivo = false)
+    {
         if (!$archivo) {
             /// desactivamos la plantilla HTML
-            $this->template = FALSE;
+            $this->template = false;
         }
 
         /// Creamos el PDF y escribimos sus metadatos
@@ -583,8 +594,8 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
 
-    private function enviar_email() {
-
+    private function enviar_email()
+    {
         if ($this->empresa->can_send_mail()) {
             $this->verificar_email();
             $filename = 'albaran_' . $this->documento->codigo . '.pdf';
@@ -595,13 +606,14 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
     
-    public function procesar_email($filename) {
+    public function procesar_email($filename)
+    {
         $email = \filter_input(INPUT_POST, 'email');
         $de = \filter_input(INPUT_POST, 'de');
         $email_copia = \filter_input(INPUT_POST, 'email_copia');
-        $cco = \filter_input(INPUT_POST, 'cco');        
+        $cco = \filter_input(INPUT_POST, 'cco');
         $mensaje = \filter_input(INPUT_POST, 'mensaje');
-        if(file_exists('tmp/' . FS_TMP_NAME . 'enviar/' . $filename)) {
+        if (file_exists('tmp/' . FS_TMP_NAME . 'enviar/' . $filename)) {
             $razonsocial = $this->documento->nombre;
             $mail = $this->empresa->new_mail();
             $mail->FromName = $this->user->get_agente_fullname();
@@ -623,7 +635,7 @@ class compras_imprimir_ncf extends fs_controller {
             if ($this->is_html($mensaje)) {
                 $mail->AltBody = strip_tags($mensaje);
                 $mail->msgHTML($mensaje);
-                $mail->isHTML(TRUE);
+                $mail->isHTML(true);
             } else {
                 $mail->Body = $mensaje;
             }
@@ -641,7 +653,8 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
     
-    public function verificar_envio($mail) {
+    public function verificar_envio($mail)
+    {
         if ($this->empresa->mail_connect($mail)) {
             if ($mail->send()) {
                 $this->new_message('Mensaje enviado correctamente.');
@@ -654,22 +667,24 @@ class compras_imprimir_ncf extends fs_controller {
         }
     }
     
-    public function verificar_email() {
+    public function verificar_email()
+    {
         $email = \filter_input(INPUT_POST, 'email');
         $guardar = \filter_input(INPUT_POST, 'guardar');
         if ($this->proveedor) {
-            if ($email != $this->proveedor->email AND $guardar) {
+            if ($email != $this->proveedor->email and $guardar) {
                 $this->proveedor->email = $email;
                 $this->proveedor->save();
             }
         }
     }
 
-    public function is_html($txt) {
-        if (stripos($txt, '<html') === FALSE) {
-            return FALSE;
+    public function is_html($txt)
+    {
+        if (stripos($txt, '<html') === false) {
+            return false;
         } else {
-            return TRUE;
+            return true;
         }
     }
     
@@ -678,10 +693,10 @@ class compras_imprimir_ncf extends fs_controller {
      * @param type string
      * @return type string
      */
-    private function filter_request($nombre) {
+    private function filter_request($nombre)
+    {
         $nombre_post = \filter_input(INPUT_POST, $nombre);
         $nombre_get = \filter_input(INPUT_GET, $nombre);
         return ($nombre_post) ? $nombre_post : $nombre_get;
     }
-
 }

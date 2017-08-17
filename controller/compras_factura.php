@@ -21,7 +21,6 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class compras_factura extends fbase_controller
 {
-
     public $agente;
     public $almacen;
     public $divisa;
@@ -38,7 +37,7 @@ class compras_factura extends fbase_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', FALSE, FALSE);
+        parent::__construct(__CLASS__, 'Factura de proveedor', 'compras', false, false);
     }
 
     protected function private_core()
@@ -46,17 +45,17 @@ class compras_factura extends fbase_controller
         parent::private_core();
 
         $this->ppage = $this->page->get('compras_facturas');
-        $this->agente = FALSE;
+        $this->agente = false;
         $this->almacen = new almacen();
         $this->divisa = new divisa();
         $this->ejercicio = new ejercicio();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $factura = new factura_proveedor();
-        $this->factura = FALSE;
+        $this->factura = false;
         $this->forma_pago = new forma_pago();
-        $this->proveedor = FALSE;
-        $this->rectificada = FALSE;
-        $this->rectificativa = FALSE;
+        $this->proveedor = false;
+        $this->rectificada = false;
+        $this->rectificativa = false;
         $this->serie = new serie();
         $this->impuesto = new impuesto();
 
@@ -64,10 +63,10 @@ class compras_factura extends fbase_controller
          * Si hay alguna extensión de tipo config y texto no_button_pagada,
          * desactivamos el botón de pagada/sin pagar.
          */
-        $this->mostrar_boton_pagada = TRUE;
+        $this->mostrar_boton_pagada = true;
         foreach ($this->extensions as $ext) {
-            if ($ext->type == 'config' AND $ext->text == 'no_button_pagada') {
-                $this->mostrar_boton_pagada = FALSE;
+            if ($ext->type == 'config' and $ext->text == 'no_button_pagada') {
+                $this->mostrar_boton_pagada = false;
                 break;
             }
         }
@@ -75,7 +74,7 @@ class compras_factura extends fbase_controller
         if (isset($_POST['idfactura'])) {
             $this->factura = $factura->get($_POST['idfactura']);
             $this->modificar();
-        } else if (isset($_GET['id'])) {
+        } elseif (isset($_GET['id'])) {
             $this->factura = $factura->get($_GET['id']);
         }
 
@@ -92,21 +91,21 @@ class compras_factura extends fbase_controller
             $proveedor = new proveedor();
             $this->proveedor = $proveedor->get($this->factura->codproveedor);
 
-            if (isset($_GET['gen_asiento']) AND isset($_GET['petid'])) {
+            if (isset($_GET['gen_asiento']) and isset($_GET['petid'])) {
                 if ($this->duplicated_petition($_GET['petid'])) {
                     $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
                 } else {
                     $this->generar_asiento($this->factura);
                 }
-            } else if (isset($_REQUEST['pagada'])) {
+            } elseif (isset($_REQUEST['pagada'])) {
                 $this->pagar(($_REQUEST['pagada'] == 'TRUE'));
-            } else if (isset($_POST['anular'])) {
+            } elseif (isset($_POST['anular'])) {
                 if ($_POST['rectificativa'] == 'TRUE') {
                     $this->generar_rectificativa();
                 } else {
                     $this->anular_factura();
                 }
-            } else if (isset($rectificar)) {
+            } elseif (isset($rectificar)) {
                 $this->rectificar_factura();
             }
 
@@ -119,7 +118,7 @@ class compras_factura extends fbase_controller
             /// comprobamos la factura
             $this->factura->full_test();
         } else {
-            $this->new_error_msg("¡Factura de proveedor no encontrada!", 'error', FALSE, FALSE);
+            $this->new_error_msg("¡Factura de proveedor no encontrada!", 'error', false, false);
         }
     }
 
@@ -127,10 +126,11 @@ class compras_factura extends fbase_controller
     {
         if (!isset($this->factura)) {
             return parent::url();
-        } else if ($this->factura) {
+        } elseif ($this->factura) {
             return $this->factura->url();
-        } else
+        } else {
             return $this->page->url();
+        }
     }
 
     private function modificar()
@@ -152,8 +152,9 @@ class compras_factura extends fbase_controller
             }
             $this->new_message("Factura modificada correctamente.");
             $this->new_change('Factura Proveedor ' . $this->factura->codigo, $this->factura->url());
-        } else
+        } else {
             $this->new_error_msg("¡Imposible modificar la factura!");
+        }
     }
 
     private function generar_asiento(&$factura)
@@ -162,7 +163,7 @@ class compras_factura extends fbase_controller
             $this->new_error_msg('Ya hay un asiento asociado a esta factura.');
         } else {
             $asiento_factura = new asiento_factura();
-            $asiento_factura->soloasiento = TRUE;
+            $asiento_factura->soloasiento = true;
             if ($asiento_factura->generar_asiento_compra($factura)) {
                 $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> generado correctamente.");
 
@@ -182,15 +183,15 @@ class compras_factura extends fbase_controller
         }
     }
 
-    private function pagar($pagada = TRUE)
+    private function pagar($pagada = true)
     {
         /// ¿Hay asiento?
         if (is_null($this->factura->idasiento)) {
             $this->factura->pagada = $pagada;
             $this->factura->save();
-        } else if (!$pagada AND $this->factura->pagada) {
+        } elseif (!$pagada and $this->factura->pagada) {
             /// marcar como impagada
-            $this->factura->pagada = FALSE;
+            $this->factura->pagada = false;
 
             /// ¿Eliminamos el asiento de pago?
             $as1 = new asiento();
@@ -200,20 +201,20 @@ class compras_factura extends fbase_controller
                 $this->new_message('Asiento de pago eliminado.');
             }
 
-            $this->factura->idasientop = NULL;
+            $this->factura->idasientop = null;
             if ($this->factura->save()) {
                 $this->new_message('Factura marcada como impagada.');
             } else {
                 $this->new_error_msg('Error al modificar la factura.');
             }
-        } else if ($pagada AND ! $this->factura->pagada) {
+        } elseif ($pagada and ! $this->factura->pagada) {
             /// marcar como pagada
             $asiento = $this->factura->get_asiento();
             if ($asiento) {
                 /// nos aseguramos que el proveedor tenga subcuenta en el ejercicio actual
-                $subpro = FALSE;
+                $subpro = false;
                 $eje = $this->ejercicio->get_by_fecha($_POST['fpagada']);
-                if ($eje AND $this->proveedor) {
+                if ($eje and $this->proveedor) {
                     $subpro = $this->proveedor->get_subcuenta($eje->codejercicio);
                 }
 
@@ -221,8 +222,8 @@ class compras_factura extends fbase_controller
 
                 $asiento_factura = new asiento_factura();
                 $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $_POST['fpagada'], $subpro, $importe);
-                if ($this->factura->idasientop !== NULL) {
-                    $this->factura->pagada = TRUE;
+                if ($this->factura->idasientop !== null) {
+                    $this->factura->pagada = true;
                     if ($this->factura->save()) {
                         $this->new_message('<a href="' . $this->factura->asiento_pago_url() . '">Asiento de pago</a> generado.');
                     } else {
@@ -239,18 +240,18 @@ class compras_factura extends fbase_controller
         }
     }
 
-    private function anular_factura() 
+    private function anular_factura()
     {
         $ejercicio = $this->ejercicio->get_by_fecha($this->today());
         if ($ejercicio) {
             ///generamos una factura rectificativa a partir de la actual
             $factura = clone $this->factura;
-            $factura->idfactura = NULL;
-            $factura->numero = NULL;
-            $factura->numproveedor = NULL;
-            $factura->codigo = NULL;
-            $factura->idasiento = NULL;
-            $factura->idasientop = NULL;
+            $factura->idfactura = null;
+            $factura->numero = null;
+            $factura->numproveedor = null;
+            $factura->codigo = null;
+            $factura->idasiento = null;
+            $factura->idasientop = null;
             $factura->numdocs = 0;
 
             $factura->idfacturarect = $this->factura->idfactura;
@@ -267,12 +268,12 @@ class compras_factura extends fbase_controller
 
             if ($factura->save()) {
                 $articulo = new articulo();
-                $error = FALSE;
+                $error = false;
 
                 /// copiamos las líneas en negativo
                 foreach ($this->factura->get_lineas() as $lin) {
-                    $lin->idlinea = NULL;
-                    $lin->idalbaran = NULL;
+                    $lin->idlinea = null;
+                    $lin->idalbaran = null;
                     $lin->idfactura = $factura->idfactura;
                     $lin->cantidad = 0 - $lin->cantidad;
                     $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
@@ -283,11 +284,11 @@ class compras_factura extends fbase_controller
                             /// actualizamos el stock
                             $art = $articulo->get($lin->referencia);
                             if ($art) {
-                                $art->sum_stock($factura->codalmacen, $lin->cantidad, TRUE, $lin->codcombinacion);
+                                $art->sum_stock($factura->codalmacen, $lin->cantidad, true, $lin->codcombinacion);
                             }
                         }
                     } else {
-                        $error = TRUE;
+                        $error = true;
                     }
                 }
 
@@ -301,7 +302,7 @@ class compras_factura extends fbase_controller
                         $this->generar_asiento($factura);
                     }
 
-                    $this->factura->anulada = TRUE;
+                    $this->factura->anulada = true;
                     $this->factura->save();
                 }
             } else {
@@ -312,11 +313,12 @@ class compras_factura extends fbase_controller
         }
     }
 
-    public function rectificar_factura() {
+    public function rectificar_factura()
+    {
         $serie = $this->serie->get($_POST['codserie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = FALSE;
+            $continuar = false;
         }
 
         $motivo = \filter_input(INPUT_POST, 'motivo');
@@ -330,11 +332,11 @@ class compras_factura extends fbase_controller
         $irpf = 0;
         $recargo = 0;
         $factura = clone $this->factura;
-        $factura->idfactura = NULL;
-        $factura->numero = NULL;
+        $factura->idfactura = null;
+        $factura->numero = null;
         $factura->numproveedor = $_POST['numproveedor'];
-        $factura->codigo = NULL;
-        $factura->idasiento = NULL;
+        $factura->codigo = null;
+        $factura->idasiento = null;
         $factura->idfacturarect = $this->factura->idfactura;
         $factura->codigorect = $this->factura->codigo;
         $factura->fecha = $fecha;
@@ -349,9 +351,9 @@ class compras_factura extends fbase_controller
             $linea = new linea_factura_proveedor();
             $linea->idfactura = $factura->idfactura;
             $linea->descripcion = "Rectificación de importe";
-            if (!$serie->siniva AND $this->cliente->regimeniva != 'Exento') {
+            if (!$serie->siniva and $this->cliente->regimeniva != 'Exento') {
                 $imp0 = $this->impuesto->get_by_iva($impuesto);
-                $linea->codimpuesto = ($imp0) ? $imp0->codimpuesto : NULL;
+                $linea->codimpuesto = ($imp0) ? $imp0->codimpuesto : null;
                 $linea->iva = ($impuesto > 0) ? floatval($impuesto) : floatval($impuesto * -1);
                 $linea->recargo = floatval($recargo);
             }
@@ -365,12 +367,13 @@ class compras_factura extends fbase_controller
                 $factura->get_lineas_iva();
                 $this->generar_asiento($factura);
                 $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $_POST['numproveedor']);
-                $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), TRUE);
+                $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), true);
             }
         }
     }
 
-    private function get_factura_rectificativa() {
+    private function get_factura_rectificativa()
+    {
         $sql = "SELECT * FROM facturasprov WHERE idfacturarect = " . $this->factura->var2str($this->factura->idfactura);
 
         $data = $this->db->select($sql);

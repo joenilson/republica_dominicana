@@ -52,6 +52,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <input class="form-control datepicker" type="text" name="hasta" value="{$fsc->hasta}" autocomplete="off" onchange="this.form.submit()"/>
                 </div>
             </div>
+            {if="$fsc->multi_almacen"}
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <a href="{$fsc->almacen->url()}">Almacén</a>:
+                    <select name="codalmacen" class="form-control" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                        <option value="">------</option>
+                        {loop="$fsc->almacen->all()"}
+                        {if="$fsc->codalmacen==$value->codalmacen"}
+                        <option value="{$value->codalmacen}" selected="">{$value->nombre}</option>
+                        {else}
+                        <option value="{$value->codalmacen}">{$value->nombre}</option>
+                        {/if}
+                        {/loop}
+                    </select>
+                </div>
+            </div>
+            {else}
+            <input type="hidden" name="codalmacen" value=""/>
+            {/if}
             <div class="col-sm-2">
                 <div class="form-group">
                     <a href="{$fsc->agente->url()}">Empleado</a>:
@@ -116,36 +136,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </div>
         </div>
         <div class="row">
-            {if="$fsc->multi_almacen"}
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <a href="{$fsc->almacen->url()}">Almacén</a>:
-                    <select name="codalmacen" class="form-control" onchange="this.form.submit()">
-                        <option value="">Todos</option>
-                        <option value="">------</option>
-                        {loop="$fsc->almacen->all()"}
-                        {if="$fsc->codalmacen==$value->codalmacen"}
-                        <option value="{$value->codalmacen}" selected="">{$value->nombre}</option>
-                        {else}
-                        <option value="{$value->codalmacen}">{$value->nombre}</option>
-                        {/if}
-                        {/loop}
-                    </select>
-                </div>
-            </div>
-            {else}
-            <input type="hidden" name="codalmacen" value=""/>
-            {/if}
-            <div class="col-sm-2">
-                <div class="form-group">
-                    Estado:
-                    <select class="form-control" name="estado" onchange="this.form.submit()">
-                        <option value="">Todos</option>
-                        <option value="pagada"{if="$fsc->estado=='pagada'"} selected=""{/if}>Pagada</option>
-                        <option value="sinpagar"{if="$fsc->estado=='sinpagar'"} selected=""{/if}>Sin pagar</option>
-                    </select>
-                </div>
-            </div>
             <div class="col-sm-3">
                 Cliente:
                 <div class="input-group">
@@ -164,7 +154,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             {if="!$fsc->multi_almacen"}
             <div class="col-sm-2"></div>
             {/if}
-            <div class="col-sm-2">
+            <div class="col-sm-2 col-sm-offset-7">
                 &nbsp;<br/>
                 <button name="generar" value="TRUE" class="btn btn-sm btn-primary">
                     <span class="fa fa-play"></span>&nbsp;Generar
@@ -173,8 +163,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <span class="fa fa-file-pdf-o"></span>&nbsp;Descargar
                 </button>
             </div>
-        </div>
+        </div>        
     </form>
+    <br/>
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">

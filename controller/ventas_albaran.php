@@ -22,7 +22,6 @@ require_once 'helper_ncf.php';
 
 class ventas_albaran extends fbase_controller
 {
-
     public $agencia;
     public $agente;
     public $albaran;
@@ -49,7 +48,7 @@ class ventas_albaran extends fbase_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, FS_ALBARAN . ' de cliente', 'ventas', FALSE, FALSE);
+        parent::__construct(__CLASS__, FS_ALBARAN . ' de cliente', 'ventas', false, false);
     }
 
     protected function private_core()
@@ -57,21 +56,21 @@ class ventas_albaran extends fbase_controller
         parent::private_core();
 
         $this->ppage = $this->page->get('ventas_albaranes');
-        $this->agente = FALSE;
+        $this->agente = false;
 
         $this->agencia = new agencia_transporte();
         $albaran = new albaran_cliente();
-        $this->albaran = FALSE;
+        $this->albaran = false;
         $this->almacen = new almacen();
         $this->cliente = new cliente();
-        $this->cliente_s = FALSE;
+        $this->cliente_s = false;
         $this->divisa = new divisa();
         $this->ejercicio = new ejercicio();
         $this->fabricante = new fabricante();
         $this->familia = new familia();
         $this->forma_pago = new forma_pago();
         $this->impuesto = new impuesto();
-        $this->nuevo_albaran_url = FALSE;
+        $this->nuevo_albaran_url = false;
         $this->pais = new pais();
         $this->serie = new serie();
         $this->ncf_rango = new ncf_rango();
@@ -90,7 +89,7 @@ class ventas_albaran extends fbase_controller
          * Comprobamos si el usuario tiene acceso a nueva_venta,
          * necesario para poder añadir líneas.
          */
-        if ($this->user->have_access_to('nueva_venta', FALSE)) {
+        if ($this->user->have_access_to('nueva_venta', false)) {
             $nuevoalbp = $this->page->get('nueva_venta');
             if ($nuevoalbp) {
                 $this->nuevo_albaran_url = $nuevoalbp->url();
@@ -100,7 +99,7 @@ class ventas_albaran extends fbase_controller
         if (isset($_POST['idalbaran'])) {
             $this->albaran = $albaran->get($_POST['idalbaran']);
             $this->modificar();
-        } else if (isset($_GET['id'])) {
+        } elseif (isset($_GET['id'])) {
             $this->albaran = $albaran->get($_GET['id']);
         }
 
@@ -119,17 +118,17 @@ class ventas_albaran extends fbase_controller
             /// comprobamos el albarán
             $this->albaran->full_test();
 
-            if (isset($_REQUEST['facturar']) AND isset($_REQUEST['petid'])) {
+            if (isset($_REQUEST['facturar']) and isset($_REQUEST['petid'])) {
                 if ($this->duplicated_petition($_REQUEST['petid'])) {
                     $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
-                } else if (!$this->albaran->ptefactura OR ! is_null($this->albaran->idfactura)) {
+                } elseif (!$this->albaran->ptefactura or ! is_null($this->albaran->idfactura)) {
                     $this->new_error_msg('Parece que este ' . FS_ALBARAN . ' ya está facturado.');
-                } else
+                } else {
                     $this->generar_factura();
+                }
             }
-        }
-        else {
-            $this->new_error_msg("¡" . ucfirst(FS_ALBARAN) . " de venta no encontrado!", 'error', FALSE, FALSE);
+        } else {
+            $this->new_error_msg("¡" . ucfirst(FS_ALBARAN) . " de venta no encontrado!", 'error', false, false);
         }
     }
 
@@ -137,21 +136,22 @@ class ventas_albaran extends fbase_controller
     {
         if (!isset($this->albaran)) {
             return parent::url();
-        } else if ($this->albaran) {
+        } elseif ($this->albaran) {
             return $this->albaran->url();
-        } else
+        } else {
             return $this->page->url();
+        }
     }
 
     private function modificar()
     {
-        $error = FALSE;
+        $error = false;
         $this->albaran->numero2 = $_POST['numero2'];
         $this->albaran->observaciones = $_POST['observaciones'];
 
         /// ¿Es editable o ya ha sido facturado?
         if ($this->albaran->ptefactura) {
-            $eje0 = $this->ejercicio->get_by_fecha($_POST['fecha'], FALSE);
+            $eje0 = $this->ejercicio->get_by_fecha($_POST['fecha'], false);
             if ($eje0) {
                 $this->albaran->fecha = $_POST['fecha'];
                 $this->albaran->hora = $_POST['hora'];
@@ -171,13 +171,13 @@ class ventas_albaran extends fbase_controller
                     $this->albaran->codcliente = $cliente->codcliente;
                     $this->albaran->cifnif = $cliente->cifnif;
                     $this->albaran->nombrecliente = $cliente->razonsocial;
-                    $this->albaran->apartado = NULL;
-                    $this->albaran->ciudad = NULL;
-                    $this->albaran->coddir = NULL;
-                    $this->albaran->codpais = NULL;
-                    $this->albaran->codpostal = NULL;
-                    $this->albaran->direccion = NULL;
-                    $this->albaran->provincia = NULL;
+                    $this->albaran->apartado = null;
+                    $this->albaran->ciudad = null;
+                    $this->albaran->coddir = null;
+                    $this->albaran->codpais = null;
+                    $this->albaran->codpostal = null;
+                    $this->albaran->direccion = null;
+                    $this->albaran->provincia = null;
 
                     foreach ($cliente->get_direcciones() as $d) {
                         if ($d->domfacturacion) {
@@ -192,10 +192,10 @@ class ventas_albaran extends fbase_controller
                         }
                     }
                 } else {
-                    $this->albaran->codcliente = NULL;
+                    $this->albaran->codcliente = null;
                     $this->albaran->nombrecliente = $_POST['nombrecliente'];
                     $this->albaran->cifnif = $_POST['cifnif'];
-                    $this->albaran->coddir = NULL;
+                    $this->albaran->coddir = null;
                 }
             } else {
                 $this->albaran->nombrecliente = $_POST['nombrecliente'];
@@ -209,7 +209,7 @@ class ventas_albaran extends fbase_controller
 
                 $this->albaran->envio_nombre = $_POST['envio_nombre'];
                 $this->albaran->envio_apellidos = $_POST['envio_apellidos'];
-                $this->albaran->envio_codtrans = NULL;
+                $this->albaran->envio_codtrans = null;
                 if ($_POST['envio_codtrans'] != '') {
                     $this->albaran->envio_codtrans = $_POST['envio_codtrans'];
                 }
@@ -246,7 +246,7 @@ class ventas_albaran extends fbase_controller
                     $this->albaran->coddivisa = $divisa->coddivisa;
                     $this->albaran->tasaconv = $divisa->tasaconv;
                 }
-            } else if ($_POST['tasaconv'] != '') {
+            } elseif ($_POST['tasaconv'] != '') {
                 $this->albaran->tasaconv = floatval($_POST['tasaconv']);
             }
 
@@ -264,11 +264,11 @@ class ventas_albaran extends fbase_controller
 
                 /// eliminamos las líneas que no encontremos en el $_POST
                 foreach ($lineas as $l) {
-                    $encontrada = FALSE;
+                    $encontrada = false;
                     for ($num = 0; $num <= $numlineas; $num++) {
                         if (isset($_POST['idlinea_' . $num])) {
                             if ($l->idlinea == intval($_POST['idlinea_' . $num])) {
-                                $encontrada = TRUE;
+                                $encontrada = true;
                                 break;
                             }
                         }
@@ -278,10 +278,11 @@ class ventas_albaran extends fbase_controller
                             /// actualizamos el stock
                             $art0 = $articulo->get($l->referencia);
                             if ($art0) {
-                                $art0->sum_stock($this->albaran->codalmacen, $l->cantidad, FALSE, $l->codcombinacion);
+                                $art0->sum_stock($this->albaran->codalmacen, $l->cantidad, false, $l->codcombinacion);
                             }
-                        } else
+                        } else {
                             $this->new_error_msg("¡Imposible eliminar la línea del artículo " . $l->referencia . "!");
+                        }
                     }
                 }
 
@@ -292,12 +293,12 @@ class ventas_albaran extends fbase_controller
 
                 /// modificamos y/o añadimos las demás líneas
                 for ($num = 0; $num <= $numlineas; $num++) {
-                    $encontrada = FALSE;
+                    $encontrada = false;
                     if (isset($_POST['idlinea_' . $num])) {
                         foreach ($lineas as $k => $value) {
                             /// modificamos la línea
                             if ($value->idlinea == intval($_POST['idlinea_' . $num])) {
-                                $encontrada = TRUE;
+                                $encontrada = true;
                                 $cantidad_old = $value->cantidad;
                                 $lineas[$k]->cantidad = floatval($_POST['cantidad_' . $num]);
                                 $lineas[$k]->pvpunitario = floatval($_POST['pvp_' . $num]);
@@ -306,11 +307,11 @@ class ventas_albaran extends fbase_controller
                                 $lineas[$k]->pvptotal = ($value->cantidad * $value->pvpunitario * (100 - $value->dtopor) / 100);
                                 $lineas[$k]->descripcion = $_POST['desc_' . $num];
 
-                                $lineas[$k]->codimpuesto = NULL;
+                                $lineas[$k]->codimpuesto = null;
                                 $lineas[$k]->iva = 0;
                                 $lineas[$k]->recargo = 0;
                                 $lineas[$k]->irpf = floatval($_POST['irpf_' . $num]);
-                                if (!$serie->siniva AND $regimeniva != 'Exento') {
+                                if (!$serie->siniva and $regimeniva != 'Exento') {
                                     $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $num]);
                                     if ($imp0) {
                                         $lineas[$k]->codimpuesto = $imp0->codimpuesto;
@@ -334,23 +335,24 @@ class ventas_albaran extends fbase_controller
                                         /// actualizamos el stock
                                         $art0 = $articulo->get($value->referencia);
                                         if ($art0) {
-                                            $art0->sum_stock($this->albaran->codalmacen, $cantidad_old - $lineas[$k]->cantidad, FALSE, $lineas[$k]->codcombinacion);
+                                            $art0->sum_stock($this->albaran->codalmacen, $cantidad_old - $lineas[$k]->cantidad, false, $lineas[$k]->codcombinacion);
                                         }
                                     }
-                                } else
+                                } else {
                                     $this->new_error_msg("¡Imposible modificar la línea del artículo " . $value->referencia . "!");
+                                }
 
                                 break;
                             }
                         }
 
                         /// añadimos la línea
-                        if (!$encontrada AND intval($_POST['idlinea_' . $num]) == -1 AND isset($_POST['referencia_' . $num])) {
+                        if (!$encontrada and intval($_POST['idlinea_' . $num]) == -1 and isset($_POST['referencia_' . $num])) {
                             $linea = new linea_albaran_cliente();
                             $linea->idalbaran = $this->albaran->idalbaran;
                             $linea->descripcion = $_POST['desc_' . $num];
 
-                            if (!$serie->siniva AND $regimeniva != 'Exento') {
+                            if (!$serie->siniva and $regimeniva != 'Exento') {
                                 $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $num]);
                                 if ($imp0) {
                                     $linea->codimpuesto = $imp0->codimpuesto;
@@ -378,7 +380,7 @@ class ventas_albaran extends fbase_controller
                             if ($linea->save()) {
                                 if ($art0) {
                                     /// actualizamos el stock
-                                    $art0->sum_stock($this->albaran->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
+                                    $art0->sum_stock($this->albaran->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
                                 }
 
                                 $this->albaran->neto += $linea->pvptotal;
@@ -389,8 +391,9 @@ class ventas_albaran extends fbase_controller
                                 if ($linea->irpf > $this->albaran->irpf) {
                                     $this->albaran->irpf = $linea->irpf;
                                 }
-                            } else
+                            } else {
                                 $this->new_error_msg("¡Imposible guardar la línea del artículo " . $linea->referencia . "!");
+                            }
                         }
                     }
                 }
@@ -416,8 +419,9 @@ class ventas_albaran extends fbase_controller
             }
 
             $this->new_change(ucfirst(FS_ALBARAN) . ' Cliente ' . $this->albaran->codigo, $this->albaran->url());
-        } else
+        } else {
             $this->new_error_msg("¡Imposible modificar el " . FS_ALBARAN . "!");
+        }
     }
 
     /**
@@ -450,7 +454,7 @@ class ventas_albaran extends fbase_controller
         }
     }
 
-    private function generar_factura() 
+    private function generar_factura()
     {
         /*
          * Verificación de disponibilidad del Número de NCF para República Dominicana
@@ -463,7 +467,7 @@ class ventas_albaran extends fbase_controller
         } else {
             $net0 = new ncf_entidad_tipo();
             $net0->entidad = $this->albaran->codcliente;
-            $net0->estado = TRUE;
+            $net0->estado = true;
             $net0->fecha_creacion = \date('Y-m-d H:i:s');
             $net0->usuario_creacion = $this->user->nick;
             $net0->idempresa = $this->empresa->id;
@@ -472,7 +476,7 @@ class ventas_albaran extends fbase_controller
             $net0->save();
         }
 
-        if (strlen($this->albaran->cifnif) < 9 AND $tipo_comprobante == '01') {
+        if (strlen($this->albaran->cifnif) < 9 and $tipo_comprobante == '01') {
             return $this->new_error_msg('El cliente tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
         }
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
@@ -549,7 +553,7 @@ class ventas_albaran extends fbase_controller
         $formapago = $forma0->get($factura->codpago);
         if ($formapago) {
             if ($formapago->genrecibos == 'Pagados') {
-                $factura->pagada = TRUE;
+                $factura->pagada = true;
             }
 
             if ($this->cliente_s) {
@@ -563,12 +567,12 @@ class ventas_albaran extends fbase_controller
 
         if (!$eje0) {
             $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
-        } else if (!$eje0->abierto()) {
+        } elseif (!$eje0->abierto()) {
             $this->new_error_msg("El ejercicio está cerrado.");
-        } else if ($regularizacion->get_fecha_inside($factura->fecha)) {
+        } elseif ($regularizacion->get_fecha_inside($factura->fecha)) {
             $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
-        } else if ($factura->save()) {
-            $continuar = TRUE;
+        } elseif ($factura->save()) {
+            $continuar = true;
             $ncf_controller = new helper_ncf();
             $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             foreach ($this->albaran->get_lineas() as $l) {
@@ -593,7 +597,7 @@ class ventas_albaran extends fbase_controller
                 $n->mostrar_precio = $l->mostrar_precio;
 
                 if (!$n->save()) {
-                    $continuar = FALSE;
+                    $continuar = false;
                     $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                     break;
                 }
@@ -601,28 +605,30 @@ class ventas_albaran extends fbase_controller
 
             if ($continuar) {
                 $this->albaran->idfactura = $factura->idfactura;
-                $this->albaran->ptefactura = FALSE;
+                $this->albaran->ptefactura = false;
                 if ($this->albaran->save()) {
                     $this->generar_asiento($factura);
                 } else {
                     $this->new_error_msg("¡Imposible vincular el " . FS_ALBARAN . " con la nueva factura!");
                     if ($factura->delete()) {
                         $this->new_error_msg("La factura se ha borrado.");
-                    } else
+                    } else {
                         $this->new_error_msg("¡Imposible borrar la factura!");
+                    }
                 }
-            }
-            else {
+            } else {
                 if ($factura->delete()) {
                     $this->new_error_msg("La factura se ha borrado.");
-                } else
+                } else {
                     $this->new_error_msg("¡Imposible borrar la factura!");
+                }
             }
-        } else
+        } else {
             $this->new_error_msg("¡Imposible guardar la factura!");
+        }
     }
 
-    private function generar_asiento(&$factura) 
+    private function generar_asiento(&$factura)
     {
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
@@ -641,6 +647,6 @@ class ventas_albaran extends fbase_controller
             $this->new_message("<a href='" . $factura->url() . "'>Factura</a> generada correctamente.");
         }
 
-        $this->new_change('Factura ' . $factura->codigo, $factura->url(), TRUE);
+        $this->new_change('Factura ' . $factura->codigo, $factura->url(), true);
     }
 }

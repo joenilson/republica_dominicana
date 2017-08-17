@@ -24,7 +24,8 @@ require_model('ncf_tipo.php');
  *
  * @author Joe Nilson <joenilson@gmail.com>
  */
-class ncf_ventas extends fs_model {
+class ncf_ventas extends fs_model
+{
     public $idempresa;
     public $codalmacen;
     public $entidad;
@@ -45,10 +46,10 @@ class ncf_ventas extends fs_model {
 
     public $ncf_tipo;
     public $factura_cliente;
-    public function __construct($t = false) {
-        parent::__construct('ncf_ventas','plugins/republica_dominicana/');
-        if($t)
-        {
+    public function __construct($t = false)
+    {
+        parent::__construct('ncf_ventas', 'plugins/republica_dominicana/');
+        if ($t) {
             $this->idempresa = $t['idempresa'];
             $this->codalmacen = $t['codalmacen'];
             $this->entidad = $t['entidad'];
@@ -66,9 +67,7 @@ class ncf_ventas extends fs_model {
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = $this->str2bool($t['estado']);
             $this->motivo = $t['motivo'];
-        }
-        else
-        {
+        } else {
             $this->idempresa = null;
             $this->codalmacen = null;
             $this->entidad = null;
@@ -92,26 +91,25 @@ class ncf_ventas extends fs_model {
         $this->ncf_tipo = new ncf_tipo();
     }
 
-    protected function install() {
+    protected function install()
+    {
         return "";
     }
 
-    public function exists() {
-        if(is_null($this->idempresa) AND is_null($this->ncf))
-        {
+    public function exists()
+    {
+        if (is_null($this->idempresa) and is_null($this->ncf)) {
             return false;
-        }
-        else
-        {
+        } else {
             return $this->db->select("SELECT * FROM ncf_ventas WHERE ".
                     "idempresa = ".$this->intval($this->idempresa)." AND ".
                 "ncf = ".$this->var2str($this->ncf).";");
         }
     }
 
-    public function save() {
-        if (!$this->exists())
-        {
+    public function save()
+    {
+        if (!$this->exists()) {
             $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
@@ -128,18 +126,16 @@ class ncf_ventas extends fs_model {
                     $this->var2str($this->estado).", ".
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).");";
-            if($this->db->exec($sql))
-            {
+            if ($this->db->exec($sql)) {
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
     }
 
-    public function anular(){
+    public function anular()
+    {
         $sql = "UPDATE ncf_ventas SET ".
                 "estado = false, motivo = ".$this->var2str($this->motivo).", ".
                 "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
@@ -148,14 +144,15 @@ class ncf_ventas extends fs_model {
                 "ncf = ".$this->var2str($this->ncf). " AND ".
                 "idempresa = ".$this->intval($this->idempresa). " AND ".
                 "codalmacen = ".$this->var2str($this->codalmacen). "; ";
-        if($this->db->exec($sql)){
+        if ($this->db->exec($sql)) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
-    public function corregir_fecha(){
+    public function corregir_fecha()
+    {
         $sql = "UPDATE ncf_ventas SET ".
                 "fecha = ".$this->var2str($this->fecha).", ".
                 "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
@@ -164,14 +161,15 @@ class ncf_ventas extends fs_model {
                 "ncf = ".$this->var2str($this->ncf). " AND ".
                 "idempresa = ".$this->intval($this->idempresa). " AND ".
                 "codalmacen = ".$this->var2str($this->codalmacen). "; ";
-        if($this->db->exec($sql)){
+        if ($this->db->exec($sql)) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
         return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
     }
 
@@ -182,13 +180,10 @@ class ncf_ventas extends fs_model {
                 "idempresa = ".$this->intval($idempresa)." ".
                 "ORDER BY idempresa, ncf, fecha");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_ventas($d);
             }
-
         }
 
         return $lista;
@@ -202,13 +197,10 @@ class ncf_ventas extends fs_model {
                 "ncf = ".$this->var2str($ncf)." ".
                 "ORDER BY idempresa, ncf, fecha");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_ventas($d);
             }
-
         }
 
         return $lista;
@@ -221,9 +213,8 @@ class ncf_ventas extends fs_model {
                 "documento = ".$this->intval($documento)." AND ".
                 "entidad = ".$this->var2str($entidad).";");
 
-                return new ncf_ventas($data[0]);
-
-        }
+        return new ncf_ventas($data[0]);
+    }
 
     public function get_tipo($idempresa, $tipo_comprobante, $codalmacen, $area_impresion)
     {
@@ -235,28 +226,26 @@ class ncf_ventas extends fs_model {
                 "area_impresion = ".$this->var2str($area_impresion)." ".
                 "ORDER BY idempresa, ncf, fecha");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_ventas($d);
             }
-
         }
 
         return $lista;
     }
 
-    public function info_factura($idfactura){
+    public function info_factura($idfactura)
+    {
         $datos_adicionales = $this->factura_cliente->get($idfactura);
         return $datos_adicionales;
     }
 
-    public function all_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
+    public function all_desde_hasta($idempresa, $fecha_inicio, $fecha_fin, $codalmacen='')
     {
         $lista = array();
         $extra='';
-        if($codalmacen !=''){
+        if ($codalmacen !='') {
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
         $sql = "SELECT * FROM ncf_ventas WHERE ".
@@ -264,13 +253,11 @@ class ncf_ventas extends fs_model {
                 "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." ".
                 "ORDER BY idempresa, fecha, ncf";
         $data = $this->db->select($sql);
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $datos = new ncf_ventas($d);
                 $otros_datos = $this->info_factura($datos->documento);
-                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:FALSE;
+                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:false;
                 $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
                 $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
@@ -281,31 +268,28 @@ class ncf_ventas extends fs_model {
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-
         }
 
         return $lista;
     }
 
-    public function all_desde_hasta_limit($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='',$offset=0,$limit=FS_ITEM_LIMIT)
+    public function all_desde_hasta_limit($idempresa, $fecha_inicio, $fecha_fin, $codalmacen='', $offset=0, $limit=FS_ITEM_LIMIT)
     {
         $lista = array();
         $extra='';
-        if($codalmacen !=''){
+        if ($codalmacen !='') {
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
         $sql = "SELECT * FROM ncf_ventas WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "fecha between ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." ".
                 "ORDER BY idempresa, fecha, ncf";
-        $data = $this->db->select_limit($sql,$limit,$offset);
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        $data = $this->db->select_limit($sql, $limit, $offset);
+        if ($data) {
+            foreach ($data as $d) {
                 $datos = new ncf_ventas($d);
                 $otros_datos = $this->info_factura($datos->documento);
-                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:FALSE;
+                $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:false;
                 $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
                 $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
                 $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
@@ -316,17 +300,16 @@ class ncf_ventas extends fs_model {
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-
         }
 
         return $lista;
     }
 
-    public function all_activo_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
+    public function all_activo_desde_hasta($idempresa, $fecha_inicio, $fecha_fin, $codalmacen='')
     {
         $lista = array();
         $extra='';
-        if($codalmacen !=''){
+        if ($codalmacen !='') {
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
         $sql = "SELECT * FROM ncf_ventas WHERE ".
@@ -335,10 +318,8 @@ class ncf_ventas extends fs_model {
             " ORDER BY idempresa, fecha, ncf;";
         $data = $this->db->select($sql);
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $datos = new ncf_ventas($d);
                 $otros_datos = $this->info_factura($datos->documento);
                 $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
@@ -352,27 +333,24 @@ class ncf_ventas extends fs_model {
                 $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
                 $lista[] = $datos;
             }
-
         }
 
         return $lista;
     }
 
-    public function all_anulado_desde_hasta($idempresa,$fecha_inicio,$fecha_fin,$codalmacen='')
+    public function all_anulado_desde_hasta($idempresa, $fecha_inicio, $fecha_fin, $codalmacen='')
     {
         $lista = array();
         $extra='';
-        if($codalmacen !=''){
+        if ($codalmacen !='') {
             $extra .= " AND codalmacen = ".$this->var2str($codalmacen);
         }
         $data = $this->db->select("SELECT * FROM ncf_ventas ".
                 " WHERE idempresa = ".$this->intval($idempresa)." AND ".
                 " fecha BETWEEN ".$this->var2str($fecha_inicio)." AND ".$this->var2str($fecha_fin).$extra." and estado = false ".
                 " ORDER BY idempresa, fecha, ncf");
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $datos = new ncf_ventas($d);
                 $otros_datos = $this->info_factura($datos->documento);
                 $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;

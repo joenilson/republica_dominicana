@@ -22,42 +22,43 @@
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-if(!function_exists('fs_tipos_id_fiscal'))
-{
-   /**
+if (!function_exists('fs_tipos_id_fiscal')) {
+    /**
     * Devuelve la lista de identificadores fiscales.
     * @return type
     */
    function fs_tipos_id_fiscal()
    {
-      return array(FS_CIFNIF,'Pasaporte','Cédula','RNC');
+       return array(FS_CIFNIF,'Pasaporte','Cédula','RNC');
    }
 }
 
 /**
- * Se debe migrar aquí la funcionalidad de generar el ncf para insertarlo en 
+ * Se debe migrar aquí la funcionalidad de generar el ncf para insertarlo en
  * el campo numero2
  * @return string
  */
 
-function generar_numero2(){
+function generar_numero2()
+{
     return '';
 }
 /**
- * 
+ *
  * @param type $cliente
  * @param type $tipo_comprobante
  * @param type $terminal
  * @param type $json
  * @return type array
  */
-function generar_comprobante_fiscal($cliente,$tipo_comprobante,$codalmacen,$terminal=false, $json = false) {
+function generar_comprobante_fiscal($cliente, $tipo_comprobante, $codalmacen, $terminal=false, $json = false)
+{
     require_model('ncf_rango.php');
     $ncf_numero = array();
     $ncf_rango = new ncf_rango();
-    if($terminal){
+    if ($terminal) {
         $numero_ncf = $ncf_rango->generate_terminal($this->empresa->id, $codalmacen, $tipo_comprobante, $cliente->codpago, $terminal->area_impresion);
-    }else{
+    } else {
         $numero_ncf = $ncf_rango->generate($this->empresa->id, $codalmacen, $tipo_comprobante, $cliente->codpago);
     }
     
@@ -65,10 +66,10 @@ function generar_comprobante_fiscal($cliente,$tipo_comprobante,$codalmacen,$term
         $ncf_numero = $numero_ncf['NCF'];
     }
     
-    if($json){
+    if ($json) {
         header('Content-Type: application/json');
         echo json_encode(array('ncf_numero' => $this->ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $this->terminal, 'cliente' => $this->cliente_s));
-    }else{
+    } else {
         return $numero_ncf;
     }
 }

@@ -21,7 +21,6 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class ventas_facturas extends fbase_controller
 {
-
     public $agente;
     public $almacenes;
     public $articulo;
@@ -76,7 +75,7 @@ class ventas_facturas extends fbase_controller
         if (isset($_GET['mostrar'])) {
             $this->mostrar = $_GET['mostrar'];
             setcookie('ventas_fac_mostrar', $this->mostrar, time() + FS_COOKIES_EXPIRE);
-        } else if (isset($_COOKIE['ventas_fac_mostrar'])) {
+        } elseif (isset($_COOKIE['ventas_fac_mostrar'])) {
             $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
         }
 
@@ -93,15 +92,15 @@ class ventas_facturas extends fbase_controller
             }
 
             setcookie('ventas_fac_order', $this->order, time() + FS_COOKIES_EXPIRE);
-        } else if (isset($_COOKIE['ventas_fac_order'])) {
+        } elseif (isset($_COOKIE['ventas_fac_order'])) {
             $this->order = $_COOKIE['ventas_fac_order'];
         }
 
         if (isset($_POST['buscar_lineas'])) {
             $this->buscar_lineas();
-        } else if (isset($_REQUEST['buscar_cliente'])) {
+        } elseif (isset($_REQUEST['buscar_cliente'])) {
             $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
-        } else if (isset($_GET['ref'])) {
+        } elseif (isset($_GET['ref'])) {
             $this->template = 'extension/ventas_facturas_articulo';
 
             $articulo = new articulo();
@@ -112,7 +111,7 @@ class ventas_facturas extends fbase_controller
         } else {
             $this->share_extension();
             $this->huecos = $this->factura->huecos();
-            $this->cliente = FALSE;
+            $this->cliente = false;
             $this->codagente = '';
             $this->codalmacen = '';
             $this->codgrupo = '';
@@ -129,7 +128,7 @@ class ventas_facturas extends fbase_controller
             if (isset($_GET['delete'])) {
                 $this->delete_factura();
             } else {
-                if (!isset($_GET['mostrar']) AND ( $this->query != '' OR isset($_REQUEST['codagente']) OR isset($_REQUEST['codcliente']) OR isset($_REQUEST['codserie']))) {
+                if (!isset($_GET['mostrar']) and ($this->query != '' or isset($_REQUEST['codagente']) or isset($_REQUEST['codcliente']) or isset($_REQUEST['codserie']))) {
                     /**
                      * si obtenermos un codagente, un codcliente o un codserie pasamos direcatemente
                      * a la pestaña de búsqueda, a menos que tengamos un mostrar, que
@@ -198,14 +197,15 @@ class ventas_facturas extends fbase_controller
                         $this->total_resultados[$fac->coddivisa]['total'] += $fac->total;
                     }
                 }
-            } else if ($this->mostrar == 'buscar') {
+            } elseif ($this->mostrar == 'buscar') {
                 $this->buscar($order2);
-            } else
+            } else {
                 $this->resultados = $this->factura->all($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
+            }
         }
     }
 
-    public function url($busqueda = FALSE)
+    public function url($busqueda = false)
     {
         if ($busqueda) {
             $codcliente = '';
@@ -235,13 +235,13 @@ class ventas_facturas extends fbase_controller
     {
         if ($this->mostrar == 'sinpagar') {
             $total = $this->total_sinpagar();
-        } else if ($this->mostrar == 'buscar') {
+        } elseif ($this->mostrar == 'buscar') {
             $total = $this->num_resultados;
         } else {
             $total = $this->total_registros();
         }
 
-        return $this->fbase_paginas($this->url(TRUE), $total, $this->offset);
+        return $this->fbase_paginas($this->url(true), $total, $this->offset);
     }
 
     public function buscar_lineas()
@@ -370,13 +370,13 @@ class ventas_facturas extends fbase_controller
         if ($this->estado == 'pagadas') {
             $sql .= $where . "pagada";
             $where = ' AND ';
-        } else if ($this->estado == 'impagadas') {
+        } elseif ($this->estado == 'impagadas') {
             $sql .= $where . "pagada = false";
             $where = ' AND ';
-        } else if ($this->estado == 'anuladas') {
+        } elseif ($this->estado == 'anuladas') {
             $sql .= $where . "anulada = true";
             $where = ' AND ';
-        } else if ($this->estado == 'sinasiento') {
+        } elseif ($this->estado == 'sinasiento') {
             $sql .= $where . "idasiento IS NULL";
             $where = ' AND ';
         }
@@ -418,7 +418,7 @@ class ventas_facturas extends fbase_controller
      * Cuando se le da a eliminar factura en realidad se anula
      * generando un albaran con las cantidades en negativo para retornar el stock
      */
-    private function delete_factura() 
+    private function delete_factura()
     {
         $delete = \filter_input(INPUT_GET, 'delete');
         $motivo = \filter_input(INPUT_POST, 'motivo');
@@ -438,7 +438,7 @@ class ventas_facturas extends fbase_controller
                 if (is_null($linea->idalbaran)) {
                     $articulo = $art0->get($linea->referencia);
                     if ($articulo) {
-                        $articulo->sum_stock($fact->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
+                        $articulo->sum_stock($fact->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
                     }
                 } else {
                     $idalbaran = $linea->idalbaran;
@@ -473,12 +473,12 @@ class ventas_facturas extends fbase_controller
 
             $ncf0 = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
             $ncf0->motivo = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
-            $ncf0->estado = FALSE;
+            $ncf0->estado = false;
             $ncf0->usuario_modificacion = $this->user->nick;
             $ncf0->fecha_modificacion = Date('d-m-Y H:i:s');
             if ($ncf0->anular()) {
                 $asiento_factura = new asiento_factura();
-                $asiento_factura->soloasiento = TRUE;
+                $asiento_factura->soloasiento = true;
                 $fact_rectifica = $fact->idfacturarect;
                 $factrectifica = (!empty($fact->idfacturarect)) ? $fact_rectifica : 'NULL';
                 $fact->idfacturarect = ($ncf0->tipo_comprobante == '04') ? null : $fact->idfactura;
@@ -504,7 +504,7 @@ class ventas_facturas extends fbase_controller
         }
     }
 
-    public function orden() 
+    public function orden()
     {
         return array(
             'fecha_desc' => array(

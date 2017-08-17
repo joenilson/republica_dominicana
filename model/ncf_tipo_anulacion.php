@@ -29,23 +29,22 @@ class ncf_tipo_anulacion extends fs_model
     public $descripcion;
     public $estado;
 
-    public function __construct($t = false) {
-        parent::__construct('ncf_tipo_anulacion','plugins/republica_dominicana/');
-        if($t)
-        {
+    public function __construct($t = false)
+    {
+        parent::__construct('ncf_tipo_anulacion', 'plugins/republica_dominicana/');
+        if ($t) {
             $this->codigo = $t['codigo'];
             $this->descripcion = $t['descripcion'];
             $this->estado = $this->str2bool($t['estado']);
-        }
-        else
-        {
+        } else {
             $this->codigo = null;
             $this->descripcion = '';
             $this->estado = false;
         }
     }
 
-    protected function install() {
+    protected function install()
+    {
         return "INSERT INTO ncf_tipo_anulacion (codigo, descripcion, estado) VALUES ".
             "('01','Deterioro de Factura Pre-Imprensa',true),
             ('02','Errores de Impresión (Factura Pre-Impresa)',true),
@@ -57,42 +56,36 @@ class ncf_tipo_anulacion extends fs_model
             ('08','Omisión de Productos',true);";
     }
 
-    public function exists() {
-        if(is_null($this->codigo))
-        {
+    public function exists()
+    {
+        if (is_null($this->codigo)) {
             return false;
-        }
-        else
-        {
+        } else {
             return $this->db->select("SELECT * FROM ncf_tipo_anulacion WHERE codigo = ".$this->var2str($this->codigo).";");
         }
     }
 
-    public function save() {
-        if ($this->exists())
-        {
+    public function save()
+    {
+        if ($this->exists()) {
             $sql = "UPDATE ncf_tipo_anulacion SET ".
                     "descripcion = ".$this->var2str($this->descripcion).", ".
                     "estado = ".$this->var2str($this->estado)." WHERE codigo = ".$this->var2str($this->codigo).";";
 
             return $this->db->exec($sql);
-        }
-        else
-        {
+        } else {
             $sql = "INSERT INTO ncf_tipo_anulacion (codigo, descripcion, estado) VALUES ".
                     "(".$this->var2str($this->codigo).", ".$this->var2str($this->descripcion).", ".$this->var2str($this->estado).");";
-            if($this->db->exec($sql))
-            {
+            if ($this->db->exec($sql)) {
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
         return $this->db->exec("UPDATE ncf_tipo_anulacion SET estado = ".$this->var2str($this->estado)." WHERE codigo = ".$this->var2str($this->codigo).";");
     }
 
@@ -101,13 +94,10 @@ class ncf_tipo_anulacion extends fs_model
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_tipo_anulacion ORDER BY codigo,descripcion");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_tipo_anulacion($d);
             }
-
         }
 
         return $lista;
@@ -119,5 +109,4 @@ class ncf_tipo_anulacion extends fs_model
 
         return new ncf_tipo_anulacion($data[0]);
     }
-
 }

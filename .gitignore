@@ -11,3 +11,4 @@ nb-configuration.xml
 .nb-gradle/
 
 /nbproject/
+/.php_cs.cache

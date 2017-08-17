@@ -26,5 +26,4 @@ require_once 'plugins/republica_dominicana/model/core/terminal_caja.php';
  */
 class terminal_caja extends FacturaScripts\model\terminal_caja
 {
-
 }

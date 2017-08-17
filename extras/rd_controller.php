@@ -34,7 +34,7 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
  */
 class rd_controller extends fbase_controller
 {
-/**
+    /**
      * TRUE si el usuario tiene permisos para eliminar en la página.
      * @var type
      */
@@ -60,7 +60,8 @@ class rd_controller extends fbase_controller
     public $serie;
     public $array_series;
     public $tesoreria;
-    protected function private_core() 
+    public $rd_setup;
+    protected function private_core()
     {
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on($this->class_name);
@@ -80,16 +81,35 @@ class rd_controller extends fbase_controller
         
         $fsvar = new fs_var();
         $this->multi_almacen = $fsvar->simple_get('multi_almacen');
-        $this->periodos = range(2016,\date('Y'));
+        $this->periodos = range(2016, \date('Y'));
         $this->existe_tesoreria();
         $this->control_usuarios();
-        
+        $this->get_config();
+    }
+    
+    public function get_config()
+    {
+        $fsvar = new fs_var();
+        $this->rd_setup = $fsvar->array_get(
+            array(
+            'rd_imprimir_logo' => 'TRUE',
+            'rd_imprimir_marca_agua' => 'TRUE',
+            'rd_imprimir_bn' => 'FALSE',
+            'rd_imprimir_cliente_box' => 'TRUE',
+            'rd_imprimir_detalle_box' => 'TRUE',
+            'rd_imprimir_detalle_lineas' => 'TRUE',
+            'rd_imprimir_detalle_colores' => 'TRUE',
+            'rd_imprimir_cabecera_fcolor' => '#000000',
+            'rd_imprimir_cabecera_tcolor' => '#dadada',
+            'rd_imprimir_detalle_color' => '#000000',
+            ), false
+        );
     }
     
     public function control_usuarios()
     {
         //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
-        if(!$this->user->admin){
+        if (!$this->user->admin) {
             $this->agente = new agente();
             $cod = $this->agente->get($this->user->codagente);
             $user_almacen = ($cod)?$this->almacenes->get($cod->codalmacen):false;
@@ -98,7 +118,8 @@ class rd_controller extends fbase_controller
         }
     }
     
-    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false) {
+    public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
+    {
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {
@@ -110,12 +131,12 @@ class rd_controller extends fbase_controller
             $ncf_factura->documento = $factura->idfactura;
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
-            $ncf_factura->area_impresion = substr($numero_ncf['NCF'],6,3);
+            $ncf_factura->area_impresion = substr($numero_ncf['NCF'], 6, 3);
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
-            $ncf_factura->estado = TRUE;
-            if($factura->idfacturarect){
+            $ncf_factura->estado = true;
+            if ($factura->idfacturarect) {
                 $ncf_orig = new ncf_ventas();
                 $val_ncf = $ncf_orig->get_ncf($this->empresa->id, $factura->idfacturarect, $factura->codcliente);
                 $ncf_factura->documento_modifica = $factura->idfacturarect;
@@ -137,7 +158,7 @@ class rd_controller extends fbase_controller
      * @param type string
      * @return type string
      */
-    public function filter_request($nombre) 
+    public function filter_request($nombre)
     {
         $nombre_post = \filter_input(INPUT_POST, $nombre);
         $nombre_get = \filter_input(INPUT_GET, $nombre);
@@ -153,7 +174,7 @@ class rd_controller extends fbase_controller
     
     public function existe_tesoreria()
     {
-        $this->tesoreria = FALSE;
+        $this->tesoreria = false;
         //revisamos si esta el plugin de tesoreria
         $disabled = array();
         if (defined('FS_DISABLED_PLUGINS')) {
@@ -162,7 +183,7 @@ class rd_controller extends fbase_controller
             }
         }
         if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
-            $this->tesoreria = TRUE;
+            $this->tesoreria = true;
         }
     }
 }

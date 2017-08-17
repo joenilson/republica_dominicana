@@ -18,22 +18,24 @@
  */
 
 /**
- * Controller para la asignación de usuarios 
+ * Controller para la asignación de usuarios
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class usuarios_ncf extends fs_controller {
-    public function __construct() {
-        parent::__construct(__CLASS__, 'Usuarios NCF', 'contabilidad', FALSE, FALSE, FALSE);
+class usuarios_ncf extends fs_controller
+{
+    public function __construct()
+    {
+        parent::__construct(__CLASS__, 'Usuarios NCF', 'contabilidad', false, false, false);
     }
     
-    protected function private_core() {
-        
+    protected function private_core()
+    {
         $this->shared_extensions();
     }
     
-    public function shared_extensions() {
-        
+    public function shared_extensions()
+    {
         $extensiones = array(
             array(
                 'name' => 'usuarios_ncf',

@@ -21,7 +21,6 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class ventas_clientes extends fbase_controller
 {
-
     public $ciudad;
     public $cliente;
     public $codgrupo;
@@ -66,11 +65,11 @@ class ventas_clientes extends fbase_controller
 
         if (isset($_GET['delete_grupo'])) { /// eliminar un grupo
             $this->eliminar_grupo();
-        } else if (isset($_POST['codgrupo'])) { /// añadir/modificar un grupo
+        } elseif (isset($_POST['codgrupo'])) { /// añadir/modificar un grupo
             $this->nuevo_grupo();
-        } else if (isset($_GET['delete'])) { /// eliminar un cliente
+        } elseif (isset($_GET['delete'])) { /// eliminar un cliente
             $this->eliminar_cliente();
-        } else if (isset($_POST['cifnif'])) { /// añadir un nuevo cliente
+        } elseif (isset($_POST['cifnif'])) { /// añadir un nuevo cliente
             $this->nuevo_cliente();
         }
 
@@ -102,7 +101,7 @@ class ventas_clientes extends fbase_controller
             'nuevocli_email' => 0,
             'nuevocli_email_req' => 0,
             'nuevocli_codgrupo' => '',
-                ), FALSE
+                ), false
         );
     }
 
@@ -216,7 +215,7 @@ class ventas_clientes extends fbase_controller
                     . " OR telefono2 LIKE '" . $query . "%'"
                     . " OR observaciones LIKE '%" . $query . "%')";
             $and = ' AND ';
-        } else if ($query != '') {
+        } elseif ($query != '') {
             $buscar = str_replace(' ', '%', $query);
             $sql .= $and . "(lower(nombre) LIKE '%" . $buscar . "%'"
                     . " OR lower(razonsocial) LIKE '%" . $buscar . "%'"
@@ -226,7 +225,7 @@ class ventas_clientes extends fbase_controller
             $and = ' AND ';
         }
 
-        if ($this->ciudad != '' OR $this->provincia != '' OR $this->codpais != '') {
+        if ($this->ciudad != '' or $this->provincia != '' or $this->codpais != '') {
             $sql .= $and . " codcliente IN (SELECT codcliente FROM dirclientes WHERE ";
             $and2 = '';
 
@@ -308,14 +307,13 @@ class ventas_clientes extends fbase_controller
         }
 
         if ($cliente->save()) {
-
             if (\filter_input(INPUT_POST, 'tipo_comprobante') != '') {
                 $ncf_entidad_tipo = new ncf_entidad_tipo();
                 $ncf_entidad_tipo->idempresa = $this->empresa->id;
                 $ncf_entidad_tipo->entidad = $cliente->codcliente;
                 $ncf_entidad_tipo->tipo_entidad = 'CLI';
                 $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
-                $ncf_entidad_tipo->estado = TRUE;
+                $ncf_entidad_tipo->estado = true;
                 $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
                 $ncf_entidad_tipo->fecha_creacion = Date('d-m-Y H:i:s');
                 $ncf_entidad_tipo->save();
@@ -370,9 +368,9 @@ class ventas_clientes extends fbase_controller
         if ($cliente) {
             if (FS_DEMO) {
                 $this->new_error_msg('En el modo demo no se pueden eliminar clientes. Otros usuarios podrían necesitarlos.');
-            } else if (!$this->allow_delete) {
+            } elseif (!$this->allow_delete) {
                 $this->new_error_msg('No tienes permiso para eliminar en esta página.');
-            } else if ($cliente->delete()) {
+            } elseif ($cliente->delete()) {
                 $this->new_message('Cliente eliminado correctamente.');
             } else {
                 $this->new_error_msg('Ha sido imposible eliminar el cliente.');
@@ -392,7 +390,7 @@ class ventas_clientes extends fbase_controller
             $grupo->codgrupo = $_POST['codgrupo'];
             $grupo->nombre = $_POST['nombre'];
 
-            $grupo->codtarifa = NULL;
+            $grupo->codtarifa = null;
             if ($_POST['codtarifa'] != '---') {
                 $grupo->codtarifa = $_POST['codtarifa'];
             }
@@ -412,7 +410,7 @@ class ventas_clientes extends fbase_controller
         if ($grupo) {
             if (!$this->allow_delete) {
                 $this->new_error_msg('No tienes permiso para eliminar en esta página.');
-            } else if ($grupo->delete()) {
+            } elseif ($grupo->delete()) {
                 $this->new_message('Grupo ' . $grupo->codgrupo . ' eliminado correctamente.');
             } else {
                 $this->new_error_msg('Imposible eliminar el grupo.');

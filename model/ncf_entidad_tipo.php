@@ -71,10 +71,10 @@ class ncf_entidad_tipo extends fs_model
      */
     public $fecha_modificacion;
 
-    public function __construct($t = false) {
-        parent::__construct('ncf_entidad_tipo','plugins/republica_dominicana/');
-        if($t)
-        {
+    public function __construct($t = false)
+    {
+        parent::__construct('ncf_entidad_tipo', 'plugins/republica_dominicana/');
+        if ($t) {
             $this->idempresa = $t['idempresa'];
             $this->entidad = $t['entidad'];
             $this->tipo_entidad = $t['tipo_entidad'];
@@ -84,9 +84,7 @@ class ncf_entidad_tipo extends fs_model
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i');
             $this->estado = $this->str2bool($t['estado']);
-        }
-        else
-        {
+        } else {
             $this->idempresa = null;
             $this->entidad = null;
             $this->tipo_entidad = null;
@@ -99,17 +97,16 @@ class ncf_entidad_tipo extends fs_model
         }
     }
 
-    protected function install() {
+    protected function install()
+    {
         return "";
     }
 
-    public function exists() {
-        if(is_null($this->idempresa) and is_null($this->entidad) and is_null($this->tipo_entidad))
-        {
+    public function exists()
+    {
+        if (is_null($this->idempresa) and is_null($this->entidad) and is_null($this->tipo_entidad)) {
             return false;
-        }
-        else
-        {
+        } else {
             return $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE ".
                     "idempresa = ".$this->intval($this->idempresa)." AND ".
                     "entidad = ".$this->var2str($this->entidad)." AND ".
@@ -118,9 +115,9 @@ class ncf_entidad_tipo extends fs_model
         }
     }
 
-    public function save() {
-        if ($this->exists())
-        {
+    public function save()
+    {
+        if ($this->exists()) {
             $sql = "UPDATE ncf_entidad_tipo SET ".
                     "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
                     "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
@@ -132,9 +129,7 @@ class ncf_entidad_tipo extends fs_model
                     "tipo_entidad = ".$this->var2str($this->tipo_entidad).";";
 
             return $this->db->exec($sql);
-        }
-        else
-        {
+        } else {
             $sql = "INSERT INTO ncf_entidad_tipo (idempresa, entidad, tipo_entidad,tipo_comprobante, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
@@ -144,19 +139,17 @@ class ncf_entidad_tipo extends fs_model
                     $this->var2str($this->estado).", ".
                     $this->var2str($this->usuario_creacion).", ".
                     $this->var2str($this->fecha_creacion).");";
-            if($this->db->exec($sql))
-            {
+            if ($this->db->exec($sql)) {
                 $this->entidad = $this->entidad;
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
         return $this->db->exec("UPDATE ncf_entidad_tipo SET estado = ".$this->var2str($this->estado)." WHERE ".
                 "idempresa = ".$this->intval($this->idempresa)." AND ".
                 "entidad = ".$this->var2str($this->entidad)." AND ".
@@ -167,13 +160,10 @@ class ncf_entidad_tipo extends fs_model
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo where idempresa = ".$this->intval($idempresa)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-
         }
 
         return $lista;
@@ -186,9 +176,9 @@ class ncf_entidad_tipo extends fs_model
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "entidad = ".$this->var2str($entidad)." ORDER BY tipo_comprobante,tipo_entidad,entidad");
 
-        if($data){
+        if ($data) {
             return new ncf_entidad_tipo($data[0]);
-        }else{
+        } else {
             return false;
         }
     }
@@ -199,13 +189,10 @@ class ncf_entidad_tipo extends fs_model
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'CLI'  AND idempresa= ".$this->intval($idempresa).
                 " ORDER BY tipo_comprobante,entidad");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-
         }
 
         return $lista;
@@ -217,16 +204,12 @@ class ncf_entidad_tipo extends fs_model
         $data = $this->db->select("SELECT * FROM ncf_entidad_tipo WHERE tipo_entidad = 'PRO' AND idempresa= ".$this->intval($idempresa).
                 " ORDER BY tipo_comprobante,entidad");
 
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_entidad_tipo($d);
             }
-
         }
 
         return $lista;
     }
-
 }

@@ -27,7 +27,6 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
  */
 class ventas_megafacturador extends rd_controller
 {
-
     public $almacenes;
     public $codalmacen;
     public $codalmacen_ped;
@@ -76,7 +75,7 @@ class ventas_megafacturador extends rd_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Facturación masiva', 'ventas', FALSE, TRUE, FALSE);
+        parent::__construct(__CLASS__, 'Facturación masiva', 'ventas', false, true, false);
     }
 
     protected function private_core()
@@ -120,7 +119,7 @@ class ventas_megafacturador extends rd_controller
             $buscar = $this->total_pedidos_pendientes();
             $this->lista_pedidos_pendientes = $buscar['lista'];
             $this->lista_pedidos_pendientes_total = $buscar['total'];
-        } elseif ($accion == 'generar_albaranes' AND $procesar == 'TRUE') {
+        } elseif ($accion == 'generar_albaranes' and $procesar == 'TRUE') {
             $this->generar_albaranes();
         }
     }
@@ -135,7 +134,7 @@ class ventas_megafacturador extends rd_controller
             $buscar = $this->total_pendientes_venta();
             $this->lista_albaranes_pendientes = $buscar['lista'];
             $this->lista_albaranes_pendientes_total = $buscar['total'];
-        } elseif ($accion == 'generar_facturas' AND $procesar == 'TRUE') {
+        } elseif ($accion == 'generar_facturas' and $procesar == 'TRUE') {
             $this->generar_facturas();
         }
     }
@@ -187,7 +186,7 @@ class ventas_megafacturador extends rd_controller
         $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
             if ($this->comprobar_stock($pedido)) {
-                $continuar = FALSE;
+                $continuar = false;
                 $albaran = new albaran_cliente();
                 //Para el plugin distribucion
                 if (property_exists('albaran_cliente', 'codruta')) {
@@ -243,18 +242,18 @@ class ventas_megafacturador extends rd_controller
                  * no sea el mismo ejercicio que el del pedido, por ejemplo
                  * si hemos cambiado de año)
                  */
-                $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, FALSE);
+                $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, false);
                 if ($eje0) {
                     $albaran->codejercicio = $eje0->codejercicio;
                 }
 
                 if (!$eje0) {
                     $this->new_error_msg("Ejercicio no encontrado.");
-                } else if (!$eje0->abierto()) {
+                } elseif (!$eje0->abierto()) {
                     $this->new_error_msg("El ejercicio está cerrado.");
-                } else if ($albaran->save()) {
-                    $trazabilidad = FALSE;
-                    $continuar = TRUE;
+                } elseif ($albaran->save()) {
+                    $trazabilidad = false;
+                    $continuar = true;
                     $lista_errores = array();
                     $art0 = new articulo();
                     foreach ($pedido->get_lineas() as $l) {
@@ -285,9 +284,9 @@ class ventas_megafacturador extends rd_controller
                             if ($n->referencia) {
                                 $articulo = $art0->get($n->referencia);
                                 if ($articulo) {
-                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, FALSE, $l->codcombinacion);
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, false, $l->codcombinacion);
                                     if ($articulo->trazabilidad) {
-                                        $trazabilidad = TRUE;
+                                        $trazabilidad = true;
                                     }
                                 }
                             }
@@ -301,7 +300,7 @@ class ventas_megafacturador extends rd_controller
                                 $albaran->irpf = $n->irpf;
                             }
                         } else {
-                            $continuar = FALSE;
+                            $continuar = false;
                             $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                             break;
                         }
@@ -336,7 +335,7 @@ class ventas_megafacturador extends rd_controller
                                 $art1 = $this->articulos->get($linea->referencia);
                                 $articulo_stock = $this->stock->total_from_articulo($linea->referencia, $albaran->codalmacen);
                                 if (!isset($lista_errores[$linea->referencia])) {
-                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
+                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
                                 }
                             }
                         }
@@ -364,7 +363,6 @@ class ventas_megafacturador extends rd_controller
      */
     private function generar_facturas()
     {
-
         $total_albaranes = $this->total_pendientes_venta();
         $total = $total_albaranes['total'];
         $contador = 0;
@@ -376,7 +374,7 @@ class ventas_megafacturador extends rd_controller
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $albaran->codcliente, 'CLI');
             $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-            if (strlen($albaran->cifnif) < 9 AND $tipo_comprobante == '01') {
+            if (strlen($albaran->cifnif) < 9 and $tipo_comprobante == '01') {
                 $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
             }
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
@@ -442,7 +440,7 @@ class ventas_megafacturador extends rd_controller
                 $formapago = $forma0->get($factura->codpago);
                 if ($formapago) {
                     if ($formapago->genrecibos == 'Pagados') {
-                        $factura->pagada = TRUE;
+                        $factura->pagada = true;
                     }
                     $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
                 }
@@ -451,12 +449,12 @@ class ventas_megafacturador extends rd_controller
 
                 if (!$eje0) {
                     $this->new_error_msg("Ejercicio no encontrado o está cerrado.");
-                } else if (!$eje0->abierto()) {
+                } elseif (!$eje0->abierto()) {
                     $this->new_error_msg("El ejercicio está cerrado.");
-                } else if ($regularizacion->get_fecha_inside($factura->fecha)) {
+                } elseif ($regularizacion->get_fecha_inside($factura->fecha)) {
                     $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
-                } else if ($factura->save()) {
-                    $continuar = TRUE;
+                } elseif ($factura->save()) {
+                    $continuar = true;
                     $ncf_controller = new helper_ncf();
                     $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
                     if ($this->tesoreria) {
@@ -486,7 +484,7 @@ class ventas_megafacturador extends rd_controller
                         $n->codcombinacion = $l->codcombinacion;
 
                         if (!$n->save()) {
-                            $continuar = FALSE;
+                            $continuar = false;
                             $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
                             break;
                         }
@@ -494,7 +492,7 @@ class ventas_megafacturador extends rd_controller
 
                     if ($continuar) {
                         $albaran->idfactura = $factura->idfactura;
-                        $albaran->ptefactura = FALSE;
+                        $albaran->ptefactura = false;
                         if ($albaran->save()) {
                             $this->generar_asiento_cliente($factura);
                         } else {
@@ -547,7 +545,7 @@ class ventas_megafacturador extends rd_controller
 
         $cbc = new cuenta_banco_cliente();
         foreach ($cbc->all_from_cliente($factura->codcliente) as $cuenta) {
-            if (is_null($recibo->codcuenta) OR $cuenta->principal) {
+            if (is_null($recibo->codcuenta) or $cuenta->principal) {
                 $recibo->codcuenta = $cuenta->codcuenta;
                 $recibo->iban = $cuenta->iban;
                 $recibo->swift = $cuenta->swift;
@@ -685,11 +683,11 @@ class ventas_megafacturador extends rd_controller
         return $resultados;
     }
 
-    private function generar_asiento_cliente($factura, $forzar = FALSE, $soloasiento = FALSE)
+    private function generar_asiento_cliente($factura, $forzar = false, $soloasiento = false)
     {
-        $ok = TRUE;
+        $ok = true;
 
-        if ($this->empresa->contintegrada OR $forzar) {
+        if ($this->empresa->contintegrada or $forzar) {
             $this->asiento_factura->soloasiento = $soloasiento;
             $ok = $this->asiento_factura->generar_asiento_venta($factura);
 
@@ -712,18 +710,18 @@ class ventas_megafacturador extends rd_controller
      */
     private function comprobar_stock($documento)
     {
-        $ok = TRUE;
+        $ok = true;
         $stock0 = new stock();
         $art0 = new articulo();
         foreach ($documento->get_lineas() as $linea) {
-            if ($linea->referencia AND $art0->get($linea->referencia)) {
+            if ($linea->referencia and $art0->get($linea->referencia)) {
                 $articulo = $art0->get($linea->referencia);
                 $stockfis = $articulo->stockfis;
                 if ($this->multi_almacen) {
                     $stockfis = $stock0->total_from_articulo($articulo->referencia, $documento->codalmacen);
                 }
                 
-                if(!$articulo->controlstock AND $linea->cantidad > $stockfis){
+                if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
                     $ok = false;
                 }
                 
@@ -737,7 +735,7 @@ class ventas_megafacturador extends rd_controller
         return $ok;
     }
 
-    private function array_to_text(Array $array)
+    private function array_to_text(array $array)
     {
         $substring = "";
         foreach ($array as $item) {
@@ -747,7 +745,7 @@ class ventas_megafacturador extends rd_controller
         return $string;
     }
 
-    private function date_to_text(Array $array)
+    private function date_to_text(array $array)
     {
         $substring = "";
         foreach ($array as $item) {
@@ -815,5 +813,4 @@ class ventas_megafacturador extends rd_controller
             $fsext->save();
         }
     }
-
 }

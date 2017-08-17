@@ -12,7 +12,7 @@
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th * e
  *  * GNU Affero General Public License for more details.
- *  * 
+ *  *
  *  * You should have received a copy of the GNU Affero General Public License
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,10 +33,10 @@ class ncf_tipo extends fs_model
     public $compras;
     public $contribuyente;
     
-    public function __construct($t = false) {
-        parent::__construct('ncf_tipo','plugins/republica_dominicana/');
-        if($t)
-        {
+    public function __construct($t = false)
+    {
+        parent::__construct('ncf_tipo', 'plugins/republica_dominicana/');
+        if ($t) {
             $this->tipo_comprobante = $t['tipo_comprobante'];
             $this->descripcion = $t['descripcion'];
             $this->estado = $this->str2bool($t['estado']);
@@ -44,9 +44,7 @@ class ncf_tipo extends fs_model
             $this->ventas = $t['ventas'];
             $this->compras = $t['compras'];
             $this->contribuyente = $t['contribuyente'];
-        }
-        else
-        {
+        } else {
             $this->tipo_comprobante = null;
             $this->descripcion = '';
             $this->estado = false;
@@ -57,7 +55,8 @@ class ncf_tipo extends fs_model
         }
     }
     
-    protected function install() {
+    protected function install()
+    {
         return "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente ) VALUES ".
             "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',TRUE, 'suma','X','X','X'),".
             "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',TRUE, 'suma','X',null,'X'),".
@@ -69,21 +68,19 @@ class ncf_tipo extends fs_model
             "('15','COMPROBANTES GUBERNAMENTALES',TRUE, 'suma','X','X','X');";
     }
     
-    public function exists() {
+    public function exists()
+    {
         $existe = $this->get($this->tipo_comprobante);
-        if(!$existe)
-        {
+        if (!$existe) {
             return false;
-        }
-        else
-        {
+        } else {
             return $this->get($this->tipo_comprobante);
         }
     }
     
-    public function save() {
-        if ($this->exists())
-        {
+    public function save()
+    {
+        if ($this->exists()) {
             $sql = "UPDATE ncf_tipo SET ".
                     "descripcion = ".$this->var2str($this->descripcion).", ".
                     "clase_movimiento = ".$this->var2str($this->clase_movimiento).", ".
@@ -94,9 +91,7 @@ class ncf_tipo extends fs_model
                     ." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
             
             return $this->db->exec($sql);
-        }
-        else
-        {
+        } else {
             $sql = "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente) VALUES ".
                     "(".$this->var2str($this->tipo_comprobante).", "
                     .$this->var2str($this->descripcion).", "
@@ -105,18 +100,16 @@ class ncf_tipo extends fs_model
                     .$this->var2str($this->ventas).", "
                     .$this->var2str($this->compras).", "
                     .$this->var2str($this->contribuyente).");";
-            if($this->db->exec($sql))
-            {
+            if ($this->db->exec($sql)) {
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
     }
     
-    public function delete() {
+    public function delete()
+    {
         $sql = "DELETE FROM ".$this->table_name." WHERE tipo_comprobante = ".$this->var2str($this->tipo_comprobante).";";
         return $this->db->exec($sql);
     }
@@ -126,13 +119,10 @@ class ncf_tipo extends fs_model
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_tipo ORDER BY tipo_comprobante");
         
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_tipo($d);
             }
-                
         }
         
         return $lista;
@@ -143,13 +133,10 @@ class ncf_tipo extends fs_model
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_tipo WHERE contribuyente = 'X' and ventas = 'X' ORDER BY tipo_comprobante,descripcion");
         
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_tipo($d);
             }
-                
         }
         
         return $lista;
@@ -160,13 +147,10 @@ class ncf_tipo extends fs_model
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_tipo WHERE contribuyente = 'X' and compras = 'X' ORDER BY tipo_comprobante,descripcion");
         
-        if($data)
-        {
-            foreach($data as $d)
-            {
+        if ($data) {
+            foreach ($data as $d) {
                 $lista[] = new ncf_tipo($d);
             }
-                
         }
         
         return $lista;
@@ -175,11 +159,10 @@ class ncf_tipo extends fs_model
     public function get($tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_tipo WHERE tipo_comprobante = ".$this->var2str($tipo_comprobante).";");
-        if($data){
+        if ($data) {
             return new ncf_tipo($data[0]);
-        }else{
+        } else {
             return false;
         }
     }
-    
 }
