@@ -171,18 +171,20 @@ class admin_rd extends rd_controller
         $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
         $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
         $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
+        
         $rd_config = array(
-            'rd_imprimir_logo' => (\filter_input(INPUT_POST, 'rd_imprimir_logo')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_marca_agua' => (\filter_input(INPUT_POST, 'rd_imprimir_marca_agua')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_bn' => (\filter_input(INPUT_POST, 'rd_imprimir_bn')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_cliente_box' => (\filter_input(INPUT_POST, 'rd_imprimir_cliente_box')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_detalle_box' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_box')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_detalle_lineas' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_detalle_colores' => (\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas')) ? 'TRUE' : 'FALSE',
-            'rd_imprimir_cabecera_fcolor' => ($op_imprimir_cabecera_fcolor)?$op_imprimir_cabecera_fcolor:"#000000",
-            'rd_imprimir_cabecera_tcolor' => ($op_imprimir_cabecera_tcolor)?$op_imprimir_cabecera_tcolor:"#dadada",
-            'rd_imprimir_detalle_color' => ($op_imprimir_detalle_color)?$op_imprimir_detalle_color:"#000000",
+            'rd_imprimir_logo' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_logo'), 'TRUE', 'FALSE'),
+            'rd_imprimir_marca_agua' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_marca_agua'), 'TRUE', 'FALSE'),
+            'rd_imprimir_bn' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_bn'), 'TRUE', 'FALSE'),
+            'rd_imprimir_cliente_box' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_cliente_box'), 'TRUE', 'FALSE'),
+            'rd_imprimir_detalle_box' =>  $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_detalle_box'), 'TRUE', 'FALSE'),
+            'rd_imprimir_detalle_lineas' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas'), 'TRUE', 'FALSE'),
+            'rd_imprimir_detalle_colores' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_detalle_lineas'), 'TRUE', 'FALSE'),
+            'rd_imprimir_cabecera_fcolor' => $this->confirmarValor($op_imprimir_cabecera_fcolor, '#000000'),
+            'rd_imprimir_cabecera_tcolor' => $this->confirmarValor($op_imprimir_cabecera_tcolor, '#dadada'),
+            'rd_imprimir_detalle_color' => $this->confirmarValor($op_imprimir_detalle_color, '#000000')
         );
+
         if ($fsvar->array_save($rd_config)) {
             $this->new_message('Opciones de impresión actualizadas correctamente.');
         } else {

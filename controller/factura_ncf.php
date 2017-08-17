@@ -52,6 +52,7 @@ class factura_ncf extends rd_controller
     public $agente;
     public $logo;
     public $negativo;
+    
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Factura NCF', 'ventas', false, false);
@@ -336,15 +337,11 @@ class factura_ncf extends rd_controller
     
     public function pdf_lineas_iva($pdf_doc)
     {
-        /// Definimos todos los datos del PIE de la factura
-        /// Lineas de IVA
         $lineas_iva = $this->factura->get_lineas_iva();
-        $this->negativo = (!empty($this->factura->idfacturarect)) ? -1 : 1;
         if (count($lineas_iva) > 3) {
             $pdf_doc->fdf_lineasiva = $lineas_iva;
         } else {
-            $filaiva = array();
-            $i = 0;
+            $filaiva = array(); $i = 0;
             foreach ($lineas_iva as $li) {
                 $i++;
                 $filaiva[$i][0] = '';
@@ -353,8 +350,8 @@ class factura_ncf extends rd_controller
                 $filaiva[$i][3] = ($li->totaliva) ? $this->ckeckEuro(($li->totaliva * $this->negativo)) : '';
                 $filaiva[$i][4] = ($li->recargo) ? $li->recargo . "%" : '';
                 $filaiva[$i][5] = ($li->totalrecargo) ? $this->ckeckEuro(($li->totalrecargo * $this->negativo)) : '';
-                $filaiva[$i][6] = ''; //// POR CREARRRRRR
-                $filaiva[$i][7] = ''; //// POR CREARRRRRR
+                $filaiva[$i][6] = ''; 
+                $filaiva[$i][7] = ''; 
                 $filaiva[$i][8] = ($li->totallinea) ? $this->ckeckEuro(($li->totallinea * $this->negativo)) : '';
             }
             if (!empty($filaiva)) {
@@ -434,9 +431,8 @@ class factura_ncf extends rd_controller
             
             /// Agregamos la pagina inicial de la factura
             $pdf_doc->AddPage();
-            
+            $this->negativo = (!empty($this->factura->idfacturarect)) ? -1 : 1;
             $this->pdf_lineas_iva($pdf_doc);
-
             // Total factura numerico
             $pdf_doc->fdf_documento_neto = $this->ckeckEuro(($this->factura->neto * $this->negativo));
             $pdf_doc->fdf_documento_totaliva = $this->ckeckEuro(($this->factura->totaliva * $this->negativo));
@@ -479,10 +475,10 @@ class factura_ncf extends rd_controller
 
     private function fix_html($txt)
     {
-        $newt = str_replace('&lt;', '<', $txt);
-        $newt = str_replace('&gt;', '>', $newt);
-        $newt = str_replace('&quot;', '"', $newt);
-        $newt = str_replace('&#39;', "'", $newt);
+        $newt1 = str_replace('&lt;', '<', $txt);
+        $newt2 = str_replace('&gt;', '>', $newt1);
+        $newt3 = str_replace('&quot;', '"', $newt2);
+        $newt = str_replace('&#39;', "'", $newt3);
         return $newt;
     }
 }
