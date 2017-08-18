@@ -18,14 +18,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 require_once 'plugins/republica_dominicana/extras/fpdf181/fs_fpdf.php';
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/extras/fpdf181/font/');
 define('EEURO', chr(128));
-
 class factura_ncf extends rd_controller
 {
     public $cliente;
@@ -52,7 +50,6 @@ class factura_ncf extends rd_controller
 
         $this->share_extensions();
         $this->checkLogo();
-
         $val_id = \filter_input(INPUT_GET, 'id');
         $solicitud = \filter_input(INPUT_GET, 'solicitud');
         $valores_id = explode(',', $val_id);
