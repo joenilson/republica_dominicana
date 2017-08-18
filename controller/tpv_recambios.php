@@ -17,10 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_once 'helper_ncf.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
-class tpv_recambios extends fbase_controller
+class tpv_recambios extends rd_controller
 {
     public $agente;
     public $almacen;
@@ -42,10 +41,6 @@ class tpv_recambios extends fbase_controller
     public $terminal;
     public $ultimas_compras;
     public $ultimas_ventas;
-    public $ncf_tipo;
-    public $ncf_rango;
-    public $ncf_ventas;
-    public $ncf_entidad_tipo;
     public $ncf_numero;
 
     public function __construct()
@@ -64,10 +59,6 @@ class tpv_recambios extends fbase_controller
         $this->fabricante = new fabricante();
         $this->familia = new familia();
         $this->impuesto = new impuesto();
-        $this->ncf_tipo = new ncf_tipo();
-        $this->ncf_rango = new ncf_rango();
-        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->ncf_ventas = new ncf_ventas();
         $this->results = array();
 
         if (isset($_REQUEST['buscar_cliente'])) {
@@ -558,9 +549,8 @@ class tpv_recambios extends fbase_controller
                          */
                         $tipo_comprobante = $_POST['tipo_comprobante'];
                         $numero_ncf = $this->ncf_rango->generate_terminal($this->empresa->id, $this->terminal->codalmacen, $tipo_comprobante, $factura->codpago, $this->terminal->area_impresion);
-                        $ncf_controller = new helper_ncf();
                         if ($numero_ncf['NCF'] == $factura->numero2) {
-                            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                            $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
                         } else {
                             $this->new_error_msg('Ocurrió un error al actualizar el correlativo de NCF por favor informe al contador antes de seguir facturando. La factura se grabó con el NCF ' . $factura->numero2 . ' y el NCF segun el listado debió ser ' . $numero_ncf['NCF']);
                         }

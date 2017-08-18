@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 require_once 'helper_ncf.php';
-class ventas_factura extends fbase_controller
+class ventas_factura extends rd_controller
 {
     public $agencia;
     public $agente;
@@ -34,15 +34,8 @@ class ventas_factura extends fbase_controller
     public $pais;
     public $rectificada;
     public $rectificativa;
-    public $serie;
-    public $ncf_tipo;
-    public $ncf_rango;
-    public $ncf_ventas;
-    public $ncf_entidad_tipo;
-    public $ncf_tipo_anulacion;
     public $ncf;
     public $impuesto;
-    public $distribucion_clientes;
 
     public function __construct()
     {
@@ -69,18 +62,7 @@ class ventas_factura extends fbase_controller
         $this->pais = new pais();
         $this->rectificada = false;
         $this->rectificativa = false;
-        $this->serie = new serie();
-        $this->ncf_tipo = new ncf_tipo();
-        $this->ncf_rango = new ncf_rango();
-        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->ncf_ventas = new ncf_ventas();
-        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->impuesto = new impuesto();
-
-        //Para el plugin distribucion
-        if (class_exists('distribucion_clientes')) {
-            $this->distribucion_clientes = new distribucion_clientes();
-        }
 
         /**
          * Si hay alguna extensión de tipo config y texto no_button_pagada,
@@ -171,22 +153,15 @@ class ventas_factura extends fbase_controller
              * Verificación de disponibilidad del Número de NCF para República Dominicana
              */
             //Obtenemos el tipo de comprobante a generar para el cliente
-            $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente->codcliente, 'CLI');
-            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-
+            $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $this->cliente->codcliente);
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-                return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Factura.');
+            $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
+            $this->factura->numero2 = $numero_ncf['NCF'];
+            if ($this->factura->save()) {
+                $this->guardar_ncf($this->empresa->id, $this->factura, $tipo_comprobante, $numero_ncf);
+                $this->new_message('¡NCF corregido correctamente!');
             } else {
-                $this->factura->numero2 = $numero_ncf['NCF'];
-                if ($this->factura->save()) {
-                    $ncf = new helper_ncf();
-                    $ncf->guardar_ncf($this->empresa->id, $this->factura, $tipo_comprobante, $numero_ncf);
-                    $this->new_message('¡NCF corregido correctamente!');
-                } else {
-                    $this->new_error_msg('Ocurrio un error y no se pudo generar el NCF correctamente, intentelo nuevamente revisando los datos del Cliente.');
-                }
+                $this->new_error_msg('Ocurrio un error y no se pudo generar el NCF correctamente, intentelo nuevamente revisando los datos del Cliente.');
             }
         }
     }
@@ -247,6 +222,7 @@ class ventas_factura extends fbase_controller
 
             $ncfventas0 = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
             $ncfventas0->fecha = $this->factura->fecha;
+            $ncfventas0->cifnif = $this->factura->cifnif;
             $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
             $ncfventas0->usuario_modificacion = $this->user->nick;
             if (!$ncfventas0->corregir_fecha()) {
@@ -392,12 +368,7 @@ class ventas_factura extends fbase_controller
          * Verificación de disponibilidad del Número de NCF para Notas de Crédito
          */
         $tipo_comprobante = '04';
-        $this->ncf_rango = new ncf_rango();
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
-        }
-
+        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
         /// generamos una factura rectificativa a partir de la actual
@@ -460,8 +431,7 @@ class ventas_factura extends fbase_controller
                  * Luego de que todo este correcto generamos el NCF la Nota de Credito
                  */
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $ncf_controller = new helper_ncf();
-                $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
+                $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
                 $this->new_message('<a href="' . $factura->url() . '">' . ucfirst(FS_FACTURA_RECTIFICATIVA) . '</a> creada correctamente.');
                 if ($this->empresa->contintegrada) {
                     $this->generar_asiento($factura);
@@ -487,12 +457,7 @@ class ventas_factura extends fbase_controller
          * Verificación de disponibilidad del Número de NCF para Notas de Crédito
          */
         $tipo_comprobante = '04';
-        $this->ncf_rango = new ncf_rango();
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.' . $this->factura->idfactura);
-        }
-
+        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
         $serie = $this->serie->get($_POST['codserie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
@@ -546,8 +511,7 @@ class ventas_factura extends fbase_controller
                  * Grabación del Número de NCF para República Dominicana
                  * Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                  */
-                $ncf = new helper_ncf();
-                $ncf->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
+                $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
                 $this->generar_asiento($factura);
                 $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $numero_ncf['NCF']);
                 $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), true);

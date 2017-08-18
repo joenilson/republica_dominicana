@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
-class ventas_facturas extends fbase_controller
+class ventas_facturas extends rd_controller
 {
     public $agente;
     public $almacenes;
@@ -67,9 +67,6 @@ class ventas_facturas extends fbase_controller
         $this->forma_pago = new forma_pago();
         $this->grupo = new grupo_clientes();
         $this->huecos = array();
-        $this->serie = new serie();
-        $this->ncf_ventas = new ncf_ventas();
-        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
 
         $this->mostrar = 'todo';
         if (isset($_GET['mostrar'])) {

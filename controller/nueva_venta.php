@@ -18,9 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
-class nueva_venta extends fbase_controller
+class nueva_venta extends rd_controller
 {
     public $agencia;
     public $agente;
@@ -40,12 +40,6 @@ class nueva_venta extends fbase_controller
     public $results;
     public $serie;
     public $tipo;
-    public $ncf_tipo;
-    public $ncf_rango;
-    public $ncf_ventas;
-    public $ncf_entidad_tipo;
-    //Para el plugin distribucion
-    public $distribucion_clientes;
     public $cliente_rutas;
 
     public function __construct()
@@ -67,15 +61,6 @@ class nueva_venta extends fbase_controller
         $this->results = array();
         $this->grupo = new grupo_clientes();
         $this->pais = new pais();
-        $this->ncf_tipo = new ncf_tipo();
-        $this->ncf_rango = new ncf_rango();
-        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->ncf_ventas = new ncf_ventas();
-
-        //Para el plugin distribucion
-        if (class_exists('distribucion_clientes')) {
-            $this->distribucion_clientes = new distribucion_clientes();
-        }
 
         /// cargamos la configuración
         $fsvar = new fs_var();
@@ -805,29 +790,9 @@ class nueva_venta extends fbase_controller
          * Verificación de disponibilidad del Número de NCF para República Dominicana
          */
         //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-        $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $cliente->codcliente, 'CLI');
-        $tipo_comprobante = '02';
-        if ($tipo_comprobante_d) {
-            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-        } else {
-            $net0 = new ncf_entidad_tipo();
-            $net0->entidad = $cliente->codcliente;
-            $net0->estado = true;
-            $net0->fecha_creacion = \date('Y-m-d H:i:s');
-            $net0->usuario_creacion = $this->user->nick;
-            $net0->idempresa = $this->empresa->id;
-            $net0->tipo_comprobante = '02';
-            $net0->tipo_entidad = 'CLI';
-            $net0->save();
-        }
-
+        $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $cliente->codcliente);
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $forma_pago->codpago);
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-            $continuar = false;
-            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Factura.');
-        }
-
+        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $forma_pago->codpago);
         if ($continuar) {
 
             /**
@@ -989,9 +954,8 @@ class nueva_venta extends fbase_controller
                          * Grabación del Número de NCF para República Dominicana
                          */
                         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-                        $ncf = new helper_ncf();
-                        $ncf->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
+                        $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
 
                         $this->generar_asiento($factura);
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $numero_ncf['NCF']);

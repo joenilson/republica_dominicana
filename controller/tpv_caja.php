@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
-class tpv_caja extends fbase_controller
+class tpv_caja extends rd_controller
 {
     public $almacen;
     public $caja;
@@ -28,7 +28,6 @@ class tpv_caja extends fbase_controller
     public $serie;
     public $terminal;
     public $terminales;
-    public $ncf_rango;
 
     public function __construct()
     {
@@ -43,7 +42,6 @@ class tpv_caja extends fbase_controller
         $this->caja = new caja();
         $this->serie = new serie();
         $this->terminal = new terminal_caja();
-        $this->ncf_rango = new ncf_rango();
         $terminal = new terminal_caja();
 
         if (isset($_POST['nuevot'])) { /// nuevo terminal

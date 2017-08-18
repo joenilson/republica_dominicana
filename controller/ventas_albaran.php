@@ -17,10 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/facturacion_base/extras/fbase_controller.php';
-require_once 'helper_ncf.php';
-
-class ventas_albaran extends fbase_controller
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+class ventas_albaran extends rd_controller
 {
     public $agencia;
     public $agente;
@@ -37,11 +35,6 @@ class ventas_albaran extends fbase_controller
     public $impuesto;
     public $nuevo_albaran_url;
     public $pais;
-    public $serie;
-    public $ncf_rango;
-    public $ncf_entidad_tipo;
-    public $ncf_tipo;
-    public $ncf_ventas;
     //Para el plugin distribucion
     public $distribucion_clientes;
     public $cliente_rutas;
@@ -72,16 +65,7 @@ class ventas_albaran extends fbase_controller
         $this->impuesto = new impuesto();
         $this->nuevo_albaran_url = false;
         $this->pais = new pais();
-        $this->serie = new serie();
-        $this->ncf_rango = new ncf_rango();
-        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->ncf_tipo = new ncf_tipo();
-        $this->ncf_ventas = new ncf_ventas();
-
-        //Para el plugin distribucion
-        if (class_exists('distribucion_clientes')) {
-            $this->distribucion_clientes = new distribucion_clientes();
-        }
+        
         /// ¿El usuario tiene permiso para eliminar la factura?
         $this->allow_delete_fac = $this->user->allow_delete_on('ventas_factura');
 
@@ -460,30 +444,12 @@ class ventas_albaran extends fbase_controller
          * Verificación de disponibilidad del Número de NCF para República Dominicana
          */
         //Obtenemos el tipo de comprobante a generar para el cliente
-        $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $this->albaran->codcliente, 'CLI');
-        $tipo_comprobante = '02';
-        if ($tipo_comprobante_d) {
-            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
-        } else {
-            $net0 = new ncf_entidad_tipo();
-            $net0->entidad = $this->albaran->codcliente;
-            $net0->estado = true;
-            $net0->fecha_creacion = \date('Y-m-d H:i:s');
-            $net0->usuario_creacion = $this->user->nick;
-            $net0->idempresa = $this->empresa->id;
-            $net0->tipo_comprobante = '02';
-            $net0->tipo_entidad = 'CLI';
-            $net0->save();
-        }
-
+        $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $this->albaran->codcliente, 'CLI');
         if (strlen($this->albaran->cifnif) < 9 and $tipo_comprobante == '01') {
             return $this->new_error_msg('El cliente tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
         }
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante, $this->albaran->codpago);
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', el ' . FS_ALBARAN . ' no será facturado.');
-        }
+        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->albaran->codalmacen, $tipo_comprobante, $this->albaran->codpago);
         $factura = new factura_cliente();
 
         /**
@@ -555,7 +521,6 @@ class ventas_albaran extends fbase_controller
             if ($formapago->genrecibos == 'Pagados') {
                 $factura->pagada = true;
             }
-
             if ($this->cliente_s) {
                 $factura->vencimiento = $formapago->calcular_vencimiento($factura->fecha, $this->cliente_s->diaspago);
             } else {
@@ -573,8 +538,7 @@ class ventas_albaran extends fbase_controller
             $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
         } elseif ($factura->save()) {
             $continuar = true;
-            $ncf_controller = new helper_ncf();
-            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+            $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             foreach ($this->albaran->get_lineas() as $l) {
                 $n = new linea_factura_cliente();
                 $n->idalbaran = $l->idalbaran;

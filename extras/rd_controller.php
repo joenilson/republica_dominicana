@@ -62,6 +62,7 @@ class rd_controller extends fbase_controller
     public $array_series;
     public $tesoreria;
     public $rd_setup;
+    public $distribucion_clientes;
     protected function private_core()
     {
         /// ¿El usuario tiene permiso para eliminar en esta página?
@@ -79,6 +80,7 @@ class rd_controller extends fbase_controller
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+        $this->ncf_ventas = new ncf_ventas();
         $this->array_series = \range('A', 'U');
         
         $fsvar = new fs_var();
@@ -87,6 +89,16 @@ class rd_controller extends fbase_controller
         $this->existe_tesoreria();
         $this->control_usuarios();
         $this->get_config();
+        
+        $this->verificar_plugin_distribucion();
+    }
+    
+    public function verificar_plugin_distribucion()
+    {
+        //Para el plugin distribucion
+        if (class_exists('distribucion_clientes')) {
+            $this->distribucion_clientes = new distribucion_clientes();
+        }
     }
     
     public function get_config()
@@ -138,6 +150,26 @@ class rd_controller extends fbase_controller
         }
     }
     
+    public function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI')
+    {
+        $tipo_comprobante = '02';
+        $tipo_comprobante_d = $this->ncf_entidad_tipo->get($idempresa, $codigo_entidad, $tipo_entidad);
+        if ($tipo_comprobante_d) {
+            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+        } else {
+            $net0 = new ncf_entidad_tipo();
+            $net0->entidad = $codigo_entidad;
+            $net0->estado = true;
+            $net0->fecha_creacion = \date('Y-m-d H:i:s');
+            $net0->usuario_creacion = $this->user->nick;
+            $net0->idempresa = $idempresa;
+            $net0->tipo_comprobante = $tipo_comprobante;
+            $net0->tipo_entidad = $tipo_entidad;
+            $net0->save();
+        }
+        return $tipo_comprobante;
+    }
+    
     public function generar_numero_ncf($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
     {
         $numero_ncf = $this->ncf_rango->generate($idempresa,$codalmacen, $tipo_comprobante, $condicion_pago);
@@ -178,6 +210,8 @@ class rd_controller extends fbase_controller
                 $factura->save();
                 $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->codigo . ' con el NCF: ' . $numero_ncf['NCF'] . ' Ingrese a la factura y dele al botón corregir NCF.');
             } else {
+                $factura->numero2 = $numero_ncf['NCF'];
+                $factura->save();
                 $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
             }
         }

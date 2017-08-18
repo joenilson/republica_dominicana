@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_once 'helper_ncf.php';
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 /**
@@ -166,7 +165,7 @@ class ventas_megafacturador extends rd_controller
         }
     }
     
-    public function crear_albaran($pedido)
+    public function crear_albaran($pedido, &$contador, &$errores)
     {
         $continuar = false;
         $albaran = new albaran_cliente();
@@ -352,7 +351,7 @@ class ventas_megafacturador extends rd_controller
         $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
             if ($this->comprobar_stock($pedido)) {
-                $this->crear_albaran($pedido);
+                $this->crear_albaran($pedido, $contador, $errores);
             } else {
                 $this->new_error_msg("¡Artículos del " . FS_PEDIDO . " <a href=\"" . $pedido->url() . "\" target=\"_blank\">" . $pedido->codigo . "</a> sin stock suficiente!");
             }
@@ -434,8 +433,7 @@ class ventas_megafacturador extends rd_controller
             $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
         } elseif ($factura->save()) {
             $continuar = true;
-            $ncf_controller = new helper_ncf();
-            $ncf_controller->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+            $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             if ($this->tesoreria) {
                 require_model('pago_recibo_cliente.php');
                 require_model('recibo_cliente.php');
@@ -510,18 +508,14 @@ class ventas_megafacturador extends rd_controller
              * Verificación de disponibilidad del Número de NCF para República Dominicana
              */
             //Obtenemos el tipo de comprobante a generar para el cliente
-            $tipo_comprobante_d = $this->ncf_entidad_tipo->get($this->empresa->id, $albaran->codcliente, 'CLI');
-            $tipo_comprobante = $tipo_comprobante_d->tipo_comprobante;
+            $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $albaran->codcliente);
             if (strlen($albaran->cifnif) < 9 and $tipo_comprobante == '01') {
-                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
-            }
-            //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
-            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-                $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', el ' . FS_ALBARAN . ' ' . $albaran->numero . ' no será facturado.');
-            } else {
+                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');                
+            }else{
+                //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+                $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
                 $contador++;
-                $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);
+                $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);            
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
