@@ -18,7 +18,6 @@
  */
 
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
-require_once 'helper_ncf.php';
 class ventas_factura extends rd_controller
 {
     public $agencia;

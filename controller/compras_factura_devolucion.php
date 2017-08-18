@@ -17,13 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 /**
  * Description of compras_factura_devolucion
  *
  * @author Carlos Garcia Gomez
  */
-class compras_factura_devolucion extends fs_controller
+class compras_factura_devolucion extends rd_controller
 {
     public $factura;
     public $serie;
@@ -36,11 +36,9 @@ class compras_factura_devolucion extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
         $this->share_extension();
         $this->template = 'tab/' . __CLASS__;
-
-        $this->serie = new serie();
-        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
 
         $fact0 = new factura_proveedor();
         $this->factura = false;
