@@ -87,20 +87,13 @@ class ventas_megafacturador extends rd_controller
         $documento = filter_input(INPUT_GET, 'documento');
         $this->codalmacen = filter_input(INPUT_POST, 'codalmacen');
 
-        $fecha_pedido_desde = \filter_input(INPUT_POST, 'fecha_pedido_desde');
-        $fecha_pedido_hasta = \filter_input(INPUT_POST, 'fecha_pedido_hasta');
-        $fecha_albaran_desde = \filter_input(INPUT_POST, 'fecha_albaran_desde');
-        $fecha_albaran_hasta = \filter_input(INPUT_POST, 'fecha_albaran_hasta');
-        $fecha_albaranes_gen = \filter_input(INPUT_POST, 'fecha_albaranes_gen');
-        $fecha_facturas_gen = \filter_input(INPUT_POST, 'fecha_facturas_gen');
-
-        $this->fecha_pedido_desde = ($fecha_pedido_desde) ? $fecha_pedido_desde : \date('Y-m-01');
-        $this->fecha_pedido_hasta = ($fecha_pedido_hasta) ? $fecha_pedido_hasta : \date('Y-m-d');
-        $this->fecha_albaran_desde = ($fecha_albaran_desde) ? $fecha_albaran_desde : \date('Y-m-01');
-        $this->fecha_albaran_hasta = ($fecha_albaran_hasta) ? $fecha_albaran_hasta : \date('Y-m-d');
-        $this->fecha_albaranes_gen = ($fecha_albaranes_gen) ? $fecha_albaranes_gen : $this->fecha_albaranes_gen;
-        $this->fecha_facturas_gen = ($fecha_facturas_gen) ? $fecha_facturas_gen : $this->fecha_facturas_gen;
-
+        $this->fecha_pedido_desde = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_pedido_desde'), \date('Y-m-01'));
+        $this->fecha_pedido_hasta = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_pedido_hasta'), \date('Y-m-d'));
+        $this->fecha_albaran_desde = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_albaran_desde'), \date('Y-m-01'));
+        $this->fecha_albaran_hasta = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_albaran_hasta'), \date('Y-m-d'));
+        $this->fecha_albaranes_gen = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_albaranes_gen'), $this->fecha_albaranes_gen);
+        $this->fecha_facturas_gen = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_facturas_gen'), $this->fecha_facturas_gen);
+        
         $procesar = $this->filter_request('procesar');
         if ($documento == 'pedidos') {
             $this->procesar_pedidos($procesar);
@@ -172,6 +165,179 @@ class ventas_megafacturador extends rd_controller
             $this->distribucion_clientes = new distribucion_clientes();
         }
     }
+    
+    public function crear_albaran($pedido)
+    {
+        $continuar = false;
+        $albaran = new albaran_cliente();
+        //Para el plugin distribucion
+        if (property_exists('albaran_cliente', 'codruta')) {
+            $albaran->codruta = $pedido->codruta;
+            $albaran->codvendedor = $pedido->codvendedor;
+        }
+
+        $albaran->apartado = $pedido->apartado;
+        $albaran->cifnif = $pedido->cifnif;
+        $albaran->ciudad = $pedido->ciudad;
+        $albaran->fecha = $this->fecha_albaranes_gen;
+        $albaran->hora = \date('H:i:s');
+        $albaran->codagente = $pedido->codagente;
+        $albaran->codalmacen = $pedido->codalmacen;
+        $albaran->codcliente = $pedido->codcliente;
+        $albaran->coddir = $pedido->coddir;
+        $albaran->coddivisa = $pedido->coddivisa;
+        $albaran->tasaconv = $pedido->tasaconv;
+        $albaran->codpago = $pedido->codpago;
+        $albaran->codpais = $pedido->codpais;
+        $albaran->codpostal = $pedido->codpostal;
+        $albaran->codserie = $pedido->codserie;
+        $albaran->direccion = $pedido->direccion;
+        $albaran->nombrecliente = $pedido->nombrecliente;
+        $albaran->observaciones = $pedido->observaciones;
+        $albaran->provincia = $pedido->provincia;
+        $albaran->numero2 = $pedido->numero2;
+        $albaran->porcomision = $pedido->porcomision;
+        $albaran->neto = 0;
+        $albaran->total = 0;
+        $albaran->totaliva = 0;
+        $albaran->irpf = 0;
+        $albaran->totalirpf = 0;
+        $albaran->totalrecargo = 0;
+
+        $albaran->envio_nombre = $pedido->envio_nombre;
+        $albaran->envio_apellidos = $pedido->envio_apellidos;
+        $albaran->envio_codtrans = $pedido->envio_codtrans;
+        $albaran->envio_codigo = $pedido->envio_codigo;
+        $albaran->envio_codpais = $pedido->envio_codpais;
+        $albaran->envio_provincia = $pedido->envio_provincia;
+        $albaran->envio_ciudad = $pedido->envio_ciudad;
+        $albaran->envio_codpostal = $pedido->envio_codpostal;
+        $albaran->envio_direccion = $pedido->envio_direccion;
+        $albaran->envio_apartado = $pedido->envio_apartado;
+
+        if (is_null($albaran->codagente)) {
+            $albaran->codagente = $this->user->codagente;
+        }
+
+        /**
+         * Obtenemos el ejercicio para la fecha de hoy (puede que
+         * no sea el mismo ejercicio que el del pedido, por ejemplo
+         * si hemos cambiado de año)
+         */
+        $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, false);
+        if ($eje0) {
+            $albaran->codejercicio = $eje0->codejercicio;
+        }
+
+        if (!$eje0) {
+            $this->new_error_msg("Ejercicio no encontrado.");
+        } elseif (!$eje0->abierto()) {
+            $this->new_error_msg("El ejercicio está cerrado.");
+        } elseif ($albaran->save()) {
+            $trazabilidad = false;
+            $continuar = true;
+            $lista_errores = array();
+            $art0 = new articulo();
+            foreach ($pedido->get_lineas() as $l) {
+                //Si el articulo existe
+                $articulo = false;
+                if (!is_null($l->referencia)) {
+                    $articulo = $art0->get($l->referencia);
+                    $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
+                }
+                $n = new linea_albaran_cliente();
+                $n->idlineapedido = $l->idlinea;
+                $n->idpedido = $l->idpedido;
+                $n->idalbaran = $albaran->idalbaran;
+                $n->cantidad = $l->cantidad;
+                $n->codimpuesto = $l->codimpuesto;
+                $n->codcombinacion = $l->codcombinacion;
+                $n->descripcion = $l->descripcion;
+                $n->dtopor = $l->dtopor;
+                $n->irpf = $l->irpf;
+                $n->iva = $l->iva;
+                $n->pvpsindto = $l->pvpsindto;
+                $n->pvptotal = $l->pvptotal;
+                $n->pvpunitario = $l->pvpunitario;
+                $n->recargo = $l->recargo;
+                $n->referencia = $l->referencia;
+
+                if ($n->save()) {
+                    /// descontamos del stock
+                    if ($n->referencia) {
+                        if ($articulo) {
+                            $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, false, $l->codcombinacion);
+                            if ($articulo->trazabilidad) {
+                                $trazabilidad = true;
+                            }
+                        }
+                    }
+
+                    $albaran->neto += $n->pvptotal;
+                    $albaran->totaliva += ($n->pvptotal * $n->iva / 100);
+                    $albaran->totalirpf += ($n->pvptotal * $n->irpf / 100);
+                    $albaran->totalrecargo += ($n->pvptotal * $n->recargo / 100);
+
+                    if ($n->irpf > $albaran->irpf) {
+                        $albaran->irpf = $n->irpf;
+                    }
+                } else {
+                    $continuar = false;
+                    $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                    break;
+                }
+            }
+            
+            //Validamos la información nueva del albarán
+            $albaran->neto = round($albaran->neto, FS_NF0);
+            $albaran->totaliva = round($albaran->totaliva, FS_NF0);
+            $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
+            $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
+            $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
+
+            if ($continuar) {
+                if ($albaran->save()) {
+                    $pedido->idalbaran = $albaran->idalbaran;
+                    $pedido->fechasalida = $albaran->fecha;
+                    $contador++;
+                    if (!$pedido->save()) {
+                        $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
+                        if ($albaran->delete()) {
+                            $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el " . FS_PEDIDO . " " . $pedido->codigo . ".");
+                        } else {
+                            $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                        }
+                    }
+                } else {
+                    $this->new_error_msg('Ocurrio un error al intentar grabar el ' . FS_ALBARAN . ', hubo un problema con los artículos del ' . FS_PEDIDO . ' <a href="' . $pedido->url() . '" target="_blank">' . $pedido->codigo . '</a> verifique el mismo e intente generar un albaran');
+                }
+            } else {
+                //Corregimos el stock si es que los articulos tienen control de stock
+                foreach ($albaran->get_lineas() as $linea) {
+                    if ($linea->referencia) {
+                        $art1 = $this->articulos->get($linea->referencia);
+                        $articulo_stock = $this->stock->total_from_articulo($linea->referencia, $albaran->codalmacen);
+                        if (!isset($lista_errores[$linea->referencia])) {
+                            $art1->sum_stock($albaran->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
+                        }
+                    }
+                }
+                $errores++;
+                if ($albaran->delete()) {
+                    $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
+                } else {
+                    $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
+                }
+            }
+        } else {
+            $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
+        }
+    }
+    
+    public function crear_lineas_albaran($albaran,$pedido)
+    {
+        
+    }
 
     /**
      * Funcion de generar_albaranes
@@ -186,169 +352,7 @@ class ventas_megafacturador extends rd_controller
         $errores = 0;
         foreach ($this->pedidos_pendientes() as $pedido) {
             if ($this->comprobar_stock($pedido)) {
-                $continuar = false;
-                $albaran = new albaran_cliente();
-                //Para el plugin distribucion
-                if (property_exists('albaran_cliente', 'codruta')) {
-                    $albaran->codruta = $pedido->codruta;
-                    $albaran->codvendedor = $pedido->codvendedor;
-                }
-
-                $albaran->apartado = $pedido->apartado;
-                $albaran->cifnif = $pedido->cifnif;
-                $albaran->ciudad = $pedido->ciudad;
-                $albaran->fecha = $this->fecha_albaranes_gen;
-                $albaran->hora = \date('H:i:s');
-                $albaran->codagente = $pedido->codagente;
-                $albaran->codalmacen = $pedido->codalmacen;
-                $albaran->codcliente = $pedido->codcliente;
-                $albaran->coddir = $pedido->coddir;
-                $albaran->coddivisa = $pedido->coddivisa;
-                $albaran->tasaconv = $pedido->tasaconv;
-                $albaran->codpago = $pedido->codpago;
-                $albaran->codpais = $pedido->codpais;
-                $albaran->codpostal = $pedido->codpostal;
-                $albaran->codserie = $pedido->codserie;
-                $albaran->direccion = $pedido->direccion;
-                $albaran->nombrecliente = $pedido->nombrecliente;
-                $albaran->observaciones = $pedido->observaciones;
-                $albaran->provincia = $pedido->provincia;
-                $albaran->numero2 = $pedido->numero2;
-                $albaran->porcomision = $pedido->porcomision;
-                $albaran->neto = 0;
-                $albaran->total = 0;
-                $albaran->totaliva = 0;
-                $albaran->irpf = 0;
-                $albaran->totalirpf = 0;
-                $albaran->totalrecargo = 0;
-
-                $albaran->envio_nombre = $pedido->envio_nombre;
-                $albaran->envio_apellidos = $pedido->envio_apellidos;
-                $albaran->envio_codtrans = $pedido->envio_codtrans;
-                $albaran->envio_codigo = $pedido->envio_codigo;
-                $albaran->envio_codpais = $pedido->envio_codpais;
-                $albaran->envio_provincia = $pedido->envio_provincia;
-                $albaran->envio_ciudad = $pedido->envio_ciudad;
-                $albaran->envio_codpostal = $pedido->envio_codpostal;
-                $albaran->envio_direccion = $pedido->envio_direccion;
-                $albaran->envio_apartado = $pedido->envio_apartado;
-
-                if (is_null($albaran->codagente)) {
-                    $albaran->codagente = $this->user->codagente;
-                }
-
-                /**
-                 * Obtenemos el ejercicio para la fecha de hoy (puede que
-                 * no sea el mismo ejercicio que el del pedido, por ejemplo
-                 * si hemos cambiado de año)
-                 */
-                $eje0 = $this->ejercicio->get_by_fecha($albaran->fecha, false);
-                if ($eje0) {
-                    $albaran->codejercicio = $eje0->codejercicio;
-                }
-
-                if (!$eje0) {
-                    $this->new_error_msg("Ejercicio no encontrado.");
-                } elseif (!$eje0->abierto()) {
-                    $this->new_error_msg("El ejercicio está cerrado.");
-                } elseif ($albaran->save()) {
-                    $trazabilidad = false;
-                    $continuar = true;
-                    $lista_errores = array();
-                    $art0 = new articulo();
-                    foreach ($pedido->get_lineas() as $l) {
-                        //Si el articulo existe
-                        if (!is_null($l->referencia)) {
-                            $articulo = $art0->get($l->referencia);
-                            $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
-                        }
-                        $n = new linea_albaran_cliente();
-                        $n->idlineapedido = $l->idlinea;
-                        $n->idpedido = $l->idpedido;
-                        $n->idalbaran = $albaran->idalbaran;
-                        $n->cantidad = $l->cantidad;
-                        $n->codimpuesto = $l->codimpuesto;
-                        $n->codcombinacion = $l->codcombinacion;
-                        $n->descripcion = $l->descripcion;
-                        $n->dtopor = $l->dtopor;
-                        $n->irpf = $l->irpf;
-                        $n->iva = $l->iva;
-                        $n->pvpsindto = $l->pvpsindto;
-                        $n->pvptotal = $l->pvptotal;
-                        $n->pvpunitario = $l->pvpunitario;
-                        $n->recargo = $l->recargo;
-                        $n->referencia = $l->referencia;
-
-                        if ($n->save()) {
-                            /// descontamos del stock
-                            if ($n->referencia) {
-                                $articulo = $art0->get($n->referencia);
-                                if ($articulo) {
-                                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, false, $l->codcombinacion);
-                                    if ($articulo->trazabilidad) {
-                                        $trazabilidad = true;
-                                    }
-                                }
-                            }
-
-                            $albaran->neto += $n->pvptotal;
-                            $albaran->totaliva += ($n->pvptotal * $n->iva / 100);
-                            $albaran->totalirpf += ($n->pvptotal * $n->irpf / 100);
-                            $albaran->totalrecargo += ($n->pvptotal * $n->recargo / 100);
-
-                            if ($n->irpf > $albaran->irpf) {
-                                $albaran->irpf = $n->irpf;
-                            }
-                        } else {
-                            $continuar = false;
-                            $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                            break;
-                        }
-                    }
-                    //Validamos la información nueva del albarán
-                    $albaran->neto = round($albaran->neto, FS_NF0);
-                    $albaran->totaliva = round($albaran->totaliva, FS_NF0);
-                    $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
-                    $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
-                    $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
-
-                    if ($continuar) {
-                        if ($albaran->save()) {
-                            $pedido->idalbaran = $albaran->idalbaran;
-                            $pedido->fechasalida = $albaran->fecha;
-                            $contador++;
-                            if (!$pedido->save()) {
-                                $this->new_error_msg("¡Imposible vincular el " . FS_PEDIDO . " con el nuevo " . FS_ALBARAN . "!");
-                                if ($albaran->delete()) {
-                                    $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado porque no se pudo enlazar con el " . FS_PEDIDO . " " . $pedido->codigo . ".");
-                                } else {
-                                    $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
-                                }
-                            }
-                        } else {
-                            $this->new_error_msg('Ocurrio un error al intentar grabar el ' . FS_ALBARAN . ', hubo un problema con los artículos del ' . FS_PEDIDO . ' <a href="' . $pedido->url() . '" target="_blank">' . $pedido->codigo . '</a> verifique el mismo e intente generar un albaran');
-                        }
-                    } else {
-                        //Corregimos el stock si es que los articulos tienen control de stock
-                        foreach ($albaran->get_lineas() as $linea) {
-                            if ($linea->referencia) {
-                                $art1 = $this->articulos->get($linea->referencia);
-                                $articulo_stock = $this->stock->total_from_articulo($linea->referencia, $albaran->codalmacen);
-                                if (!isset($lista_errores[$linea->referencia])) {
-                                    $art1->sum_stock($albaran->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
-                                }
-                            }
-                        }
-                        $errores++;
-                        if ($albaran->delete()) {
-                            $this->new_error_msg("El " . FS_ALBARAN . " se ha borrado.");
-                        } else {
-                            $this->new_error_msg("¡Imposible borrar el " . FS_ALBARAN . "!");
-                        }
-                    }
-                } else {
-                    $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
-                }
+                $this->crear_albaran($pedido);
             } else {
                 $this->new_error_msg("¡Artículos del " . FS_PEDIDO . " <a href=\"" . $pedido->url() . "\" target=\"_blank\">" . $pedido->codigo . "</a> sin stock suficiente!");
             }
