@@ -25,19 +25,6 @@ require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 define('FPDF_FONTPATH', 'plugins/republica_dominicana/extras/fpdf181/font/');
 define('EEURO', chr(128));
-require_model('cliente.php');
-require_model('factura_cliente.php');
-require_model('articulo.php');
-require_model('divisa.php');
-require_model('pais.php');
-require_model('forma_pago.php');
-require_model('ncf_ventas.php');
-require_model('ncf_tipo.php');
-require_model('ncf_entidad_tipo.php');
-require_model('agente.php');
-
-//Compatibilidad con plugin distribucion
-require_model('distribucion_ordenescarga_facturas.php');
 
 class factura_ncf extends rd_controller
 {

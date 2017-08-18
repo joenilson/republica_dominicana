@@ -43,6 +43,7 @@ class buscador_rnc extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
         $this->resultados = false;
         $this->total_resultados = 0;
 
