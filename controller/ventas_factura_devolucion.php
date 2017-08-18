@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_once 'plugins/republica_dominicana/controller/helper_ncf.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 /**
  * Description of ventas_factura_devolucion
  *
  * @author Carlos Garcia Gomez
  */
-class ventas_factura_devolucion extends fs_controller
+class ventas_factura_devolucion extends rd_controller
 {
     public $factura;
-    public $serie;
-    public $ncf_tipo_anulacion;
 
     public function __construct()
     {
@@ -35,13 +33,12 @@ class ventas_factura_devolucion extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
         $this->share_extension();
         $this->template = 'tab/' . __CLASS__;
 
-        $this->serie = new serie();
-        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $fact0 = new factura_cliente();
-        $this->factura = false;
+        $this->factura = '';
         if (isset($_REQUEST['id'])) {
             $this->factura = $fact0->get($_REQUEST['id']);
         }
@@ -68,11 +65,7 @@ class ventas_factura_devolucion extends fs_controller
 
         if ($continuar) {
             $tipo_comprobante = '04';
-            $this->ncf_rango = new ncf_rango();
-            $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-            if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-                return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
-            }
+            $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
             $motivo = \filter_input(INPUT_POST, 'motivo');
             $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
             $frec = clone $this->factura;
@@ -104,49 +97,10 @@ class ventas_factura_devolucion extends fs_controller
             $frec->totalirpf = 0;
             $frec->totaliva = 0;
             $frec->totalrecargo = 0;
-
-            $guardar = false;
-            foreach ($this->factura->get_lineas() as $value) {
-                if (isset($_POST['devolver_' . $value->idlinea])) {
-                    if (floatval($_POST['devolver_' . $value->idlinea]) > 0) {
-                        $guardar = true;
-                    }
-                }
-            }
-
-            if ($guardar) {
-                if ($frec->save()) {
-                    $art0 = new articulo();
-
-                    foreach ($this->factura->get_lineas() as $value) {
-                        if (isset($_POST['devolver_' . $value->idlinea])) {
-                            if (floatval($_POST['devolver_' . $value->idlinea]) > 0) {
-                                $linea = clone $value;
-                                $linea->idlinea = null;
-                                $linea->idfactura = $frec->idfactura;
-                                $linea->idalbaran = null;
-                                $linea->cantidad = 0 - floatval($_POST['devolver_' . $value->idlinea]);
-                                $linea->pvpsindto = $linea->cantidad * $linea->pvpunitario;
-                                $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * (100 - $linea->dtopor) / 100;
-                                if ($linea->save()) {
-                                    $articulo = $art0->get($linea->referencia);
-                                    if ($articulo) {
-                                        $articulo->sum_stock($frec->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
-                                    }
-
-                                    $frec->neto += $linea->pvptotal;
-                                    $frec->totaliva += ($linea->pvptotal * $linea->iva / 100);
-                                    $frec->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
-                                    $frec->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
-
-                                    if ($linea->irpf > $frec->irpf) {
-                                        $frec->irpf = $linea->irpf;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
+            
+            if($frec->save()){
+                $guardar = $this->guardar_lineas_devolucion($frec);
+                if ($guardar) {
                     /// redondeamos
                     $frec->neto = round($frec->neto, FS_NF0);
                     $frec->totaliva = round($frec->totaliva, FS_NF0);
@@ -155,18 +109,54 @@ class ventas_factura_devolucion extends fs_controller
                     $frec->total = $frec->neto + $frec->totaliva - $frec->totalirpf + $frec->totalrecargo;
                     $frec->pagada = true;
                     if ($frec->save()) {
-                        $ncf_controller = new helper_ncf();
-                        $ncf_controller->guardar_ncf($this->empresa->id, $frec, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
+                        $this->guardar_ncf($this->empresa->id, $frec, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
                         $this->generar_asiento($frec);
                         $this->new_message(FS_FACTURA_RECTIFICATIVA . ' creada correctamente.');
                     }
                 } else {
-                    $this->new_error_msg('Error al guardar la ' . FS_FACTURA_RECTIFICATIVA);
+                    $frec->delete();
+                    $this->new_advice('Todas las cantidades a devolver están a 0 no se genera ningún documento.');
                 }
-            } else {
-                $this->new_advice('Todas las cantidades a devolver están a 0.');
+            }else{
+                $this->new_error_msg('Error al guardar la ' . FS_FACTURA_RECTIFICATIVA);
             }
+
         }
+    }
+    
+    public function guardar_lineas_devolucion($frec)
+    {
+        $total_devolucion = 0;
+        $art0 = new articulo();
+        foreach ($this->factura->get_lineas() as $value) {
+            if (isset($_POST['devolver_' . $value->idlinea]) and (floatval($_POST['devolver_' . $value->idlinea]) > 0)) {
+                $devolucion = floatval($_POST['devolver_' . $value->idlinea]);
+                $linea = clone $value;
+                $linea->idlinea = null;
+                $linea->idfactura = $frec->idfactura;
+                $linea->idalbaran = null;
+                $linea->cantidad = 0 - $devolucion;
+                $linea->pvpsindto = $linea->cantidad * $linea->pvpunitario;
+                $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * (100 - $linea->dtopor) / 100;
+                if ($linea->save()) {
+                    $articulo = $art0->get($linea->referencia);
+                    if ($articulo) {
+                        $articulo->sum_stock($frec->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
+                    }
+                    $frec->neto += $linea->pvptotal;
+                    $frec->totaliva += ($linea->pvptotal * $linea->iva / 100);
+                    $frec->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
+                    $frec->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
+
+                    if ($linea->irpf > $frec->irpf) {
+                        $frec->irpf = $linea->irpf;
+                    }
+                }
+                $total_devolucion += $devolucion;
+            }
+            
+        }
+        return $total_devolucion;
     }
 
     private function generar_asiento(&$factura)

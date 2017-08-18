@@ -52,6 +52,7 @@ class rd_controller extends fbase_controller
     public $ncf_rango;
     public $ncf_tipo;
     public $ncf_entidad_tipo;
+    public $ncf_tipo_anulacion;
     public $ncf_ventas;
     public $agente;
     public $almacen;
@@ -77,6 +78,7 @@ class rd_controller extends fbase_controller
         $this->ncf_rango = new ncf_rango();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
+        $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->array_series = \range('A', 'U');
         
         $fsvar = new fs_var();
@@ -134,6 +136,16 @@ class rd_controller extends fbase_controller
             $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
             $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
         }
+    }
+    
+    public function generar_numero_ncf($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
+    {
+        $numero_ncf = $this->ncf_rango->generate($idempresa,$codalmacen, $tipo_comprobante, $condicion_pago);
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+            $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
+            return false;
+        }
+        return $numero_ncf;
     }
     
     public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
