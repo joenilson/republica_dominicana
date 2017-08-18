@@ -138,7 +138,6 @@ class factura_ncf extends rd_controller
                     $contador++;
                 }
             }
-            // Damos salida al archivo PDF
             if ($this->archivo) {
                 if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')) {
                     mkdir('tmp/' . FS_TMP_NAME . 'enviar');
@@ -147,7 +146,6 @@ class factura_ncf extends rd_controller
             } else {
                 $pdf_doc->Output();
             }
-
             if (!$this->factura) {
                 $this->new_error_msg("¡Factura de cliente no encontrada!");
             }
@@ -221,8 +219,6 @@ class factura_ncf extends rd_controller
     
     public function pdf_informacion_empresa($pdf_doc)
     {
-        /// Definimos todos los datos de la cabecera de la factura
-        /// Datos de la empresa
         $vendedor = $this->agente->get($this->factura->codagente);
         $pdf_doc->fde_nombre = $this->empresa->nombre;
         $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
@@ -236,7 +232,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
         if (in_array('distribucion', $GLOBALS['plugins'])) {
-            $pdf_doc->fde_vendedor = $vendedor->nombreap; //Mostrando iniciales del vendedor.
+            $pdf_doc->fde_vendedor = $vendedor->nombreap;
             $pdf_doc->fdf_ruta = $this->factura->codruta;
             $pdf_doc->fde_ruta = $this->factura->codruta;
             $pdf_doc->fdf_transporte = $this->idtransporte;
@@ -246,7 +242,6 @@ class factura_ncf extends rd_controller
     
     public function configuracion_pdf($pdf_doc)
     {
-        /// Insertamos el Logo y Marca de Agua si esta configurado así
         $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '1' : '0';
         $pdf_doc->fdf_Xlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '10' : '0';
         $pdf_doc->fdf_Ylogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '5' : '0';
