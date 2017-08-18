@@ -16,16 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('agente.php');
-require_model('almacen.php');
-require_model('divisa.php');
-require_model('forma_pago.php');
-require_model('pais.php');
-require_model('serie.php');
-require_model('ncf_rango.php');
-require_model('ncf_entidad_tipo.php');
-require_model('ncf_tipo.php');
-require_model('ncf_ventas.php');
 require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 /**
  * Description of rd_controller
