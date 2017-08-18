@@ -55,10 +55,6 @@ class rd_controller extends fbase_controller
     public $distribucion_clientes;
     protected function private_core()
     {
-        /// ¿El usuario tiene permiso para eliminar en esta página?
-        $this->allow_delete = $this->user->allow_delete_on($this->class_name);
-
-        //Datos de NCF
         $this->agente = new agente();
         $this->almacen = new almacen();
         $this->almacenes = new almacen();
@@ -72,14 +68,12 @@ class rd_controller extends fbase_controller
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->ncf_ventas = new ncf_ventas();
         $this->array_series = \range('A', 'U');
-        
         $fsvar = new fs_var();
         $this->multi_almacen = $fsvar->simple_get('multi_almacen');
         $this->periodos = range(2016, \date('Y'));
         $this->existe_tesoreria();
         $this->control_usuarios();
         $this->get_config();
-        
         $this->verificar_plugin_distribucion();
     }
     
@@ -130,6 +124,7 @@ class rd_controller extends fbase_controller
     
     public function control_usuarios()
     {
+        $this->allow_delete = $this->user->allow_delete_on($this->class_name);
         //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
         if (!$this->user->admin) {
             $this->agente = new agente();
