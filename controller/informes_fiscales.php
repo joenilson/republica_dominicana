@@ -98,10 +98,10 @@ class informes_fiscales extends rd_controller
 
         $this->codalmacen = ($codalmacen)?$codalmacen:$almacen_defecto;
         $this->almacenes_seleccionados = (is_array($this->codalmacen))?$this->codalmacen:array($this->codalmacen);
-        
+
         $this->verificar_tipo_reporte();
     }
-    
+
     public function verificar_tipo_reporte()
     {
         $tiporeporte = \filter_input(INPUT_POST, 'tipo-reporte');
@@ -125,7 +125,7 @@ class informes_fiscales extends rd_controller
             $this->datos_reporte(\filter_input(INPUT_GET, 'tabla_reporte'), true);
         }
     }
-    
+
     private function mostrar_reporte()
     {
         switch ($this->reporte) {
@@ -163,7 +163,7 @@ class informes_fiscales extends rd_controller
                 break;
         }
     }
-    
+
     private function init_variables()
     {
         $this->fecha_inicio = \date('01-m-Y');
@@ -189,7 +189,7 @@ class informes_fiscales extends rd_controller
         $this->total_resultados_resumen_ventas = 0;
         $this->total_resultados_ventas_agente = 0;
     }
-    
+
     private function crear_carpetas_reportes()
     {
         //Verificamos que exista la carpeta de documentos
@@ -214,309 +214,34 @@ class informes_fiscales extends rd_controller
         $almacenes = implode("','", $this->almacenes_seleccionados);
         switch ($reporte) {
             case "reporte-consolidado":
-                $sql_consolidado = "( ".
-                    " SELECT 'Venta' as tipo, nv.codalmacen,nv.fecha,f.nombrecliente as nombre, ".
-                    " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
-                    " CASE WHEN f.pagada THEN 'Si' ELSE 'No' END as pagada, ".
-                    " ncf, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total ".
-                    " FROM ncf_ventas as nv ".
-                    " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
-                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND nv.codalmacen IN ('".$almacenes."') ".
-                    " ) ".
-                    " UNION ALL ".
-                    " ( ".
-                    " SELECT 'Compra' as tipo, codalmacen, fecha, nombre, ".
-                    " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
-                    " CASE WHEN pagada THEN 'Si' ELSE 'No' END as pagada, ".
-                    " numproveedor as ncf, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else total END as total ".
-                    " FROM facturasprov ".
-                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND codalmacen IN ('".$almacenes."') ".
-                    " ) ".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_consolidado." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT t1.tipo,sum(CASE WHEN pagada = 'Si' THEN total ELSE 0 END) as total_pagada,sum(total) as total_general FROM (".
-                        $sql_consolidado.") as t1 GROUP BY t1.tipo;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_consolidado, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_consolidado);
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
-                foreach ($data_resumen as $linea) {
-                    if ($linea['tipo']=='Venta') {
-                        $this->sumaVentasPagadas += $linea['total_pagada'];
-                        $this->sumaVentas += $linea['total_general'];
-                    } elseif ($linea['tipo']=='Compra') {
-                        $this->sumaComprasPagadas += $linea['total_pagada'];
-                        $this->sumaCompras += $linea['total_general'];
-                    }
-                }
+                list($resultados, $total_informacion) = $this->reporteConsolidado($almacenes, $json);
                 break;
             case "reporte-ventas":
-                $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
-                    " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total, ".
-                    " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
-                    " nv.estado ".
-                    //" CASE WHEN length(nv.cifnif)=9 THEN 1 ELSE 2 END as cifnif_tipo ".
-                    " FROM ncf_ventas as nv ".
-                    " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
-                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
-                    " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND nv.codalmacen IN ('".$almacenes."') ".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(CASE WHEN t1.condicion = 'Activo' then neto else 0 end) as neto, ".
-                        "sum(CASE WHEN t1.condicion = 'Activo' then totaliva else 0 end) as totaliva,".
-                        "sum(CASE WHEN t1.condicion = 'Activo' then total else 0 end) as total FROM (".
-                        $sql_ventas.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_ventas, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_ventas);
-                    $this->totalNeto += $data_resumen[0]['neto'];
-                    $this->totalItbis += $data_resumen[0]['totaliva'];
-                    $this->totalMonto += $data_resumen[0]['total'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteVentas($almacenes, $json);
                 break;
             case "detalle-ventas-agente":
-                $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre,' ',a.apellidos,' ',a.segundo_apellido) as nombre_vendedor, ".
-                    " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, ".
-                    " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a, referencia, lf.descripcion, ".
-                    " cantidad, pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto, ".
-                    " fp.descripcion as forma_pago, ".
-                    " case when idfacturarect is null then 'VENTA' else 'DEVOLUCION' end as tipo ".
-                    " FROM facturascli as f ".
-                    " JOIN lineasfacturascli as lf on (f.idfactura = lf.idfactura) ".
-                    " JOIN formaspago as fp on (f.codpago = fp.codpago) ".
-                    " JOIN agentes as a on (f.codagente = a.codagente) ".
-                    " JOIN clientes as c on (f.codcliente = c.codcliente) ".
-                    " LEFT JOIN gruposclientes as g on (c.codgrupo = g.codgrupo) ".
-                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND anulada = false AND f.codalmacen IN ('".$almacenes."') ".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas_agente." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, sum(descuento) as total_descuento, ".
-                        "sum(monto) as total_monto FROM (".
-                        $sql_ventas_agente.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_ventas_agente, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_ventas_agente);
-                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
-                    $this->totalDescuento += $data_resumen[0]['total_descuento'];
-                    $this->totalMonto += $data_resumen[0]['total_monto'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteVentasAgente($almacenes, $json);
                 break;
             case "detalle-ventas":
-                $sql_detalle = "SELECT codalmacen, fecha, ncf, documento, referencia, descripcion, cantidad, ".
-                    "pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto ".
-                    " FROM ncf_ventas ".
-                    " JOIN lineasfacturascli on (documento = idfactura)".
-                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id).
-                    " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND estado = TRUE ".
-                    " AND codalmacen IN ('".$almacenes."') ".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_detalle." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
-                        "sum(monto) as total_monto FROM (".
-                        $sql_detalle.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_detalle, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_detalle);
-                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
-                    $this->totalMonto += $data_resumen[0]['total_monto'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteDetalleVentas($almacenes, $json);
                 break;
             case "resumen-ventas":
-                $sql_rventas = "SELECT codalmacen, ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, ".
-                    "referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto ".
-                    " from ncf_ventas ".
-                    " join lineasfacturascli on (documento = idfactura) ".
-                    " join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante) ".
-                    " where idempresa = ".$this->empresa->intval($this->empresa->id).
-                    " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND ncf_ventas.estado = TRUE ".
-                    " AND codalmacen IN ('".$almacenes."') ".
-                    " GROUP BY codalmacen,ncf_tipo.tipo_comprobante,ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion ".
-                    " ORDER BY codalmacen,ncf_tipo.tipo_comprobante";
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_rventas." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
-                        "sum(monto) as total_monto FROM (".
-                        $sql_rventas.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_rventas, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_rventas);
-                    $this->totalCantidad += $data_resumen[0]['total_cantidad'];
-                    $this->totalMonto += $data_resumen[0]['total_monto'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteResumenVentas($almacenes, $json);
                 break;
             case "reporte-compras":
-                $sql_compras = " SELECT fecha, codalmacen, nombre, cifnif, ".
-                    " idfactura, numproveedor as ncf, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else total END as total, ".
-                    " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
-                    " CASE WHEN anulada THEN 'Si' ELSE 'No' END as estado ".
-                    " FROM facturasprov ".
-                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND codalmacen IN ('".$almacenes."') AND anulada = FALSE".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_compras." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(neto) as neto, sum(totaliva) as totaliva, ".
-                        " sum(total) as total FROM (".
-                        $sql_compras.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_compras, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_compras);
-                    $this->totalNeto += $data_resumen[0]['neto'];
-                    $this->totalItbis += $data_resumen[0]['totaliva'];
-                    $this->totalMonto += $data_resumen[0]['total'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteCompras($almacenes, $json);
                 break;
             case "detalle-compras":
-                $sql_dcompras = "SELECT  codalmacen, fecha, numproveedor as ncf, f.idfactura as documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
-                    " FROM facturasprov as f".
-                    " JOIN lineasfacturasprov as fl on (f.idfactura = fl.idfactura)".
-                    " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND anulada = FALSE ".
-                    " AND codalmacen IN ('".$almacenes."') ".
-                    " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_dcompras." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(cantidad) as cantidad, ".
-                        " sum(monto) as total FROM (".
-                        $sql_dcompras.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_dcompras, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_dcompras);
-                    $this->totalCantidad += $data_resumen[0]['cantidad'];
-                    $this->totalMonto += $data_resumen[0]['total'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporteDetalleCompras($almacenes, $json);
                 break;
             case "reporte-606":
-                $sql_606 = " SELECT fp.cifnif, ".
-                    " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
-                    " CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
-                    " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
-                    " concat(extract(year from fp.fecha),lpad(CAST (extract(month from fp.fecha) as text),2,'0')) as fechaym, ".
-                    " lpad(CAST (extract(day from fp.fecha) as text),2,'0') as fechadd, ".
-                    " concat(extract(year from ca.fecha),lpad(CAST (extract(month from ca.fecha) as text),2,'0')) as fechapym, ".
-                    " lpad(CAST (extract(day from ca.fecha) as text),2,'0') as fechapdd, ".
-                    " fp.totaliva, 0 as totalivaretenido, fp.neto, 0 as totalnetoretenido ".
-                    " FROM facturasprov as fp ".
-                    " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
-                    " left join facturasprov as fp2 ON (fp.idfacturarect = fp2.idfactura) ".
-                    " left join co_asientos as ca on (fp.idasientop = ca.idasiento AND fp.codejercicio = ca.codejercicio) ".
-                    " WHERE fp.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND fp.codalmacen IN ('".$almacenes."') AND fp.anulada = FALSE".
-                    " ORDER BY fp.codalmacen,fp.".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_606." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
-                        " sum(neto) as totalneto FROM (".
-                        $sql_606.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_606, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_606);
-                    $this->totalDocumentos += $data_cantidad[0]['total'];
-                    $this->totalItbis += $data_resumen[0]['totaliva'];
-                    $this->totalNeto += $data_resumen[0]['totalneto'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporte606($almacenes, $json);
                 break;
             case "reporte-607":
-                $sql_607 = "SELECT ".
-                    " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
-                    " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
-                    " ncf, ncf_modifica, ".
-                    " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
-                    " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-                    " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
-                    " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
-                    " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
-                    " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                    " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                    " AND nv.codalmacen IN ('".$almacenes."') ".
-                    " ORDER BY nv.codalmacen,nv.".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_607." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
-                        " sum(neto) as totalneto FROM (".
-                        $sql_607.") as t1;";
-                $data_resumen = $this->db->select($sql_resumen);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_607, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_607);
-                    $this->totalDocumentos += $data_cantidad[0]['total'];
-                    $this->totalItbis += $data_resumen[0]['totaliva'];
-                    $this->totalNeto += $data_resumen[0]['totalneto'];
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporte607($almacenes, $json);
                 break;
             case "reporte-608":
-                $sql_608 = "SELECT ncf, ".
-                " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha,".
-                " motivo,".
-                " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado  FROM ncf_ventas as nv ".
-                " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
-                " fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
-                " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
-                " AND codalmacen IN ('".$almacenes."') and estado = false ".
-                " ORDER BY codalmacen,".$this->sort." ".$this->order;
-                $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_608." ) as t1;";
-                $data_cantidad = $this->db->select($sql_cantidad);
-                if ($json) {
-                    $resultados = $this->db->select_limit($sql_608, $this->limit, $this->offset);
-                } else {
-                    $resultados = $this->db->select($sql_608);
-                }
-                $total_informacion+=$data_cantidad[0]['total'];
+                list($resultados, $total_informacion) = $this->reporte608($almacenes, $json);
                 break;
             default:
 
@@ -532,6 +257,60 @@ class informes_fiscales extends rd_controller
         } else {
             return $resultados;
         }
+    }
+
+    public function reporteConsolidado($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_consolidado = "( ".
+            " SELECT 'Venta' as tipo, nv.codalmacen,nv.fecha,f.nombrecliente as nombre, ".
+            " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+            " CASE WHEN f.pagada THEN 'Si' ELSE 'No' END as pagada, ".
+            " ncf, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total ".
+            " FROM ncf_ventas as nv ".
+            " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
+            " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND nv.codalmacen IN ('".$almacenes."') ".
+            " ) ".
+            " UNION ALL ".
+            " ( ".
+            " SELECT 'Compra' as tipo, codalmacen, fecha, nombre, ".
+            " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+            " CASE WHEN pagada THEN 'Si' ELSE 'No' END as pagada, ".
+            " numproveedor as ncf, ".
+            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+            " CASE WHEN anulada = TRUE THEN 0 else total END as total ".
+            " FROM facturasprov ".
+            " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND codalmacen IN ('".$almacenes."') ".
+            " ) ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_consolidado." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT t1.tipo,sum(CASE WHEN pagada = 'Si' THEN total ELSE 0 END) as total_pagada,sum(total) as total_general FROM (".
+                $sql_consolidado.") as t1 GROUP BY t1.tipo;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_consolidado, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_consolidado);
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        foreach ($data_resumen as $linea) {
+            if ($linea['tipo']=='Venta') {
+                $this->sumaVentasPagadas += $linea['total_pagada'];
+                $this->sumaVentas += $linea['total_general'];
+            } elseif ($linea['tipo']=='Compra') {
+                $this->sumaComprasPagadas += $linea['total_pagada'];
+                $this->sumaCompras += $linea['total_general'];
+            }
+        }
+        return array($resultados, $total_informacion);
     }
 
     /**
@@ -559,6 +338,35 @@ class informes_fiscales extends rd_controller
         );
     }
 
+    public function reporteDetalleCompras($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_dcompras = "SELECT  codalmacen, fecha, numproveedor as ncf, f.idfactura as documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
+            " FROM facturasprov as f".
+            " JOIN lineasfacturasprov as fl on (f.idfactura = fl.idfactura)".
+            " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND anulada = FALSE ".
+            " AND codalmacen IN ('".$almacenes."') ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_dcompras." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(cantidad) as cantidad, ".
+                " sum(monto) as total FROM (".
+                $sql_dcompras.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_dcompras, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_dcompras);
+            $this->totalCantidad += $data_resumen[0]['cantidad'];
+            $this->totalMonto += $data_resumen[0]['total'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
+    }
+
     public function detalle_compras()
     {
         $this->totalCantidad = 0;
@@ -573,6 +381,37 @@ class informes_fiscales extends rd_controller
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
             false
         );
+    }
+
+    public function reporteDetalleVentas($almacenes,$json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_detalle = "SELECT codalmacen, fecha, ncf, documento, referencia, descripcion, cantidad, ".
+            "pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto ".
+            " FROM ncf_ventas ".
+            " JOIN lineasfacturascli on (documento = idfactura)".
+            " WHERE idempresa = ".$this->empresa->intval($this->empresa->id).
+            " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND estado = TRUE ".
+            " AND codalmacen IN ('".$almacenes."') ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_detalle." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
+                "sum(monto) as total_monto FROM (".
+                $sql_detalle.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_detalle, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_detalle);
+            $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+            $this->totalMonto += $data_resumen[0]['total_monto'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
     }
 
     public function detalle_ventas()
@@ -591,6 +430,39 @@ class informes_fiscales extends rd_controller
         );
     }
 
+    public function reporteResumenVentas($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_rventas = "SELECT codalmacen, ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, ".
+            "referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto ".
+            " from ncf_ventas ".
+            " join lineasfacturascli on (documento = idfactura) ".
+            " join ncf_tipo on (ncf_ventas.tipo_comprobante = ncf_tipo.tipo_comprobante) ".
+            " where idempresa = ".$this->empresa->intval($this->empresa->id).
+            " AND fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND ncf_ventas.estado = TRUE ".
+            " AND codalmacen IN ('".$almacenes."') ".
+            " GROUP BY codalmacen,ncf_tipo.tipo_comprobante,ncf_tipo.descripcion, referencia, lineasfacturascli.descripcion ".
+            " ORDER BY codalmacen,ncf_tipo.tipo_comprobante";
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_rventas." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(cantidad) as total_cantidad, ".
+                "sum(monto) as total_monto FROM (".
+                $sql_rventas.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_rventas, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_rventas);
+            $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+            $this->totalMonto += $data_resumen[0]['total_monto'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
+    }
+
     public function resumen_ventas()
     {
         $this->totalCantidad = 0;
@@ -605,6 +477,43 @@ class informes_fiscales extends rd_controller
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right')),
             false
         );
+    }
+
+    public function reporteVentas($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total, ".
+            " CASE WHEN f.anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+            " nv.estado ".
+            //" CASE WHEN length(nv.cifnif)=9 THEN 1 ELSE 2 END as cifnif_tipo ".
+            " FROM ncf_ventas as nv ".
+            " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
+            " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+            " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND nv.codalmacen IN ('".$almacenes."') ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(CASE WHEN t1.condicion = 'Activo' then neto else 0 end) as neto, ".
+                "sum(CASE WHEN t1.condicion = 'Activo' then totaliva else 0 end) as totaliva,".
+                "sum(CASE WHEN t1.condicion = 'Activo' then total else 0 end) as total FROM (".
+                $sql_ventas.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_ventas, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_ventas);
+            $this->totalNeto += $data_resumen[0]['neto'];
+            $this->totalItbis += $data_resumen[0]['totaliva'];
+            $this->totalMonto += $data_resumen[0]['total'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
     }
 
     public function ventas()
@@ -624,7 +533,45 @@ class informes_fiscales extends rd_controller
             false
         );
     }
-    
+
+    public function reporteVentasAgente($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre,' ',a.apellidos,' ',a.segundo_apellido) as nombre_vendedor, ".
+            " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, ".
+            " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a, referencia, lf.descripcion, ".
+            " cantidad, pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto, ".
+            " fp.descripcion as forma_pago, ".
+            " case when idfacturarect is null then 'VENTA' else 'DEVOLUCION' end as tipo ".
+            " FROM facturascli as f ".
+            " JOIN lineasfacturascli as lf on (f.idfactura = lf.idfactura) ".
+            " JOIN formaspago as fp on (f.codpago = fp.codpago) ".
+            " JOIN agentes as a on (f.codagente = a.codagente) ".
+            " JOIN clientes as c on (f.codcliente = c.codcliente) ".
+            " LEFT JOIN gruposclientes as g on (c.codgrupo = g.codgrupo) ".
+            " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND anulada = false AND f.codalmacen IN ('".$almacenes."') ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_ventas_agente." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(cantidad) as total_cantidad, sum(descuento) as total_descuento, ".
+                "sum(monto) as total_monto FROM (".
+                $sql_ventas_agente.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_ventas_agente, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_ventas_agente);
+            $this->totalCantidad += $data_resumen[0]['total_cantidad'];
+            $this->totalDescuento += $data_resumen[0]['total_descuento'];
+            $this->totalMonto += $data_resumen[0]['total_monto'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
+    }
+
     public function ventas_agente()
     {
         $this->resultados_ventas = array();
@@ -641,6 +588,40 @@ class informes_fiscales extends rd_controller
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             false
         );
+    }
+
+    public function reporteCompras($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_compras = " SELECT fecha, codalmacen, nombre, cifnif, ".
+            " idfactura, numproveedor as ncf, ".
+            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+            " CASE WHEN anulada = TRUE THEN 0 else total END as total, ".
+            " CASE WHEN anulada THEN 'Anulado' ELSE 'Activo' END as condicion, ".
+            " CASE WHEN anulada THEN 'Si' ELSE 'No' END as estado ".
+            " FROM facturasprov ".
+            " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND codalmacen IN ('".$almacenes."') AND anulada = FALSE".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_compras." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(neto) as neto, sum(totaliva) as totaliva, ".
+                " sum(total) as total FROM (".
+                $sql_compras.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_compras, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_compras);
+            $this->totalNeto += $data_resumen[0]['neto'];
+            $this->totalItbis += $data_resumen[0]['totaliva'];
+            $this->totalMonto += $data_resumen[0]['total'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
     }
 
     public function compras()
@@ -661,6 +642,45 @@ class informes_fiscales extends rd_controller
         );
     }
 
+    public function reporte606($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_606 = " SELECT fp.cifnif, ".
+            " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
+            " CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
+            " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
+            " concat(extract(year from fp.fecha),lpad(CAST (extract(month from fp.fecha) as text),2,'0')) as fechaym, ".
+            " lpad(CAST (extract(day from fp.fecha) as text),2,'0') as fechadd, ".
+            " concat(extract(year from ca.fecha),lpad(CAST (extract(month from ca.fecha) as text),2,'0')) as fechapym, ".
+            " lpad(CAST (extract(day from ca.fecha) as text),2,'0') as fechapdd, ".
+            " fp.totaliva, 0 as totalivaretenido, fp.neto, 0 as totalnetoretenido ".
+            " FROM facturasprov as fp ".
+            " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
+            " left join facturasprov as fp2 ON (fp.idfacturarect = fp2.idfactura) ".
+            " left join co_asientos as ca on (fp.idasientop = ca.idasiento AND fp.codejercicio = ca.codejercicio) ".
+            " WHERE fp.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND fp.codalmacen IN ('".$almacenes."') AND fp.anulada = FALSE".
+            " ORDER BY fp.codalmacen,fp.".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_606." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
+                " sum(neto) as totalneto FROM (".
+                $sql_606.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_606, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_606);
+            $this->totalDocumentos += $data_cantidad[0]['total'];
+            $this->totalItbis += $data_resumen[0]['totaliva'];
+            $this->totalNeto += $data_resumen[0]['totalneto'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
+    }
+
     public function dgii606()
     {
         $this->totalDocumentos = 0;
@@ -679,6 +699,42 @@ class informes_fiscales extends rd_controller
         );
     }
 
+    public function reporte607($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_607 = "SELECT ".
+            " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
+            " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
+            " ncf, ncf_modifica, ".
+            " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha, ".
+            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+            " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
+            " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
+            " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+            " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND nv.codalmacen IN ('".$almacenes."') ".
+            " ORDER BY nv.codalmacen,nv.".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_607." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
+                " sum(neto) as totalneto FROM (".
+                $sql_607.") as t1;";
+        $data_resumen = $this->db->select($sql_resumen);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_607, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_607);
+            $this->totalDocumentos += $data_cantidad[0]['total'];
+            $this->totalItbis += $data_resumen[0]['totaliva'];
+            $this->totalNeto += $data_resumen[0]['totalneto'];
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
+    }
+
     public function dgii607()
     {
         $this->totalDocumentos = 0;
@@ -695,6 +751,30 @@ class informes_fiscales extends rd_controller
             array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),
             false
         );
+    }
+
+    public function reporte608($almacenes, $json)
+    {
+        $resultados = array();
+        $total_informacion = 0;
+        $sql_608 = "SELECT ncf, ".
+            " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha,".
+            " motivo,".
+            " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado  FROM ncf_ventas as nv ".
+            " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
+            " fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
+            " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
+            " AND codalmacen IN ('".$almacenes."') and estado = false ".
+            " ORDER BY codalmacen,".$this->sort." ".$this->order;
+        $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_608." ) as t1;";
+        $data_cantidad = $this->db->select($sql_cantidad);
+        if ($json) {
+            $resultados = $this->db->select_limit($sql_608, $this->limit, $this->offset);
+        } else {
+            $resultados = $this->db->select($sql_608);
+        }
+        $total_informacion+=$data_cantidad[0]['total'];
+        return array($resultados, $total_informacion);
     }
 
     public function dgii608()
