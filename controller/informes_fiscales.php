@@ -112,9 +112,9 @@ class informes_fiscales extends rd_controller
         $order = \filter_input(INPUT_GET, 'order');
         $this->fecha_inicio = $this->filter_request('inicio');
         $this->fecha_fin = $this->filter_request('fin');
-        $this->offset = ($offset)?$offset:0;
-        $this->limit = ($limit)?$limit:FS_ITEM_LIMIT;
-        $this->search = ($search)?$search:false;
+        $this->offset = $this->confirmarValor($offset,0);
+        $this->limit = $this->confirmarValor($limit,FS_ITEM_LIMIT);
+        $this->search = $this->confirmarValor($search,false);
         $this->sort = ($sort and $sort!='undefined')?$sort:'fecha, ncf';
         $this->order = ($order and $order!='undefined')?$order:'ASC';
         if (!empty($tiporeporte)) {
@@ -244,7 +244,6 @@ class informes_fiscales extends rd_controller
                 list($resultados, $total_informacion) = $this->reporte608($almacenes, $json);
                 break;
             default:
-
                 break;
         }
         if ($json) {
@@ -261,7 +260,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteConsolidado($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_consolidado = "( ".
             " SELECT 'Venta' as tipo, nv.codalmacen,nv.fecha,f.nombrecliente as nombre, ".
@@ -340,7 +338,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteDetalleCompras($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_dcompras = "SELECT  codalmacen, fecha, numproveedor as ncf, f.idfactura as documento, referencia, descripcion, cantidad, pvpunitario as precio, pvptotal as monto ".
             " FROM facturasprov as f".
@@ -385,7 +382,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteDetalleVentas($almacenes,$json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_detalle = "SELECT codalmacen, fecha, ncf, documento, referencia, descripcion, cantidad, ".
             "pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto ".
@@ -432,7 +428,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteResumenVentas($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_rventas = "SELECT codalmacen, ncf_tipo.tipo_comprobante as tipo_comprobante, ncf_tipo.descripcion as tc_descripcion, ".
             "referencia, lineasfacturascli.descripcion as descripcion, sum(cantidad) as cantidad, sum(pvptotal) as monto ".
@@ -481,7 +476,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteVentas($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_ventas = "SELECT nv.fecha,nv.codalmacen,f.nombrecliente,nv.cifnif,ncf,ncf_modifica,tipo_comprobante, ".
             " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
@@ -536,7 +530,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteVentasAgente($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre,' ',a.apellidos,' ',a.segundo_apellido) as nombre_vendedor, ".
             " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, ".
@@ -592,7 +585,6 @@ class informes_fiscales extends rd_controller
 
     public function reporteCompras($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_compras = " SELECT fecha, codalmacen, nombre, cifnif, ".
             " idfactura, numproveedor as ncf, ".
@@ -644,7 +636,6 @@ class informes_fiscales extends rd_controller
 
     public function reporte606($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_606 = " SELECT fp.cifnif, ".
             " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
@@ -701,7 +692,6 @@ class informes_fiscales extends rd_controller
 
     public function reporte607($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_607 = "SELECT ".
             " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
@@ -755,7 +745,6 @@ class informes_fiscales extends rd_controller
 
     public function reporte608($almacenes, $json)
     {
-        $resultados = array();
         $total_informacion = 0;
         $sql_608 = "SELECT ncf, ".
             " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha,".
