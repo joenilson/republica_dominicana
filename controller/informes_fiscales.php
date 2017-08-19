@@ -641,10 +641,10 @@ class informes_fiscales extends rd_controller
             " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
             " CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
             " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
-            " concat(extract(year from fp.fecha),lpad(CAST (extract(month from fp.fecha) as text),2,'0')) as fechaym, ".
-            " lpad(CAST (extract(day from fp.fecha) as text),2,'0') as fechadd, ".
-            " concat(extract(year from ca.fecha),lpad(CAST (extract(month from ca.fecha) as text),2,'0')) as fechapym, ".
-            " lpad(CAST (extract(day from ca.fecha) as text),2,'0') as fechapdd, ".
+            " concat(extract(year from fp.fecha),lpad(CAST(extract(month from fp.fecha) as char),2,'0')) as fechaym, ".
+            " lpad(CAST(extract(day from fp.fecha) as char),2,'0') as fechadd, ".
+            " concat(extract(year from ca.fecha),lpad(CAST(extract(month from ca.fecha) as char),2,'0')) as fechapym, ".
+            " lpad(CAST(extract(day from ca.fecha) as char),2,'0') as fechapdd, ".
             " fp.totaliva, 0 as totalivaretenido, fp.neto, 0 as totalnetoretenido ".
             " FROM facturasprov as fp ".
             " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
@@ -697,7 +697,7 @@ class informes_fiscales extends rd_controller
             " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
             " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
             " ncf, ncf_modifica, ".
-            " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha, ".
+            " concat(extract(year from nv.fecha),lpad(CAST(extract(month from nv.fecha) as char),2,'0'),lpad(CAST(extract(day from nv.fecha) as char),2,'0')) as fecha, ".
             " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
             " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
             " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
@@ -747,7 +747,7 @@ class informes_fiscales extends rd_controller
     {
         $total_informacion = 0;
         $sql_608 = "SELECT ncf, ".
-            " concat(extract(year from nv.fecha),lpad(CAST (extract(month from nv.fecha) as text),2,'0'),lpad(CAST (extract(day from nv.fecha) as text),2,'0')) as fecha,".
+            " concat(extract(year from nv.fecha),lpad(CAST(extract(month from nv.fecha) as char),2,'0'),lpad(CAST(extract(day from nv.fecha) as char),2,'0')) as fecha,".
             " motivo,".
             " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado  FROM ncf_ventas as nv ".
             " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
