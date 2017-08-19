@@ -21,19 +21,18 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 /**
  * Esta es una copia de funcionalidades minimas del plugin MegaFacturador
  * su uso está restringido solo para las facturas de venta
- * no se aplciará a un menu, sino que será un boton dentro de la lista de Albaranes
+ * no se aplicará a un menu, sino que será un boton dentro de la lista de
+ * Albaranes
  * @author Joe Nilson <joenilson at gmail.com>
  */
 class ventas_megafacturador extends rd_controller
 {
-    public $almacenes;
     public $codalmacen;
     public $codalmacen_ped;
     public $codalmacen_alb;
     public $documento;
     public $numasientos;
     public $opciones;
-    public $serie;
     public $series_elegidas;
     public $series_elegidas_albaranes;
     public $series_elegidas_pedidos;
@@ -60,16 +59,9 @@ class ventas_megafacturador extends rd_controller
     public $ejercicios;
     public $forma_pago;
     public $formas_pago;
-    public $proveedor;
     public $regularizacion;
     public $total;
     public $stock;
-    public $ncf_tipo;
-    public $ncf_rango;
-    public $ncf_ventas;
-    public $ncf_entidad_tipo;
-    //Para el plugin distribucion
-    public $distribucion_clientes;
     public $cliente_rutas;
 
     public function __construct()
@@ -80,7 +72,7 @@ class ventas_megafacturador extends rd_controller
     protected function private_core()
     {
         parent::private_core();
-        
+
         $this->init_variables();
 
         $documento = filter_input(INPUT_GET, 'documento');
@@ -92,7 +84,7 @@ class ventas_megafacturador extends rd_controller
         $this->fecha_albaran_hasta = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_albaran_hasta'), \date('Y-m-d'));
         $this->fecha_albaranes_gen = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_albaranes_gen'), $this->fecha_albaranes_gen);
         $this->fecha_facturas_gen = $this->confirmarValor(\filter_input(INPUT_POST, 'fecha_facturas_gen'), $this->fecha_facturas_gen);
-        
+
         $procesar = $this->filter_request('procesar');
         if ($documento == 'pedidos') {
             $this->procesar_pedidos($procesar);
@@ -100,7 +92,7 @@ class ventas_megafacturador extends rd_controller
             $this->procesar_albaranes($procesar);
         }
     }
-    
+
     public function procesar_pedidos($procesar)
     {
         $this->series_elegidas_pedidos = filter_input(INPUT_POST, 'serie_pedidos', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -115,7 +107,11 @@ class ventas_megafacturador extends rd_controller
             $this->generar_albaranes();
         }
     }
-    
+
+    /**
+     * Funcion para Procesar los Albaranes y convertirlos en Facturas
+     * @param string $procesar
+     */
     public function procesar_albaranes($procesar)
     {
         $this->series_elegidas_albaranes = (array) filter_input(INPUT_POST, 'serie_albaranes', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -130,11 +126,10 @@ class ventas_megafacturador extends rd_controller
             $this->generar_facturas();
         }
     }
-    
+
     public function init_variables()
     {
         $this->articulos = new articulo();
-        $this->almacenes = new almacen();
         $this->asiento_factura = new asiento_factura();
         $this->cliente = new cliente();
         $this->ejercicio = new ejercicio();
@@ -143,12 +138,7 @@ class ventas_megafacturador extends rd_controller
         $this->stock = new stock();
         $this->formas_pago = $this->forma_pago->all();
         $this->numasientos = 0;
-        $this->proveedor = new proveedor();
         $this->regularizacion = new regularizacion_iva();
-        $this->ncf_tipo = new ncf_tipo();
-        $this->ncf_rango = new ncf_rango();
-        $this->ncf_entidad_tipo = new ncf_entidad_tipo();
-        $this->ncf_ventas = new ncf_ventas();
         $this->series_elegidas_pedidos = array();
         $this->series_elegidas_albaranes = array();
         $this->fecha_albaranes_gen = \date('d-m-Y', strtotime('+1 day'));
@@ -158,13 +148,8 @@ class ventas_megafacturador extends rd_controller
         $this->lista_pedidos_pendientes_total = 0;
         $this->lista_albaranes_pendientes_total = 0;
         $this->share_extensions();
-
-        //Para el plugin distribucion
-        if (class_exists('distribucion_clientes')) {
-            $this->distribucion_clientes = new distribucion_clientes();
-        }
     }
-    
+
     public function crear_albaran($pedido, &$contador, &$errores)
     {
         $continuar = false;
@@ -286,7 +271,7 @@ class ventas_megafacturador extends rd_controller
                     break;
                 }
             }
-            
+
             //Validamos la información nueva del albarán
             $albaran->neto = round($albaran->neto, FS_NF0);
             $albaran->totaliva = round($albaran->totaliva, FS_NF0);
@@ -332,10 +317,10 @@ class ventas_megafacturador extends rd_controller
             $this->new_error_msg("¡Imposible guardar el " . FS_ALBARAN . "!");
         }
     }
-    
+
     public function crear_lineas_albaran($albaran,$pedido)
     {
-        
+
     }
 
     /**
@@ -358,7 +343,7 @@ class ventas_megafacturador extends rd_controller
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' pedidos y ' . $errores . ' no se procesaron por errores en stock o la información.');
     }
-    
+
     public function crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante)
     {
         $factura = new factura_cliente();
@@ -510,12 +495,12 @@ class ventas_megafacturador extends rd_controller
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $albaran->codcliente);
             if (strlen($albaran->cifnif) < 9 and $tipo_comprobante == '01') {
-                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');                
+                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
             }else{
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                 $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
                 $contador++;
-                $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);            
+                $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
@@ -572,7 +557,7 @@ class ventas_megafacturador extends rd_controller
         if ($this->fecha_albaran_desde and empty($this->fechas_elegidas_albaranes)) {
             $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde)))
                     . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
-        } elseif ($this->fechas_elegidas_albaranes) {
+        } elseif (!empty($this->fechas_elegidas_albaranes)) {
             $fechas = $this->date_to_text($this->fechas_elegidas_albaranes);
             $sql .= " AND fecha IN (" . $fechas . ") ";
         }
@@ -589,8 +574,8 @@ class ventas_megafacturador extends rd_controller
 
     public function total_pendientes_venta()
     {
-        $total = 0;
-        $subtotal = array();
+        $total_alb = 0;
+        $subtotal_alb = array();
         $sql = "SELECT fecha, count(idalbaran) as total FROM albaranescli WHERE ptefactura = true";
         if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
@@ -609,15 +594,15 @@ class ventas_megafacturador extends rd_controller
             $sql .= " GROUP BY fecha ORDER BY fecha";
         }
 
-        $data = $this->db->select($sql);
-        if ($data) {
-            foreach ($data as $d) {
-                $total += intval($d['total']);
-                $subtotal[$d['fecha']] = intval($d['total']);
+        $data_alb = $this->db->select($sql);
+        if ($data_alb) {
+            foreach ($data_alb as $d) {
+                $total_alb += intval($d['total']);
+                $subtotal_alb[$d['fecha']] = intval($d['total']);
             }
         }
 
-        $resultados = array('total' => $total, 'lista' => $subtotal);
+        $resultados = array('total' => $total_alb, 'lista' => $subtotal_alb);
         return $resultados;
     }
 
@@ -653,8 +638,8 @@ class ventas_megafacturador extends rd_controller
 
     public function total_pedidos_pendientes()
     {
-        $total = 0;
-        $subtotal = array();
+        $total_ped = 0;
+        $subtotal_ped = array();
         $sql = "SELECT fecha, count(idpedido) as total FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
 
         if (!empty($this->codalmacen)) {
@@ -677,12 +662,12 @@ class ventas_megafacturador extends rd_controller
         $data = $this->db->select($sql);
         if ($data) {
             foreach ($data as $d) {
-                $total += intval($d['total']);
-                $subtotal[$d['fecha']] = intval($d['total']);
+                $total_ped += intval($d['total']);
+                $subtotal_ped[$d['fecha']] = intval($d['total']);
             }
         }
 
-        $resultados = array('total' => $total, 'lista' => $subtotal);
+        $resultados = array('total' => $total_ped, 'lista' => $subtotal_ped);
         return $resultados;
     }
 
@@ -723,11 +708,11 @@ class ventas_megafacturador extends rd_controller
                 if ($this->multi_almacen) {
                     $stockfis = $stock0->total_from_articulo($articulo->referencia, $documento->codalmacen);
                 }
-                
+
                 if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
                     $ok = false;
                 }
-                
+
                 if (!$ok) {
                     $this->new_error_msg('No hay suficiente stock del artículo ' . $linea->referencia);
                     break;
