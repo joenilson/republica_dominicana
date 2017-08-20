@@ -218,66 +218,11 @@ class ventas_megafacturador extends rd_controller
         } elseif (!$eje0->abierto()) {
             $this->new_error_msg("El ejercicio está cerrado.");
         } elseif ($albaran->save()) {
-            $trazabilidad = false;
+
             $continuar = true;
             $lista_errores = array();
             $art0 = new articulo();
-            foreach ($pedido->get_lineas() as $l) {
-                //Si el articulo existe
-                $articulo = false;
-                if (!is_null($l->referencia)) {
-                    $articulo = $art0->get($l->referencia);
-                    $articulo_stock = $this->stock->total_from_articulo($articulo->referencia, $pedido->codalmacen);
-                }
-                $n = new linea_albaran_cliente();
-                $n->idlineapedido = $l->idlinea;
-                $n->idpedido = $l->idpedido;
-                $n->idalbaran = $albaran->idalbaran;
-                $n->cantidad = $l->cantidad;
-                $n->codimpuesto = $l->codimpuesto;
-                $n->codcombinacion = $l->codcombinacion;
-                $n->descripcion = $l->descripcion;
-                $n->dtopor = $l->dtopor;
-                $n->irpf = $l->irpf;
-                $n->iva = $l->iva;
-                $n->pvpsindto = $l->pvpsindto;
-                $n->pvptotal = $l->pvptotal;
-                $n->pvpunitario = $l->pvpunitario;
-                $n->recargo = $l->recargo;
-                $n->referencia = $l->referencia;
-
-                if ($n->save()) {
-                    /// descontamos del stock
-                    if ($n->referencia) {
-                        if ($articulo) {
-                            $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, false, $l->codcombinacion);
-                            if ($articulo->trazabilidad) {
-                                $trazabilidad = true;
-                            }
-                        }
-                    }
-
-                    $albaran->neto += $n->pvptotal;
-                    $albaran->totaliva += ($n->pvptotal * $n->iva / 100);
-                    $albaran->totalirpf += ($n->pvptotal * $n->irpf / 100);
-                    $albaran->totalrecargo += ($n->pvptotal * $n->recargo / 100);
-
-                    if ($n->irpf > $albaran->irpf) {
-                        $albaran->irpf = $n->irpf;
-                    }
-                } else {
-                    $continuar = false;
-                    $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
-                    break;
-                }
-            }
-
-            //Validamos la información nueva del albarán
-            $albaran->neto = round($albaran->neto, FS_NF0);
-            $albaran->totaliva = round($albaran->totaliva, FS_NF0);
-            $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
-            $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
-            $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
+            $this->crear_lineas_albaran($albaran, $pedido, $art0, $continuar);
 
             if ($continuar) {
                 if ($albaran->save()) {
@@ -318,9 +263,62 @@ class ventas_megafacturador extends rd_controller
         }
     }
 
-    public function crear_lineas_albaran($albaran,$pedido)
+    public function crear_lineas_albaran($albaran,$pedido, $art0 , &$continuar)
     {
+        $trazabilidad = false;
+        foreach ($pedido->get_lineas() as $l) {
+            //Si el articulo existe
+            $articulo = false;
+            if (!is_null($l->referencia)) {
+                $articulo = $art0->get($l->referencia);
+            }
+            $n = new linea_albaran_cliente();
+            $n->idlineapedido = $l->idlinea;
+            $n->idpedido = $l->idpedido;
+            $n->idalbaran = $albaran->idalbaran;
+            $n->cantidad = $l->cantidad;
+            $n->codimpuesto = $l->codimpuesto;
+            $n->codcombinacion = $l->codcombinacion;
+            $n->descripcion = $l->descripcion;
+            $n->dtopor = $l->dtopor;
+            $n->irpf = $l->irpf;
+            $n->iva = $l->iva;
+            $n->pvpsindto = $l->pvpsindto;
+            $n->pvptotal = $l->pvptotal;
+            $n->pvpunitario = $l->pvpunitario;
+            $n->recargo = $l->recargo;
+            $n->referencia = $l->referencia;
 
+            if ($n->save()) {
+                /// descontamos del stock
+                if ($n->referencia and $articulo) {
+                    $articulo->sum_stock($albaran->codalmacen, 0 - $l->cantidad, false, $l->codcombinacion);
+                    if ($articulo->trazabilidad) {
+                        $trazabilidad = true;
+                    }
+                }
+
+                $albaran->neto += $n->pvptotal;
+                $albaran->totaliva += ($n->pvptotal * $n->iva / 100);
+                $albaran->totalirpf += ($n->pvptotal * $n->irpf / 100);
+                $albaran->totalrecargo += ($n->pvptotal * $n->recargo / 100);
+
+                if ($n->irpf > $albaran->irpf) {
+                    $albaran->irpf = $n->irpf;
+                }
+            } else {
+                $continuar = false;
+                $this->new_error_msg("¡Imposible guardar la línea el artículo " . $n->referencia . "! ");
+                break;
+            }
+        }
+
+        //Validamos la información nueva del albarán
+        $albaran->neto = round($albaran->neto, FS_NF0);
+        $albaran->totaliva = round($albaran->totaliva, FS_NF0);
+        $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
+        $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
+        $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
     }
 
     /**
@@ -691,6 +689,23 @@ class ventas_megafacturador extends rd_controller
         return $ok;
     }
 
+    public function comprobar_stock_articulo($articulo, $documento, $linea, $stock0, &$ok)
+    {
+        $ok = true;
+        $stockfis = $articulo->stockfis;
+        if ($this->multi_almacen) {
+            $stockfis = $stock0->total_from_articulo($articulo->referencia, $documento->codalmacen);
+        }
+
+        if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
+            $ok = false;
+        }
+        if (!$ok) {
+            $this->new_error_msg('No hay suficiente stock del artículo <a href="'.$articulo->url().'" target="_blank">' . $linea->referencia.'</a>');
+        }
+        return $ok;
+    }
+
     /**
      * Comprueba el stock de cada uno de los artículos del documento.
      * Devuelve TRUE si hay suficiente stock.
@@ -704,22 +719,12 @@ class ventas_megafacturador extends rd_controller
         foreach ($documento->get_lineas() as $linea) {
             if ($linea->referencia and $art0->get($linea->referencia)) {
                 $articulo = $art0->get($linea->referencia);
-                $stockfis = $articulo->stockfis;
-                if ($this->multi_almacen) {
-                    $stockfis = $stock0->total_from_articulo($articulo->referencia, $documento->codalmacen);
-                }
-
-                if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
-                    $ok = false;
-                }
-
-                if (!$ok) {
-                    $this->new_error_msg('No hay suficiente stock del artículo ' . $linea->referencia);
+                $this->comprobar_stock_articulo($articulo, $documento, $linea, $stock0, $ok);
+                if(!$ok){
                     break;
                 }
             }
         }
-
         return $ok;
     }
 
