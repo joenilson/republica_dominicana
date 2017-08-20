@@ -21,23 +21,19 @@
 require_once __DIR__ . '/../../facturacion_base/extras/fs_pdf.php';
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
-require_model('articulo_proveedor.php');
-require_model('articulo_traza.php');
-require_model('proveedor.php');
-require_model('ncf_tipo.php');
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 /**
  * Esta clase agrupa los procedimientos de imprimir/enviar albaranes de proveedor
  * e imprimir facturas de proveedor adecuados para República Dominicana.
  * @since 50
  */
-class compras_imprimir_ncf extends fs_controller
+class compras_imprimir_ncf extends rd_controller
 {
     public $documento;
     public $impresion;
     public $impuesto;
     public $proveedor;
-    public $ncf_tipo;
     private $articulo_proveedor;
     private $articulo_traza;
     private $numpaginas;
@@ -49,11 +45,11 @@ class compras_imprimir_ncf extends fs_controller
 
     protected function private_core()
     {
+        parent::private_core();
         $this->articulo_proveedor = new articulo_proveedor();
         $this->documento = false;
         $this->impuesto = new impuesto();
         $this->proveedor = false;
-        $this->ncf_tipo = new ncf_tipo();
         /// obtenemos los datos de configuración de impresión
         $this->impresion = array(
             'print_ref' => '1',
@@ -75,7 +71,7 @@ class compras_imprimir_ncf extends fs_controller
                 $proveedor = new proveedor();
                 $this->proveedor = $proveedor->get($this->documento->codproveedor);
             }
-            
+
             if (\filter_input(INPUT_POST, 'email')) {
                 $this->enviar_email();
             } else {
@@ -117,13 +113,14 @@ class compras_imprimir_ncf extends fs_controller
         }
     }
 
-    private function generar_pdf_lineas(&$pdf_doc, &$lineas, &$linea_actual, &$lppag)
+    public function numero_paginas($lineas, $lppag)
     {
         /// calculamos el número de páginas
         if (!isset($this->numpaginas)) {
             $this->numpaginas = 0;
             $linea_a = 0;
-            while ($linea_a < count($lineas)) {
+            $cantidad_lineas = count($lineas);
+            while ($linea_a < $cantidad_lineas) {
                 $lppag2 = $lppag;
                 foreach ($lineas as $i => $lin) {
                     if ($i >= $linea_a and $i < $linea_a + $lppag2) {
@@ -153,6 +150,33 @@ class compras_imprimir_ncf extends fs_controller
                 $this->numpaginas = 1;
             }
         }
+    }
+
+    public function lineaSize($i, $lin, $linea_actual, &$lppag)
+    {
+        /// restamos líneas al documento en función del tamaño de la descripción
+        if ($i >= $linea_actual and $i < $linea_actual + $lppag) {
+            $linea_size = 1;
+            $len = mb_strlen($lin->referencia . ' ' . $lin->descripcion);
+            while ($len > 85) {
+                $len -= 85;
+                $linea_size += 0.5;
+            }
+
+            $aux = explode("\n", $lin->descripcion);
+            if (count($aux) > 1) {
+                $linea_size += 0.5 * (count($aux) - 1);
+            }
+
+            if ($linea_size > 1) {
+                $lppag -= $linea_size - 1;
+            }
+        }
+    }
+
+    private function generar_pdf_lineas(&$pdf_doc, &$lineas, &$linea_actual, &$lppag)
+    {
+        $this->numero_paginas($lineas, $lppag);
 
         if ($this->impresion['print_dto']) {
             $this->impresion['print_dto'] = false;
@@ -197,24 +221,7 @@ class compras_imprimir_ncf extends fs_controller
                 $multi_irpf = true;
             }
 
-            /// restamos líneas al documento en función del tamaño de la descripción
-            if ($i >= $linea_actual and $i < $linea_actual + $lppag) {
-                $linea_size = 1;
-                $len = mb_strlen($lin->referencia . ' ' . $lin->descripcion);
-                while ($len > 85) {
-                    $len -= 85;
-                    $linea_size += 0.5;
-                }
-
-                $aux = explode("\n", $lin->descripcion);
-                if (count($aux) > 1) {
-                    $linea_size += 0.5 * (count($aux) - 1);
-                }
-
-                if ($linea_size > 1) {
-                    $lppag -= $linea_size - 1;
-                }
-            }
+            $this->lineaSize($i, $lin, $linea_actual, $lppag);
         }
 
         /*
@@ -600,12 +607,12 @@ class compras_imprimir_ncf extends fs_controller
             $this->verificar_email();
             $filename = 'albaran_' . $this->documento->codigo . '.pdf';
             $this->generar_pdf_albaran($filename);
-            
+
 
             $this->procesar_email($filename);
         }
     }
-    
+
     public function procesar_email($filename)
     {
         $email = \filter_input(INPUT_POST, 'email');
@@ -646,13 +653,13 @@ class compras_imprimir_ncf extends fs_controller
             }
 
             $this->verificar_envio($mail);
-            
+
             unlink('tmp/' . FS_TMP_NAME . 'enviar/' . $filename);
         } else {
             $this->new_error_msg('Imposible generar el PDF.');
         }
     }
-    
+
     public function verificar_envio($mail)
     {
         if ($this->empresa->mail_connect($mail)) {
@@ -666,7 +673,7 @@ class compras_imprimir_ncf extends fs_controller
             $this->new_error_msg("Error al enviar el email: " . $mail->ErrorInfo);
         }
     }
-    
+
     public function verificar_email()
     {
         $email = \filter_input(INPUT_POST, 'email');
@@ -686,17 +693,5 @@ class compras_imprimir_ncf extends fs_controller
         } else {
             return true;
         }
-    }
-    
-    /**
-     * Función para devolver el valor de una variable pasada ya sea por POST o GET
-     * @param type string
-     * @return type string
-     */
-    private function filter_request($nombre)
-    {
-        $nombre_post = \filter_input(INPUT_POST, $nombre);
-        $nombre_get = \filter_input(INPUT_GET, $nombre);
-        return ($nombre_post) ? $nombre_post : $nombre_get;
     }
 }

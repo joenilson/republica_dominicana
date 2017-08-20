@@ -831,19 +831,15 @@ class informes_fiscales extends rd_controller
             //Inicializamos la clase
             $this->writer = new XLSXWriter();
             $this->writer->setAuthor('FacturaScripts '.\date('Y-m-d H:i:s'));
-            //Creamos la hoja con todos los clientes organizados por ruta
             $nombre_hoja = ucfirst(str_replace('-', ' ', $this->reporte));
             $this->writer->writeSheetHeader($nombre_hoja, array(), true);
-            //Agregamos la linea de Título
             $this->writer->writeSheetRow($nombre_hoja, $cabecera, $estilo_cabecera);
-            //Agregamos cada linea en forma de Array
             foreach ($datos as $linea) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $linea, $estilo_cuerpo);
             }
             if ($pie) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $pie, $estilo_footer);
             }
-            //Escribimos
             $this->writer->writeToFile($this->archivoXLSXPath);
         }
     }
