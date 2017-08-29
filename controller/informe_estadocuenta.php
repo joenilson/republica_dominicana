@@ -44,7 +44,7 @@ class informe_estadocuenta extends rd_controller
     {
         parent::__construct(__CLASS__, 'Estado de Cuenta Clientes', 'informes', false, true, false);
     }
-    
+
     protected function private_core()
     {
         parent::private_core();
@@ -59,7 +59,7 @@ class informe_estadocuenta extends rd_controller
             $this->vencimiento_facturas();
         }
     }
-    
+
     protected function init_filters()
     {
         $cli0 = new cliente();
@@ -72,18 +72,17 @@ class informe_estadocuenta extends rd_controller
         $this->cliente = (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '')?$cli0->get($_REQUEST['codcliente']):false;
         $this->current_date = $this->empresa->var2str(\date('Y-m-d', strtotime($this->hasta)));
     }
-    
+
     public function vencimiento_facturas()
     {
+        list($funcion, $separador) = $this->funcionIntervalo();
         $sql = "select codalmacen, ".
-        " sum(case when (".$this->current_date." - vencimiento) < 30 then totaleuros else 0 end) as d30, ".
-        " sum(case when (".$this->current_date." - vencimiento) > 30 and (".$this->current_date." - vencimiento) < 60 then totaleuros else 0 end) as d60, ".
-        " sum(case when (".$this->current_date." - vencimiento) > 60 and (".$this->current_date." - vencimiento) < 90 then totaleuros else 0 end) as d90, ".
-        " sum(case when (".$this->current_date." - vencimiento) > 90 and (".$this->current_date." - vencimiento) < 120 then totaleuros else 0 end) as d120, ".
-        " sum(case when (".$this->current_date." - vencimiento) > 120 then totaleuros else 0 end) as mas120 ".
-        " from facturascli ".
-        " where anulada = false and pagada = false and idfacturarect IS NULL ".$this->sql_aux.
-        " group by codalmacen;";
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) < 30 then total else 0 end) as d30, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 30 and ".$funcion.$this->current_date.$separador."vencimiento) < 60 then total else 0 end) as d60, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 60 and ".$funcion.$this->current_date.$separador."vencimiento) < 90 then total else 0 end) as d90, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 90 and ".$funcion.$this->current_date.$separador."vencimiento) < 120 then total else 0 end) as d120, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 120 then total else 0 end) as mas120 ".
+        " from facturascli "." where anulada = false and pagada = false and idfacturarect IS NULL ".$this->sql_aux." group by codalmacen;";
         $data = $this->db->select($sql);
         $this->resultados = array();
         if (!empty($data)) {
@@ -108,7 +107,7 @@ class informe_estadocuenta extends rd_controller
             }
         }
     }
-    
+
     public function tabla_de_datos()
     {
         $data = array();
@@ -129,11 +128,12 @@ class informe_estadocuenta extends rd_controller
         $data['total'] = $total_informacion;
         echo json_encode($data);
     }
-    
+
     public function listado_facturas($dias, $offset)
     {
+        list($funcion, $separador) = $this->funcionIntervalo();
         $intervalo = $this->intervalo_tiempo($dias);
-        $sql = "SELECT codalmacen, idfactura, codigo, numero2, nombrecliente, fecha, vencimiento, coddivisa, total, pagada, (".$this->current_date." - vencimiento) as atraso ".
+        $sql = "SELECT codalmacen, idfactura, codigo, numero2, nombrecliente, fecha, vencimiento, coddivisa, total, pagada, ".$funcion.$this->current_date.$separador."vencimiento) as atraso ".
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.
             " ORDER BY ".$this->sort.' '.$this->order;
@@ -144,30 +144,42 @@ class informe_estadocuenta extends rd_controller
         $data_total = $this->db->select($sql_total);
         return array('resultados'=>$data,'total'=>$data_total[0]['total']);
     }
-    
+
     public function intervalo_tiempo($dias)
     {
+        list($funcion, $separador) = $this->funcionIntervalo();
         $intervalo = '';
         switch ($dias) {
             case 30:
-                $intervalo = " AND (".$this->current_date." - vencimiento) <= 30 and (".$this->current_date." - vencimiento) > 0";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) <= 30 and ".$funcion.$this->current_date.$separador."vencimiento) > 0";
                 break;
             case 60:
-                $intervalo = " AND (".$this->current_date." - vencimiento) > 30 and (".$this->current_date." - vencimiento) <= 60";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) > 30 and ".$funcion.$this->current_date.$separador."vencimiento) <= 60";
                 break;
             case 90:
-                $intervalo = " AND (".$this->current_date." - vencimiento) > 60 and (".$this->current_date." - vencimiento) <= 90";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) > 60 and ".$funcion.$this->current_date.$separador."vencimiento) <= 90";
                 break;
             case 120:
-                $intervalo = " AND (".$this->current_date." - vencimiento) > 90 and (".$this->current_date." - vencimiento) <= 120";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) > 90 and ".$funcion.$this->current_date.$separador."vencimiento) <= 120";
                 break;
             case 121:
-                $intervalo = " AND (".$this->current_date." - vencimiento) > 120";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) > 120";
                 break;
         }
         return $intervalo;
     }
-    
+
+    public function funcionIntervalo()
+    {
+        $funcion =  "datediff(";
+        $separador = " , ";
+        if(FS_DB_TYPE === 'POSTGRESQL'){
+            $funcion = "(";
+            $separador = " - ";
+        }
+        return array($funcion, $separador);
+    }
+
     public function sql_aux()
     {
         $estado = ($this->estado == 'pagada')?true:false;
@@ -182,7 +194,7 @@ class informe_estadocuenta extends rd_controller
         $sql .= ($this->estado)?' AND pagada = '.$this->empresa->var2str($estado):'';
         $this->sql_aux = $sql;
     }
-    
+
     private function share_extensions()
     {
         $extensiones = array(

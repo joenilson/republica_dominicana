@@ -794,7 +794,6 @@ class nueva_venta extends rd_controller
         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
         $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $forma_pago->codpago);
         if ($continuar) {
-
             /**
              * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
              * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
@@ -828,6 +827,7 @@ class nueva_venta extends rd_controller
             $factura->codagente = $this->agente->codagente;
             $factura->observaciones = $_POST['observaciones'];
             $factura->numero2 = $numero_ncf['NCF'];
+            //Para ser cambiado con: generar_numero2($cliente, $almacen->codalmacen, $forma_pago->codpago);
             $factura->porcomision = $this->agente->porcomision;
 
             if ($forma_pago->genrecibos == 'Pagados') {
@@ -956,7 +956,8 @@ class nueva_venta extends rd_controller
                         //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
                         $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
                         $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-
+                        //Para cambiar con esta funcion
+                        //factura_post_save($factura);
                         $this->generar_asiento($factura);
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $numero_ncf['NCF']);
                         $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), true);
