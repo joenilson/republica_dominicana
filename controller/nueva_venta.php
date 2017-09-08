@@ -22,6 +22,7 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 class nueva_venta extends rd_controller
 {
+
     public $agencia;
     public $agente;
     public $almacen;
@@ -44,7 +45,7 @@ class nueva_venta extends rd_controller
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', false, false, true);
+        parent::__construct(__CLASS__, 'Nueva venta...', 'ventas', FALSE, FALSE, TRUE);
     }
 
     protected function private_core()
@@ -53,8 +54,8 @@ class nueva_venta extends rd_controller
 
         $this->agencia = new agencia_transporte();
         $this->cliente = new cliente();
-        $this->cliente_s = false;
-        $this->direccion = false;
+        $this->cliente_s = FALSE;
+        $this->direccion = FALSE;
         $this->fabricante = new fabricante();
         $this->familia = new familia();
         $this->impuesto = new impuesto();
@@ -84,7 +85,7 @@ class nueva_venta extends rd_controller
             'nuevocli_email' => 0,
             'nuevocli_email_req' => 0,
             'nuevocli_codgrupo' => '',
-                ), false
+            ), FALSE
         );
 
         if (isset($_REQUEST['tipo'])) {
@@ -98,111 +99,109 @@ class nueva_venta extends rd_controller
 
         if (isset($_REQUEST['buscar_cliente'])) {
             $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
-        } elseif (isset($_REQUEST['datoscliente'])) {
+        } else if (isset($_REQUEST['datoscliente'])) {
             $this->datos_cliente();
-        } elseif (isset($_REQUEST['new_articulo'])) {
+        } else if (isset($_REQUEST['new_articulo'])) {
             $this->new_articulo();
-        } elseif ($this->query != '') {
+        } else if ($this->query != '') {
             $this->new_search();
-        } elseif (isset($_POST['referencia4precios'])) {
+        } else if (isset($_POST['referencia4precios'])) {
             $this->get_precios_articulo();
-        } elseif (isset($_POST['referencia4combi'])) {
+        } else if (isset($_POST['referencia4combi'])) {
             $this->get_combinaciones_articulo();
-        } elseif (isset($_POST['cliente'])) {
+        } else if (isset($_POST['cliente'])) {
             $this->cliente_s = $this->cliente->get($_POST['cliente']);
 
             /**
              * Nuevo cliente
              */
-            if (isset($_POST['nuevo_cliente'])) {
-                if ($_POST['nuevo_cliente'] != '') {
-                    $this->cliente_s = false;
-                    if ($_POST['nuevo_cifnif'] != '') {
-                        $this->cliente_s = $this->cliente->get_by_cifnif($_POST['nuevo_cifnif']);
-                        if ($this->cliente_s) {
-                            $this->new_advice('Ya existe un cliente con ese ' . FS_CIFNIF . '. Se ha seleccionado.');
-                        }
+            if (isset($_POST['nuevo_cliente']) && $_POST['nuevo_cliente'] != '') {
+                $this->cliente_s = FALSE;
+                if ($_POST['nuevo_cifnif'] != '') {
+                    $this->cliente_s = $this->cliente->get_by_cifnif($_POST['nuevo_cifnif']);
+                    if ($this->cliente_s) {
+                        $this->new_advice('Ya existe un cliente con ese ' . FS_CIFNIF . '. Se ha seleccionado.');
+                    }
+                }
+
+                if (!$this->cliente_s) {
+                    $this->cliente_s = new cliente();
+                    $this->cliente_s->codcliente = $this->cliente_s->get_new_codigo();
+                    $this->cliente_s->nombre = $this->cliente_s->razonsocial = $_POST['nuevo_cliente'];
+                    $this->cliente_s->tipoidfiscal = $_POST['nuevo_tipoidfiscal'];
+                    $this->cliente_s->cifnif = $_POST['nuevo_cifnif'];
+                    $this->cliente_s->personafisica = isset($_POST['personafisica']);
+
+                    if (isset($_POST['nuevo_email'])) {
+                        $this->cliente_s->email = $_POST['nuevo_email'];
                     }
 
-                    if (!$this->cliente_s) {
-                        $this->cliente_s = new cliente();
-                        $this->cliente_s->codcliente = $this->cliente_s->get_new_codigo();
-                        $this->cliente_s->nombre = $this->cliente_s->razonsocial = $_POST['nuevo_cliente'];
-                        $this->cliente_s->tipoidfiscal = $_POST['nuevo_tipoidfiscal'];
-                        $this->cliente_s->cifnif = $_POST['nuevo_cifnif'];
-                        $this->cliente_s->personafisica = isset($_POST['personafisica']);
+                    if (isset($_POST['codgrupo']) && $_POST['codgrupo'] != '') {
+                        $this->cliente_s->codgrupo = $_POST['codgrupo'];
+                    }
 
-                        if (isset($_POST['nuevo_email'])) {
-                            $this->cliente_s->email = $_POST['nuevo_email'];
+                    if (isset($_POST['nuevo_telefono1'])) {
+                        $this->cliente_s->telefono1 = $_POST['nuevo_telefono1'];
+                    }
+
+                    if (isset($_POST['nuevo_telefono2'])) {
+                        $this->cliente_s->telefono2 = $_POST['nuevo_telefono2'];
+                    }
+
+                    if ($this->cliente_s->save()) {
+                        if (isset($_POST['tipo_comprobante'])) {
+                            $ncf_entidad_tipo = new ncf_entidad_tipo();
+                            $ncf_entidad_tipo->idempresa = $this->empresa->id;
+                            $ncf_entidad_tipo->entidad = $this->cliente_s->codcliente;
+                            $ncf_entidad_tipo->tipo_entidad = 'CLI';
+                            $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
+                            $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
+                            $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i:s');
+                            $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
+                            $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i:s');
+                            $ncf_entidad_tipo->estado = true;
+                            if (!$ncf_entidad_tipo->save()) {
+                                $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente " . $ncf_entidad_tipo->entidad . "!");
+                            } else {
+                                $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente_s->codcliente, 'CLI');
+                            }
+                        }
+                        if ($this->empresa->contintegrada) {
+                            /// forzamos crear la subcuenta
+                            $this->cliente_s->get_subcuenta($this->empresa->codejercicio);
                         }
 
-                        if (isset($_POST['codgrupo']) && $_POST['codgrupo'] != '') {
-                            $this->cliente_s->codgrupo = $_POST['codgrupo'];
+                        $dircliente = new direccion_cliente();
+                        $dircliente->codcliente = $this->cliente_s->codcliente;
+                        $dircliente->codpais = $this->empresa->codpais;
+                        $dircliente->provincia = $this->empresa->provincia;
+                        $dircliente->ciudad = $this->empresa->ciudad;
+
+                        if (isset($_POST['nuevo_pais'])) {
+                            $dircliente->codpais = $_POST['nuevo_pais'];
                         }
 
-                        if (isset($_POST['nuevo_telefono1'])) {
-                            $this->cliente_s->telefono1 = $_POST['nuevo_telefono1'];
+                        if (isset($_POST['nuevo_provincia'])) {
+                            $dircliente->provincia = $_POST['nuevo_provincia'];
                         }
 
-                        if (isset($_POST['nuevo_telefono2'])) {
-                            $this->cliente_s->telefono2 = $_POST['nuevo_telefono2'];
+                        if (isset($_POST['nuevo_ciudad'])) {
+                            $dircliente->ciudad = $_POST['nuevo_ciudad'];
                         }
 
-                        if ($this->cliente_s->save()) {
-                            if (isset($_POST['tipo_comprobante'])) {
-                                $ncf_entidad_tipo = new ncf_entidad_tipo();
-                                $ncf_entidad_tipo->idempresa = $this->empresa->id;
-                                $ncf_entidad_tipo->entidad = $this->cliente_s->codcliente;
-                                $ncf_entidad_tipo->tipo_entidad = 'CLI';
-                                $ncf_entidad_tipo->tipo_comprobante = \filter_input(INPUT_POST, 'tipo_comprobante');
-                                $ncf_entidad_tipo->usuario_creacion = $this->user->nick;
-                                $ncf_entidad_tipo->fecha_creacion = \Date('d-m-Y H:i:s');
-                                $ncf_entidad_tipo->usuario_modificacion = $this->user->nick;
-                                $ncf_entidad_tipo->fecha_modificacion = \Date('d-m-Y H:i:s');
-                                $ncf_entidad_tipo->estado = true;
-                                if (!$ncf_entidad_tipo->save()) {
-                                    $this->new_error_msg("¡Imposible actualizar información de NCF para  Cliente " . $ncf_entidad_tipo->entidad . "!");
-                                } else {
-                                    $this->ncf_cliente_tipo = $this->ncf_entidad_tipo->get($this->empresa->id, $this->cliente_s->codcliente, 'CLI');
-                                }
-                            }
-                            if ($this->empresa->contintegrada) {
-                                /// forzamos crear la subcuenta
-                                $this->cliente_s->get_subcuenta($this->empresa->codejercicio);
-                            }
-
-                            $dircliente = new direccion_cliente();
-                            $dircliente->codcliente = $this->cliente_s->codcliente;
-                            $dircliente->codpais = $this->empresa->codpais;
-                            $dircliente->provincia = $this->empresa->provincia;
-                            $dircliente->ciudad = $this->empresa->ciudad;
-
-                            if (isset($_POST['nuevo_pais'])) {
-                                $dircliente->codpais = $_POST['nuevo_pais'];
-                            }
-
-                            if (isset($_POST['nuevo_provincia'])) {
-                                $dircliente->provincia = $_POST['nuevo_provincia'];
-                            }
-
-                            if (isset($_POST['nuevo_ciudad'])) {
-                                $dircliente->ciudad = $_POST['nuevo_ciudad'];
-                            }
-
-                            if (isset($_POST['nuevo_codpostal'])) {
-                                $dircliente->codpostal = $_POST['nuevo_codpostal'];
-                            }
-
-                            if (isset($_POST['nuevo_direccion'])) {
-                                $dircliente->direccion = $_POST['nuevo_direccion'];
-                            }
-
-                            if ($dircliente->save()) {
-                                $this->new_message('Cliente agregado correctamente.');
-                            }
-                        } else {
-                            $this->new_error_msg("¡Imposible guardar la dirección del cliente!");
+                        if (isset($_POST['nuevo_codpostal'])) {
+                            $dircliente->codpostal = $_POST['nuevo_codpostal'];
                         }
+
+                        if (isset($_POST['nuevo_direccion'])) {
+                            $dircliente->direccion = $_POST['nuevo_direccion'];
+                        }
+
+                        if ($dircliente->save()) {
+                            $this->new_message('Cliente agregado correctamente.');
+                        }
+                    } else {
+                        $this->new_error_msg("¡Imposible guardar la dirección del cliente!");
                     }
                 }
             }
@@ -234,11 +233,11 @@ class nueva_venta extends rd_controller
             if (isset($_POST['tipo'])) {
                 if ($_POST['tipo'] == 'factura') {
                     $this->nueva_factura_cliente();
-                } elseif ($_POST['tipo'] == 'albaran') {
+                } else if ($_POST['tipo'] == 'albaran') {
                     $this->nuevo_albaran_cliente();
-                } elseif ($_POST['tipo'] == 'pedido' && class_exists('pedido_cliente')) {
+                } else if ($_POST['tipo'] == 'pedido' && class_exists('pedido_cliente')) {
                     $this->nuevo_pedido_cliente();
-                } elseif ($_POST['tipo'] == 'presupuesto' && class_exists('presupuesto_cliente')) {
+                } else if ($_POST['tipo'] == 'presupuesto' && class_exists('presupuesto_cliente')) {
                     $this->nuevo_presupuesto_cliente();
                 }
 
@@ -259,7 +258,7 @@ class nueva_venta extends rd_controller
                     $this->direccion->direccion = $_POST['direccion'];
                     $this->direccion->apartado = $_POST['apartado'];
                     $this->direccion->save();
-                } elseif ($_POST['envio_coddir'] == 'nueva') {
+                } else if ($_POST['envio_coddir'] == 'nueva') {
                     $this->direccion = new direccion_cliente();
                     $this->direccion->codcliente = $this->cliente_s->codcliente;
                     $this->direccion->codpais = $_POST['envio_codpais'];
@@ -268,8 +267,8 @@ class nueva_venta extends rd_controller
                     $this->direccion->codpostal = $_POST['envio_codpostal'];
                     $this->direccion->direccion = $_POST['envio_direccion'];
                     $this->direccion->apartado = $_POST['envio_apartado'];
-                    $this->direccion->domfacturacion = false;
-                    $this->direccion->domenvio = true;
+                    $this->direccion->domfacturacion = FALSE;
+                    $this->direccion->domenvio = TRUE;
                     $this->direccion->save();
                 }
             }
@@ -285,11 +284,11 @@ class nueva_venta extends rd_controller
     {
         $tipos = array();
 
-        if ($this->user->have_access_to('ventas_presupuesto') and class_exists('presupuesto_cliente')) {
+        if ($this->user->have_access_to('ventas_presupuesto') && class_exists('presupuesto_cliente')) {
             $tipos[] = array('tipo' => 'presupuesto', 'nombre' => ucfirst(FS_PRESUPUESTO) . ' para cliente');
         }
 
-        if ($this->user->have_access_to('ventas_pedido') and class_exists('pedido_cliente')) {
+        if ($this->user->have_access_to('ventas_pedido') && class_exists('pedido_cliente')) {
             $tipos[] = array('tipo' => 'pedido', 'nombre' => ucfirst(FS_PEDIDO) . ' de cliente');
         }
 
@@ -312,7 +311,7 @@ class nueva_venta extends rd_controller
     private function datos_cliente()
     {
         /// desactivamos la plantilla HTML
-        $this->template = false;
+        $this->template = FALSE;
 
         header('Content-Type: application/json');
         echo json_encode($this->cliente->get($_REQUEST['datoscliente']));
@@ -321,7 +320,7 @@ class nueva_venta extends rd_controller
     private function new_articulo()
     {
         /// desactivamos la plantilla HTML
-        $this->template = false;
+        $this->template = FALSE;
 
         $art0 = new articulo();
         if ($_REQUEST['referencia'] != '') {
@@ -363,7 +362,7 @@ class nueva_venta extends rd_controller
     private function new_search()
     {
         /// desactivamos la plantilla HTML
-        $this->template = false;
+        $this->template = FALSE;
 
         $articulo = new articulo();
         $codfamilia = '';
@@ -387,14 +386,14 @@ class nueva_venta extends rd_controller
 
             /// añadimos el stock del almacén y el general
             $this->results[$i]->stockalm = $this->results[$i]->stockfis;
-            if ($this->multi_almacen and isset($_REQUEST['codalmacen'])) {
+            if ($this->multi_almacen && isset($_REQUEST['codalmacen'])) {
                 $this->results[$i]->stockalm = $stock->total_from_articulo($this->results[$i]->referencia, $_REQUEST['codalmacen']);
             }
         }
 
         /// ejecutamos las funciones de las extensiones
         foreach ($this->extensions as $ext) {
-            if ($ext->type == 'function' and $ext->params == 'new_search') {
+            if ($ext->type == 'function' && $ext->params == 'new_search') {
                 $name = $ext->text;
                 $name($this->db, $this->results);
             }
@@ -403,9 +402,15 @@ class nueva_venta extends rd_controller
         /// buscamos el grupo de clientes y la tarifa
         if (isset($_REQUEST['codcliente'])) {
             $cliente = $this->cliente->get($_REQUEST['codcliente']);
-            if ($cliente && $cliente->codgrupo) {
+            $tarifa0 = new tarifa();
+
+            if ($cliente && $cliente->codtarifa) {
+                $tarifa = $tarifa0->get($cliente->codtarifa);
+                if ($tarifa) {
+                    $tarifa->set_precios($this->results);
+                }
+            } else if ($cliente && $cliente->codgrupo) {
                 $grupo0 = new grupo_clientes();
-                $tarifa0 = new tarifa();
 
                 $grupo = $grupo0->get($cliente->codgrupo);
                 if ($grupo) {
@@ -497,12 +502,12 @@ class nueva_venta extends rd_controller
 
     private function nuevo_albaran_cliente()
     {
-        $continuar = true;
+        $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
         if (!$cliente) {
             $this->new_error_msg('Cliente no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -510,20 +515,20 @@ class nueva_venta extends rd_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $eje0 = new ejercicio();
-        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], false);
+        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], FALSE);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -531,13 +536,13 @@ class nueva_venta extends rd_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $art0 = new articulo();
@@ -548,28 +553,10 @@ class nueva_venta extends rd_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $albaran->url() . '">' . FS_ALBARANES . '</a>
                para ver si el ' . FS_ALBARAN . ' se ha guardado correctamente.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         if ($continuar) {
-
-            /**
-             * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
-             * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
-             * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
-             */
-            if ($this->distribucion_clientes) {
-                $codvendedor = '';
-                $ruta = '';
-                if (\filter_input(INPUT_POST, 'codruta')) {
-                    $ruta = \filter_input(INPUT_POST, 'codruta');
-                    $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id, $cliente->codcliente, $ruta);
-                    $codvendedor = ($ruta_data) ? $ruta_data->codagente : '';
-                }
-                $albaran->codruta = $ruta;
-                $albaran->codvendedor = $codvendedor;
-            }
-
             $albaran->fecha = $_POST['fecha'];
             $albaran->hora = $_POST['hora'];
             $albaran->codalmacen = $almacen->codalmacen;
@@ -584,7 +571,6 @@ class nueva_venta extends rd_controller
             }
 
             $albaran->codagente = $this->agente->codagente;
-            $albaran->numero2 = $_POST['numero2'];
             $albaran->observaciones = $_POST['observaciones'];
             $albaran->porcomision = $this->agente->porcomision;
 
@@ -612,8 +598,11 @@ class nueva_venta extends rd_controller
             $albaran->envio_direccion = $_POST['envio_direccion'];
             $albaran->envio_apartado = $_POST['envio_apartado'];
 
+            /// Se coloca antes del save para poder obtener todos los datos necesarios para procesar el numero2
+            fs_generar_numero2($albaran);
+
             if ($albaran->save()) {
-                $trazabilidad = false;
+                $trazabilidad = FALSE;
 
                 $n = floatval($_POST['numlineas']);
                 for ($i = 0; $i <= $n; $i++) {
@@ -622,7 +611,7 @@ class nueva_venta extends rd_controller
                         $linea->idalbaran = $albaran->idalbaran;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva and $cliente->regimeniva != 'Exento') {
+                        if (!$serie->siniva && $cliente->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -638,14 +627,19 @@ class nueva_venta extends rd_controller
                         $linea->pvpunitario = floatval($_POST['pvp_' . $i]);
                         $linea->cantidad = floatval($_POST['cantidad_' . $i]);
                         $linea->dtopor = floatval($_POST['dto_' . $i]);
+                        $linea->dtopor2 = floatval($_POST['dto2_' . $i]);
+                        $linea->dtopor3 = floatval($_POST['dto3_' . $i]);
+                        $linea->dtopor4 = floatval($_POST['dto4_' . $i]);
                         $linea->pvpsindto = ($linea->pvpunitario * $linea->cantidad);
-                        $linea->pvptotal = floatval($_POST['neto_' . $i]);
+                        // Descuento Unificado Equivalente
+                        $due_linea = $this->calc_due(array($linea->dtopor,$linea->dtopor2,$linea->dtopor3,$linea->dtopor4));
+                        $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * $due_linea;
 
                         $articulo = $art0->get($_POST['referencia_' . $i]);
                         if ($articulo) {
                             $linea->referencia = $articulo->referencia;
                             if ($articulo->trazabilidad) {
-                                $trazabilidad = true;
+                                $trazabilidad = TRUE;
                             }
 
                             if ($_POST['codcombinacion_' . $i]) {
@@ -654,56 +648,66 @@ class nueva_venta extends rd_controller
                         }
 
                         if ($linea->save()) {
-                            if ($articulo and isset($_POST['stock'])) {
+                            if ($articulo && isset($_POST['stock'])) {
                                 $stockfis = $articulo->stockfis;
                                 if ($this->multi_almacen) {
                                     $stockfis = $stock0->total_from_articulo($articulo->referencia, $albaran->codalmacen);
                                 }
 
-                                if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
+                                if (!$articulo->controlstock && $linea->cantidad > $stockfis) {
                                     $this->new_error_msg("No hay suficiente stock del artículo <b>" . $linea->referencia . '</b>.');
                                     $linea->delete();
-                                    $continuar = false;
+                                    $continuar = FALSE;
                                 } else {
                                     /// descontamos del stock
-                                    $articulo->sum_stock($albaran->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
+                                    $articulo->sum_stock($albaran->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
                                 }
                             }
 
-                            $albaran->neto += $linea->pvptotal;
-                            $albaran->totaliva += ($linea->pvptotal * $linea->iva / 100);
-                            $albaran->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
-                            $albaran->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
+                            $albaran->dtopor1 = floatval($_POST['adtopor1']);
+                            $albaran->dtopor2 = floatval($_POST['adtopor2']);
+                            $albaran->dtopor3 = floatval($_POST['adtopor3']);
+                            $albaran->dtopor4 = floatval($_POST['adtopor4']);
+                            $albaran->dtopor5 = floatval($_POST['adtopor5']);
+
+                            // Descuento Unificado Equivalente
+                            $due_totales = $this->calc_due(array($albaran->dtopor1,$albaran->dtopor2,$albaran->dtopor3,$albaran->dtopor4,$albaran->dtopor5));
+
+                            $albaran->netosindto += $linea->pvptotal;
+                            $albaran->neto += $linea->pvptotal * $due_totales;
+                            $albaran->totaliva += ($linea->pvptotal * $due_totales * ($linea->iva / 100));
+                            $albaran->totalirpf += ($linea->pvptotal * $due_totales * ($linea->irpf / 100));
+                            $albaran->totalrecargo += ($linea->pvptotal * $due_totales * ($linea->recargo / 100));
 
                             if ($linea->irpf > $albaran->irpf) {
                                 $albaran->irpf = $linea->irpf;
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = false;
+                            $continuar = FALSE;
                         }
                     }
                 }
 
                 if ($continuar) {
-                    /// redondeamos
-                    $albaran->neto = round($albaran->neto, FS_NF0);
-                    $albaran->totaliva = round($albaran->totaliva, FS_NF0);
-                    $albaran->totalirpf = round($albaran->totalirpf, FS_NF0);
-                    $albaran->totalrecargo = round($albaran->totalrecargo, FS_NF0);
                     $albaran->total = $albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo;
 
                     if (abs(floatval($_POST['atotal']) - $albaran->total) >= .02) {
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" . $_POST['atotal'] .
                                 " frente a " . $albaran->total . "). Debes informar del error.");
                         $albaran->delete();
-                    } elseif ($albaran->save()) {
+                    } else if ($albaran->save()) {
+                        /**
+                         * Función de ejecución de tareas post guardado correcto del albaran
+                         */
+                        fs_documento_post_save($albaran);
+
                         $this->new_message("<a href='" . $albaran->url() . "'>" . ucfirst(FS_ALBARAN) . "</a> guardado correctamente.");
-                        $this->new_change(ucfirst(FS_ALBARAN) . ' Cliente ' . $albaran->codigo, $albaran->url(), true);
+                        $this->new_change(ucfirst(FS_ALBARAN) . ' Cliente ' . $albaran->codigo, $albaran->url(), TRUE);
 
                         if ($trazabilidad) {
                             header('Location: index.php?page=ventas_trazabilidad&doc=albaran&id=' . $albaran->idalbaran);
-                        } elseif ($_POST['redir'] == 'TRUE') {
+                        } else if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $albaran->url());
                         }
                     } else {
@@ -715,7 +719,7 @@ class nueva_venta extends rd_controller
                         if ($linea->referencia) {
                             $articulo = $art0->get($linea->referencia);
                             if ($articulo) {
-                                $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
+                                $articulo->sum_stock($albaran->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                             }
                         }
                     }
@@ -732,12 +736,12 @@ class nueva_venta extends rd_controller
 
     private function nueva_factura_cliente()
     {
-        $continuar = true;
+        $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
         if (!$cliente) {
             $this->new_error_msg('Cliente no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -745,20 +749,20 @@ class nueva_venta extends rd_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $eje0 = new ejercicio();
         $ejercicio = $eje0->get_by_fecha($_POST['fecha']);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado o está cerrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -766,13 +770,13 @@ class nueva_venta extends rd_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $art0 = new articulo();
@@ -783,34 +787,10 @@ class nueva_venta extends rd_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $factura->url() . '">Facturas</a>
                para ver si la factura se ha guardado correctamente.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
-        /*
-         * Verificación de disponibilidad del Número de NCF para República Dominicana
-         */
-        //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-        $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $cliente->codcliente);
-        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $almacen->codalmacen, $tipo_comprobante, $forma_pago->codpago);
         if ($continuar) {
-            /**
-             * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
-             * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
-             * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
-             */
-            if ($this->distribucion_clientes) {
-                $codvendedor = '';
-                $ruta = '';
-                if (\filter_input(INPUT_POST, 'codruta')) {
-                    $ruta = \filter_input(INPUT_POST, 'codruta');
-                    $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id, $cliente->codcliente, $ruta);
-                    $codvendedor = ($ruta_data) ? $ruta_data->codagente : '';
-                }
-                $factura->codruta = $ruta;
-                $factura->codvendedor = $codvendedor;
-            }
-
             $factura->codejercicio = $ejercicio->codejercicio;
             $factura->codserie = $serie->codserie;
             $factura->set_fecha_hora($_POST['fecha'], $_POST['hora']);
@@ -829,7 +809,7 @@ class nueva_venta extends rd_controller
             $factura->porcomision = $this->agente->porcomision;
 
             if ($forma_pago->genrecibos == 'Pagados') {
-                $factura->pagada = true;
+                $factura->pagada = TRUE;
             }
 
             $factura->vencimiento = $forma_pago->calcular_vencimiento($factura->fecha, $cliente->diaspago);
@@ -858,13 +838,15 @@ class nueva_venta extends rd_controller
             $factura->envio_direccion = $_POST['envio_direccion'];
             $factura->envio_apartado = $_POST['envio_apartado'];
 
+            /// Se coloca antes del save para poder obtener todos los datos necesarios para procesar el numero2
             fs_generar_numero2($factura);
+
             $regularizacion = new regularizacion_iva();
             if ($regularizacion->get_fecha_inside($factura->fecha)) {
                 $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado."
                         . " No se pueden añadir más facturas en esa fecha.");
-            } elseif ($factura->save()) {
-                $trazabilidad = false;
+            } else if ($factura->save()) {
+                $trazabilidad = FALSE;
 
                 $n = floatval($_POST['numlineas']);
                 for ($i = 0; $i <= $n; $i++) {
@@ -873,7 +855,7 @@ class nueva_venta extends rd_controller
                         $linea->idfactura = $factura->idfactura;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva and $cliente->regimeniva != 'Exento') {
+                        if (!$serie->siniva && $cliente->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -889,14 +871,19 @@ class nueva_venta extends rd_controller
                         $linea->pvpunitario = floatval($_POST['pvp_' . $i]);
                         $linea->cantidad = floatval($_POST['cantidad_' . $i]);
                         $linea->dtopor = floatval($_POST['dto_' . $i]);
+                        $linea->dtopor2 = floatval($_POST['dto2_' . $i]);
+                        $linea->dtopor3 = floatval($_POST['dto3_' . $i]);
+                        $linea->dtopor4 = floatval($_POST['dto4_' . $i]);
                         $linea->pvpsindto = ($linea->pvpunitario * $linea->cantidad);
-                        $linea->pvptotal = floatval($_POST['neto_' . $i]);
+                        // Descuento Unificado Equivalente
+                        $due_linea = $this->calc_due(array($linea->dtopor,$linea->dtopor2,$linea->dtopor3,$linea->dtopor4));
+                        $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * $due_linea;
 
                         $articulo = $art0->get($_POST['referencia_' . $i]);
                         if ($articulo) {
                             $linea->referencia = $articulo->referencia;
                             if ($articulo->trazabilidad) {
-                                $trazabilidad = true;
+                                $trazabilidad = TRUE;
                             }
 
                             if ($_POST['codcombinacion_' . $i]) {
@@ -905,58 +892,68 @@ class nueva_venta extends rd_controller
                         }
 
                         if ($linea->save()) {
-                            if ($articulo and isset($_POST['stock'])) {
+                            if ($articulo && isset($_POST['stock'])) {
                                 $stockfis = $articulo->stockfis;
                                 if ($this->multi_almacen) {
                                     $stockfis = $stock0->total_from_articulo($articulo->referencia, $factura->codalmacen);
                                 }
 
-                                if (!$articulo->controlstock and $linea->cantidad > $stockfis) {
+                                if (!$articulo->controlstock && $linea->cantidad > $stockfis) {
                                     $this->new_error_msg("No hay suficiente stock del artículo <b>" . $linea->referencia . '</b>.');
                                     $linea->delete();
-                                    $continuar = false;
+                                    $continuar = FALSE;
                                 } else {
                                     /// descontamos del stock
-                                    $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad, false, $linea->codcombinacion);
+                                    $articulo->sum_stock($factura->codalmacen, 0 - $linea->cantidad, FALSE, $linea->codcombinacion);
                                 }
                             }
 
-                            $factura->neto += $linea->pvptotal;
-                            $factura->totaliva += ($linea->pvptotal * $linea->iva / 100);
-                            $factura->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
-                            $factura->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
+                            $factura->dtopor1 = floatval($_POST['adtopor1']);
+                            $factura->dtopor2 = floatval($_POST['adtopor2']);
+                            $factura->dtopor3 = floatval($_POST['adtopor3']);
+                            $factura->dtopor4 = floatval($_POST['adtopor4']);
+                            $factura->dtopor5 = floatval($_POST['adtopor5']);
+
+                            // Descuento Unificado Equivalente
+                            $due_totales = $this->calc_due(array($factura->dtopor1,$factura->dtopor2,$factura->dtopor3,$factura->dtopor4,$factura->dtopor5));
+
+                            $factura->netosindto += $linea->pvptotal;
+                            $factura->neto += $linea->pvptotal * $due_totales;
+                            $factura->totaliva += ($linea->pvptotal * $due_totales * ($linea->iva / 100));
+                            $factura->totalirpf += ($linea->pvptotal * $due_totales * ($linea->irpf / 100));
+                            $factura->totalrecargo += ($linea->pvptotal * $due_totales * ($linea->recargo / 100));
 
                             if ($linea->irpf > $factura->irpf) {
                                 $factura->irpf = $linea->irpf;
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = false;
+                            $continuar = FALSE;
                         }
                     }
                 }
 
                 if ($continuar) {
-                    /// redondeamos
-                    $factura->neto = round($factura->neto, FS_NF0);
-                    $factura->totaliva = round($factura->totaliva, FS_NF0);
-                    $factura->totalirpf = round($factura->totalirpf, FS_NF0);
-                    $factura->totalrecargo = round($factura->totalrecargo, FS_NF0);
                     $factura->total = $factura->neto + $factura->totaliva - $factura->totalirpf + $factura->totalrecargo;
 
                     if (abs(floatval($_POST['atotal']) - $factura->total) >= .02) {
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" . $_POST['atotal'] .
                                 " frente a " . $factura->total . "). Debes informar del error.");
                         $factura->delete();
-                    } elseif ($factura->save()) {
+                    } else if ($factura->save()) {
                         $this->generar_asiento($factura);
+
+                        /**
+                         * Función de ejecución de tareas post guardado correcto de la factura
+                         */
                         fs_documento_post_save($factura);
-                        $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $numero_ncf['NCF']);
-                        $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), true);
+
+                        $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente.");
+                        $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), TRUE);
 
                         if ($trazabilidad) {
                             header('Location: index.php?page=ventas_trazabilidad&doc=factura&id=' . $factura->idfactura);
-                        } elseif ($_POST['redir'] == 'TRUE') {
+                        } else if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $factura->url());
                         }
                     } else {
@@ -968,7 +965,7 @@ class nueva_venta extends rd_controller
                         if ($linea->referencia) {
                             $articulo = $art0->get($linea->referencia);
                             if ($articulo) {
-                                $articulo->sum_stock($factura->codalmacen, $linea->cantidad, false, $linea->codcombinacion);
+                                $articulo->sum_stock($factura->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
                             }
                         }
                     }
@@ -1008,12 +1005,12 @@ class nueva_venta extends rd_controller
 
     private function nuevo_presupuesto_cliente()
     {
-        $continuar = true;
+        $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
         if (!$cliente) {
             $this->new_error_msg('Cliente no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -1021,20 +1018,20 @@ class nueva_venta extends rd_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $eje0 = new ejercicio();
-        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], false);
+        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], FALSE);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -1042,13 +1039,13 @@ class nueva_venta extends rd_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $presupuesto = new presupuesto_cliente();
@@ -1057,7 +1054,7 @@ class nueva_venta extends rd_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $presupuesto->url() . '">Presupuestos</a>
                para ver si el presupuesto se ha guardado correctamente.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         if ($continuar) {
@@ -1083,7 +1080,6 @@ class nueva_venta extends rd_controller
 
             $presupuesto->codagente = $this->agente->codagente;
             $presupuesto->observaciones = $_POST['observaciones'];
-            $presupuesto->numero2 = $_POST['numero2'];
             $presupuesto->porcomision = $this->agente->porcomision;
 
             $presupuesto->codcliente = $cliente->codcliente;
@@ -1110,6 +1106,9 @@ class nueva_venta extends rd_controller
             $presupuesto->envio_direccion = $_POST['envio_direccion'];
             $presupuesto->envio_apartado = $_POST['envio_apartado'];
 
+            /// Se coloca antes del save para poder obtener todos los datos necesarios para procesar el numero2
+            fs_generar_numero2($presupuesto);
+
             if ($presupuesto->save()) {
                 $art0 = new articulo();
                 $n = floatval($_POST['numlineas']);
@@ -1119,7 +1118,7 @@ class nueva_venta extends rd_controller
                         $linea->idpresupuesto = $presupuesto->idpresupuesto;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva and $cliente->regimeniva != 'Exento') {
+                        if (!$serie->siniva && $cliente->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -1135,8 +1134,13 @@ class nueva_venta extends rd_controller
                         $linea->pvpunitario = floatval($_POST['pvp_' . $i]);
                         $linea->cantidad = floatval($_POST['cantidad_' . $i]);
                         $linea->dtopor = floatval($_POST['dto_' . $i]);
+                        $linea->dtopor2 = floatval($_POST['dto2_' . $i]);
+                        $linea->dtopor3 = floatval($_POST['dto3_' . $i]);
+                        $linea->dtopor4 = floatval($_POST['dto4_' . $i]);
                         $linea->pvpsindto = ($linea->pvpunitario * $linea->cantidad);
-                        $linea->pvptotal = floatval($_POST['neto_' . $i]);
+                        // Descuento Unificado Equivalente
+                        $due_linea = $this->calc_due(array($linea->dtopor,$linea->dtopor2,$linea->dtopor3,$linea->dtopor4));
+                        $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * $due_linea;
 
                         $articulo = $art0->get($_POST['referencia_' . $i]);
                         if ($articulo) {
@@ -1147,36 +1151,46 @@ class nueva_venta extends rd_controller
                         }
 
                         if ($linea->save()) {
-                            $presupuesto->neto += $linea->pvptotal;
-                            $presupuesto->totaliva += ($linea->pvptotal * $linea->iva / 100);
-                            $presupuesto->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
-                            $presupuesto->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
+                            $presupuesto->dtopor1 = floatval($_POST['adtopor1']);
+                            $presupuesto->dtopor2 = floatval($_POST['adtopor2']);
+                            $presupuesto->dtopor3 = floatval($_POST['adtopor3']);
+                            $presupuesto->dtopor4 = floatval($_POST['adtopor4']);
+                            $presupuesto->dtopor5 = floatval($_POST['adtopor5']);
+
+                            // Descuento Unificado Equivalente
+                            $due_totales = $this->calc_due(array($presupuesto->dtopor1,$presupuesto->dtopor2,$presupuesto->dtopor3,$presupuesto->dtopor4,$presupuesto->dtopor5));
+
+                            $presupuesto->netosindto += $linea->pvptotal;
+                            $presupuesto->neto += $linea->pvptotal * $due_totales;
+                            $presupuesto->totaliva += ($linea->pvptotal * $due_totales * ($linea->iva / 100));
+                            $presupuesto->totalirpf += ($linea->pvptotal * $due_totales * ($linea->irpf / 100));
+                            $presupuesto->totalrecargo += ($linea->pvptotal * $due_totales * ($linea->recargo / 100));
 
                             if ($linea->irpf > $presupuesto->irpf) {
                                 $presupuesto->irpf = $linea->irpf;
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = false;
+                            $continuar = FALSE;
                         }
                     }
                 }
 
                 if ($continuar) {
-                    /// redondeamos
-                    $presupuesto->neto = round($presupuesto->neto, FS_NF0);
-                    $presupuesto->totaliva = round($presupuesto->totaliva, FS_NF0);
-                    $presupuesto->totalirpf = round($presupuesto->totalirpf, FS_NF0);
-                    $presupuesto->totalrecargo = round($presupuesto->totalrecargo, FS_NF0);
                     $presupuesto->total = $presupuesto->neto + $presupuesto->totaliva - $presupuesto->totalirpf + $presupuesto->totalrecargo;
 
                     if (abs(floatval($_POST['atotal']) - $presupuesto->total) >= .02) {
                         $this->new_error_msg("El total difiere entre el controlador y la vista (" .
                                 $presupuesto->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
                         $presupuesto->delete();
-                    } elseif ($presupuesto->save()) {
+                    } else if ($presupuesto->save()) {
+                        /**
+                         * Función de ejecución de tareas post guardado correcto del presupuesto
+                         */
+                        fs_documento_post_save($presupuesto);
+
                         $this->new_message("<a href='" . $presupuesto->url() . "'>" . ucfirst(FS_PRESUPUESTO) . "</a> guardado correctamente.");
-                        $this->new_change(ucfirst(FS_PRESUPUESTO) . ' a Cliente ' . $presupuesto->codigo, $presupuesto->url(), true);
+                        $this->new_change(ucfirst(FS_PRESUPUESTO) . ' a Cliente ' . $presupuesto->codigo, $presupuesto->url(), TRUE);
 
                         if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $presupuesto->url());
@@ -1184,7 +1198,7 @@ class nueva_venta extends rd_controller
                     } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $presupuesto->url() . "'>" . FS_PRESUPUESTO . "</a>!");
                     }
-                } elseif ($presupuesto->delete()) {
+                } else if ($presupuesto->delete()) {
                     $this->new_message(ucfirst(FS_PRESUPUESTO) . " eliminado correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $presupuesto->url() . "'>" . FS_PRESUPUESTO . "</a>!");
@@ -1197,12 +1211,12 @@ class nueva_venta extends rd_controller
 
     private function nuevo_pedido_cliente()
     {
-        $continuar = true;
+        $continuar = TRUE;
 
         $cliente = $this->cliente->get($_POST['cliente']);
         if (!$cliente) {
             $this->new_error_msg('Cliente no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $almacen = $this->almacen->get($_POST['almacen']);
@@ -1210,20 +1224,20 @@ class nueva_venta extends rd_controller
             $this->save_codalmacen($_POST['almacen']);
         } else {
             $this->new_error_msg('Almacén no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $eje0 = new ejercicio();
-        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], false);
+        $ejercicio = $eje0->get_by_fecha($_POST['fecha'], FALSE);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $serie = $this->serie->get($_POST['serie']);
         if (!$serie) {
             $this->new_error_msg('Serie no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $forma_pago = $this->forma_pago->get($_POST['forma_pago']);
@@ -1231,13 +1245,13 @@ class nueva_venta extends rd_controller
             $this->save_codpago($_POST['forma_pago']);
         } else {
             $this->new_error_msg('Forma de pago no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $divisa = $this->divisa->get($_POST['divisa']);
         if (!$divisa) {
             $this->new_error_msg('Divisa no encontrada.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         $pedido = new pedido_cliente();
@@ -1246,27 +1260,10 @@ class nueva_venta extends rd_controller
             $this->new_error_msg('Petición duplicada. Has hecho doble clic sobre el botón guardar
                y se han enviado dos peticiones. Mira en <a href="' . $pedido->url() . '">Pedidos</a>
                para ver si el pedido se ha guardado correctamente.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         if ($continuar) {
-
-            /**
-             * Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
-             * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
-             * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
-             */
-            if ($this->distribucion_clientes) {
-                $codvendedor = '';
-                $ruta = '';
-                if (\filter_input(INPUT_POST, 'codruta')) {
-                    $ruta = \filter_input(INPUT_POST, 'codruta');
-                    $ruta_data = $this->distribucion_clientes->getOne($this->empresa->id, $cliente->codcliente, $ruta);
-                    $codvendedor = ($ruta_data) ? $ruta_data->codagente : '';
-                }
-                $pedido->codruta = $ruta;
-                $pedido->codvendedor = $codvendedor;
-            }
             $pedido->fecha = $_POST['fecha'];
             $pedido->codalmacen = $almacen->codalmacen;
             $pedido->codejercicio = $ejercicio->codejercicio;
@@ -1281,7 +1278,6 @@ class nueva_venta extends rd_controller
 
             $pedido->codagente = $this->agente->codagente;
             $pedido->observaciones = $_POST['observaciones'];
-            $pedido->numero2 = $_POST['numero2'];
             $pedido->porcomision = $this->agente->porcomision;
 
             $pedido->codcliente = $cliente->codcliente;
@@ -1308,6 +1304,9 @@ class nueva_venta extends rd_controller
             $pedido->envio_direccion = $_POST['envio_direccion'];
             $pedido->envio_apartado = $_POST['envio_apartado'];
 
+            /// Se coloca antes del save para poder obtener todos los datos necesarios para procesar el numero2
+            fs_generar_numero2($pedido);
+
             if ($pedido->save()) {
                 $art0 = new articulo();
                 $n = floatval($_POST['numlineas']);
@@ -1317,7 +1316,7 @@ class nueva_venta extends rd_controller
                         $linea->idpedido = $pedido->idpedido;
                         $linea->descripcion = $_POST['desc_' . $i];
 
-                        if (!$serie->siniva and $cliente->regimeniva != 'Exento') {
+                        if (!$serie->siniva && $cliente->regimeniva != 'Exento') {
                             $imp0 = $this->impuesto->get_by_iva($_POST['iva_' . $i]);
                             if ($imp0) {
                                 $linea->codimpuesto = $imp0->codimpuesto;
@@ -1333,8 +1332,13 @@ class nueva_venta extends rd_controller
                         $linea->pvpunitario = floatval($_POST['pvp_' . $i]);
                         $linea->cantidad = floatval($_POST['cantidad_' . $i]);
                         $linea->dtopor = floatval($_POST['dto_' . $i]);
+                        $linea->dtopor2 = floatval($_POST['dto2_' . $i]);
+                        $linea->dtopor3 = floatval($_POST['dto3_' . $i]);
+                        $linea->dtopor4 = floatval($_POST['dto4_' . $i]);
                         $linea->pvpsindto = ($linea->pvpunitario * $linea->cantidad);
-                        $linea->pvptotal = floatval($_POST['neto_' . $i]);
+                        // Descuento Unificado Equivalente
+                        $due_linea = $this->calc_due(array($linea->dtopor,$linea->dtopor2,$linea->dtopor3,$linea->dtopor4));
+                        $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * $due_linea;
 
                         $articulo = $art0->get($_POST['referencia_' . $i]);
                         if ($articulo) {
@@ -1345,36 +1349,46 @@ class nueva_venta extends rd_controller
                         }
 
                         if ($linea->save()) {
-                            $pedido->neto += $linea->pvptotal;
-                            $pedido->totaliva += ($linea->pvptotal * $linea->iva / 100);
-                            $pedido->totalirpf += ($linea->pvptotal * $linea->irpf / 100);
-                            $pedido->totalrecargo += ($linea->pvptotal * $linea->recargo / 100);
+                            $pedido->dtopor1 = floatval($_POST['adtopor1']);
+                            $pedido->dtopor2 = floatval($_POST['adtopor2']);
+                            $pedido->dtopor3 = floatval($_POST['adtopor3']);
+                            $pedido->dtopor4 = floatval($_POST['adtopor4']);
+                            $pedido->dtopor5 = floatval($_POST['adtopor5']);
+
+                            // Descuento Unificado Equivalente
+                            $due_totales = $this->calc_due(array($pedido->dtopor1,$pedido->dtopor2,$pedido->dtopor3,$pedido->dtopor4,$pedido->dtopor5));
+
+                            $pedido->netosindto += $linea->pvptotal;
+                            $pedido->neto += $linea->pvptotal * $due_totales;
+                            $pedido->totaliva += ($linea->pvptotal * $due_totales * ($linea->iva / 100));
+                            $pedido->totalirpf += ($linea->pvptotal * $due_totales * ($linea->irpf / 100));
+                            $pedido->totalrecargo += ($linea->pvptotal * $due_totales * ($linea->recargo / 100));
 
                             if ($linea->irpf > $pedido->irpf) {
                                 $pedido->irpf = $linea->irpf;
                             }
                         } else {
                             $this->new_error_msg("¡Imposible guardar la linea con referencia: " . $linea->referencia);
-                            $continuar = false;
+                            $continuar = FALSE;
                         }
                     }
                 }
 
                 if ($continuar) {
-                    /// redondeamos
-                    $pedido->neto = round($pedido->neto, FS_NF0);
-                    $pedido->totaliva = round($pedido->totaliva, FS_NF0);
-                    $pedido->totalirpf = round($pedido->totalirpf, FS_NF0);
-                    $pedido->totalrecargo = round($pedido->totalrecargo, FS_NF0);
                     $pedido->total = $pedido->neto + $pedido->totaliva - $pedido->totalirpf + $pedido->totalrecargo;
 
                     if (abs(floatval($_POST['atotal']) - $pedido->total) >= .02) {
-                        $this->new_error_msg("El total difiere entre el controlador y la vista (" .
-                                $pedido->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
+                        $this->new_error_msg("El total difiere entre el controlador y la vista ("
+                            . $pedido->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
                         $pedido->delete();
-                    } elseif ($pedido->save()) {
+                    } else if ($pedido->save()) {
+                        /**
+                         * Función de ejecución de tareas post guardado correcto del pedido
+                         */
+                        fs_documento_post_save($pedido);
+
                         $this->new_message("<a href='" . $pedido->url() . "'>" . ucfirst(FS_PEDIDO) . "</a> guardado correctamente.");
-                        $this->new_change(ucfirst(FS_PEDIDO) . " a Cliente " . $pedido->codigo, $pedido->url(), true);
+                        $this->new_change(ucfirst(FS_PEDIDO) . " a Cliente " . $pedido->codigo, $pedido->url(), TRUE);
 
                         if ($_POST['redir'] == 'TRUE') {
                             header('Location: ' . $pedido->url());
@@ -1382,7 +1396,7 @@ class nueva_venta extends rd_controller
                     } else {
                         $this->new_error_msg("¡Imposible actualizar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");
                     }
-                } elseif ($pedido->delete()) {
+                } else if ($pedido->delete()) {
                     $this->new_message(ucfirst(FS_PEDIDO) . " eliminado correctamente.");
                 } else {
                     $this->new_error_msg("¡Imposible eliminar el <a href='" . $pedido->url() . "'>" . FS_PEDIDO . "</a>!");

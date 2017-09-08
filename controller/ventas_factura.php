@@ -18,8 +18,10 @@
  */
 
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+
 class ventas_factura extends rd_controller
 {
+
     public $agencia;
     public $agente;
     public $agentes;
@@ -33,12 +35,13 @@ class ventas_factura extends rd_controller
     public $pais;
     public $rectificada;
     public $rectificativa;
+    public $serie;
     public $ncf;
     public $impuesto;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Factura de cliente', 'ventas', false, false);
+        parent::__construct(__CLASS__, 'Factura de cliente', 'ventas', FALSE, FALSE);
     }
 
     protected function private_core()
@@ -50,27 +53,27 @@ class ventas_factura extends rd_controller
         $this->shared_extensions();
 
         $this->agencia = new agencia_transporte();
-        $this->agente = false;
+        $this->agente = FALSE;
         $this->agentes = array();
         $this->almacen = new almacen();
-        $this->cliente = false;
+        $this->cliente = FALSE;
         $this->divisa = new divisa();
         $this->ejercicio = new ejercicio();
-        $this->factura = false;
+        $this->factura = FALSE;
         $this->forma_pago = new forma_pago();
         $this->pais = new pais();
-        $this->rectificada = false;
-        $this->rectificativa = false;
-        $this->impuesto = new impuesto();
+        $this->rectificada = FALSE;
+        $this->rectificativa = FALSE;
+        $this->serie = new serie();
 
         /**
          * Si hay alguna extensión de tipo config y texto no_button_pagada,
          * desactivamos el botón de pagada/sin pagar.
          */
-        $this->mostrar_boton_pagada = true;
+        $this->mostrar_boton_pagada = TRUE;
         foreach ($this->extensions as $ext) {
-            if ($ext->type == 'config' and $ext->text == 'no_button_pagada') {
-                $this->mostrar_boton_pagada = false;
+            if ($ext->type == 'config' && $ext->text == 'no_button_pagada') {
+                $this->mostrar_boton_pagada = FALSE;
                 break;
             }
         }
@@ -82,7 +85,7 @@ class ventas_factura extends rd_controller
         if (isset($_POST['idfactura'])) {
             $this->factura = $factura->get($_POST['idfactura']);
             $this->modificar();
-        } elseif (isset($_GET['id'])) {
+        } else if (isset($_GET['id'])) {
             $this->factura = $factura->get($_GET['id']);
         }
 
@@ -100,21 +103,21 @@ class ventas_factura extends rd_controller
             $cliente = new cliente();
             $this->cliente = $cliente->get($this->factura->codcliente);
 
-            if (isset($_GET['gen_asiento']) and isset($_GET['petid'])) {
+            if (isset($_GET['gen_asiento']) && isset($_GET['petid'])) {
                 if ($this->duplicated_petition($_GET['petid'])) {
                     $this->new_error_msg('Petición duplicada. Evita hacer doble clic sobre los botones.');
                 } else {
                     $this->generar_asiento($this->factura);
                 }
-            } elseif (isset($_GET['updatedir'])) {
+            } else if (isset($_GET['updatedir'])) {
                 $this->actualizar_direccion();
-            } elseif (isset($_REQUEST['pagada'])) {
+            } else if (isset($_REQUEST['pagada'])) {
                 $this->pagar(($_REQUEST['pagada'] == 'TRUE'));
-            } elseif (isset($_POST['anular'])) {
+            } else if (isset($_POST['anular'])) {
                 $this->anular_factura();
-            } elseif (isset($_POST['rectificar'])) {
+            } else if (isset($_POST['rectificar'])) {
                 $this->rectificar_factura();
-            } elseif (isset($_GET['fix_ncf'])) {
+            } else if (isset($_GET['fix_ncf'])) {
                 $this->fix_ncf();
             }
 
@@ -127,7 +130,7 @@ class ventas_factura extends rd_controller
             /// comprobamos la factura
             $this->factura->full_test();
         } else {
-            $this->new_error_msg("¡Factura de cliente no encontrada!", 'error', false, false);
+            $this->new_error_msg("¡Factura de cliente no encontrada!", 'error', FALSE, FALSE);
         }
     }
 
@@ -135,11 +138,11 @@ class ventas_factura extends rd_controller
     {
         if (!isset($this->factura)) {
             return parent::url();
-        } elseif ($this->factura) {
+        } else if ($this->factura) {
             return $this->factura->url();
-        } else {
-            return $this->ppage->url();
         }
+
+        return $this->ppage->url();
     }
 
     public function fix_ncf()
@@ -168,8 +171,6 @@ class ventas_factura extends rd_controller
     private function modificar()
     {
         $this->factura->observaciones = $_POST['observaciones'];
-        //No permitimos cambiar el numero 2 ya que lo utilizamos para NCF
-        //$this->factura->numero2 = $_POST['numero2'];
         $this->factura->nombrecliente = $_POST['nombrecliente'];
         $this->factura->cifnif = $_POST['cifnif'];
         $this->factura->codpais = $_POST['codpais'];
@@ -181,7 +182,7 @@ class ventas_factura extends rd_controller
 
         $this->factura->envio_nombre = $_POST['envio_nombre'];
         $this->factura->envio_apellidos = $_POST['envio_apellidos'];
-        $this->factura->envio_codtrans = null;
+        $this->factura->envio_codtrans = NULL;
         if ($_POST['envio_codtrans'] != '') {
             $this->factura->envio_codtrans = $_POST['envio_codtrans'];
         }
@@ -193,7 +194,7 @@ class ventas_factura extends rd_controller
         $this->factura->envio_direccion = $_POST['envio_direccion'];
         $this->factura->envio_apartado = $_POST['envio_apartado'];
 
-        $this->factura->codagente = null;
+        $this->factura->codagente = NULL;
         $this->factura->porcomision = 0;
         if ($_POST['codagente'] != '') {
             $this->factura->codagente = $_POST['codagente'];
@@ -210,6 +211,8 @@ class ventas_factura extends rd_controller
             $this->factura->vencimiento = $_POST['vencimiento'];
         }
 
+        fs_generar_numero2($this->factura);
+
         if ($this->factura->save()) {
             $asiento = $this->factura->get_asiento();
             if ($asiento) {
@@ -219,14 +222,8 @@ class ventas_factura extends rd_controller
                 }
             }
 
-            $ncfventas0 = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
-            $ncfventas0->fecha = $this->factura->fecha;
-            $ncfventas0->cifnif = $this->factura->cifnif;
-            $ncfventas0->fecha_modificacion = \date('Y-m-d H:i:s');
-            $ncfventas0->usuario_modificacion = $this->user->nick;
-            if (!$ncfventas0->corregir_fecha()) {
-                $this->new_error_msg("Error al actualizar los datos de la tabla de NCF ");
-            }
+            fs_documento_post_save($this->factura);
+
             $this->new_message("Factura modificada correctamente.");
             $this->new_change('Factura Cliente ' . $this->factura->codigo, $this->factura->url());
         } else {
@@ -266,7 +263,7 @@ class ventas_factura extends rd_controller
             $this->new_error_msg('Ya hay un asiento asociado a esta factura.');
         } else {
             $asiento_factura = new asiento_factura();
-            $asiento_factura->soloasiento = true;
+            $asiento_factura->soloasiento = TRUE;
             if ($asiento_factura->generar_asiento_venta($factura)) {
                 $this->new_message("<a href='" . $asiento_factura->asiento->url() . "'>Asiento</a> generado correctamente.");
 
@@ -286,15 +283,15 @@ class ventas_factura extends rd_controller
         }
     }
 
-    private function pagar($pagada = true)
+    private function pagar($pagada = TRUE)
     {
         /// ¿Hay asiento?
         if (is_null($this->factura->idasiento)) {
             $this->factura->pagada = $pagada;
             $this->factura->save();
-        } elseif (!$pagada and $this->factura->pagada) {
+        } else if (!$pagada && $this->factura->pagada) {
             /// marcar como impagada
-            $this->factura->pagada = false;
+            $this->factura->pagada = FALSE;
 
             /// ¿Eliminamos el asiento de pago?
             $as1 = new asiento();
@@ -304,20 +301,20 @@ class ventas_factura extends rd_controller
                 $this->new_message('Asiento de pago eliminado.');
             }
 
-            $this->factura->idasientop = null;
+            $this->factura->idasientop = NULL;
             if ($this->factura->save()) {
                 $this->new_message('Factura marcada como impagada.');
             } else {
                 $this->new_error_msg('Error al modificar la factura.');
             }
-        } elseif ($pagada and ! $this->factura->pagada) {
+        } else if ($pagada && !$this->factura->pagada) {
             /// marcar como pagada
             $asiento = $this->factura->get_asiento();
             if ($asiento) {
                 /// nos aseguramos que el cliente tenga subcuenta en el ejercicio actual
-                $subcli = false;
+                $subcli = FALSE;
                 $eje = $this->ejercicio->get_by_fecha($_POST['fpagada']);
-                if ($eje and $this->cliente) {
+                if ($eje && $this->cliente) {
                     $subcli = $this->cliente->get_subcuenta($eje->codejercicio);
                 }
 
@@ -325,8 +322,8 @@ class ventas_factura extends rd_controller
 
                 $asiento_factura = new asiento_factura();
                 $this->factura->idasientop = $asiento_factura->generar_asiento_pago($asiento, $this->factura->codpago, $_POST['fpagada'], $subcli, $importe);
-                if ($this->factura->idasientop !== null) {
-                    $this->factura->pagada = true;
+                if ($this->factura->idasientop !== NULL) {
+                    $this->factura->pagada = TRUE;
                     if ($this->factura->save()) {
                         $this->new_message('<a href="' . $this->factura->asiento_pago_url() . '">Asiento de pago</a> generado.');
                     } else {

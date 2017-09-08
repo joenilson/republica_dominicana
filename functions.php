@@ -101,22 +101,6 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $termin
     }
 }
 
-function factura_post_save($factura)
-{
-    require_model('empresa.php');
-    require_model('cliente.php');
-    $empresa = new empresa();
-    $cli0 = new cliente();
-    $cliente = $cli0->get($factura->codcliente);
-    $tipo_comprobante = ncf_tipo_comprobante($empresa->id, $factura->codcliente);
-    /*
-    * Grabación del Número de NCF para República Dominicana
-    */
-   //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-   $numero_ncf = generar_numero2($cliente, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-   $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-}
-
 function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');
@@ -135,6 +119,8 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         $ncf_factura->ncf = $numero_ncf;
         $ncf_factura->usuario_creacion = $usuario;
         $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+        $ncf_factura->usuario_modificacion = $usuario;
+        $ncf_factura->fecha_modificacion = Date('d-m-Y H:i:s');
         $ncf_factura->estado = true;
         if ($factura->idfacturarect) {
             $ncf_orig = new ncf_ventas();
@@ -154,10 +140,11 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
     }
 }
 
-function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI', $user)
+function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI')
 {
     require_model('ncf_entidad_tipo.php');
     $net0 = new ncf_entidad_tipo();
+    $usuario = \filter_input(INPUT_COOKIE, 'user');
     $tipo_comprobante = '02';
     $tipo_comprobante_d = $net0->get($idempresa, $codigo_entidad, $tipo_entidad);
     if ($tipo_comprobante_d) {
@@ -167,7 +154,7 @@ function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI'
         $net0->entidad = $codigo_entidad;
         $net0->estado = true;
         $net0->fecha_creacion = \date('Y-m-d H:i:s');
-        $net0->usuario_creacion = $user;
+        $net0->usuario_creacion = $usuario;
         $net0->idempresa = $idempresa;
         $net0->tipo_comprobante = $tipo_comprobante;
         $net0->tipo_entidad = $tipo_entidad;
@@ -175,6 +162,7 @@ function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI'
     }
     return $tipo_comprobante;
 }
+
 /**
  *
  * @param type $cliente
@@ -231,6 +219,9 @@ if (!function_exists('fs_generar_numero2')) {
 
         if($tipo_documento == 'factura_cliente') {
             $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago);
+            if(strlen($documento->$campo) != 19){
+                $documento->$campo = '';
+            }
         }
 
         if($tipo_documento == 'factura_proveedor') {
@@ -263,6 +254,39 @@ if (!function_exists('fs_documento_post_save')) {
             $tipo_comprobante = get_tipo_comprobante($numero_ncf);
             guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf);
         }
+
+        if(substr($tipo_documento,-(strlen('cliente'))) === 'cliente'){
+            compatibilidad_distribucion($documento, $empresa->id);
+        }
+
+    }
+}
+
+/**
+* Agregamos el campo ruta y el codvendedor si está activo distribucion_clientes
+* El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
+* puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
+*/
+function compatibilidad_distribucion(&$documento, $idempresa)
+{
+
+    require_model('distribucion_clientes.php');
+    $distribucion_clientes = new distribucion_clientes();
+    if (\class_exists('distribucion_clientes')) {
+        $codvendedor = '';
+        $ruta = '';
+        if (\filter_input(INPUT_POST, 'codruta')) {
+            $ruta = \filter_input(INPUT_POST, 'codruta');
+            $ruta_data = $distribucion_clientes->getOne($idempresa, $documento->codcliente, $ruta);
+            $codvendedor = ($ruta_data) ? $ruta_data->codagente : '';
+        }
+        if(empty($documento->codruta)) {
+            $documento->codruta = $ruta;
+        }
+        if(empty($documento->codvendedor)) {
+            $documento->codvendedor = $codvendedor;
+        }
+        $documento->save();
     }
 }
 

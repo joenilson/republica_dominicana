@@ -24,11 +24,13 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
  */
 class ventas_factura_devolucion extends rd_controller
 {
+
     public $factura;
+    public $serie;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Devoluciones de factura de venta', 'ventas', false, false);
+        parent::__construct(__CLASS__, 'Devoluciones de factura de venta', 'ventas', FALSE, FALSE);
     }
 
     protected function private_core()
@@ -37,8 +39,10 @@ class ventas_factura_devolucion extends rd_controller
         $this->share_extension();
         $this->template = 'tab/' . __CLASS__;
 
+        $this->serie = new serie();
+
         $fact0 = new factura_cliente();
-        $this->factura = '';
+        $this->factura = FALSE;
         if (isset($_REQUEST['id'])) {
             $this->factura = $fact0->get($_REQUEST['id']);
         }
@@ -48,19 +52,19 @@ class ventas_factura_devolucion extends rd_controller
                 $this->nueva_rectificativa();
             }
         } else {
-            $this->new_error_msg('Factura no encontrada.', 'error', false, false);
+            $this->new_error_msg('Factura no encontrada.', 'error', FALSE, FALSE);
         }
     }
 
     private function nueva_rectificativa()
     {
-        $continuar = true;
+        $continuar = TRUE;
 
         $eje0 = new ejercicio();
         $ejercicio = $eje0->get_by_fecha($_POST['fecha']);
         if (!$ejercicio) {
             $this->new_error_msg('Ejercicio no encontrado o está cerrado.');
-            $continuar = false;
+            $continuar = FALSE;
         }
 
         if ($continuar) {
@@ -97,7 +101,7 @@ class ventas_factura_devolucion extends rd_controller
             $frec->totalirpf = 0;
             $frec->totaliva = 0;
             $frec->totalrecargo = 0;
-            
+
             if($frec->save()){
                 $guardar = $this->guardar_lineas_devolucion($frec);
                 if ($guardar) {
@@ -123,11 +127,12 @@ class ventas_factura_devolucion extends rd_controller
 
         }
     }
-    
+
     public function guardar_lineas_devolucion($frec)
     {
         $total_devolucion = 0;
         $art0 = new articulo();
+
         foreach ($this->factura->get_lineas() as $value) {
             if (isset($_POST['devolver_' . $value->idlinea]) and (floatval($_POST['devolver_' . $value->idlinea]) > 0)) {
                 $devolucion = floatval($_POST['devolver_' . $value->idlinea]);
@@ -154,7 +159,7 @@ class ventas_factura_devolucion extends rd_controller
                 }
                 $total_devolucion += $devolucion;
             }
-            
+
         }
         return $total_devolucion;
     }
