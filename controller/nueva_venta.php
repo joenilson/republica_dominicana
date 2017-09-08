@@ -826,8 +826,6 @@ class nueva_venta extends rd_controller
 
             $factura->codagente = $this->agente->codagente;
             $factura->observaciones = $_POST['observaciones'];
-            $factura->numero2 = $numero_ncf['NCF'];
-            //Para ser cambiado con: generar_numero2($cliente, $almacen->codalmacen, $forma_pago->codpago);
             $factura->porcomision = $this->agente->porcomision;
 
             if ($forma_pago->genrecibos == 'Pagados') {
@@ -860,6 +858,7 @@ class nueva_venta extends rd_controller
             $factura->envio_direccion = $_POST['envio_direccion'];
             $factura->envio_apartado = $_POST['envio_apartado'];
 
+            fs_generar_numero2($factura);
             $regularizacion = new regularizacion_iva();
             if ($regularizacion->get_fecha_inside($factura->fecha)) {
                 $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado."
@@ -950,15 +949,8 @@ class nueva_venta extends rd_controller
                                 " frente a " . $factura->total . "). Debes informar del error.");
                         $factura->delete();
                     } elseif ($factura->save()) {
-                        /*
-                         * Grabación del Número de NCF para República Dominicana
-                         */
-                        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $factura->codalmacen, $tipo_comprobante, $factura->codpago);
-                        $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-                        //Para cambiar con esta funcion
-                        //factura_post_save($factura);
                         $this->generar_asiento($factura);
+                        fs_documento_post_save($factura);
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente con número NCF: " . $numero_ncf['NCF']);
                         $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), true);
 

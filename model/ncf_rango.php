@@ -313,7 +313,7 @@ class ncf_rango extends fs_model
 
     public function update($idempresa, $codalmacen, $solicitud, $ncf, $usuario)
     {
-        $sql = "UPDATE ncf_rango SET ".
+        $sql = "UPDATE ".$this->table_name." SET ".
 
             "correlativo = ".$this->intval((\substr($ncf, 11, 18))+1).", ".
             "usuario_modificacion = ".$this->var2str($usuario).", ".
@@ -329,5 +329,24 @@ class ncf_rango extends fs_model
             "tipo_comprobante = ".$this->var2str(\substr($ncf, 9, 2)).";";
 
         return $this->db->exec($sql);
+    }
+
+    public function get_solicitud($idempresa, $codalmacen, $ncf)
+    {
+        $solicitud = 0;
+        $sql = "SELECT solicitud FROM ".$this->table_name.
+            "WHERE ".
+            "idempresa = ".$this->intval($idempresa)." AND ".
+            "codalmacen = ".$this->var2str($codalmacen)." AND ".
+            "serie = ".$this->var2str(\substr($ncf, 0, 1))." AND ".
+            "division = ".$this->var2str(\substr($ncf, 1, 2))." AND ".
+            "punto_emision = ".$this->var2str(\substr($ncf, 3, 3))." AND ".
+            "area_impresion = ".$this->var2str(\substr($ncf, 6, 3))." AND ".
+            "tipo_comprobante = ".$this->var2str(\substr($ncf, 9, 2)).";";
+        $data = $this->db->select($sql);
+        if($data){
+            $solicitud = $data[0]['solicitud'];
+        }
+        return $solicitud;
     }
 }
