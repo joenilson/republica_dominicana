@@ -76,7 +76,7 @@ class rd_controller extends fbase_controller
         $this->get_config();
         $this->verificar_plugin_distribucion();
     }
-    
+
     public function verificar_plugin_distribucion()
     {
         //Para el plugin distribucion
@@ -84,7 +84,7 @@ class rd_controller extends fbase_controller
             $this->distribucion_clientes = new distribucion_clientes();
         }
     }
-    
+
     public function get_config()
     {
         $fsvar = new fs_var();
@@ -103,7 +103,7 @@ class rd_controller extends fbase_controller
             ), false
         );
     }
-    
+
     public function setValor($variable, $valor_si, $valor_no)
     {
         $valor = $valor_no;
@@ -112,7 +112,7 @@ class rd_controller extends fbase_controller
         }
         return $valor;
     }
-    
+
     public function confirmarValor($valor1, $valor2)
     {
         $valor = $valor2;
@@ -121,7 +121,7 @@ class rd_controller extends fbase_controller
         }
         return $valor;
     }
-    
+
     public function control_usuarios()
     {
         $this->allow_delete = $this->user->allow_delete_on($this->class_name);
@@ -129,12 +129,12 @@ class rd_controller extends fbase_controller
         if (!$this->user->admin) {
             $this->agente = new agente();
             $cod = $this->agente->get($this->user->codagente);
-            $user_almacen = ($cod)?$this->almacenes->get($cod->codalmacen):false;
+            $user_almacen = ($cod and isset($cod->codalmacen))?$this->almacenes->get($cod->codalmacen):false;
             $this->user->codalmacen = (isset($user_almacen->codalmacen))?$user_almacen->codalmacen:'';
             $this->user->nombrealmacen = (isset($user_almacen->nombre))?$user_almacen->nombre:'';
         }
     }
-    
+
     public function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI')
     {
         $tipo_comprobante = '02';
@@ -154,7 +154,7 @@ class rd_controller extends fbase_controller
         }
         return $tipo_comprobante;
     }
-    
+
     public function generar_numero_ncf($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
     {
         $numero_ncf = $this->ncf_rango->generate($idempresa,$codalmacen, $tipo_comprobante, $condicion_pago);
@@ -164,7 +164,7 @@ class rd_controller extends fbase_controller
         }
         return $numero_ncf;
     }
-    
+
     public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
     {
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
@@ -201,7 +201,7 @@ class rd_controller extends fbase_controller
             }
         }
     }
-    
+
     /**
      * Función para devolver el valor de una variable pasada ya sea por POST o GET
      * @param type string
@@ -213,14 +213,14 @@ class rd_controller extends fbase_controller
         $nombre_get = \filter_input(INPUT_GET, $nombre);
         return ($nombre_post) ? $nombre_post : $nombre_get;
     }
-    
+
     public function filter_request_array($nombre)
     {
         $nombre_post = \filter_input(INPUT_POST, $nombre, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
         $nombre_get = \filter_input(INPUT_GET, $nombre, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
         return ($nombre_post) ? $nombre_post : $nombre_get;
     }
-    
+
     public function existe_tesoreria()
     {
         $this->tesoreria = false;
