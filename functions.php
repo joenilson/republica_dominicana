@@ -269,10 +269,9 @@ if (!function_exists('fs_documento_post_save')) {
 */
 function compatibilidad_distribucion(&$documento, $idempresa)
 {
-
-    require_model('distribucion_clientes.php');
-    $distribucion_clientes = new distribucion_clientes();
     if (\class_exists('distribucion_clientes')) {
+        require_model('distribucion_clientes.php');
+        $distribucion_clientes = new distribucion_clientes();
         $codvendedor = '';
         $ruta = '';
         if (\filter_input(INPUT_POST, 'codruta')) {
