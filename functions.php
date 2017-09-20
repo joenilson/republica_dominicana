@@ -131,11 +131,9 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         }
         
         if ($ncf_factura->save()) {
-            //echo "<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"." ---------------------- Entro ----------------------";
             $solicitud = $ncf_rango->get_solicitud($idempresa, $factura->codalmacen, $numero_ncf);
             $ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $solicitud, $numero_ncf, $usuario);
         } else {
-            //echo "<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"." ---------------------- No Ingreso ----------------------";
            $numero_ncf = '';
         }
         
