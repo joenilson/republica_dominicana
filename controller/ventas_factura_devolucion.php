@@ -80,11 +80,11 @@ class ventas_factura_devolucion extends rd_controller
                 $frec->codruta = $this->factura->codruta;
                 $frec->codvendedor = $this->factura->codvendedor;
             }
-            $frec->idfactura = null;
-            $frec->numero = null;
+            $frec->idfactura = NULL;
+            $frec->numero = NULL;
             $frec->numero2 = $numero_ncf['NCF'];
-            $frec->codigo = null;
-            $frec->idasiento = null;
+            $frec->codigo = NULL;
+            $frec->idasiento = NULL;
             $frec->idfacturarect = $this->factura->idfactura;
             $frec->codigorect = $this->factura->codigo;
             $frec->codejercicio = $ejercicio->codejercicio;
@@ -92,8 +92,8 @@ class ventas_factura_devolucion extends rd_controller
             $frec->fecha = \date('Y-m-d', strtotime($_POST['fecha']));
             $frec->hora = $this->hour();
             $frec->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
-            $frec->femail = null;
-            $frec->numdocs = null;
+            $frec->femail = NULL;
+            $frec->numdocs = NULL;
 
             $frec->irpf = 0;
             $frec->neto = 0;

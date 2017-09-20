@@ -21,6 +21,7 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 class ventas_facturas extends rd_controller
 {
+
     public $agente;
     public $almacenes;
     public $articulo;
@@ -67,12 +68,13 @@ class ventas_facturas extends rd_controller
         $this->forma_pago = new forma_pago();
         $this->grupo = new grupo_clientes();
         $this->huecos = array();
+        $this->serie = new serie();
 
         $this->mostrar = 'todo';
         if (isset($_GET['mostrar'])) {
             $this->mostrar = $_GET['mostrar'];
             setcookie('ventas_fac_mostrar', $this->mostrar, time() + FS_COOKIES_EXPIRE);
-        } elseif (isset($_COOKIE['ventas_fac_mostrar'])) {
+        } else if (isset($_COOKIE['ventas_fac_mostrar'])) {
             $this->mostrar = $_COOKIE['ventas_fac_mostrar'];
         }
 
@@ -89,15 +91,15 @@ class ventas_facturas extends rd_controller
             }
 
             setcookie('ventas_fac_order', $this->order, time() + FS_COOKIES_EXPIRE);
-        } elseif (isset($_COOKIE['ventas_fac_order'])) {
+        } else if (isset($_COOKIE['ventas_fac_order'])) {
             $this->order = $_COOKIE['ventas_fac_order'];
         }
 
         if (isset($_POST['buscar_lineas'])) {
             $this->buscar_lineas();
-        } elseif (isset($_REQUEST['buscar_cliente'])) {
+        } else if (isset($_REQUEST['buscar_cliente'])) {
             $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
-        } elseif (isset($_GET['ref'])) {
+        } else if (isset($_GET['ref'])) {
             $this->template = 'extension/ventas_facturas_articulo';
 
             $articulo = new articulo();
@@ -108,7 +110,7 @@ class ventas_facturas extends rd_controller
         } else {
             $this->share_extension();
             $this->huecos = $this->factura->huecos();
-            $this->cliente = false;
+            $this->cliente = FALSE;
             $this->codagente = '';
             $this->codalmacen = '';
             $this->codgrupo = '';
@@ -125,7 +127,7 @@ class ventas_facturas extends rd_controller
             if (isset($_GET['delete'])) {
                 $this->delete_factura();
             } else {
-                if (!isset($_GET['mostrar']) and ($this->query != '' or isset($_REQUEST['codagente']) or isset($_REQUEST['codcliente']) or isset($_REQUEST['codserie']))) {
+                if (!isset($_GET['mostrar']) && ( $this->query != '' || isset($_REQUEST['codagente']) || isset($_REQUEST['codcliente']) || isset($_REQUEST['codserie']))) {
                     /**
                      * si obtenermos un codagente, un codcliente o un codserie pasamos direcatemente
                      * a la pestaña de búsqueda, a menos que tengamos un mostrar, que
@@ -134,11 +136,9 @@ class ventas_facturas extends rd_controller
                     $this->mostrar = 'buscar';
                 }
 
-                if (isset($_REQUEST['codcliente'])) {
-                    if ($_REQUEST['codcliente'] != '') {
-                        $cli0 = new cliente();
-                        $this->cliente = $cli0->get($_REQUEST['codcliente']);
-                    }
+                if (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '') {
+                    $cli0 = new cliente();
+                    $this->cliente = $cli0->get($_REQUEST['codcliente']);
                 }
 
                 if (isset($_REQUEST['codagente'])) {
@@ -194,7 +194,7 @@ class ventas_facturas extends rd_controller
                         $this->total_resultados[$fac->coddivisa]['total'] += $fac->total;
                     }
                 }
-            } elseif ($this->mostrar == 'buscar') {
+            } else if ($this->mostrar == 'buscar') {
                 $this->buscar($order2);
             } else {
                 $this->resultados = $this->factura->all($this->offset, FS_ITEM_LIMIT, $this->order . $order2);
@@ -202,7 +202,7 @@ class ventas_facturas extends rd_controller
         }
     }
 
-    public function url($busqueda = false)
+    public function url($busqueda = FALSE)
     {
         if ($busqueda) {
             $codcliente = '';
@@ -223,22 +223,22 @@ class ventas_facturas extends rd_controller
                     . "&hasta=" . $this->hasta;
 
             return $url;
-        } else {
-            return parent::url();
         }
+
+        return parent::url();
     }
 
     public function paginas()
     {
         if ($this->mostrar == 'sinpagar') {
             $total = $this->total_sinpagar();
-        } elseif ($this->mostrar == 'buscar') {
+        } else if ($this->mostrar == 'buscar') {
             $total = $this->num_resultados;
         } else {
             $total = $this->total_registros();
         }
 
-        return $this->fbase_paginas($this->url(true), $total, $this->offset);
+        return $this->fbase_paginas($this->url(TRUE), $total, $this->offset);
     }
 
     public function buscar_lineas()
@@ -367,13 +367,13 @@ class ventas_facturas extends rd_controller
         if ($this->estado == 'pagadas') {
             $sql .= $where . "pagada";
             $where = ' AND ';
-        } elseif ($this->estado == 'impagadas') {
+        } else if ($this->estado == 'impagadas') {
             $sql .= $where . "pagada = false";
             $where = ' AND ';
-        } elseif ($this->estado == 'anuladas') {
+        } else if ($this->estado == 'anuladas') {
             $sql .= $where . "anulada = true";
             $where = ' AND ';
-        } elseif ($this->estado == 'sinasiento') {
+        } else if ($this->estado == 'sinasiento') {
             $sql .= $where . "idasiento IS NULL";
             $where = ' AND ';
         }

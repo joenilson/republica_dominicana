@@ -335,7 +335,7 @@ class ncf_rango extends fs_model
     {
         $solicitud = 0;
         $sql = "SELECT solicitud FROM ".$this->table_name.
-            "WHERE ".
+            " WHERE ".
             "idempresa = ".$this->intval($idempresa)." AND ".
             "codalmacen = ".$this->var2str($codalmacen)." AND ".
             "serie = ".$this->var2str(\substr($ncf, 0, 1))." AND ".

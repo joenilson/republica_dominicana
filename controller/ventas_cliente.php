@@ -21,6 +21,7 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class ventas_cliente extends fbase_controller
 {
+
     public $agente;
     public $cliente;
     public $cuenta_banco;
@@ -29,12 +30,13 @@ class ventas_cliente extends fbase_controller
     public $grupo;
     public $pais;
     public $serie;
+    public $tarifa;
     public $ncf_tipo;
     public $ncf_cliente_tipo;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Cliente', 'ventas', false, false);
+        parent::__construct(__CLASS__, 'Cliente', 'ventas', FALSE, FALSE);
     }
 
     protected function private_core()
@@ -49,15 +51,16 @@ class ventas_cliente extends fbase_controller
         $this->grupo = new grupo_clientes();
         $this->pais = new pais();
         $this->serie = new serie();
+        $this->tarifa = new tarifa();
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
 
         /// cargamos el cliente
         $cliente = new cliente();
-        $this->cliente = false;
+        $this->cliente = FALSE;
         if (isset($_POST['codcliente'])) {
             $this->cliente = $cliente->get($_POST['codcliente']);
-        } elseif (isset($_GET['cod'])) {
+        } else if (isset($_GET['cod'])) {
             $this->cliente = $cliente->get($_GET['cod']);
         }
 
@@ -71,19 +74,19 @@ class ventas_cliente extends fbase_controller
             /// ¿Hay que hacer algo más?
             if (isset($_GET['delete_cuenta'])) { /// eliminar cuenta bancaria
                 $this->delete_cuenta_banco();
-            } elseif (isset($_GET['delete_dir'])) { /// eliminar dirección
+            } else if (isset($_GET['delete_dir'])) { /// eliminar dirección
                 $this->delete_direccion();
-            } elseif (isset($_POST['coddir'])) { /// añadir/modificar dirección
+            } else if (isset($_POST['coddir'])) { /// añadir/modificar dirección
                 $this->edit_direccion();
-            } elseif (isset($_POST['iban'])) { /// añadir/modificar iban
+            } else if (isset($_POST['iban'])) { /// añadir/modificar iban
                 $this->edit_cuenta_banco();
-            } elseif (isset($_POST['codcliente'])) { /// modificar cliente
+            } else if (isset($_POST['codcliente'])) { /// modificar cliente
                 $this->modificar();
-            } elseif (isset($_GET['convertir'])) {
+            } else if (isset($_GET['convertir'])) {
                 $this->convertir();
             }
         } else {
-            $this->new_error_msg("¡Cliente no encontrado!", 'error', false, false);
+            $this->new_error_msg("¡Cliente no encontrado!", 'error', FALSE, FALSE);
         }
     }
 
@@ -91,11 +94,11 @@ class ventas_cliente extends fbase_controller
     {
         if (!isset($this->cliente)) {
             return parent::url();
-        } elseif ($this->cliente) {
+        } else if ($this->cliente) {
             return $this->cliente->url();
-        } else {
-            return $this->ppage->url();
         }
+
+        return $this->ppage->url();
     }
 
     private function modificar()
@@ -118,20 +121,25 @@ class ventas_cliente extends fbase_controller
         $this->cliente->personafisica = isset($_POST['personafisica']);
         $this->cliente->diaspago = $_POST['diaspago'];
 
-        $this->cliente->codserie = null;
+        $this->cliente->codserie = NULL;
         if ($_POST['codserie'] != '') {
             $this->cliente->codserie = $_POST['codserie'];
         }
 
-        $this->cliente->codagente = null;
+        $this->cliente->codagente = NULL;
         if ($_POST['codagente'] != '') {
             $this->cliente->codagente = $_POST['codagente'];
         }
 
-        $this->cliente->codgrupo = null;
+        $this->cliente->codgrupo = NULL;
         if ($_POST['codgrupo'] != '') {
             $this->cliente->codgrupo = $_POST['codgrupo'];
         }
+        
+        $this->cliente->codtarifa = NULL;
+        if ($_POST['codtarifa'] != '') {
+            $this->cliente->codtarifa = $_POST['codtarifa'];
+        }        
 
         if (isset($_POST['tipo_comprobante'])) {
             $continue = true;
@@ -160,9 +168,8 @@ class ventas_cliente extends fbase_controller
         if ($this->cliente->save()) {
             $this->new_message("Datos del cliente modificados correctamente.");
             $this->propagar_cifnif();
-        } else {
+        } else
             $this->new_error_msg("¡Imposible modificar los datos del cliente!");
-        }
     }
 
     private function edit_cuenta_banco()
@@ -178,7 +185,7 @@ class ventas_cliente extends fbase_controller
         $cuentab->iban = $_POST['iban'];
         $cuentab->swift = $_POST['swift'];
         $cuentab->principal = isset($_POST['principal']);
-        $cuentab->fmandato = null;
+        $cuentab->fmandato = NULL;
 
         if (isset($_POST['fmandato'])) {
             if ($_POST['fmandato'] != '') {
@@ -265,12 +272,11 @@ class ventas_cliente extends fbase_controller
         $proveedor->codserie = $this->cliente->codserie;
         $proveedor->codcliente = $this->cliente->codcliente;
 
-        $proveedor_ok = true;
         if ($proveedor->save()) {
             $this->cliente->codproveedor = $proveedor->codproveedor;
             $proveedor_ok = $this->cliente->save();
         } else {
-            $proveedor_ok = false;
+            $proveedor_ok = FALSE;
         }
 
         if ($proveedor_ok) {
@@ -306,23 +312,23 @@ class ventas_cliente extends fbase_controller
 
     public function tiene_facturas()
     {
-        $tiene = false;
+        $tiene = FALSE;
 
         if ($this->db->table_exists('facturascli')) {
             $sql = "SELECT * FROM facturascli WHERE codcliente = " . $this->cliente->var2str($this->cliente->codcliente);
 
             $data = $this->db->select_limit($sql, 5, 0);
             if ($data) {
-                $tiene = true;
+                $tiene = TRUE;
             }
         }
 
-        if (!$tiene and $this->db->table_exists('albaranescli')) {
+        if (!$tiene && $this->db->table_exists('albaranescli')) {
             $sql = "SELECT * FROM albaranescli WHERE codcliente = " . $this->cliente->var2str($this->cliente->codcliente);
 
             $data = $this->db->select_limit($sql, 5, 0);
             if ($data) {
-                $tiene = true;
+                $tiene = TRUE;
             }
         }
 

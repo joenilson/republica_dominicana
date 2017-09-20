@@ -21,6 +21,7 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 class tpv_caja extends rd_controller
 {
+
     public $almacen;
     public $caja;
     public $offset;
@@ -46,13 +47,13 @@ class tpv_caja extends rd_controller
 
         if (isset($_POST['nuevot'])) { /// nuevo terminal
             $this->nuevo_terminal($terminal);
-        } elseif (isset($_POST['idt'])) { /// editar terminal
+        } else if (isset($_POST['idt'])) { /// editar terminal
             $this->editar_terminal($terminal);
-        } elseif (isset($_GET['deletet'])) { /// eliminar terminal
+        } else if (isset($_GET['deletet'])) { /// eliminar terminal
             $this->eliminar_terminal($terminal);
-        } elseif (isset($_GET['delete'])) { /// eliminar caja
+        } else if (isset($_GET['delete'])) { /// eliminar caja
             $this->eliminar_caja();
-        } elseif (isset($_GET['cerrar'])) {
+        } else if (isset($_GET['cerrar'])) {
             $this->cerrar_caja();
         }
 
@@ -70,7 +71,7 @@ class tpv_caja extends rd_controller
         $terminal->codalmacen = $_POST['codalmacen'];
         $terminal->codserie = $_POST['codserie'];
         $terminal->area_impresion = $_POST['area_impresion'];
-        $terminal->codcliente = null;
+        $terminal->codcliente = NULL;
         if ($_POST['codcliente'] != '') {
             $terminal->codcliente = $_POST['codcliente'];
         }
@@ -84,9 +85,8 @@ class tpv_caja extends rd_controller
         if ($terminal->save()) {
             $this->new_message('Terminal añadido correctamente.');
             header('Location: index.php?page=tpv_recambios');
-        } else {
+        } else
             $this->new_error_msg('Error al guardar los datos.');
-        }
     }
 
     private function editar_terminal(&$terminal)
@@ -96,7 +96,7 @@ class tpv_caja extends rd_controller
             $t2->codalmacen = $_POST['codalmacen'];
             $t2->codserie = $_POST['codserie'];
             $t2->area_impresion = $_POST['area_impresion'];
-            $t2->codcliente = null;
+            $t2->codcliente = NULL;
             if ($_POST['codcliente'] != '') {
                 $t2->codcliente = $_POST['codcliente'];
             }
@@ -109,12 +109,10 @@ class tpv_caja extends rd_controller
 
             if ($t2->save()) {
                 $this->new_message('Datos guardados correctamente.');
-            } else {
+            } else
                 $this->new_error_msg('Error al guardar los datos.');
-            }
-        } else {
+        } else
             $this->new_error_msg('Terminal no encontrado.');
-        }
     }
 
     private function eliminar_terminal(&$terminal)
@@ -124,15 +122,12 @@ class tpv_caja extends rd_controller
             if ($t2) {
                 if ($t2->delete()) {
                     $this->new_message('Terminal eliminado correctamente.');
-                } else {
+                } else
                     $this->new_error_msg('Error al eliminar el terminal.');
-                }
-            } else {
+            } else
                 $this->new_error_msg('Terminal no encontrado.');
-            }
-        } else {
+        } else
             $this->new_error_msg("Solamente un administrador puede eliminar terminales.");
-        }
     }
 
     private function eliminar_caja()
@@ -142,15 +137,12 @@ class tpv_caja extends rd_controller
             if ($caja2) {
                 if ($caja2->delete()) {
                     $this->new_message("Arqueo eliminado correctamente.");
-                } else {
+                } else
                     $this->new_error_msg("¡Imposible eliminar el arqueo!");
-                }
-            } else {
+            } else
                 $this->new_error_msg("Arqueo no encontrado.");
-            }
-        } else {
+        } else
             $this->new_error_msg("Solamente un administrador puede eliminar arqueos.");
-        }
     }
 
     private function cerrar_caja()
@@ -161,13 +153,12 @@ class tpv_caja extends rd_controller
                 $caja2->fecha_fin = Date('d-m-Y H:i:s');
                 if ($caja2->save()) {
                     $this->new_message("Arqueo cerrado correctamente.");
-                } else {
+                } else
                     $this->new_error_msg("¡Imposible cerrar el arqueo!");
-                }
-            } else {
+            } else
                 $this->new_error_msg("Arqueo no encontrado.");
-            }
-        } else {
+        }
+        else {
             $this->new_error_msg("El procedimiento normal es cerrar el arqueo desde el propio TPV, pulsando el botón"
                     . " <b>cerrar caja</b>. Para forzar el cierre desde esta pantalla debes ser administrador.");
         }

@@ -395,12 +395,12 @@ class ventas_factura extends rd_controller
 
         if ($factura->save()) {
             $articulo = new articulo();
-            $error = false;
+                $error = FALSE;
 
             /// copiamos las líneas en negativo
             foreach ($this->factura->get_lineas() as $lin) {
-                $lin->idlinea = null;
-                $lin->idalbaran = null;
+                $lin->idlinea = NULL;
+                $lin->idalbaran = NULL;
                 $lin->idfactura = $factura->idfactura;
                 $lin->cantidad = 0 - $lin->cantidad;
                 $lin->pvpsindto = $lin->pvpunitario * $lin->cantidad;
@@ -411,11 +411,11 @@ class ventas_factura extends rd_controller
                         /// actualizamos el stock
                         $art = $articulo->get($lin->referencia);
                         if ($art) {
-                            $art->sum_stock($factura->codalmacen, 0 - $lin->cantidad, false, $lin->codcombinacion);
+                            $art->sum_stock($factura->codalmacen, 0 - $lin->cantidad, FALSE, $lin->codcombinacion);
                         }
                     }
                 } else {
-                    $error = true;
+                    $error = TRUE;
                 }
             }
 

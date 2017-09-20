@@ -21,6 +21,7 @@ require_once 'plugins/facturacion_base/extras/fbase_controller.php';
 
 class ventas_clientes extends fbase_controller
 {
+
     public $ciudad;
     public $cliente;
     public $codgrupo;
@@ -65,11 +66,11 @@ class ventas_clientes extends fbase_controller
 
         if (isset($_GET['delete_grupo'])) { /// eliminar un grupo
             $this->eliminar_grupo();
-        } elseif (isset($_POST['codgrupo'])) { /// añadir/modificar un grupo
+        } else if (isset($_POST['codgrupo'])) { /// añadir/modificar un grupo
             $this->nuevo_grupo();
-        } elseif (isset($_GET['delete'])) { /// eliminar un cliente
+        } else if (isset($_GET['delete'])) { /// eliminar un cliente
             $this->eliminar_cliente();
-        } elseif (isset($_POST['cifnif'])) { /// añadir un nuevo cliente
+        } else if (isset($_POST['cifnif'])) { /// añadir un nuevo cliente
             $this->nuevo_cliente();
         }
 
@@ -101,7 +102,7 @@ class ventas_clientes extends fbase_controller
             'nuevocli_email' => 0,
             'nuevocli_email_req' => 0,
             'nuevocli_codgrupo' => '',
-                ), false
+            ), FALSE
         );
     }
 
@@ -215,7 +216,7 @@ class ventas_clientes extends fbase_controller
                     . " OR telefono2 LIKE '" . $query . "%'"
                     . " OR observaciones LIKE '%" . $query . "%')";
             $and = ' AND ';
-        } elseif ($query != '') {
+        } else if ($query != '') {
             $buscar = str_replace(' ', '%', $query);
             $sql .= $and . "(lower(nombre) LIKE '%" . $buscar . "%'"
                     . " OR lower(razonsocial) LIKE '%" . $buscar . "%'"
@@ -225,7 +226,7 @@ class ventas_clientes extends fbase_controller
             $and = ' AND ';
         }
 
-        if ($this->ciudad != '' or $this->provincia != '' or $this->codpais != '') {
+        if ($this->ciudad != '' || $this->provincia != '' || $this->codpais != '') {
             $sql .= $and . " codcliente IN (SELECT codcliente FROM dirclientes WHERE ";
             $and2 = '';
 
@@ -368,9 +369,9 @@ class ventas_clientes extends fbase_controller
         if ($cliente) {
             if (FS_DEMO) {
                 $this->new_error_msg('En el modo demo no se pueden eliminar clientes. Otros usuarios podrían necesitarlos.');
-            } elseif (!$this->allow_delete) {
+            } else if (!$this->allow_delete) {
                 $this->new_error_msg('No tienes permiso para eliminar en esta página.');
-            } elseif ($cliente->delete()) {
+            } else if ($cliente->delete()) {
                 $this->new_message('Cliente eliminado correctamente.');
             } else {
                 $this->new_error_msg('Ha sido imposible eliminar el cliente.');
@@ -390,7 +391,7 @@ class ventas_clientes extends fbase_controller
             $grupo->codgrupo = $_POST['codgrupo'];
             $grupo->nombre = $_POST['nombre'];
 
-            $grupo->codtarifa = null;
+            $grupo->codtarifa = NULL;
             if ($_POST['codtarifa'] != '---') {
                 $grupo->codtarifa = $_POST['codtarifa'];
             }
@@ -410,7 +411,7 @@ class ventas_clientes extends fbase_controller
         if ($grupo) {
             if (!$this->allow_delete) {
                 $this->new_error_msg('No tienes permiso para eliminar en esta página.');
-            } elseif ($grupo->delete()) {
+            } else if ($grupo->delete()) {
                 $this->new_message('Grupo ' . $grupo->codgrupo . ' eliminado correctamente.');
             } else {
                 $this->new_error_msg('Imposible eliminar el grupo.');

@@ -50,7 +50,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $terminal=false, $json
     * Verificación de disponibilidad del Número de NCF para República Dominicana
     */
     //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-    $tipo_comprobante = ncf_tipo_comprobante($empresa->id, $cliente->codcliente);
+    $tipo_comprobante = ncf_tipo_comprobante($empresa->id, $cliente);
     //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
     if ($terminal) {
         $numero_ncf = $ncf_rango->generate_terminal($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $terminal->area_impresion);
@@ -129,13 +129,17 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
             $ncf_factura->ncf_modifica = $val_ncf->ncf;
             $ncf_factura->motivo = $motivo;
         }
-        $factura->numero2 = $numero_ncf;
-        if (!$ncf_factura->save()) {
-            $factura->numero2 = '';
-        } else {
+        
+        if ($ncf_factura->save()) {
+            //echo "<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"." ---------------------- Entro ----------------------";
             $solicitud = $ncf_rango->get_solicitud($idempresa, $factura->codalmacen, $numero_ncf);
             $ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $solicitud, $numero_ncf, $usuario);
+        } else {
+            //echo "<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"."<br>"." ---------------------- No Ingreso ----------------------";
+           $numero_ncf = '';
         }
+        
+        $factura->numero2 = $numero_ncf;
         $factura->save();
     }
 }
@@ -228,9 +232,10 @@ if (!function_exists('fs_generar_numero2')) {
             $numero2 = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago);
         }
 
-        if(empty($documento->$campo) && !empty($numero2)){
-            $documento->$campo = $numero2;
-        }
+        //if(empty($documento->$campo) && !empty($numero2)){
+        //    $documento->$campo = $numero2;
+        //}
+        $documento->$campo = $numero2;
     }
 }
 
@@ -250,6 +255,7 @@ if (!function_exists('fs_documento_post_save')) {
         $empresa = new empresa();
         $tipo_documento = \get_class($documento);
         if($tipo_documento == 'factura_cliente'){
+            
             $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago);
             $tipo_comprobante = get_tipo_comprobante($numero_ncf);
             guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf);
