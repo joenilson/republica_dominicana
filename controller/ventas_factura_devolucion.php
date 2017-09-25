@@ -97,6 +97,7 @@ class ventas_factura_devolucion extends rd_controller
 
             $frec->irpf = 0;
             $frec->neto = 0;
+            $frec->netosindto = 0;
             $frec->total = 0;
             $frec->totalirpf = 0;
             $frec->totaliva = 0;
@@ -164,6 +165,10 @@ class ventas_factura_devolucion extends rd_controller
         return $total_devolucion;
     }
 
+    /**
+     * 
+     * @param factura_cliente $factura
+     */
     private function generar_asiento(&$factura)
     {
         if ($this->empresa->contintegrada) {
@@ -177,6 +182,9 @@ class ventas_factura_devolucion extends rd_controller
             foreach ($asiento_factura->messages as $msg) {
                 $this->new_message($msg);
             }
+        } else {
+            /// generamos las líneas de IVA de todas formas
+            $factura->get_lineas_iva();
         }
     }
 

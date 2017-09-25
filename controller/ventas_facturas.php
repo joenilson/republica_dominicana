@@ -49,9 +49,6 @@ class ventas_facturas extends rd_controller
     public $total_resultados;
     public $total_resultados_comision;
     public $total_resultados_txt;
-    public $ncf_ventas;
-    public $ncf_tipo_anulacion;
-    public $albaran;
 
     public function __construct()
     {

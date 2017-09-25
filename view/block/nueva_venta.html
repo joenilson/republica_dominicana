@@ -45,6 +45,9 @@
                   {if="$value->codtarifa"}
                   <span class="glyphicon glyphicon-usd" aria-hidden="true"></span>
                   tarifa {$value->codtarifa}
+                  {elseif="$fsc->cliente_s->codtarifa"}
+                  <span class="glyphicon glyphicon-usd" aria-hidden="true"></span>
+                  tarifa {$fsc->cliente_s->codtarifa}
                   {else}
                   <span class="glyphicon glyphicon-usd" aria-hidden="true"></span>
                   ninguna tarifa asignada.
@@ -158,7 +161,7 @@
       </ul>
       <div class="tab-content">
          <div role="tabpanel" class="tab-pane active" id="lineas">
-             {include="block/table_lineas_nuevodoc"}
+            {include="block/nueva_venta_lineas"}
          </div>
          <div role="tabpanel" class="tab-pane" id="detalles">
             <div class="container-fluid" style="margin-top: 10px;">

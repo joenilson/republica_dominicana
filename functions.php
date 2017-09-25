@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) 2017 Joe Nilson <joenilson at gmail.com>
  *
@@ -17,20 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Description of functions
- *
- * @author Joe Nilson <joenilson at gmail.com>
- */
 if (!function_exists('fs_tipos_id_fiscal')) {
+    
     /**
     * Devuelve la lista de identificadores fiscales.
-    * @return type
+    * @return string
     */
-   function fs_tipos_id_fiscal()
-   {
-       return array(FS_CIFNIF,'Pasaporte','Cédula','RNC');
-   }
+    function fs_tipos_id_fiscal()
+    {
+        return array(FS_CIFNIF,'Pasaporte','Cédula','RNC');
+    }
 }
 
 /**
@@ -78,6 +73,7 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $termin
     $ncf_rango = new ncf_rango();
     $empresa = new empresa();
     $prov = new proveedor();
+    $fs_log = new fs_core_log();
     $proveedor = $prov->get($codproveedor);
     $tipo_comprobante = 11;
     //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
@@ -85,6 +81,8 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $termin
         $ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
         if ($ncf['NCF'] != 'NO_DISPONIBLE') {
             $ncf_numero = $ncf['NCF'];
+        }else{
+            $fs_log->new_error('Es una Persona Física pero no hay un <a href="'.FS_PATH.'index.php?page=ncf'.'" target="_blank">Rango de NCF</a> para Proveedores Informales (Tipo NCF 11), debe corregir esta información.');
         }
     }else{
         $ncf_numero = \filter_input(INPUT_POST, 'numproveedor');
@@ -209,31 +207,51 @@ if (!function_exists('fs_generar_numero2')) {
     function fs_generar_numero2(&$documento)
     {
         $tipo_documento = \get_class($documento);
-        $campo = 'numero2';
-        if(substr($tipo_documento,-(strlen('proveedor'))) === 'proveedor'){
-            $campo = 'numproveedor';
-        }
-
-        $numero2 = \filter_input(INPUT_POST,$campo);
-        if(\filter_input(INPUT_GET,$campo)){
-            $numero2 = \filter_input(INPUT_GET,$campo);
+        
+        $numero2 = \filter_input(INPUT_POST,'numero2');
+        if(\filter_input(INPUT_GET,'numero2')){
+            $numero2 = \filter_input(INPUT_GET,'numero2');
         }
 
         if($tipo_documento == 'factura_cliente') {
             $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago);
-            if(strlen($documento->$campo) != 19){
-                $documento->$campo = '';
+            if(strlen($documento->numero2) != 19){
+                $documento->numero2 = '';
             }
         }
+        
+        $documento->numero2 = $numero2;
+        return true;
+    }
+}
 
-        if($tipo_documento == 'factura_proveedor') {
-            $numero2 = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago);
+if (!function_exists('fs_generar_numproveedor')) {
+
+    /**
+     * Genera y asigna el valor de numproveedor. Devuelve true si lo asgina.
+     * A completar en los plugins interesados.
+     * @param object $documento
+     * @return boolean
+     */
+    function fs_generar_numproveedor(&$documento)
+    {
+        $tipo_documento = \get_class($documento);
+        
+        $numproveedor = \filter_input(INPUT_POST,'numproveedor');
+        if(\filter_input(INPUT_GET,'numproveedor')){
+            $numproveedor = \filter_input(INPUT_GET,'numproveedor');
         }
-
-        //if(empty($documento->$campo) && !empty($numero2)){
-        //    $documento->$campo = $numero2;
-        //}
-        $documento->$campo = $numero2;
+        
+        if($tipo_documento == 'factura_proveedor') {
+            $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago);
+        }
+        
+        if(!empty($documento->numproveedor) && empty($numproveedor)){
+            $numproveedor = $documento->numproveedor;
+        }
+        
+        $documento->numproveedor = $numproveedor;
+        return true;
     }
 }
 

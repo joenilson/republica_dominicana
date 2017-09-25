@@ -211,7 +211,10 @@ class ventas_factura extends rd_controller
             $this->factura->vencimiento = $_POST['vencimiento'];
         }
 
-        fs_generar_numero2($this->factura);
+        /// función auxiliar para implementar en los plugins que lo necesiten
+        if (!fs_generar_numero2($this->factura)) {
+            $this->factura->numero2 = $_POST['numero2'];
+        }
 
         if ($this->factura->save()) {
             $asiento = $this->factura->get_asiento();
@@ -222,6 +225,7 @@ class ventas_factura extends rd_controller
                 }
             }
 
+            /// Función de ejecución de tareas post guardado correcto del albarán
             fs_documento_post_save($this->factura);
 
             $this->new_message("Factura modificada correctamente.");
@@ -369,14 +373,15 @@ class ventas_factura extends rd_controller
         $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
         /// generamos una factura rectificativa a partir de la actual
         $factura = clone $this->factura;
-        $factura->idfactura = null;
-        $factura->numero = null;
+        $factura->idfactura = NULL;
+        $factura->numero = NULL;
         $factura->numero2 = $numero_ncf['NCF'];
-        $factura->codigo = null;
-        $factura->idasiento = null;
-        $factura->idasientop = null;
-        $factura->femail = null;
+        $factura->codigo = NULL;
+        $factura->idasiento = NULL;
+        $factura->idasientop = NULL;
+        $factura->femail = NULL;
         $factura->numdocs = 0;
+        
         if (isset($this->factura->codruta)) {
             $factura->codruta = $this->factura->codruta;
             $factura->codvendedor = $this->factura->codvendedor;
@@ -387,11 +392,12 @@ class ventas_factura extends rd_controller
         $factura->codserie = $_POST['codserie'];
         $factura->set_fecha_hora($_POST['fecha'], $this->hour());
         $factura->observaciones = "Anulacion generada por: " . $motivo_anulacion->descripcion;
-        $factura->neto = 0 - $factura->neto;
-        $factura->totalirpf = 0 - $factura->totalirpf;
-        $factura->totaliva = 0 - $factura->totaliva;
-        $factura->totalrecargo = 0 - $factura->totalrecargo;
-        $factura->total = $factura->neto + $factura->totaliva + $factura->totalrecargo - $factura->totalirpf;
+        $factura->netosindto = 0;
+        $factura->neto = 0;
+        $factura->totalirpf = 0;
+        $factura->totaliva = 0;
+        $factura->totalrecargo = 0;
+        $factura->total = 0;
 
         if ($factura->save()) {
             $articulo = new articulo();
@@ -419,7 +425,19 @@ class ventas_factura extends rd_controller
                 }
             }
 
-            if ($error) {
+                /// obtenemos los subtotales por impuesto
+                $due_totales = $this->fbase_calc_due([$factura->dtopor1, $factura->dtopor2, $factura->dtopor3, $factura->dtopor4, $factura->dtopor5]);
+                foreach ($this->fbase_get_subtotales_documento($factura->get_lineas(), $due_totales) as $subt) {
+                    $factura->netosindto += $subt['netosindto'];
+                    $factura->neto += $subt['neto'];
+                    $factura->totaliva += $subt['iva'];
+                    $factura->totalirpf += $subt['irpf'];
+                    $factura->totalrecargo += $subt['recargo'];
+                }
+
+                $factura->total = round($factura->neto + $factura->totaliva - $factura->totalirpf + $factura->totalrecargo, FS_NF0);
+
+                if ($error || !$factura->save()) {
                 $factura->delete();
                 $this->new_error_msg('Se han producido errores al crear la ' . FS_FACTURA_RECTIFICATIVA);
             } else {
@@ -431,6 +449,9 @@ class ventas_factura extends rd_controller
                 $this->new_message('<a href="' . $factura->url() . '">' . ucfirst(FS_FACTURA_RECTIFICATIVA) . '</a> creada correctamente.');
                 if ($this->empresa->contintegrada) {
                     $this->generar_asiento($factura);
+                } else {
+                    /// generamos las líneas de IVA de todas formas
+                    $factura->get_lineas_iva();
                 }
 
                 $ncf_factura = $this->ncf_ventas->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente);
@@ -439,11 +460,11 @@ class ventas_factura extends rd_controller
                 $ncf_factura->usuario_modificacion = $this->user->nick;
                 $ncf_factura->anular();
                 $this->factura->observaciones = ucfirst(FS_FACTURA) . " anulada por: " . $motivo_anulacion->descripcion;
-                $this->factura->anulada = true;
+                $this->factura->anulada = TRUE;
                 $this->factura->save();
             }
         } else {
-            $this->new_error_msg('Error al anular la factura.');
+                $this->new_error_msg('Error al generar la ' . FS_FACTURA_RECTIFICATIVA . '.');       
         }
     }
 
