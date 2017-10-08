@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+
 /**
  * Description of ventas_factura_devolucion
  *
@@ -68,10 +70,7 @@ class ventas_factura_devolucion extends rd_controller
         }
 
         if ($continuar) {
-            $tipo_comprobante = '04';
-            $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
-            $motivo = \filter_input(INPUT_POST, 'motivo');
-            $motivo_anulacion = $this->ncf_tipo_anulacion->get($motivo);
+
             $frec = clone $this->factura;
             /**
              * Compatibilidad con plugin distribucion
@@ -82,7 +81,7 @@ class ventas_factura_devolucion extends rd_controller
             }
             $frec->idfactura = NULL;
             $frec->numero = NULL;
-            $frec->numero2 = $numero_ncf['NCF'];
+            $frec->numero2 = NULL;
             $frec->codigo = NULL;
             $frec->idasiento = NULL;
             $frec->idfacturarect = $this->factura->idfactura;
@@ -91,7 +90,7 @@ class ventas_factura_devolucion extends rd_controller
             $frec->codserie = $_POST['codserie'];
             $frec->fecha = \date('Y-m-d', strtotime($_POST['fecha']));
             $frec->hora = $this->hour();
-            $frec->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
+            $frec->observaciones = $_POST['motivo'];
             $frec->femail = NULL;
             $frec->numdocs = NULL;
 
@@ -113,9 +112,14 @@ class ventas_factura_devolucion extends rd_controller
                     $frec->totalrecargo = round($frec->totalrecargo, FS_NF0);
                     $frec->total = $frec->neto + $frec->totaliva - $frec->totalirpf + $frec->totalrecargo;
                     $frec->pagada = true;
+                    /// función auxiliar para implementar en los plugins que lo necesiten
+                    fs_generar_numero2($frec);
                     if ($frec->save()) {
-                        $this->guardar_ncf($this->empresa->id, $frec, $tipo_comprobante, $numero_ncf, $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion);
                         $this->generar_asiento($frec);
+
+                        /// Función de ejecución de tareas post guardado correcto de la factura
+                        fs_documento_post_save($frec);
+
                         $this->new_message(FS_FACTURA_RECTIFICATIVA . ' creada correctamente.');
                     }
                 } else {
@@ -138,9 +142,9 @@ class ventas_factura_devolucion extends rd_controller
             if (isset($_POST['devolver_' . $value->idlinea]) and (floatval($_POST['devolver_' . $value->idlinea]) > 0)) {
                 $devolucion = floatval($_POST['devolver_' . $value->idlinea]);
                 $linea = clone $value;
-                $linea->idlinea = null;
+                $linea->idlinea = NULL;
                 $linea->idfactura = $frec->idfactura;
-                $linea->idalbaran = null;
+                $linea->idalbaran = NULL;
                 $linea->cantidad = 0 - $devolucion;
                 $linea->pvpsindto = $linea->cantidad * $linea->pvpunitario;
                 $linea->pvptotal = $linea->cantidad * $linea->pvpunitario * (100 - $linea->dtopor) / 100;
@@ -166,7 +170,7 @@ class ventas_factura_devolucion extends rd_controller
     }
 
     /**
-     * 
+     *
      * @param factura_cliente $factura
      */
     private function generar_asiento(&$factura)

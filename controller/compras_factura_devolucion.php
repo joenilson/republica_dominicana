@@ -18,6 +18,7 @@
  */
 
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+
 /**
  * Description of compras_factura_devolucion
  *
@@ -28,7 +29,7 @@ class compras_factura_devolucion extends rd_controller
 
     public $factura;
     public $serie;
-    
+
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Devoluciones de factura de compra', 'compras', FALSE, FALSE);
@@ -161,7 +162,7 @@ class compras_factura_devolucion extends rd_controller
     }
 
     /**
-     * 
+     *
      * @param factura_proveedor $factura
      */
     private function generar_asiento(&$factura)

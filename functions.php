@@ -17,7 +17,7 @@
  */
 
 if (!function_exists('fs_tipos_id_fiscal')) {
-    
+
     /**
     * Devuelve la lista de identificadores fiscales.
     * @return string
@@ -34,7 +34,7 @@ if (!function_exists('fs_tipos_id_fiscal')) {
  * @return string
  */
 
-function generar_numero2($cliente, $codalmacen, $codpago, $terminal=false, $json = false)
+function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
 {
     require_model('empresa.php');
     require_model('ncf_rango.php');
@@ -45,7 +45,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $terminal=false, $json
     * Verificación de disponibilidad del Número de NCF para República Dominicana
     */
     //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-    $tipo_comprobante = ncf_tipo_comprobante($empresa->id, $cliente);
+    $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
     //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
     if ($terminal) {
         $numero_ncf = $ncf_rango->generate_terminal($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $terminal->area_impresion);
@@ -127,14 +127,14 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
             $ncf_factura->ncf_modifica = $val_ncf->ncf;
             $ncf_factura->motivo = $motivo;
         }
-        
+
         if ($ncf_factura->save()) {
             $solicitud = $ncf_rango->get_solicitud($idempresa, $factura->codalmacen, $numero_ncf);
             $ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $solicitud, $numero_ncf, $usuario);
         } else {
            $numero_ncf = '';
         }
-        
+
         $factura->numero2 = $numero_ncf;
         $factura->save();
     }
@@ -207,19 +207,20 @@ if (!function_exists('fs_generar_numero2')) {
     function fs_generar_numero2(&$documento)
     {
         $tipo_documento = \get_class($documento);
-        
+
         $numero2 = \filter_input(INPUT_POST,'numero2');
         if(\filter_input(INPUT_GET,'numero2')){
             $numero2 = \filter_input(INPUT_GET,'numero2');
         }
 
         if($tipo_documento == 'factura_cliente') {
-            $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago);
+            $rectificativa = ($documento->idfacturarect)?true:false;
+            $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
             if(strlen($documento->numero2) != 19){
                 $documento->numero2 = '';
             }
         }
-        
+
         $documento->numero2 = $numero2;
         return true;
     }
@@ -236,20 +237,20 @@ if (!function_exists('fs_generar_numproveedor')) {
     function fs_generar_numproveedor(&$documento)
     {
         $tipo_documento = \get_class($documento);
-        
+
         $numproveedor = \filter_input(INPUT_POST,'numproveedor');
         if(\filter_input(INPUT_GET,'numproveedor')){
             $numproveedor = \filter_input(INPUT_GET,'numproveedor');
         }
-        
+
         if($tipo_documento == 'factura_proveedor') {
             $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago);
         }
-        
+
         if(!empty($documento->numproveedor) && empty($numproveedor)){
             $numproveedor = $documento->numproveedor;
         }
-        
+
         $documento->numproveedor = $numproveedor;
         return true;
     }
@@ -268,13 +269,22 @@ if (!function_exists('fs_documento_post_save')) {
     function fs_documento_post_save(&$documento)
     {
         require_model('empresa.php');
+        require_model('ncf_tipo_anulacion.php');
         $empresa = new empresa();
+        $ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $tipo_documento = \get_class($documento);
         if($tipo_documento == 'factura_cliente'){
-            
-            $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago);
+            $rectificativa = ($documento->idfacturarect)?true:false;
+            $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
             $tipo_comprobante = get_tipo_comprobante($numero_ncf);
-            guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf);
+            $motivo = \filter_input(INPUT_POST, 'motivo');
+            $motivo_doc = '';
+            if($motivo){
+                $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
+                $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
+                $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
+            }
+            guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
         }
 
         if(substr($tipo_documento,-(strlen('cliente'))) === 'cliente'){

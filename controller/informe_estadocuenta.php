@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
+require_once 'plugins/republica_dominicana/vendor/rospdf/pdf-php/src/Cezpdf.php';
+require_once 'extras/xlsxwriter.class.php';
+
 /**
  * Description of informe_estadocuenta
  *
@@ -40,6 +43,9 @@ class informe_estadocuenta extends rd_controller
     public $limit;
     public $sort;
     public $order;
+    public $fileXLSX;
+    public $filePDF;
+    public $archivo = 'Estado_Cuenta';
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Estado de Cuenta Clientes', 'informes', false, true, false);
@@ -57,19 +63,23 @@ class informe_estadocuenta extends rd_controller
             $this->tabla_de_datos();
         } else {
             $this->vencimiento_facturas();
+            $this->sort = 'codalmacen, fecha, idfactura ';
+            $this->order = 'ASC';
+            $this->crearXLSX();
+            $this->crearPDF();
         }
     }
 
     protected function init_filters()
     {
         $cli0 = new cliente();
-        $this->hasta = (isset($_REQUEST['hasta']))?$_REQUEST['hasta']:Date('d-m-Y');
-        $this->codserie = (isset($_REQUEST['codserie']))?$_REQUEST['codserie']:false;
-        $this->codpago = (isset($_REQUEST['codpago']))?$_REQUEST['codpago']:false;
-        $this->codagente = (isset($_REQUEST['codagente']))?$_REQUEST['codagente']:false;
-        $this->codalmacen = (isset($_REQUEST['codalmacen']))?$_REQUEST['codalmacen']:false;
-        $this->coddivisa = (isset($_REQUEST['coddivisa']))?$_REQUEST['coddivisa']:$this->empresa->coddivisa;
-        $this->cliente = (isset($_REQUEST['codcliente']) && $_REQUEST['codcliente'] != '')?$cli0->get($_REQUEST['codcliente']):false;
+        $this->hasta = $this->confirmarValor($this->filter_request('hasta'),\date('d-m-Y'));
+        $this->codserie = $this->confirmarValor($this->filter_request('codserie'),false);
+        $this->codpago = $this->confirmarValor($this->filter_request('codpago'),false);
+        $this->codagente = $this->confirmarValor($this->filter_request('codagente'),false);
+        $this->codalmacen = $this->confirmarValor($this->filter_request('codalmacen'),false);
+        $this->coddivisa = $this->confirmarValor($this->filter_request('coddivisa'),$this->empresa->coddivisa);
+        $this->cliente = ($this->filter_request('codcliente') && $this->filter_request('codcliente') != '')?$cli0->get($this->filter_request('codcliente')):false;
         $this->current_date = $this->empresa->var2str(\date('Y-m-d', strtotime($this->hasta)));
     }
 
@@ -77,10 +87,10 @@ class informe_estadocuenta extends rd_controller
     {
         list($funcion, $separador) = $this->funcionIntervalo();
         $sql = "select codalmacen, ".
-        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) < 30 then total else 0 end) as d30, ".
-        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 30 and ".$funcion.$this->current_date.$separador."vencimiento) < 60 then total else 0 end) as d60, ".
-        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 60 and ".$funcion.$this->current_date.$separador."vencimiento) < 90 then total else 0 end) as d90, ".
-        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 90 and ".$funcion.$this->current_date.$separador."vencimiento) < 120 then total else 0 end) as d120, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) <= 30 then total else 0 end) as d30, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 30 and ".$funcion.$this->current_date.$separador."vencimiento) <= 60 then total else 0 end) as d60, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 60 and ".$funcion.$this->current_date.$separador."vencimiento) <= 90 then total else 0 end) as d90, ".
+        " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 90 and ".$funcion.$this->current_date.$separador."vencimiento) <= 120 then total else 0 end) as d120, ".
         " sum(case when ".$funcion.$this->current_date.$separador."vencimiento) > 120 then total else 0 end) as mas120 ".
         " from facturascli "." where anulada = false and pagada = false and idfacturarect IS NULL ".$this->sql_aux." group by codalmacen;";
         $data = $this->db->select($sql);
@@ -88,23 +98,30 @@ class informe_estadocuenta extends rd_controller
         if (!empty($data)) {
             $totalDeuda = 0;
             foreach ($data as $d) {
-                $totalDeuda = $d['d30']+$d['d60']+$d['d90']+$d['d120']+$d['mas120'];
-                $item = new stdClass();
-                $item->codalmacen = $d['codalmacen'];
-                $item->nombre_almacen = $this->almacen->get($d['codalmacen'])->nombre;
-                $item->d30 = $d['d30'];
-                $item->d30_pcj = round(($d['d30']/$totalDeuda)*100, 0);
-                $item->d60 = $d['d60'];
-                $item->d60_pcj = round(($d['d60']/$totalDeuda)*100, 0);
-                $item->d90 = $d['d90'];
-                $item->d90_pcj = round(($d['d90']/$totalDeuda)*100, 0);
-                $item->d120 = $d['d120'];
-                $item->d120_pcj = round(($d['d120']/$totalDeuda)*100, 0);
-                $item->mas120 = $d['mas120'];
-                $item->mas120_pcj = round(($d['mas120']/$totalDeuda)*100, 0);
-                $item->totaldeuda = $totalDeuda;
-                $this->resultados[] = $item;
+                $this->comprobar_deuda($d, $totalDeuda);
             }
+        }
+    }
+
+    public function comprobar_deuda($datos, &$totalDeuda)
+    {
+        $totalDeuda += $datos['d30']+$datos['d60']+$datos['d90']+$datos['d120']+$datos['mas120'];
+        if($totalDeuda){
+            $item = new stdClass();
+            $item->codalmacen = $datos['codalmacen'];
+            $item->nombre_almacen = $this->almacen->get($datos['codalmacen'])->nombre;
+            $item->d30 = $datos['d30'];
+            $item->d30_pcj = round(($datos['d30']/$totalDeuda)*100, 0);
+            $item->d60 = $datos['d60'];
+            $item->d60_pcj = round(($datos['d60']/$totalDeuda)*100, 0);
+            $item->d90 = $datos['d90'];
+            $item->d90_pcj = round(($datos['d90']/$totalDeuda)*100, 0);
+            $item->d120 = $datos['d120'];
+            $item->d120_pcj = round(($datos['d120']/$totalDeuda)*100, 0);
+            $item->mas120 = $datos['mas120'];
+            $item->mas120_pcj = round(($datos['mas120']/$totalDeuda)*100, 0);
+            $item->totaldeuda = $totalDeuda;
+            $this->resultados[] = $item;
         }
     }
 
@@ -129,7 +146,7 @@ class informe_estadocuenta extends rd_controller
         echo json_encode($data);
     }
 
-    public function listado_facturas($dias, $offset)
+    public function listado_facturas($dias, $offset = 0)
     {
         list($funcion, $separador) = $this->funcionIntervalo();
         $intervalo = $this->intervalo_tiempo($dias);
@@ -137,7 +154,11 @@ class informe_estadocuenta extends rd_controller
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.
             " ORDER BY ".$this->sort.' '.$this->order;
-        $data = $this->db->select_limit($sql, $this->limit, $offset);
+        if($offset){
+            $data = $this->db->select_limit($sql, $this->limit, $offset);
+        }else{
+            $data = $this->db->select($sql);
+        }
         $sql_total = "SELECT count(*) as total".
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.";";
@@ -254,5 +275,124 @@ class informe_estadocuenta extends rd_controller
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
             }
         }
+    }
+
+    public function crearPDF()
+    {
+        $this->carpetasPlugin();
+        $pdf_doc = new Cezpdf('letter', 'portrait');
+        $pdf_doc->ezStartPageNumbers(590,25,8,'right','{PAGENUM} de {TOTALPAGENUM}',1);
+        $this->archivoPDF = $this->exportDir . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";
+        $this->archivoPDFPath = $this->publicPath . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";
+        if (file_exists($this->archivoPDF)) {
+            unlink($this->archivoPDF);
+        }
+        $pdf_doc->selectFont(__DIR__ . "/ezpdf/fonts/Helvetica.afm");
+        $pdf_doc->selectFont('Helvetica');
+        $pdf_doc->ezSetMargins (25,25,25,25);
+        $logo = '';
+        if(file_exists(FS_PATH.FS_MYDOCS.'images/logo.png')){
+            $logo = FS_PATH.FS_MYDOCS.'images/logo.png';
+        }elseif(file_exits(FS_PATH.FS_MYDOCS.'images/logo.jpg')){
+            $logo = FS_PATH.FS_MYDOCS.'images/logo.jpg';
+        }
+        if($logo){
+            $pdf_doc->ezImage($logo, 0, 80, 'none', 'left');
+        }
+        $pdf_doc->addText(110,745,9,'<b>'.$this->empresa->nombre.'</b>',0, 'left');
+        $pdf_doc->addText(110,730,9,'<b>'.$this->empresa->direccion.'</b>',0, 'left');
+        $pdf_doc->addText(580,745,9,'<b>'.'Estado de Cuenta'.'</b>',0, 'right');
+        $pdf_doc->addText(580,730,9,'<b>'.'Al: '.'</b>'.\date('d-m-Y'),0, 'right');
+
+        //$pdf_doc->ezStream();
+        $this->guardarPDF($this->archivoPDF, $pdf_doc);
+        $this->filePDF = $this->archivoPDFPath;
+    }
+
+    /**
+     * Vuelca el documento PDF en la salida estándar.
+     * @param string $filename
+     */
+    public function mostrarPDF($filename = 'doc.pdf')
+    {
+        $this->pdf->ezStream(array('Content-Disposition' => $filename));
+    }
+
+    /**
+     * Guarda el documento PDF en el archivo $filename
+     * @param string $filename
+     * @return boolean
+     */
+    public function guardarPDF($filename, $pdf_doc)
+    {
+        if ($filename) {
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
+
+            $file = fopen($filename, 'a');
+            if ($file) {
+                fwrite($file, $pdf_doc->ezOutput());
+                fclose($file);
+                return TRUE;
+            }
+
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
+
+    public function crearXLSX()
+    {
+        $this->carpetasPlugin();
+        $this->archivoXLSX = $this->exportDir . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".xlsx";
+        $this->archivoXLSXPath = $this->publicPath . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".xlsx";
+        if (file_exists($this->archivoXLSX)) {
+            unlink($this->archivoXLSX);
+        }
+        $style_header = array('border'=>'left,right,top,bottom','font'=>'Arial','font-size'=>10,'font-style'=>'bold');
+        $header = array('Almacén'=>'string','Cliente'=>'string','Factura'=>'string', ucfirst(FS_NUMERO2)=>'string',
+            'Importe'=>'price','Fecha de Emisión'=>'date','Fecha de Vencimiento'=>'date','Días Atraso'=>'integer');
+        $headerText = array('codalmacen'=>'Almacén','nombrecliente'=>'Cliente','codigo'=>'Factura','numero2'=>ucfirst(FS_NUMERO2),'total'=>'Importe','fecha'=>'Fecha de Emisión','vencimiento'=>'Fecha de Vencimiento','atraso'=>'Días Atraso');
+        $writer = new XLSXWriter();
+        foreach($this->vencimientos as $dias){
+            $hoja_nombre = ($dias!==121)?'Facturas a '.$dias.' dias':'Facturas a mas de 120 dias';
+            $writer->writeSheetRow($hoja_nombre, $headerText, $style_header);
+            $writer->writeSheetHeader($hoja_nombre, $header, true);
+            //$writer->writeSheetRow($hoja_nombre, $headerText, $style_header);
+            $datos = $this->listado_facturas($dias);
+            $this->agregarDatosXLSX($writer, $hoja_nombre, $datos['resultados'], $headerText);
+        }
+        $writer->writeToFile($this->archivoXLSXPath);
+        $this->fileXLSX = $this->archivoXLSXPath;
+    }
+
+    public function agregarDatosXLSX(&$writer, $hoja_nombre, $datos, $indice)
+    {
+        $style_footer = array('border'=>'left,right,top,bottom','font'=>'Arial','font-size'=>10,'font-style'=>'bold','color'=>'#fff','fill'=>'#000');
+        $total_importe = 0;
+        if($datos){
+            $total_documentos = count($datos);
+            foreach($datos as $linea){
+                $data = $this->prepararDatosXLSX($linea, $indice, $total_importe);
+                $writer->writeSheetRow($hoja_nombre, $data);
+            }
+            $writer->writeSheetRow($hoja_nombre, array('','','',$total_documentos.' Documentos',$total_importe,'','',''), $style_footer);
+        }
+    }
+
+    public function prepararDatosXLSX($linea, $indice, &$total_importe)
+    {
+        //var_dump($linea);
+        $item = array();
+        foreach($indice as $idx=>$desc){
+            $item[] = $linea[$idx];
+            if($idx == 'total'){
+                $total_importe += $linea['total'];
+            }
+        }
+        return $item;
     }
 }

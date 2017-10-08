@@ -47,12 +47,16 @@ class rd_controller extends fbase_controller
     public $agente;
     public $almacen;
     public $almacenes;
+    public $impuesto;
     public $pais;
     public $serie;
     public $array_series;
     public $tesoreria;
     public $rd_setup;
     public $distribucion_clientes;
+    public $documentosDir;
+    public $exportDir;
+    public $publicPath;
     protected function private_core()
     {
         $this->agente = new agente();
@@ -60,6 +64,7 @@ class rd_controller extends fbase_controller
         $this->almacenes = new almacen();
         $this->divisa = new divisa();
         $this->forma_pago = new forma_pago();
+        $this->impuesto = new impuesto();
         $this->pais = new pais();
         $this->serie = new serie();
         $this->ncf_rango = new ncf_rango();
@@ -104,6 +109,14 @@ class rd_controller extends fbase_controller
         );
     }
 
+    /**
+     * Función para devolver un valor u otro dependiendo si está presente
+     * el primer valor y si la variable existe
+     * @param string $variable
+     * @param string $valor_si
+     * @param string $valor_no
+     * @return string
+     */
     public function setValor($variable, $valor_si, $valor_no)
     {
         $valor = $valor_no;
@@ -113,6 +126,12 @@ class rd_controller extends fbase_controller
         return $valor;
     }
 
+    /**
+     * Función para devolver el valor que no esté vacio
+     * @param string $valor1
+     * @param string $valor2
+     * @return string
+     */
     public function confirmarValor($valor1, $valor2)
     {
         $valor = $valor2;
@@ -233,6 +252,21 @@ class rd_controller extends fbase_controller
         }
         if (in_array('tesoreria', $GLOBALS['plugins']) and ! in_array('tesoreria', $disabled)) {
             $this->tesoreria = true;
+        }
+    }
+
+    public function carpetasPlugin()
+    {
+        $basepath = dirname(dirname(dirname(__DIR__)));
+        $this->documentosDir = $basepath . DIRECTORY_SEPARATOR . FS_MYDOCS . 'documentos';
+        $this->exportDir = $this->documentosDir . DIRECTORY_SEPARATOR . "informes_rd";
+        $this->publicPath = FS_PATH . FS_MYDOCS . 'documentos' . DIRECTORY_SEPARATOR . 'informes_rd';
+        if (!is_dir($this->documentosDir)) {
+            mkdir($this->documentosDir);
+        }
+
+        if (!is_dir($this->exportDir)) {
+            mkdir($this->exportDir);
         }
     }
 }

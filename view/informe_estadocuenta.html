@@ -154,16 +154,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             {if="!$fsc->multi_almacen"}
             <div class="col-sm-2"></div>
             {/if}
-            <div class="col-sm-2 col-sm-offset-7">
+            <div class="col-sm-4 col-sm-offset-5">
                 &nbsp;<br/>
                 <button name="generar" value="TRUE" class="btn btn-sm btn-primary">
                     <span class="fa fa-play"></span>&nbsp;Generar
                 </button>
-                <button class="btn btn-sm btn-success">
-                    <span class="fa fa-file-pdf-o"></span>&nbsp;Descargar
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
+                        <i class="fa fa-download" aria-hidden="true"></i>
+                        <span class="hidden-xs">&nbsp;Descargar</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="caret"></span>
+                        <span class="sr-only">Elegir</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="{if="$fsc->fileXLSX"}{$fsc->fileXLSX}{else}#{/if}">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp; Descargar en Excel
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{if="$fsc->filePDF"}{$fsc->filePDF}{else}#{/if}" download>
+                                <i class="fa fa-file-pdf-o" aria-hidden="true"></i>&nbsp; Descargar en PDF
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {if="$fsc->cliente"}
+                <button class="btn btn-sm btn-info">
+                    <span class="fa fa-send"></span>&nbsp;Enviar PDF
                 </button>
+                {/if}
             </div>
-        </div>        
+        </div>
     </form>
     <br/>
     <div class="row">
@@ -206,9 +230,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </table>
                     </div>
                 </div>
-            </div>               
+            </div>
         </div>
-    </div>   
+    </div>
     <div class="row">
         <div class="col-sm-12">
             <ul class="nav nav-tabs" role="tablist">
@@ -418,20 +442,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             return sum + (+row[field]);
         }, 0)).toFixed(2);
     }
-    
+
     function clean_cliente()
     {
         document.listado_general.codcliente.value = '';
         document.listado_general.submit();
     }
-    
+
     /**
      * Redimensiona un iframe
      */
     function resizeIframe(obj) {
         obj.style.height = (obj.contentWindow.document.body.scrollHeight + 100) + 'px';
     }
-    
+
     /**
      *  Workarround para Firefox (siempre dice que el height es 0)
      */
@@ -454,7 +478,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             resize(frame);
         }, 250);
     }
-    
+
     function regresar_informacion(search,sort,order,dias,params)
     {
         $.ajax({
@@ -476,7 +500,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
         });
     }
-    
+
     function buscarInformacion30(params){
         var search = (params.data.search!=='undefined')?params.data.search:'';
         var sort = (params.data.sort!=='undefined')?params.data.sort:'';
@@ -484,7 +508,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var dias = 30;
         regresar_informacion(search,sort,order,dias,params);
     }
-    
+
     function buscarInformacion60(params){
         var search = (params.data.search!=='undefined')?params.data.search:'';
         var sort = (params.data.sort!=='undefined')?params.data.sort:'';
@@ -492,7 +516,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var dias = 60;
         regresar_informacion(search,sort,order,dias,params);
     }
-    
+
     function buscarInformacion90(params){
         var search = (params.data.search!=='undefined')?params.data.search:'';
         var sort = (params.data.sort!=='undefined')?params.data.sort:'';
@@ -500,7 +524,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var dias = 90;
         regresar_informacion(search,sort,order,dias,params);
     }
-    
+
     function buscarInformacion120(params){
         var search = (params.data.search!=='undefined')?params.data.search:'';
         var sort = (params.data.sort!=='undefined')?params.data.sort:'';
@@ -508,7 +532,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var dias = 120;
         regresar_informacion(search,sort,order,dias,params);
     }
-    
+
     function buscarInformacion121(params){
         var search = (params.data.search!=='undefined')?params.data.search:'';
         var sort = (params.data.sort!=='undefined')?params.data.sort:'';
@@ -516,8 +540,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var dias = 121;
         regresar_informacion(search,sort,order,dias,params);
     }
-    
-    
+
+
     $(document).ready(function () {
         /**
          * El resize para Firefox lo llamamos cuando se ha cargado la página completamente

@@ -49,9 +49,7 @@ class ventas_factura extends rd_controller
         parent::private_core();
 
         $this->ppage = $this->page->get('ventas_facturas');
-
         $this->shared_extensions();
-
         $this->agencia = new agencia_transporte();
         $this->agente = FALSE;
         $this->agentes = array();
@@ -150,12 +148,14 @@ class ventas_factura extends rd_controller
         if ($this->factura->numero2 != '' and strlen($this->factura->numero2) == 19) {
             $this->new_error_msg('¡La Factura ya posee un NCF valido, no se hace ninguna modificación!');
         } else {
-
             /*
              * Verificación de disponibilidad del Número de NCF para República Dominicana
              */
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $this->cliente->codcliente);
+            if($this->factura->idfacturarect){
+                $tipo_comprobante = '04';
+            }
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
             $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
             $this->factura->numero2 = $numero_ncf['NCF'];
@@ -381,7 +381,7 @@ class ventas_factura extends rd_controller
         $factura->idasientop = NULL;
         $factura->femail = NULL;
         $factura->numdocs = 0;
-        
+
         if (isset($this->factura->codruta)) {
             $factura->codruta = $this->factura->codruta;
             $factura->codvendedor = $this->factura->codvendedor;
@@ -464,7 +464,7 @@ class ventas_factura extends rd_controller
                 $this->factura->save();
             }
         } else {
-                $this->new_error_msg('Error al generar la ' . FS_FACTURA_RECTIFICATIVA . '.');       
+                $this->new_error_msg('Error al generar la ' . FS_FACTURA_RECTIFICATIVA . '.');
         }
     }
 
