@@ -268,29 +268,49 @@ if (!function_exists('fs_documento_post_save')) {
      */
     function fs_documento_post_save(&$documento)
     {
-        require_model('empresa.php');
-        require_model('ncf_tipo_anulacion.php');
-        $empresa = new empresa();
-        $ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $tipo_documento = \get_class($documento);
         if($tipo_documento == 'factura_cliente'){
-            $rectificativa = ($documento->idfacturarect)?true:false;
-            $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
-            $tipo_comprobante = get_tipo_comprobante($numero_ncf);
-            $motivo = \filter_input(INPUT_POST, 'motivo');
-            $motivo_doc = '';
-            if($motivo){
-                $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
-                $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
-                $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
-            }
-            guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
+            fs_documento_venta_post_save($documento);
+        }elseif($tipo_documento == 'factura_proveedor'){
+            fs_documento_compra_post_save($documento);
         }
-
         if(substr($tipo_documento,-(strlen('cliente'))) === 'cliente'){
-            compatibilidad_distribucion($documento, $empresa->id);
+            compatibilidad_distribucion($documento);
         }
+    }
+}
 
+function fs_documento_venta_post_save(&$documento)
+{
+    require_model('empresa.php');
+    require_model('ncf_tipo_anulacion.php');
+    $empresa = new empresa();
+    $ncf_tipo_anulacion = new ncf_tipo_anulacion();
+    $rectificativa = ($documento->idfacturarect)?true:false;
+    $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
+    $tipo_comprobante = get_tipo_comprobante($numero_ncf);
+    $motivo = \filter_input(INPUT_POST, 'motivo');
+    $motivo_doc = '';
+    if($motivo){
+        $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
+        $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
+        $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
+    }
+    guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
+}
+
+function fs_documento_compra_post_save(&$documento)
+{
+    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    require_model('ncf_rango.php');
+    require_model('empresa.php');
+    $empresa = new empresa();
+    $ncf_rango = new ncf_rango();
+    $prov = new proveedor();
+    $proveedor = $prov->get($documento->codproveedor);
+    if($proveedor->personafisica){
+        $solicitud = $ncf_rango->get_solicitud($empresa->id, $documento->codalmacen, $documento->numproveedor);
+        $ncf_rango->update($empresa->id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
     }
 }
 
@@ -299,8 +319,9 @@ if (!function_exists('fs_documento_post_save')) {
 * El campo codvendedor se agrega porque el que ingresa el pedido no necesariamente
 * puede ser el que atiende la ruta, esto cuando se atienden pedidos via telefónica u otro
 */
-function compatibilidad_distribucion(&$documento, $idempresa)
+function compatibilidad_distribucion(&$documento)
 {
+    $empresa = new empresa();
     if (\class_exists('distribucion_clientes')) {
         require_model('distribucion_clientes.php');
         $distribucion_clientes = new distribucion_clientes();
@@ -308,7 +329,7 @@ function compatibilidad_distribucion(&$documento, $idempresa)
         $ruta = '';
         if (\filter_input(INPUT_POST, 'codruta')) {
             $ruta = \filter_input(INPUT_POST, 'codruta');
-            $ruta_data = $distribucion_clientes->getOne($idempresa, $documento->codcliente, $ruta);
+            $ruta_data = $distribucion_clientes->getOne($empresa->id, $documento->codcliente, $ruta);
             $codvendedor = ($ruta_data) ? $ruta_data->codagente : '';
         }
         if(empty($documento->codruta)) {
