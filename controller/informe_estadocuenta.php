@@ -293,7 +293,7 @@ class informe_estadocuenta extends rd_controller
         $logo = '';
         if(file_exists(FS_PATH.FS_MYDOCS.'images/logo.png')){
             $logo = FS_PATH.FS_MYDOCS.'images/logo.png';
-        }elseif(file_exits(FS_PATH.FS_MYDOCS.'images/logo.jpg')){
+        }elseif(file_exists(FS_PATH.FS_MYDOCS.'images/logo.jpg')){
             $logo = FS_PATH.FS_MYDOCS.'images/logo.jpg';
         }
         if($logo){
