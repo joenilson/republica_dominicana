@@ -157,6 +157,15 @@ class PDF_MC_Table extends FPDF
             $this->Ln(0);
         }
 
+        if ($this->fdf_verSelloPagado == '1') {
+            $this->sello_pagado = false;
+            if (file_exists(FS_PATH.'plugins/republica_dominicana/extras/images/sello_pagado.png')) {
+                $this->sello_pagado = FS_PATH.'plugins/republica_dominicana/extras/images/sello_pagado.png';
+                $this->Image($this->sello_pagado, $this->fdf_Xsellopagado, $this->fdf_Ysellopagado, 80);
+                $this->Ln(0);
+            }
+        }
+
         // Tipo de Documento y Numero
         $this->datos_documento($this->fdf_documento, $this->fdf_tipodocumento, $this->fdf_estado);
 

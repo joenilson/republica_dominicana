@@ -97,6 +97,7 @@ class rd_controller extends fbase_controller
             array(
             'rd_imprimir_logo' => 'TRUE',
             'rd_imprimir_marca_agua' => 'TRUE',
+            'rd_imprimir_sello_pagado' => 'FALSE',
             'rd_imprimir_bn' => 'FALSE',
             'rd_imprimir_cliente_box' => 'TRUE',
             'rd_imprimir_detalle_box' => 'TRUE',

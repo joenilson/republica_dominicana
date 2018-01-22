@@ -86,7 +86,7 @@ class admin_rd extends rd_controller
         //Cargamos el menu
         $this->check_menu();
     }
-    
+
     public function init_variables()
     {
         $this->variables = array();
@@ -171,10 +171,11 @@ class admin_rd extends rd_controller
         $op_imprimir_cabecera_fcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_fcolor');
         $op_imprimir_cabecera_tcolor = \filter_input(INPUT_POST, 'rd_imprimir_cabecera_tcolor');
         $op_imprimir_detalle_color = \filter_input(INPUT_POST, 'rd_imprimir_detalle_color');
-        
+
         $rd_config = array(
             'rd_imprimir_logo' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_logo'), 'TRUE', 'FALSE'),
             'rd_imprimir_marca_agua' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_marca_agua'), 'TRUE', 'FALSE'),
+            'rd_imprimir_sello_pagado' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_sello_pagado'), 'TRUE', 'FALSE'),
             'rd_imprimir_bn' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_bn'), 'TRUE', 'FALSE'),
             'rd_imprimir_cliente_box' => $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_cliente_box'), 'TRUE', 'FALSE'),
             'rd_imprimir_detalle_box' =>  $this->setValor(\filter_input(INPUT_POST, 'rd_imprimir_detalle_box'), 'TRUE', 'FALSE'),

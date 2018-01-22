@@ -77,6 +77,12 @@
                             </label>
                         </div>
                         <div class='form-group col-sm-3'>
+                            <label for="rd_imprimir_sello_pagado" class='checkbox'>
+                                Imprimir un sello de "Pagada" en la factura:
+                                <input type="checkbox" name="rd_imprimir_sello_pagado" id="rd_imprimir_sello_pagado" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_sello_pagado']=='TRUE'"}checked{/if}>
+                            </label>
+                        </div>
+                        <div class='form-group col-sm-3'>
                             <label for="rd_imprimir_bn" class='checkbox'>
                                 Imprimir blanco y negro:
                                 <input type="checkbox" name="rd_imprimir_bn" id="rd_imprimir_bn" value="TRUE" {if="$fsc->rd_setup['rd_imprimir_bn']=='TRUE'"}checked{/if}>

@@ -249,6 +249,9 @@ class factura_ncf extends rd_controller
         $pdf_doc->fdf_vermarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '1' : '0';
         $pdf_doc->fdf_Xmarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '25' : '0';
         $pdf_doc->fdf_Ymarcaagua = ($this->rd_setup['rd_imprimir_marca_agua'] == 'TRUE' and $this->logo) ? '110' : '0';
+        $pdf_doc->fdf_verSelloPagado = (isset($this->rd_setup['rd_imprimir_sello_pagado']) && $this->rd_setup['rd_imprimir_sello_pagado'] == 'TRUE') ? '1' : '0';
+        $pdf_doc->fdf_Xsellopagado = (isset($this->rd_setup['rd_imprimir_sello_pagado']) && $this->rd_setup['rd_imprimir_sello_pagado'] == 'TRUE') ? '65' : '0';
+        $pdf_doc->fdf_Ysellopagado = (isset($this->rd_setup['rd_imprimir_sello_pagado']) && $this->rd_setup['rd_imprimir_sello_pagado'] == 'TRUE') ? '180' : '0';
 
         $pdf_doc->fdf_imprimir_bn = ($this->rd_setup['rd_imprimir_bn'] == 'TRUE') ? '1' : '0';
         $pdf_doc->fdf_cliente_box = ($this->rd_setup['rd_imprimir_cliente_box'] == 'TRUE') ? '1' : '0';
