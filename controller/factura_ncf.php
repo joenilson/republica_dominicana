@@ -36,7 +36,7 @@ class factura_ncf extends rd_controller
     public $agente;
     public $logo;
     public $negativo;
-    
+
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Factura NCF', 'ventas', false, false);
@@ -45,7 +45,7 @@ class factura_ncf extends rd_controller
     protected function private_core()
     {
         parent::private_core();
-        $this->template = false;                
+        $this->template = false;
         $this->agente = new agente();
 
         $this->share_extensions();
@@ -53,7 +53,7 @@ class factura_ncf extends rd_controller
         $val_id = \filter_input(INPUT_GET, 'id');
         $solicitud = \filter_input(INPUT_GET, 'solicitud');
         $valores_id = explode(',', $val_id);
-        
+
         if (class_exists('distribucion_ordenescarga_facturas')) {
             $this->distrib_transporte = new distribucion_ordenescarga_facturas();
         }
@@ -64,7 +64,7 @@ class factura_ncf extends rd_controller
             $this->enviar_email($valores_id[0]);
         }
     }
-    
+
     public function checkLogo()
     {
         $this->logo = false;
@@ -92,7 +92,7 @@ class factura_ncf extends rd_controller
         }
         return $mostrar;
     }
-    
+
     public function checkPorcentaje($cadena)
     {
         $mostrar = '';
@@ -216,7 +216,7 @@ class factura_ncf extends rd_controller
             }
         }
     }
-    
+
     public function pdf_informacion_empresa($pdf_doc)
     {
         $vendedor = $this->agente->get($this->factura->codagente);
@@ -231,6 +231,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
+        $pdf_doc->fde_vendedor = null;
         if (in_array('distribucion', $GLOBALS['plugins'])) {
             $pdf_doc->fde_vendedor = $vendedor->nombreap;
             $pdf_doc->fdf_ruta = $this->factura->codruta;
@@ -239,7 +240,7 @@ class factura_ncf extends rd_controller
         }
         $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
     }
-    
+
     public function configuracion_pdf($pdf_doc)
     {
         $pdf_doc->fdf_verlogotipo = ($this->rd_setup['rd_imprimir_logo'] == 'TRUE' and $this->logo) ? '1' : '0';
@@ -258,7 +259,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fdf_cabecera_tcolor = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $this->rd_setup['rd_imprimir_cabecera_tcolor'] : false;
         $pdf_doc->fdf_detalle_color = ($this->rd_setup['rd_imprimir_detalle_colores'] == 'TRUE') ? $this->rd_setup['rd_imprimir_detalle_color'] : '#000000';
     }
-    
+
     public function pdf_tipo_documento($pdf_doc)
     {
         // Tipo de Documento
@@ -268,7 +269,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
         $pdf_doc->fdf_estado = ($this->factura->estado) ? "" : "DOCUMENTO ANULADO";
     }
-    
+
     public function pdf_datos_cliente($pdf_doc)
     {
         // Fecha, Codigo Cliente y observaciones de la factura
@@ -292,7 +293,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fdc_factura_codigo = $this->factura->codigo;
         $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
     }
-    
+
     public function pdf_divisa_pago_pais($pdf_doc)
     {
         // Forma de Pago de la Factura
@@ -316,7 +317,7 @@ class factura_ncf extends rd_controller
             $pdf_doc->fdf_pais = $epais->nombre;
         }
     }
-    
+
     public function pdf_cabecera_titulo_columnas($pdf_doc)
     {
         list($r, $g, $b) = $pdf_doc->htmlColor2Hex($pdf_doc->fdf_detalle_color);
@@ -327,7 +328,7 @@ class factura_ncf extends rd_controller
         $colores = ($this->rd_setup['rd_imprimir_bn'] == 'FALSE') ? $r . '|' . $g . '|' . $b : '0|0|0';
         $pdf_doc->SetColors(array($colores, $colores, $colores, $colores, $colores, $colores, $colores, $colores));
     }
-    
+
     public function pdf_lineas_iva($pdf_doc)
     {
         $lineas_iva = $this->factura->get_lineas_iva();
@@ -343,8 +344,8 @@ class factura_ncf extends rd_controller
                 $filaiva[$i][3] = $this->ckeckEuro(($li->totaliva * $this->negativo));
                 $filaiva[$i][4] = $this->checkPorcentaje($li->recargo);
                 $filaiva[$i][5] = $this->ckeckEuro(($li->totalrecargo * $this->negativo));
-                $filaiva[$i][6] = ''; 
-                $filaiva[$i][7] = ''; 
+                $filaiva[$i][6] = '';
+                $filaiva[$i][7] = '';
                 $filaiva[$i][8] = $this->ckeckEuro(($li->totallinea * $this->negativo));
             }
             if (!empty($filaiva)) {
@@ -354,7 +355,7 @@ class factura_ncf extends rd_controller
             $pdf_doc->fdf_lineasiva = $filaiva;
         }
     }
-    
+
     public function pdf_lineas_factura($pdf_doc)
     {
          // Lineas de la Factura
@@ -415,13 +416,13 @@ class factura_ncf extends rd_controller
                 $pdf_doc->SetColorRelleno('blanco');
             }
 
-            $this->pdf_informacion_empresa($pdf_doc);        
+            $this->pdf_informacion_empresa($pdf_doc);
             $this->configuracion_pdf($pdf_doc);
             $this->pdf_tipo_documento($pdf_doc);
             $this->pdf_datos_cliente($pdf_doc);
             $this->pdf_divisa_pago_pais($pdf_doc);
             $this->pdf_cabecera_titulo_columnas($pdf_doc);
-            
+
             /// Agregamos la pagina inicial de la factura
             $pdf_doc->AddPage();
             $this->negativo = (!empty($this->factura->idfacturarect)) ? -1 : 1;
@@ -434,8 +435,15 @@ class factura_ncf extends rd_controller
             // Total factura numeros a texto
             $pdf_doc->fdf_textotal = ($this->factura->total * $this->negativo);
 
+            $pdf_doc->fdf_pagada = $this->factura->pagada;
+            $pdf_doc->fdf_fecha_pagada = '';
+            if($this->factura->pagada){
+                $dato_pago = $this->factura->get_asiento_pago();
+                $pdf_doc->fdf_fecha_pagada = $dato_pago->fecha;
+            }
+
             $this->pdf_lineas_factura($pdf_doc);
-            
+
             $pdf_doc->piepagina = true;
         }
     }

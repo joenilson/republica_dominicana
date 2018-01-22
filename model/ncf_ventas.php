@@ -62,9 +62,9 @@ class ncf_ventas extends fs_model
             $this->ncf = $t['ncf'];
             $this->ncf_modifica = $t['ncf_modifica'];
             $this->usuario_creacion = $t['usuario_creacion'];
-            $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
+            $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
-            $this->fecha_modificacion = Date('d-m-Y H:i');
+            $this->fecha_modificacion = Date('d-m-Y H:i:s');
             $this->estado = $this->str2bool($t['estado']);
             $this->motivo = $t['motivo'];
         } else {
@@ -80,7 +80,7 @@ class ncf_ventas extends fs_model
             $this->ncf = null;
             $this->ncf_modifica = null;
             $this->usuario_creacion = null;
-            $this->fecha_creacion = Date('d-m-Y H:i');
+            $this->fecha_creacion = Date('d-m-Y H:i:s');
             $this->usuario_modificacion = null;
             $this->fecha_modificacion = null;
             $this->estado = true;
