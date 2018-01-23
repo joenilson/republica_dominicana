@@ -142,12 +142,14 @@ class PDF_MC_Table extends FPDF
             } elseif (file_exists(FS_MYDOCS.'images/logo.jpg')) {
                 $this->logo = FS_MYDOCS.'images/logo.jpg';
             }
-            $this->Image($this->logo, $this->fdf_Xlogotipo, $this->fdf_Ylogotipo, 35);
-            $this->Ln(0);
+            if($this->logo){
+                $this->Image($this->logo, $this->fdf_Xlogotipo, $this->fdf_Ylogotipo, 35);
+                $this->Ln(0);
+            }
         }
 
         //Marca de agua
-        if ($this->fdf_vermarcaagua == '1') {
+        if ($this->fdf_vermarcaagua == '1' && $this->logo) {
             // set alpha to semi-transparency
             $this->SetAlpha(0.05);
             // draw png image
