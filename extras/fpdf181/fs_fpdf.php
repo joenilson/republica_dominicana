@@ -37,6 +37,11 @@ class PDF_MC_Table extends FPDF
     public $PageGroups;     // variable containing the number of pages of the groups
     public $CurrPageGroup;  // variable containing the alias of the current page group
 
+    /**
+     * Ver marca de agua en la factura
+     * @var string 1|0 
+     */
+    public $fdf_vermarcaagua;
     public function Setdatoscab($v)
     {
         //Set the array
@@ -142,14 +147,14 @@ class PDF_MC_Table extends FPDF
             } elseif (file_exists(FS_MYDOCS.'images/logo.jpg')) {
                 $this->logo = FS_MYDOCS.'images/logo.jpg';
             }
-            if($this->logo){
+            if($this->logo !== false){
                 $this->Image($this->logo, $this->fdf_Xlogotipo, $this->fdf_Ylogotipo, 35);
                 $this->Ln(0);
             }
         }
 
         //Marca de agua
-        if ($this->fdf_vermarcaagua == '1' && $this->logo) {
+        if ($this->fdf_vermarcaagua == '1' && $this->logo !== false) {
             // set alpha to semi-transparency
             $this->SetAlpha(0.05);
             // draw png image
