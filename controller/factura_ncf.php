@@ -157,7 +157,7 @@ class factura_ncf extends rd_controller
         $factura = new factura_cliente();
         $factura_enviar = $factura->get($doc);
         $cliente = new cliente();
-        $this->cliente = $cliente->get($factura->codcliente);
+        $this->cliente = $cliente->get($factura_enviar->codcliente);
         if ($this->empresa->can_send_mail()) {
             if ($_POST['email'] != $this->cliente->email and isset($_POST['guardar'])) {
                 $this->cliente->email = $_POST['email'];
