@@ -61,7 +61,7 @@ class informe_estadocuenta extends rd_controller
             $this->fbase_buscar_cliente($_REQUEST['buscar_cliente']);
         } elseif (\filter_input(INPUT_POST, 'listado_facturas')) {
             $this->tabla_de_datos();
-        } else {
+        } elseif(\filter_input(INPUT_POST, 'generar')) {
             $this->vencimiento_facturas();
             $this->sort = 'codalmacen, fecha, idfactura ';
             $this->order = 'ASC';

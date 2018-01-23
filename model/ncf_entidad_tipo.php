@@ -82,7 +82,7 @@ class ncf_entidad_tipo extends fs_model
             $this->usuario_creacion = $t['usuario_creacion'];
             $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
-            $this->fecha_modificacion = Date('d-m-Y H:i');
+            $this->fecha_modificacion = Date('d-m-Y H:i:s');
             $this->estado = $this->str2bool($t['estado']);
         } else {
             $this->idempresa = null;
@@ -90,7 +90,7 @@ class ncf_entidad_tipo extends fs_model
             $this->tipo_entidad = null;
             $this->tipo_comprobante = null;
             $this->usuario_creacion = null;
-            $this->fecha_creacion = Date('d-m-Y H:i');
+            $this->fecha_creacion = Date('d-m-Y H:i:s');
             $this->usuario_modificacion = null;
             $this->fecha_modificacion = null;
             $this->estado = false;

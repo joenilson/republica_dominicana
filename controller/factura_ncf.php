@@ -442,7 +442,7 @@ class factura_ncf extends rd_controller
             $pdf_doc->fdf_fecha_pagada = '';
             if($this->factura->pagada){
                 $dato_pago = $this->factura->get_asiento_pago();
-                $pdf_doc->fdf_fecha_pagada = $dato_pago->fecha;
+                $pdf_doc->fdf_fecha_pagada = ($dato_pago)?$dato_pago->fecha:$this->factura->fecha;
             }
 
             $this->pdf_lineas_factura($pdf_doc);

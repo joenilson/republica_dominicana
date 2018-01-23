@@ -39,7 +39,6 @@
         <nombre>fecha_creacion</nombre>
         <tipo>timestamp without time zone</tipo>
         <nulo>NO</nulo>
-        <defecto>'0000-00-00 00:00:00'</defecto>
     </columna>
     <columna>
         <nombre>fecha_modificacion</nombre>
