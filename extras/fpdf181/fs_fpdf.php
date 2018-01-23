@@ -126,6 +126,7 @@ class PDF_MC_Table extends FPDF
         $this->addSociete(utf8_decode($this->fde_nombre), utf8_decode($direccion), utf8_decode($this->fde_email), utf8_decode($this->fde_web));
 
         //Logotipo
+        $this->logo = false;
         if ($this->fdf_verlogotipo == '1') {
             if (!file_exists(FS_MYDOCS.'images')) {
                 @mkdir(FS_MYDOCS.'images', 0777, true);
@@ -141,7 +142,7 @@ class PDF_MC_Table extends FPDF
                 rename('tmp/'.FS_TMP_NAME.'logo.jpg', FS_MYDOCS.'images/logo.jpg');
             }
 
-            $this->logo = false;
+            
             if (file_exists(FS_MYDOCS.'images/logo.png')) {
                 $this->logo = FS_MYDOCS.'images/logo.png';
             } elseif (file_exists(FS_MYDOCS.'images/logo.jpg')) {
@@ -602,19 +603,17 @@ class PDF_MC_Table extends FPDF
         $this->SetFont("Arial", "", 8);
         $this->MultiCell(($r2 - $r1), 4, $adresse);
         $y1+=($this->getY()-$y1);
+        $this->SetXY($x1, $y1);
         if ($email != '') {
-            $this->SetXY($x1, $y1);
             $this->SetFont('Arial', '', 8);
             $this->Write(5, 'Email: ');
             $this->SetTextColor(0, 0, 255);
             $this->Write(5, $email, 'mailto:' . $email);
             $this->SetTextColor(0);
             $this->SetFont('');
-            //$y1+=4;
         }
 
         if ($web != '') {
-            //$this->SetXY( $x1, $y1 );
             $this->SetFont('Arial', '', 8);
             $this->Write(5, ' - Web: ');
             $this->SetTextColor(0, 0, 255);
