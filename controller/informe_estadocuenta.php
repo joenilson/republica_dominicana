@@ -172,7 +172,7 @@ class informe_estadocuenta extends rd_controller
         $intervalo = '';
         switch ($dias) {
             case 30:
-                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) <= 30 and ".$funcion.$this->current_date.$separador."vencimiento) > 0";
+                $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) <= 30";
                 break;
             case 60:
                 $intervalo = " AND ".$funcion.$this->current_date.$separador."vencimiento) > 30 and ".$funcion.$this->current_date.$separador."vencimiento) <= 60";
