@@ -156,6 +156,8 @@ class factura_ncf extends rd_controller
     {
         $factura = new factura_cliente();
         $factura_enviar = $factura->get($doc);
+        $cliente = new cliente();
+        $this->cliente = $cliente->get($factura->codcliente);
         if ($this->empresa->can_send_mail()) {
             if ($_POST['email'] != $this->cliente->email and isset($_POST['guardar'])) {
                 $this->cliente->email = $_POST['email'];
@@ -231,7 +233,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
         $pdf_doc->fde_email = $this->empresa->email;
         $pdf_doc->fde_web = $this->empresa->web;
-        $pdf_doc->fde_vendedor = null;
+        $pdf_doc->fde_vendedor = '';
         if (in_array('distribucion', $GLOBALS['plugins'])) {
             $pdf_doc->fde_vendedor = $vendedor->nombreap;
             $pdf_doc->fdf_ruta = $this->factura->codruta;
