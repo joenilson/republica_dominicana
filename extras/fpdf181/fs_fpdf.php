@@ -1087,10 +1087,13 @@ class PDF_MC_Table extends FPDF
         $this->SetXY(12, $y1+4);
         $texto = $this->numtoletras($this->fdf_textotal);
         $this->MultiCell(120, 3, "SON: ".$texto, 0, 'L');
+        $this->SetXY(10, $this->h - 33.5);
+        $this->SetFont("Arial", "B", 9);
+        $this->SetXY(10, $this->h - 33.5);
         if($this->fdf_pagada){
-            $this->SetFont("Arial", "B", 9);
-            $this->SetXY(10, $this->h - 33.5);
             $this->Cell(120, 3, 'FACTURA PAGADA EL: '.$this->fdf_fecha_pagada, 0, 0, "R");
+        }else{
+            $this->Cell(120, 3, 'FACTURA VENCE EL: '.$this->fdf_vencimiento, 0, 0, "R");
         }
 
     }

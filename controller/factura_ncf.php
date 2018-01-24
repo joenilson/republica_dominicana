@@ -279,6 +279,7 @@ class factura_ncf extends rd_controller
     {
         // Fecha, Codigo Cliente y observaciones de la factura
         $pdf_doc->fdf_fecha = $this->factura->fecha;
+        $pdf_doc->fdf_vencimiento = $this->factura->vencimiento;
         $pdf_doc->fdf_codcliente = $this->factura->codcliente;
         $pdf_doc->fdf_observaciones = utf8_decode($this->fix_html($this->factura->observaciones));
 
