@@ -30,7 +30,7 @@ include_once 'include/TTFsubset.php';
   * @link https://github.com/rospdf/pdf-php
   */
 
-class Cpdf
+class Cpdf_DOM
 {
      /**
      * PDF version
@@ -1700,7 +1700,7 @@ class Cpdf
         if (strlen($key) == 0) {
             return;
         }
-        
+
         $s = array();
         for ($i = 0; $i < 256; $i++) {
             $s[$i] = $i;

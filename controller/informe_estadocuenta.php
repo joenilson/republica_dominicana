@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
-require_once 'plugins/republica_dominicana/vendor/rospdf/pdf-php/src/Cezpdf.php';
+require_once 'plugins/republica_dominicana/extras/rospdf/pdf-php/src/Cezpdf_DOM.php';
 require_once 'extras/xlsxwriter.class.php';
 
 /**
@@ -280,7 +280,7 @@ class informe_estadocuenta extends rd_controller
     public function crearPDF()
     {
         $this->carpetasPlugin();
-        $pdf_doc = new Cezpdf('letter', 'portrait');
+        $pdf_doc = new Cezpdf_DOM('letter', 'portrait');
         $pdf_doc->ezStartPageNumbers(590,25,8,'right','{PAGENUM} de {TOTALPAGENUM}',1);
         $this->archivoPDF = $this->exportDir . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";
         $this->archivoPDFPath = $this->publicPath . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";

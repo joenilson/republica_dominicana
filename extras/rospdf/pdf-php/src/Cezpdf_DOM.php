@@ -1,6 +1,6 @@
 <?php
 
-include_once 'Cpdf.php';
+include_once 'Cpdf_DOM.php';
 
 /*
  * draw all lines to ezTable output
@@ -49,7 +49,7 @@ define('EZ_GRIDLINE_COLUMNS', 1);
   * @author Nicola Asuni <info@tecnick.com>
   * @link https://github.com/rospdf/pdf-php
   */
-class Cezpdf extends Cpdf
+class Cezpdf_DOM extends Cpdf_DOM
 {
      /**
      * used to store most of the page configuration parameters.

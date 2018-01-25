@@ -50,10 +50,10 @@ class admin_rd extends rd_controller
         $this->init_variables();
 
         $this->impuestos_rd = array(
-            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
-            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
-            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => ''),
-            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '')
+            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>true),
+            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
+            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
+            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false)
         );
 
         $opcion = \filter_input(INPUT_GET, 'opcion');
@@ -238,7 +238,6 @@ class admin_rd extends rd_controller
 
     public function impuestos()
     {
-        $tratamiento = false;
         $impuestos = new impuesto();
         //Eliminamos los Impuestos que no son de RD
         $lista_impuestos = array();
@@ -247,13 +246,12 @@ class admin_rd extends rd_controller
         }
 
         foreach ($impuestos->all() as $imp) {
-            if (!in_array($imp->iva, $lista_impuestos)) {
-                $imp->delete();
-            }
+            $imp->delete();
         }
 
         //Agregamos los Impuestos de RD
         foreach ($this->impuestos_rd as $imp) {
+            $tratamiento=false;
             if (!$impuestos->get_by_iva($imp['porcentaje'])) {
                 $imp0 = new impuesto();
                 $imp0->codimpuesto = $imp['codigo'];
@@ -262,8 +260,12 @@ class admin_rd extends rd_controller
                 $imp0->recargo = $imp['recargo'];
                 $imp0->codsubcuentasop = $imp['subcuenta_compras'];
                 $imp0->codsubcuentarep = $imp['subcuenta_ventas'];
+                $imp0->is_default();
                 if ($imp0->save()) {
                     $tratamiento = true;
+                }
+                if($tratamiento===true AND $imp['default']){
+                    $this->save_codimpuesto($imp['codigo']);
                 }
             }
         }
@@ -284,6 +286,13 @@ class admin_rd extends rd_controller
                 $linea->save();
             }
         }
+
+        //Cargamos el ejercicio configurando la longitud de cuentas a 8
+        $cod = $this->empresa->codejercicio;
+        $ejer0 = new ejercicio();
+        $ejer = $ejer0->get($cod);
+        $ejer->longsubcuenta = 8;
+        $ejer->save();
 
         if ($tratamiento) {
             $this->new_message('Información de impuestos actualizada correctamente');
