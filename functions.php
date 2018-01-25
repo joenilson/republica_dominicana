@@ -218,6 +218,8 @@ if (!function_exists('fs_generar_numero2')) {
             $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
             if(strlen($documento->numero2) != 19){
                 $documento->numero2 = '';
+            }elseif(strlen($documento->numero2) === 19){
+                $numero2 = $documento->numero2;
             }
         }
 
@@ -287,16 +289,18 @@ function fs_documento_venta_post_save(&$documento)
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
     $rectificativa = ($documento->idfacturarect)?true:false;
-    $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
-    $tipo_comprobante = get_tipo_comprobante($numero_ncf);
-    $motivo = \filter_input(INPUT_POST, 'motivo');
-    $motivo_doc = '';
-    if($motivo){
-        $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
-        $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
-        $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
+    if(strlen($documento->numero2)!==19) {
+        $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
+        $tipo_comprobante = get_tipo_comprobante($numero_ncf);
+        $motivo = \filter_input(INPUT_POST, 'motivo');
+        $motivo_doc = '';
+        if($motivo){
+            $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
+            $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
+            $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
+        }
+        guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
     }
-    guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
 }
 
 function fs_documento_compra_post_save(&$documento)
