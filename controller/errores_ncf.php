@@ -72,12 +72,19 @@ class errores_ncf extends rd_controller
         $this->order = ($order and $order!='undefined')?$order:'ASC';
         if (\filter_input(INPUT_POST, 'buscar')) {
             $this->generarResultados();
+        }elseif(\filter_input(INPUT_POST, 'corregir')){
+            $this->corregirFactura();
         }
+    }
+    
+    public function corregirFactura()
+    {
+        
     }
     
     public function generarResultados()
     {
-        $sql_ncf_no_existen = "SELECT cifnif,codalmacen,idfactura,idfacturarect,codcliente,fecha,1,numero2,substr(numero2,10,2),'admin',1,substr(numero2,4,3) ".
+        $sql_ncf_no_existen = "SELECT cifnif,codalmacen,idfactura,idfacturarect,codcliente,fecha,1,numero2,substr(numero2,10,2) as tipo_ncf,'admin',1,substr(numero2,4,3) as area_impresion ".
             " FROM facturascli ".
             " WHERE idfactura NOT IN (SELECT documento from ncf_ventas where fecha BETWEEN ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_inicio)))." AND ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_fin))).")".
             " and fecha BETWEEN ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_inicio)))." AND ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_fin))).

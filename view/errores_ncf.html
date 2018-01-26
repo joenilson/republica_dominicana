@@ -76,6 +76,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <th><input type="checkbox" name="fs_mark" id="fs_mark_input" onclick="fs_mark()"></th>
                     <th>Factura</th>
                     <th>NCF</th>
+                    <th>Tipo NCF</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Estado</th>
@@ -88,6 +89,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <td><input type="checkbox" name="fs_mark" id="check_factura_{$value->idfactura}"></td>
                     <td>{$value->idfactura}</td>
                     <td>{$value->numero2}</td>
+                    <td>{$value->tipo_ncf}</td>
                     <td>{$value->fecha}</td>
                     <td>{$value->codcliente}</td>
                     <td>Registro incompleto</td>
