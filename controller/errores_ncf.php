@@ -77,11 +77,10 @@ class errores_ncf extends rd_controller
     
     public function generarResultados()
     {
-        
         $sql_ncf_no_existen = "SELECT cifnif,codalmacen,idfactura,idfacturarect,codcliente,fecha,1,numero2,substr(numero2,10,2),'admin',1,substr(numero2,4,3) ".
             " FROM facturascli ".
-            " WHERE numero2 NOT IN (SELECT ncf from ncf_ventas where fecha BETWEEN ".$this->empresa->var2str($this->fecha_inicio)." AND ".$this->empresa->var2str($this->fecha_fin).")".
-            " and fecha BETWEEN ".$this->empresa->var2str($this->fecha_inicio)." AND ".$this->empresa->var2str($this->fecha_fin).
+            " WHERE idfactura NOT IN (SELECT documento from ncf_ventas where fecha BETWEEN ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_inicio)))." AND ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_fin))).")".
+            " and fecha BETWEEN ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_inicio)))." AND ".$this->empresa->var2str(\date('Y-m-d',strtotime($this->fecha_fin))).
             " ORDER BY fecha, idfactura, numero2".
             ";";
         $resultados = $this->db->select($sql_ncf_no_existen);
