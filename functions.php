@@ -99,6 +99,14 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $termin
     }
 }
 
+function buscar_ncf($idempresa,$ncf){
+    $ncf_factura = new ncf_ventas();
+    if($ncf_factura->get($idempresa, $ncf)){
+        return true;
+    }
+    return false;
+}
+
 function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');
@@ -289,7 +297,12 @@ function fs_documento_venta_post_save(&$documento)
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
     $rectificativa = ($documento->idfacturarect)?true:false;
-    if(strlen($documento->numero2)!==19) {
+    //if(strlen($documento->numero2)!==19) {
+        
+    //}else{
+    //    $numero_ncf = $documento->numero2;
+    //}
+    if(strlen($documento->numero2)!==19 && buscar_ncf($documento->numero2) !== true) {
         $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
         $tipo_comprobante = get_tipo_comprobante($numero_ncf);
         $motivo = \filter_input(INPUT_POST, 'motivo');
