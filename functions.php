@@ -109,6 +109,14 @@ function buscar_ncf($idempresa,$documento){
     return false;
 }
 
+/**
+ * Guardar información de NCF
+ * @param integer $idempresa
+ * @param \factura_cliente $factura
+ * @param string $tipo_comprobante
+ * @param string $numero_ncf
+ * @param string $motivo
+ */
 function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');

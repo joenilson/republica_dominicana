@@ -35,9 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     {/if}
                     <span class="btn-group">
                         {loop="$fsc->extensions"}
-                            {if="$value->type=='button'"}
-                                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
-                            {/if}
+                        {if="$value->type=='button'"}
+                        <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
+                        {/if}
                         {/loop}
                     </span>
                 </h2>
@@ -73,7 +73,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <table id="table-reporte" class="table table-hover">
             <thead>
                 <tr>
-                    <th><input type="checkbox" name="fs_mark" id="fs_mark_input" onclick="fs_mark()"></th>
                     <th>Factura</th>
                     <th>NCF</th>
                     <th>Tipo NCF</th>
@@ -86,7 +85,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <tbody>
                 {loop="$fsc->resultados"}
                 <tr>
-                    <td><input type="checkbox" name="fs_mark" id="check_factura_{$value->idfactura}"></td>
                     <td>{$value->idfactura}</td>
                     <td>{$value->numero2}</td>
                     <td>{$value->tipo_ncf}</td>
@@ -102,7 +100,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 {/loop}
             </tbody>
         </table>
-        <button class="btn btn-sm btn-danger" onclick="fixNCF('MARCADAS')"><span class="fa fa-fire-extinguisher fa-fw"></span><span aria-hidden="true">Corregir Marcadas</span></button>
     </div>
 </div>
 <script>
@@ -113,32 +110,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         countSelectedText: "{0} de {1} marcados",
         selectedTextFormat: 'count'
     };
-   
-    
-   function fs_mark()
-   {
-       console.log($('#fs_mark_input').is('checked'));
-       if($('#fs_mark_input').checked === true){
-           fs_marcar_todo();
-       }else{
-           fs_marcar_nada();
-       }
-   }
-    
-   function fs_marcar_todo()
-   {
-       $('input:checkbox').prop('checked', true);
-   }
-    
-   function fs_marcar_nada()
-   {
-       $('input:checkbox').prop('checked', false);
-   }
-    
-    
-    function fixNCF(idfactura)
+
+    function fixNCF(idfacturas)
     {
-        document.getElementById("buscar_errores").click();
+        $.ajax({
+            type: "GET",
+            url: "{$fsc->url()}",
+            data: "corregir=true&facturas="+idfacturas,
+            dataType: "json",
+            success: function (data) {
+                setTimeout(function () {
+                    bootbox.setLocale('es');
+                    bootbox.alert('Se corrigió la información faltante para la(s) factura(s).', function(){
+                        document.getElementById("buscar_errores").click();
+                    });
+                }, 1000);
+
+            },
+            error: function (er) {
+                bootbox.alert(er);
+            }
+        });
     }
 
     function runningFormatter(value, row, index) {
@@ -159,19 +151,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     function sumFormatter(data) {
         field = this.field;
-        return parseFloat(data.reduce(function(sum, row) {
+        return parseFloat(data.reduce(function (sum, row) {
             return sum + (+row[field]);
         }, 0)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
     }
 
     function sumNormalFormatter(data) {
         field = this.field;
-        return parseFloat(data.reduce(function(sum, row) {
+        return parseFloat(data.reduce(function (sum, row) {
             return sum + (+row[field]);
         }, 0)).toFixed(2);
     }
 
-    $(window).resize(function() {
+    $(window).resize(function () {
         $('#table-reporte').bootstrapTable('resetView');
     });
 
@@ -189,7 +181,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     function rowStyle(row, index) {
         var classes = ['active', 'success', 'info', 'warning', 'danger'];
-        if (row.estado==='f') {
+        if (row.estado === 'f') {
             return {
                 classes: 'danger'
             };

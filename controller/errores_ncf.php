@@ -25,6 +25,7 @@ class errores_ncf extends rd_controller
     public $codalmacen;
     public $fecha_inicio;
     public $fecha_fin;
+    public $ncf_ventas;
     public $resultados;
     public function __construct()
     {
@@ -54,6 +55,7 @@ class errores_ncf extends rd_controller
         $this->fecha_inicio = \date('01-m-Y');
         $this->fecha_fin = \date('d-m-Y');
         $this->resultados = array();
+        $this->ncf_ventas = new ncf_ventas();
     }
     
     public function verificarRequest()
@@ -72,14 +74,50 @@ class errores_ncf extends rd_controller
         $this->order = ($order and $order!='undefined')?$order:'ASC';
         if (\filter_input(INPUT_POST, 'buscar')) {
             $this->generarResultados();
-        }elseif(\filter_input(INPUT_POST, 'corregir')){
-            $this->corregirFactura();
+        }elseif($this->filter_request('corregir')){
+            $this->corregirFacturas();
         }
     }
     
-    public function corregirFactura()
+    public function comprobarNCF($ncf)
     {
-        
+        if($this->ncf_ventas->get($this->empresa->id, $ncf)){
+            return true;
+        }
+        return false;
+    }
+    
+    public function corregirFactura($factura)
+    {
+        $fact = $this->ncf_ventas->get_ncf($this->empresa->id, $factura->idfactura, $factura->codcliente);
+        $cli = new cliente();
+        if($fact->ncf == ''){
+            if($this->comprobarNCF($factura->numero2) !== true && strlen($factura->numero2) === 19){
+                guardar_ncf($this->empresa->id, $factura, get_tipo_comprobante($factura->numero2), $factura->numero2);
+            }else{
+                $cliente = $cli->get($factura->codcliente);
+                $tipo_comprobante = ncf_tipo_comprobante($this->empresa->id, $factura->codcliente, 'CLI');
+                $numero_ncf = generar_comprobante_fiscal($cliente, $tipo_comprobante, $factura->codalmacen);
+                $factura->numero2 = $numero_ncf['NCF'];
+                $this->corregirFactura($factura);
+            }
+        }
+    }
+
+    public function corregirFacturas()
+    {
+        $data = array();
+        $this->template = false;
+        $facturas = \filter_input(INPUT_GET, 'facturas', FILTER_DEFAULT, FILTER_FORCE_ARRAY);
+        //Iteramos el array
+        $factura_cliente = new factura_cliente();
+        foreach($facturas as $id){
+            $factura = $factura_cliente->get($id);
+            $this->corregirFactura($factura);
+        }
+        $data['success']=true;
+        header('Content-Type: application/json');
+        echo json_encode($data);
     }
     
     public function generarResultados()
