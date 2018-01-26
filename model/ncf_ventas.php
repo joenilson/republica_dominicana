@@ -189,6 +189,12 @@ class ncf_ventas extends fs_model
         return $lista;
     }
 
+    /**
+     * Return NCF information
+     * @param integer $idempresa
+     * @param string $ncf
+     * @return \ncf_ventas
+     */
     public function get($idempresa, $ncf)
     {
         $lista = array();
@@ -206,6 +212,13 @@ class ncf_ventas extends fs_model
         return $lista;
     }
 
+    /**
+     * Return ncf information by factura
+     * @param integer $idempresa
+     * @param integner $documento idfactura
+     * @param string $entidad codcliente
+     * @return \ncf_ventas
+     */
     public function get_ncf($idempresa, $documento, $entidad)
     {
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".

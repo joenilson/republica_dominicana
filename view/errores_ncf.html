@@ -1,0 +1,198 @@
+{include="header"}
+<!--
+Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="container-fluid" style="margin-top: -10px;">
+    <div class="row">
+        <div class="col-sm-12 text-right">
+            <div class="col-sm-10 text-left">
+                <h2>
+                    <span class="fa fa-bug fa-fw"></span>Errores NCF
+                    <a class="btn btn-sm btn-default" href="{$fsc->url()}" title="Recargar la página">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </a>
+                    {if="$fsc->page->is_default()"}
+                    <a class="btn btn-sm btn-default active" href="{$fsc->url()}&amp;default_page=FALSE" title="desmarcar como página de inicio">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                    {else}
+                    <a class="btn btn-sm btn-default" href="{$fsc->url()}&amp;default_page=TRUE" title="marcar como página de inicio">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </a>
+                    {/if}
+                    <span class="btn-group">
+                        {loop="$fsc->extensions"}
+                            {if="$value->type=='button'"}
+                                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
+                            {/if}
+                        {/loop}
+                    </span>
+                </h2>
+                <p align="left">Aquí puede revisar si una factura generada tiene un NCF correcto o si este NCF ha sido grabado correctamente para reportar a DGII en un rango de fechas determinado</p>
+            </div>
+            <div class="col-sm-2 text-right">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        <form name="f_informes_fiscales" id="f_informes_fiscales" class="form-inline" method="POST" action='{$fsc->url()}'>
+            <label for='inicio'><b>Fecha Inicio</b></label>
+            <input type="text" class="form-control input-sm datepicker" name='inicio' id="inicio">
+            <label for='fin'><b>Fecha Fin</b></label>
+            <input type="text" class="form-control input-sm datepicker" name="fin" id="fin">
+            <select class="form-control col-sm-3 input-sm selectpicker" multiple='' name="codalmacen[]" required='' id="codalmacen" data-style="btn-default btn-sm" data-actions-box="true">
+                {loop="$fsc->almacenes->all()"}
+                <option value="{$value->codalmacen}" {if="in_array($value->codalmacen,$fsc->almacenes_seleccionados)"}selected{/if}>{$value->nombre}</option>
+                {/loop}
+            </select>
+            <div class='btn-group'>
+                <button class="btn btn-default btn-sm" id="buscar_errores" type="submit" name="buscar" value="buscar">Buscar Errores</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="table-responsive">
+        <table id="table-reporte" class="table table-hover">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" name="fs_mark" id="fs_mark_input" onclick="fs_mark()"></th>
+                    <th>Factura</th>
+                    <th>NCF</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {loop="$fsc->resultados"}
+                <tr>
+                    <td><input type="checkbox" name="fs_mark" id="check_factura_{$value->idfactura}"></td>
+                    <td>{$value->idfactura}</td>
+                    <td>{$value->numero2}</td>
+                    <td>{$value->fecha}</td>
+                    <td>{$value->codcliente}</td>
+                    <td>Registro incompleto</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="fixNCF('{$value->idfactura}')"><span class="fa fa-fire-extinguisher fa-fw"></span><span aria-hidden="true">Corregir</span></button></td>
+                </tr>
+                {else}
+                <tr>
+                    <td colspan="7">No se han encontrado errores con los filtros indicados</td>
+                </tr>
+                {/loop}
+            </tbody>
+        </table>
+        <button class="btn btn-sm btn-danger" onclick="fixNCF('MARCADAS')"><span class="fa fa-fire-extinguisher fa-fw"></span><span aria-hidden="true">Corregir Marcadas</span></button>
+    </div>
+</div>
+<script>
+    $.fn.selectpicker.defaults = {
+        selectAllText: 'Marcar Todo',
+        deselectAllText: 'Desmarcar',
+        noneSelectedText: 'Nada Seleccionado',
+        countSelectedText: "{0} de {1} marcados",
+        selectedTextFormat: 'count'
+    };
+   
+    
+   function fs_mark()
+   {
+       console.log($('#fs_mark_input').is('checked'));
+       if($('#fs_mark_input').checked === true){
+           fs_marcar_todo();
+       }else{
+           fs_marcar_nada();
+       }
+   }
+    
+   function fs_marcar_todo()
+   {
+       $('input:checkbox').prop('checked', true);
+   }
+    
+   function fs_marcar_nada()
+   {
+       $('input:checkbox').prop('checked', false);
+   }
+    
+    
+    function fixNCF(idfactura)
+    {
+        document.getElementById("buscar_errores").click();
+    }
+
+    function runningFormatter(value, row, index) {
+        return index;
+    }
+
+    function totalFormatter(data) {
+        return data.length + ' Documentos';
+    }
+
+    function totalTextFormatter(data) {
+        return 'Total';
+    }
+
+    function numberFormatter(value, row, index) {
+        return parseFloat(value).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
+
+    function sumFormatter(data) {
+        field = this.field;
+        return parseFloat(data.reduce(function(sum, row) {
+            return sum + (+row[field]);
+        }, 0)).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    }
+
+    function sumNormalFormatter(data) {
+        field = this.field;
+        return parseFloat(data.reduce(function(sum, row) {
+            return sum + (+row[field]);
+        }, 0)).toFixed(2);
+    }
+
+    $(window).resize(function() {
+        $('#table-reporte').bootstrapTable('resetView');
+    });
+
+    var $table = $('#table-reporte');
+    $table.bootstrapTable('refreshOptions', {
+        exportDataType: 'all'
+    });
+
+    $('#inicio').datepicker('update', '{$fsc->fecha_inicio}');
+    $('#fin').datepicker('update', '{$fsc->fecha_fin}');
+
+    function responseHandler(res) {
+        return res;
+    }
+
+    function rowStyle(row, index) {
+        var classes = ['active', 'success', 'info', 'warning', 'danger'];
+        if (row.estado==='f') {
+            return {
+                classes: 'danger'
+            };
+        }
+        return {};
+    }
+</script>
+{include="footer"}
