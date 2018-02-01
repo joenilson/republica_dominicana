@@ -60,9 +60,9 @@ class ncf_rango extends fs_model
             $this->secuencia_fin = $t['secuencia_fin'];
             $this->correlativo = $t['correlativo'];
             $this->usuario_creacion = $t['usuario_creacion'];
-            $this->fecha_creacion = Date('d-m-Y H:i', strtotime($t['fecha_creacion']));
+            $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
-            $this->fecha_modificacion = Date('d-m-Y H:i');
+            $this->fecha_modificacion = Date('d-m-Y H:i:s');
             $this->estado = $this->str2bool($t['estado']);
             $this->contado = $this->str2bool($t['contado']);
         } else {
@@ -79,9 +79,9 @@ class ncf_rango extends fs_model
             $this->secuencia_fin = null;
             $this->correlativo = null;
             $this->usuario_creacion = null;
-            $this->fecha_creacion = Date('d-m-Y H:i');
+            $this->fecha_creacion = Date('d-m-Y H:i:s');
             $this->usuario_modificacion = null;
-            $this->fecha_modificacion = Date('d-m-Y H:i');
+            $this->fecha_modificacion = Date('d-m-Y H:i:s');
             $this->estado = false;
             $this->contado = false;
         }
@@ -313,9 +313,14 @@ class ncf_rango extends fs_model
 
     public function update($idempresa, $codalmacen, $solicitud, $ncf, $usuario)
     {
+        $corr_old = $this->get_correlativo($idempresa, $codalmacen, $ncf);
+        $corr_new = \substr($ncf, 11, 18)+1;
+        if($corr_new > $corr_old){
+            $corr_new = $corr_old;
+        }
         $sql = "UPDATE ".$this->table_name." SET ".
 
-            "correlativo = ".$this->intval((\substr($ncf, 11, 18))+1).", ".
+            "correlativo = ".$this->intval($corr_new).", ".
             "usuario_modificacion = ".$this->var2str($usuario).", ".
             "fecha_modificacion = ".$this->var2str(Date('d-m-Y H:i:s'))." ".
             "WHERE ".
@@ -348,5 +353,25 @@ class ncf_rango extends fs_model
             $solicitud = $data[0]['solicitud'];
         }
         return $solicitud;
+    }
+    
+    public function get_correlativo($idempresa, $codalmacen, $ncf)
+    {
+        $solicitud = 0;
+        $sql = "SELECT correlativo FROM ".$this->table_name.
+            " WHERE ".
+            "idempresa = ".$this->intval($idempresa)." AND ".
+            "codalmacen = ".$this->var2str($codalmacen)." AND ".
+            "serie = ".$this->var2str(\substr($ncf, 0, 1))." AND ".
+            "division = ".$this->var2str(\substr($ncf, 1, 2))." AND ".
+            "punto_emision = ".$this->var2str(\substr($ncf, 3, 3))." AND ".
+            "area_impresion = ".$this->var2str(\substr($ncf, 6, 3))." AND ".
+            "tipo_comprobante = ".$this->var2str(\substr($ncf, 9, 2)).";";
+        $data = $this->db->select($sql);
+        $item = 0;
+        if($data){
+            $item = $data[0]['correlativo'];
+        }
+        return $item;
     }
 }

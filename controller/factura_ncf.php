@@ -127,7 +127,7 @@ class factura_ncf extends rd_controller
                     $this->factura->ncf = $valores->ncf;
                     $this->factura->ncf_afecta = $valores->ncf_modifica;
                     $this->factura->estado = $valores->estado;
-                    $this->factura->tipo_comprobante = $tipo_comprobante->descripcion;
+                    $this->factura->tipo_comprobante = ($tipo_comprobante)?$tipo_comprobante->descripcion:'';
                     if ($this->distrib_transporte) {
                         $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
                         $this->idtransporte = (isset($transporte[0]->idtransporte)) ? str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT) : false;
