@@ -357,7 +357,6 @@ class ncf_rango extends fs_model
     
     public function get_correlativo($idempresa, $codalmacen, $ncf)
     {
-        $solicitud = 0;
         $sql = "SELECT correlativo FROM ".$this->table_name.
             " WHERE ".
             "idempresa = ".$this->intval($idempresa)." AND ".
