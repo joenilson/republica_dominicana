@@ -315,11 +315,10 @@ class ncf_rango extends fs_model
     {
         $corr_old = $this->get_correlativo($idempresa, $codalmacen, $ncf);
         $corr_new = \substr($ncf, 11, 18)+1;
-        if($corr_new > $corr_old){
+        if($corr_new < $corr_old){
             $corr_new = $corr_old;
         }
         $sql = "UPDATE ".$this->table_name." SET ".
-
             "correlativo = ".$this->intval($corr_new).", ".
             "usuario_modificacion = ".$this->var2str($usuario).", ".
             "fecha_modificacion = ".$this->var2str(Date('d-m-Y H:i:s'))." ".

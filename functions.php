@@ -147,7 +147,6 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         }
 
         if ($ncf_factura->save()) {
-            
             $solicitud = $ncf_rango->get_solicitud($idempresa, $factura->codalmacen, $numero_ncf);
             $ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $solicitud, $numero_ncf, $usuario);
         } else {
@@ -308,11 +307,6 @@ function fs_documento_venta_post_save(&$documento)
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
     $rectificativa = ($documento->idfacturarect)?true:false;
-    //if(strlen($documento->numero2)!==19) {
-        
-    //}else{
-    //    $numero_ncf = $documento->numero2;
-    //}
     if(buscar_ncf($empresa->id,$documento) !== true) {
         $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
         $tipo_comprobante = get_tipo_comprobante($numero_ncf);
