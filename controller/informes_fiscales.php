@@ -52,6 +52,8 @@ class informes_fiscales extends rd_controller
     public $total_resultados_detalle_ventas;
     public $total_resultados_resumen_ventas;
     public $total_resultados_ventas_agente;
+    public $total_forma_pago;
+    public $total_forma_pago_dgii;
     public $sumaVentas;
     public $sumaVentasPagadas;
     public $sumaCompras;
@@ -268,7 +270,8 @@ class informes_fiscales extends rd_controller
             " ncf, ".
             " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.totaliva END as totaliva, ".
             " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.neto END as neto, ".
-            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total ".
+            " CASE WHEN f.anulada = TRUE THEN 0 ELSE f.total END as total ,".
+            " codpago ".
             " FROM ncf_ventas as nv ".
             " JOIN facturascli as f ON (f.idfactura = nv.documento) ".
             " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
@@ -282,7 +285,8 @@ class informes_fiscales extends rd_controller
             " numproveedor as ncf, ".
             " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
             " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-            " CASE WHEN anulada = TRUE THEN 0 else total END as total ".
+            " CASE WHEN anulada = TRUE THEN 0 else total END as total, ".
+            " codpago ".
             " FROM facturasprov ".
             " WHERE fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
             " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin)))." AND codalmacen IN ('".$almacenes."') ".
@@ -293,6 +297,18 @@ class informes_fiscales extends rd_controller
         $sql_resumen = "SELECT t1.tipo,sum(CASE WHEN pagada = 'Si' THEN total ELSE 0 END) as total_pagada,sum(total) as total_general FROM (".
                 $sql_consolidado.") as t1 GROUP BY t1.tipo;";
         $data_resumen = $this->db->select($sql_resumen);
+        
+        $sql_forma_pago = "SELECT codpago, sum(total) as total ".
+        " FROM (".
+        $sql_consolidado.") as t1 WHERE tipo = 'Venta' group by codpago ORDER BY codpago;";
+        $data_forma_pago = $this->db->select($sql_forma_pago);
+        $this->total_forma_pago = array();
+        if($data_forma_pago) {
+            foreach($data_forma_pago as $fpago){
+                $this->total_forma_pago[] = (object) $fpago;
+            }
+        }
+        
         if ($json) {
             $resultados = $this->db->select_limit($sql_consolidado, $this->limit, $this->offset);
         } else {
@@ -308,6 +324,7 @@ class informes_fiscales extends rd_controller
                 $this->sumaCompras += $linea['total_general'];
             }
         }
+        
         return array($resultados, $total_informacion);
     }
 
@@ -327,11 +344,11 @@ class informes_fiscales extends rd_controller
         $this->saldoConsolidadoPagadas = $this->sumaVentasPagadas - $this->sumaComprasPagadas;
 
         $this->generar_excel(
-            array('Tipo','Almacén','Fecha','Cliente/Proveedor','Condición','Pagada','NCF','ITBIS','Neto','Total'),
+            array('Tipo','Almacén','Fecha','Cliente/Proveedor','Condición','Pagada','NCF','ITBIS','Neto','Total','F. Pago'),
             $this->resultados_consolidado,
-            array('','','','','','','','','',''),
+            array('','','','','','','','','','',''),
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'irght'),array('halign'=>'irght'),array('halign'=>'irght')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
             false
         );
     }
@@ -700,7 +717,8 @@ class informes_fiscales extends rd_controller
             " concat(extract(year from nv.fecha),lpad(CAST(extract(month from nv.fecha) as char),2,'0'),lpad(CAST(extract(day from nv.fecha) as char),2,'0')) as fecha, ".
             " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
             " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-            " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado ".
+            " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado, ".
+            " codpago ".
             " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
             " WHERE idempresa = ".$this->empresa->intval($this->empresa->id)." AND ".
             " nv.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
@@ -713,6 +731,16 @@ class informes_fiscales extends rd_controller
                 " sum(neto) as totalneto FROM (".
                 $sql_607.") as t1;";
         $data_resumen = $this->db->select($sql_resumen);
+        $sql_forma_pago = "SELECT codpago, sum(totaliva) as totaliva, ".
+                " sum(neto) as totalneto FROM (".
+                $sql_607.") as t1 group by codpago ORDER BY codpago;";
+        $data_forma_pago = $this->db->select($sql_forma_pago);
+        $this->total_forma_pago_dgii = array();
+        if($data_forma_pago) {
+            foreach($data_forma_pago as $fpago){
+                $this->total_forma_pago_dgii[] = (object) $fpago;
+            }
+        }
         if ($json) {
             $resultados = $this->db->select_limit($sql_607, $this->limit, $this->offset);
         } else {
@@ -734,11 +762,11 @@ class informes_fiscales extends rd_controller
         $this->resultados_607 = $this->datos_reporte($this->reporte);
         $this->total_resultados_607 = 0;
         $this->generar_excel(
-            array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Fecha','ITBIS Facturado','Monto Facturado','Estado'),
+            array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Fecha','ITBIS Facturado','Monto Facturado','Estado','F. Pago'),
             $this->resultados_607,
-            array('Total',count($this->resultados_607).' Documentos','','','','','',''),
+            array('Total',count($this->resultados_607).' Documentos','','','','','','',''),
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             false
         );
     }
@@ -826,7 +854,7 @@ class informes_fiscales extends rd_controller
             }
             //Variables para cada parte del excel
             $estilo_cabecera = ($estilo_cab)?$estilo_cab:array('border'=>'left,right,top,bottom','font-style'=>'bold');
-            $estilo_cuerpo = ($estilo_datos)?$estilo_datos:array( array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'),array('halign'=>'none'));
+            $estilo_cuerpo = ($estilo_datos)?$estilo_datos:array('halign'=>'none');
             $estilo_footer = ($estilo_pie)?$estilo_pie:array('border'=>'left,right,top,bottom','font-style'=>'bold','color'=>'#FFFFFF','fill'=>'#000000');
             //Inicializamos la clase
             $this->writer = new XLSXWriter();
@@ -837,7 +865,7 @@ class informes_fiscales extends rd_controller
             foreach ($datos as $linea) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $linea, $estilo_cuerpo);
             }
-            if ($pie) {
+            if (!empty($pie)) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $pie, $estilo_footer);
             }
             $this->writer->writeToFile($this->archivoXLSXPath);

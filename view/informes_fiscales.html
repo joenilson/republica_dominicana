@@ -170,6 +170,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                     <td>Saldo Neto del Periodo</td>
                                     <td class="text-right">{$fsc->show_numero($fsc->saldoConsolidadoPagadas)}</td>
                                 </tr>
+                                {if="$fsc->total_forma_pago"}
+                                <tr>
+                                    <td class="text-center" colspan="2"><strong>Ingresos por Forma de Pago</strong></td>
+                                </tr>
+                                {/if}
+                                <!-- {$total_consolidado_venta = 0;} !-->
+                                {loop="$fsc->total_forma_pago"}
+                                <tr>
+                                    <td><strong>{$value->codpago}</strong></td>
+                                    <td class="text-right">{$fsc->show_numero($value->total)}</td>
+                                    <!-- {$total_consolidado_venta += $value->total; } !-->
+                                </tr>
+                                {/loop}
+                                {if="$fsc->total_forma_pago"}
+                                <tr>
+                                    <td><strong>Total Formas Pago</strong></td>
+                                    <td class="text-right"><strong>{$fsc->show_numero($total_consolidado_venta)}</strong></td>
+                                </tr>
+                                {/if}
                             </tbody>
                         </table>
                     </div>
@@ -561,6 +580,47 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <div class="row">
                         <div class="col-sm-2"><strong>Total Neto</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalNeto)}</div>
+                    </div>
+                    <br/>
+                    <div class="col-sm-6 table-responsive">
+                        <table class="table table-condensed table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Forma de Pago</th>
+                                    <th class="text-center">{#FS_IVA#}</th>
+                                    <th class="text-center">Neto</th>
+                                    <th class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- {$total_neto = 0} !-->
+                                <!-- {$total_iva = 0} !-->
+                                <!-- {$total_general = 0} !-->
+                                {loop="$fsc->total_forma_pago_dgii"}
+                                <tr>
+                                    <td class="col-sm-2"><strong>{$value->codpago}</strong></td>
+                                    <td class="col-sm-2 text-right">{$fsc->show_numero($value->totalneto)}</td>
+                                    <td class="col-sm-2 text-right">{$fsc->show_numero($value->totaliva)}</td>
+                                    <td class="col-sm-2 text-right">{$fsc->show_numero(($value->totalneto+$value->totaliva))}</td>
+                                    <!-- {$total_neto += $value->totalneto} !-->
+                                    <!-- {$total_iva += $value->totaliva} !-->
+                                    <!-- {$total_general += ($value->totalneto+$value->totaliva)} !-->
+                                </tr>
+                                {else}
+                                <tr class="bg-warning">
+                                <td colspan="4" class="text-center">No hay información de las formas de pago</td>
+                                </tr>
+                                {/loop}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Total</th>
+                                    <th class="col-sm-2 text-right">{$fsc->show_numero($total_neto)}</th>
+                                    <th class="col-sm-2 text-right">{$fsc->show_numero($total_iva)}</th>
+                                    <th class="col-sm-2 text-right">{$fsc->show_numero($total_general)}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-608'"}active{/if}" id="reporte-608">
