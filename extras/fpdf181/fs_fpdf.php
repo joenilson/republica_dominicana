@@ -175,7 +175,7 @@ class PDF_MC_Table extends FPDF
         }
 
         // Tipo de Documento y Numero
-        $this->datos_documento($this->fdf_documento, $this->fdf_tipodocumento, $this->fdf_estado);
+        $this->datos_documento($this->fdf_documento, $this->fdf_tipodocumento, $this->fdf_estado, $this->fdf_tipodocumento_vencimiento);
 
         // Fecha factura y Codigo Cliente
         $this->addDate($this->fdf_fecha);
@@ -623,7 +623,7 @@ class PDF_MC_Table extends FPDF
         }
     }
 
-    public function datos_documento($documento, $tipo_documento, $estado)
+    public function datos_documento($documento, $tipo_documento, $estado, $fecha_vencimiento)
     {
         $r1  = $this->w - 80;
         $r2  = $r1 + 70;
@@ -652,8 +652,7 @@ class PDF_MC_Table extends FPDF
         $this->Rect($r1, $y1, ($r2 - $r1), $y2, 'DF');
         $y1++;
         $this->SetXY($r1+1, $y1);
-        $this->Cell($r2-$r1-1, 5, $codigo, 0, 0, "C");
-        $y1++;
+        $this->MultiCell($r2-$r1-1, 3, utf8_decode($tipo_documento), 0, "C");
         $y1++;
         $y1++;
         $this->SetXY($r1+1, $y1+1);
@@ -662,14 +661,17 @@ class PDF_MC_Table extends FPDF
         $y1++;
         $y1++;
         $y1++;
-        $this->SetXY($r1+1, $y1+3);
+        $this->SetXY($r1+1, $y1+2);
+        $this->Cell($r2-$r1-1, 5, $codigo, 0, 0, "C");
+        $y1++;
+        $y1++;
+        $y1++;
+        $this->SetXY($r1+1, $y1+4);
         if (empty($estado)) {
-            $this->MultiCell($r2-$r1-1, 3, utf8_decode($tipo_documento), 0, "C");
+            $this->MultiCell($r2-$r1-1, 3, utf8_decode('Válida hasta: '.$fecha_vencimiento), 0, "C");
         } else {
             $this->MultiCell($r2-$r1-1, 3, 'Estado: '.$estado, 0, "C");
         }
-        $y1++;
-        $y1++;
         $y1++;
         $y1++;
         $y1++;

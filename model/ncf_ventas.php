@@ -232,7 +232,7 @@ class ncf_ventas extends fs_model
         return new ncf_ventas($result);
     }
 
-    public function get_tipo($idempresa, $tipo_comprobante, $codalmacen, $area_impresion)
+    public function get_tipo_old($idempresa, $tipo_comprobante, $codalmacen, $area_impresion)
     {
         $lista = array();
         $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
@@ -249,6 +249,45 @@ class ncf_ventas extends fs_model
         }
 
         return $lista;
+    }
+
+    /**
+     * Obtener tipo de comprobante fiscal
+     * @param integer $idempresa
+     * @param string $tipo_comprobante
+     * @param string $codalmacen
+     * @return \ncf_ventas
+     */
+    public function getTipo($idempresa, $tipo_comprobante, $codalmacen)
+    {
+        $lista = array();
+        $data = $this->db->select("SELECT * FROM ncf_ventas WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "codalmacen = ".$this->var2str($codalmacen)." AND ".
+                "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
+                "ORDER BY idempresa, ncf, fecha");
+
+        if ($data) {
+            foreach ($data as $d) {
+                $lista[] = new ncf_ventas($d);
+            }
+        }
+
+        return $lista;
+    }
+    
+    public function get_ultimo_documento($idempresa, $tipo_comprobante, $codalmacen)
+    {
+        $sql = "SELECT * from ".$this->table_name." WHERE ".
+                "idempresa = ".$this->intval($idempresa)." AND ".
+                "codalmacen = ".$this->var2str($codalmacen)." AND ".
+                "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
+                "ORDER BY idempresa, fecha DESC LIMIT 1";
+        if ($data) {
+            foreach ($data as $d) {
+                $lista[] = new ncf_ventas($d);
+            }
+        }
     }
 
     public function info_factura($idfactura)

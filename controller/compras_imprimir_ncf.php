@@ -408,8 +408,8 @@ class compras_imprimir_ncf extends rd_controller
                     'campo2' => "<b>" . $tipoidfiscal . ":</b> " . $this->documento->cifnif
                 )
         );
-
-        if (!empty($this->documento->numproveedor) and strlen($this->documento->numproveedor) == 19) {
+        $this->ncf_length = (\strtotime($this->documento->fecha) < (\strtotime('01-05-2018'))) ? 19 : $this->ncf_length;
+        if (!empty($this->documento->numproveedor) and strlen($this->documento->numproveedor) == $this->ncf_length) {
             $pdf_doc->add_table_row(
                     array(
                         'campo1' => "<b>" . FS_NUMERO2 . ":</b>",
@@ -417,10 +417,11 @@ class compras_imprimir_ncf extends rd_controller
                         'campo2' => ''
                     )
             );
+            $this->tipo_documento_pos = (\strtotime($this->documento->fecha) < (\strtotime('01-05-2018'))) ? 9 : $this->tipo_documento_pos;
             $pdf_doc->add_table_row(
                     array(
                         'campo1' => '',
-                        'dato1' => "<b>" . $this->ncf_tipo->get(substr($this->documento->numproveedor, 9, 2))->descripcion . "</b>",
+                        'dato1' => "<b>" . $this->ncf_tipo->get(substr($this->documento->numproveedor, $this->tipo_documento_pos, 2))->descripcion . "</b>",
                         'campo2' => ''
                     )
             );

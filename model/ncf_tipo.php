@@ -32,7 +32,17 @@ class ncf_tipo extends fs_model
     public $ventas;
     public $compras;
     public $contribuyente;
-    
+    public $array_comprobantes = array(
+        array ('tipo' => '01', 'descripcion' => 'FACTURA DE CREDITO FISCAL'),
+        array ('tipo' => '02', 'descripcion' => 'FACTURA DE CONSUMO'),
+        array ('tipo' => '03', 'descripcion' => 'NOTA DE DEBITO'),
+        array ('tipo' => '04', 'descripcion' => 'NOTA DE CREDITO'),
+        array ('tipo' => '11', 'descripcion' => 'REGISTRO DE PROVEEDORES INFORMALES'),
+        array ('tipo' => '12', 'descripcion' => 'REGISTRO UNICO DE INGRESOS'),
+        array ('tipo' => '13', 'descripcion' => 'REGISTRO DE GASTOS MENORES'),
+        array ('tipo' => '14', 'descripcion' => 'REGIMEN ESPECIAL DE TRIBUTACION'),
+        array ('tipo' => '15', 'descripcion' => 'COMPROBANTE GUBERNAMENTAL')
+    );
     public function __construct($t = false)
     {
         parent::__construct('ncf_tipo', 'plugins/republica_dominicana/');
@@ -58,14 +68,15 @@ class ncf_tipo extends fs_model
     protected function install()
     {
         return "INSERT INTO ncf_tipo (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente ) VALUES ".
-            "('01','FACTURAS QUE GENERAN CREDITOS Y/O SUSTENTAN GASTOS Y COSTOS',TRUE, 'suma','X','X','X'),".
-            "('02','FACTURAS A CONSUMIDORES FINALES SIN VALOR DE CREDITO FISCAL',TRUE, 'suma','X',null,'X'),".
-            "('03','NOTAS DE DEBITO',true, 'suma','X','X',null),('04','NOTAS DE CREDITO',TRUE, 'resta','X','X',null),".
-            "('11','REGISTROS DE PROVEEDORES INFORMALES',TRUE, 'suma',null,'X','X'),".
+            "('01','FACTURA DE CREDITO FISCAL',TRUE, 'suma','X','X','X'),".
+            "('02','FACTURA DE CONSUMO',TRUE, 'suma','X',null,'X'),".
+            "('03','NOTA DE DEBITO',true, 'suma','X','X',null),".
+            "('04','NOTA DE CREDITO',TRUE, 'resta','X','X',null),".
+            "('11','REGISTRO DE PROVEEDORES INFORMALES',TRUE, 'suma',null,'X','X'),".
             "('12','REGISTRO UNICO DE INGRESOS',TRUE, 'suma','X',null,null),".
             "('13','REGISTRO DE GASTOS MENORES',TRUE, 'suma',null,'X',null),".
-            "('14','REGISTRO DE OPERACIONES PARA EMPRESAS ACOGIDAS A REGIMENES ESPECIALES DE TRIBUTACION',TRUE, 'suma','X','X','X'),".
-            "('15','COMPROBANTES GUBERNAMENTALES',TRUE, 'suma','X','X','X');";
+            "('14','REGIMEN ESPECIAL DE TRIBUTACION',TRUE, 'suma','X','X','X'),".
+            "('15','COMPROBANTE GUBERNAMENTAL',TRUE, 'suma','X','X','X');";
     }
     
     public function exists()
@@ -164,5 +175,19 @@ class ncf_tipo extends fs_model
         } else {
             return false;
         }
+    }
+    
+    public function restore_names()
+    {
+        $counter = 0;
+        foreach($this->array_comprobantes as $comprobante) {
+            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($comprobante['descripcion']).
+                    " WHERE tipo_comprobante = ".$this->var2str($comprobante['tipo']);
+            if($this->db->exec($sql)) {
+               $counter ++; 
+            }
+        }
+        return $counter;
+        
     }
 }

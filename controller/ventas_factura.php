@@ -145,7 +145,9 @@ class ventas_factura extends rd_controller
 
     public function fix_ncf()
     {
-        if ($this->factura->numero2 != '' and strlen($this->factura->numero2) == 19) {
+        $this->ncf_length = (\strtotime($this->factura->fecha) < (\strtotime('01-05-2018'))) ? 19 : $this->ncf_length;
+        $funcion_generar_numero = (\strtotime($this->factura->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero_ncf_old':'generar_numero_ncf';  
+        if ($this->factura->numero2 != '' and strlen($this->factura->numero2) == $this->ncf_length) {
             $this->new_error_msg('¡La Factura ya posee un NCF valido, no se hace ninguna modificación!');
         } else {
             /*
@@ -157,7 +159,7 @@ class ventas_factura extends rd_controller
                 $tipo_comprobante = '04';
             }
             //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-            $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
+            $numero_ncf = $this->$funcion_generar_numero($this->empresa->id, $this->factura->codalmacen, $tipo_comprobante, $this->factura->codpago);
             $this->factura->numero2 = $numero_ncf['NCF'];
             if ($this->factura->save()) {
                 $this->guardar_ncf($this->empresa->id, $this->factura, $tipo_comprobante, $numero_ncf);

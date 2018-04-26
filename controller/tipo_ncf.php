@@ -40,35 +40,52 @@ class tipo_ncf extends fs_controller
 
         $accion = filter_input(INPUT_POST, 'accion');
         if ($accion) {
-            $this->tratar_tipos($accion);
+            $this->tratarTipos($accion);
         }
+        
         $this->ncf_tipo = new ncf_tipo();
     }
 
-    public function tratar_tipos($accion)
+    public function tratarTipos($accion)
     {
         if ($accion == 'agregar') {
-            $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
-            $descripcion = filter_input(INPUT_POST, 'descripcion');
-            $clase_movimiento = filter_input(INPUT_POST, 'clase_movimiento');
-            $ventas = filter_input(INPUT_POST, 'ventas');
-            $compras = filter_input(INPUT_POST, 'compras');
-            $contribuyente = filter_input(INPUT_POST, 'contribuyente');
-            $estado = filter_input(INPUT_POST, 'estado');
-            $tc0 = new ncf_tipo();
-            $tc0->tipo_comprobante = strtoupper(strip_tags(trim($tipo_comprobante)));
-            $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
-            $tc0->clase_movimiento = $clase_movimiento;
-            $tc0->ventas = $ventas;
-            $tc0->compras = $compras;
-            $tc0->contribuyente = $contribuyente;
-            $tc0->estado = ($estado) ? "TRUE" : "FALSE";
-            if ($tc0->save()) {
-                $this->new_message('¡Tipo de comprobante agregado con exito!');
-            } else {
-                $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de comprobante, por favor revise los datos ingresados.');
-            }
+            $this->agregar();
         } elseif ($accion == 'eliminar') {
+            $this->eliminar();
+        } elseif ($accion == 'restore_names') {
+            $this->restaurarNombres();
+        } else {
+            $this->new_error_msg('Se recibió una solicitud incompleta.');
+        }
+    }
+    
+    protected function agregar()
+    {
+        $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
+        $descripcion = filter_input(INPUT_POST, 'descripcion');
+        $clase_movimiento = filter_input(INPUT_POST, 'clase_movimiento');
+        $ventas = filter_input(INPUT_POST, 'ventas');
+        $compras = filter_input(INPUT_POST, 'compras');
+        $contribuyente = filter_input(INPUT_POST, 'contribuyente');
+        $estado = filter_input(INPUT_POST, 'estado');
+        $tc0 = new ncf_tipo();
+        $tc0->tipo_comprobante = strtoupper(strip_tags(trim($tipo_comprobante)));
+        $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
+        $tc0->clase_movimiento = $clase_movimiento;
+        $tc0->ventas = $ventas;
+        $tc0->compras = $compras;
+        $tc0->contribuyente = $contribuyente;
+        $tc0->estado = ($estado) ? "TRUE" : "FALSE";
+        if ($tc0->save()) {
+            $this->new_message('¡Tipo de comprobante agregado con exito!');
+        } else {
+            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de comprobante, por favor revise los datos ingresados.');
+        }
+    }
+    
+    protected function eliminar()
+    {
+        if($this->allow_delete) {
             $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
             $tc1 = new ncf_tipo();
             $registro = $tc1->get($tipo_comprobante);
@@ -78,8 +95,19 @@ class tipo_ncf extends fs_controller
                 $this->new_error_msg('Ocurrio un error al tratar de eliminar el Tipo de comprobante, por favor verifique los datos');
             }
         } else {
-            $this->new_error_msg('Se recibió una solicitud incompleta.');
+            $this->new_error_msg('No tiene permiso para borrar información');
         }
+    }
+    
+    protected function restaurarNombres()
+    {
+        $ncf_tipo = new ncf_tipo();
+        $nombresRestaurados = $ncf_tipo->restore_names();
+        $this->template = false;
+        $data['success']=true;
+        $data['cantidad']=$nombresRestaurados;
+        header('Content-Type: application/json');
+        echo json_encode($data);
     }
 
     public function shared_extensions()

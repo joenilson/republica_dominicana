@@ -48,91 +48,122 @@ class ncf extends fs_controller
         $this->pais = new pais();
         $this->ncf_rango = new ncf_rango();
         $this->ncf_tipo = new ncf_tipo();
-        $this->array_series = \range('A', 'U');
+        $this->array_series = \range('A', 'Z');
+        $this->default_items->codalmacen();
 
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         $delete = \filter_input(INPUT_GET, 'delete');
-        if (isset($_POST['solicitud']) and isset($_POST['codalmacen']) and isset($_POST['serie']) and isset($_POST['division']) and isset($_POST['punto_emision']) and isset($_POST['area_impresion']) and isset($_POST['tipo_comprobante']) and isset($_POST['secuencia_inicio']) and isset($_POST['secuencia_fin'])) {
-            $id = \filter_input(INPUT_POST, 'id');
-            $solicitud = \filter_input(INPUT_POST, 'solicitud');
-            $codalmacen = \filter_input(INPUT_POST, 'codalmacen');
-            $serie = \filter_input(INPUT_POST, 'serie');
-            $division = \str_pad(\filter_input(INPUT_POST, 'division'), 2, "0", STR_PAD_LEFT);
-            $punto_emision = \str_pad(\filter_input(INPUT_POST, 'punto_emision'), 3, "0", STR_PAD_LEFT);
-            $area_impresion = \str_pad(\filter_input(INPUT_POST, 'area_impresion'), 3, "0", STR_PAD_LEFT);
-            $tipo_comprobante = \str_pad(\filter_input(INPUT_POST, 'tipo_comprobante'), 2, "0", STR_PAD_LEFT);
-            $secuencia_inicio = \filter_input(INPUT_POST, 'secuencia_inicio');
-            $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
-            $correlativo = \filter_input(INPUT_POST, 'correlativo');
-            $estado_val = \filter_input(INPUT_POST, 'estado');
-            $estado = (isset($estado_val))?true:false;
-            $estado = (isset($id))?$estado:true;
-            $contado_val = \filter_input(INPUT_POST, 'contado');
-            $contado = (isset($contado_val))?true:false;
-            if ($id) {
-                $ncf0 = $this->ncf_rango->get_by_id($this->empresa->id, $id);
+        $accion = \filter_input(INPUT_POST, 'accion');
+        $restore = \filter_input(INPUT_GET, 'restore_names');
+        
+        if($delete){
+            $this->eliminarSolicitudNCF($delete);
+        }
+        
+        if($restore) {
+            $this->restaurarNombresNCF();
+        }
+        
+        if($accion == 'guardar' OR $accion == 'modificar') {
+            $this->guardarSolicitudNCF();
+        }
+                
+    }
+    
+    protected function eliminarSolicitudNCF($delete)
+    {
+        $id = $delete;
+        if (!is_null($id)) {
+            $data_borrar = $this->ncf_rango->get_by_id($this->empresa->id, $id);
+            $ncf0 = new ncf_rango();
+            $ncf0->idempresa = $this->empresa->id;
+            $ncf0->id = $id;
+            if ($ncf0->delete()) {
+                $this->new_message("Datos de la Solicitud " . $data_borrar->solicitud . " con tipo de comprobante ".$data_borrar->tipo_comprobante." eliminados correctamente.");
             } else {
-                $ncf0 = $this->ncf_rango->get($this->empresa->id, $solicitud, $codalmacen, $serie, $division, $punto_emision, $area_impresion, $tipo_comprobante);
+                $this->new_error_msg("¡Ocurrió un error, por favor revise la información enviada!");
             }
-            if (!$ncf0) {
-                $ncf0 = new ncf_rango();
-            }
-            $verificacion = $this->verifica_correlativo($ncf0, $correlativo);
-            if ($verificacion+1 > $correlativo and $verificacion!=0) {
-                return $this->new_error_msg("¡Existen " . $verificacion . " NCF generados, y el ultimo correlativo es ".$verificacion." no se puede retroceder el correlativo!");
-            } else {
-                $ncf0->idempresa = $this->empresa->id;
-                $ncf0->id = $id;
-                $ncf0->solicitud = $solicitud;
-                $ncf0->codalmacen = $codalmacen;
-                $ncf0->serie = $serie;
-                $ncf0->division = $division;
-                $ncf0->punto_emision = $punto_emision;
-                $ncf0->area_impresion = $area_impresion;
-                $ncf0->tipo_comprobante = $tipo_comprobante;
-                $ncf0->secuencia_inicio = $secuencia_inicio;
-                $ncf0->secuencia_fin = $secuencia_fin;
-                $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
-                $ncf0->usuario_creacion = $this->user->nick;
-                $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
-                $ncf0->usuario_modificacion = $this->user->nick;
-                $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
-                $ncf0->estado = $estado;
-                $ncf0->contado = $contado;
-                if ($ncf0->save()) {
-                    $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
-                } else {
-                    $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
-                }
-            }
-        } elseif ($delete) {
-            $id = $delete;
-            if (!is_null($id)) {
-                $data_borrar = $this->ncf_rango->get_by_id($this->empresa->id, $id);
-                $ncf0 = new ncf_rango();
-                $ncf0->idempresa = $this->empresa->id;
-                $ncf0->id = $id;
-                if ($ncf0->delete()) {
-                    $this->new_message("Datos de la Solicitud " . $data_borrar->solicitud . " con tipo de comprobante ".$data_borrar->tipo_comprobante." eliminados correctamente.");
-                } else {
-                    $this->new_error_msg("¡Ocurrió un error, por favor revise la información enviada!");
-                }
-            } else {
-                $this->new_error_msg("¡Existen " . ($data_borrar->correlativo-$data_borrar->secuencia_inicio) . " NCF generados, no se puede eliminar esta secuencia!");
-            }
+        } else {
+            $this->new_error_msg("¡Existen " . ($data_borrar->correlativo-$data_borrar->secuencia_inicio) . " NCF generados, no se puede eliminar esta secuencia!");
         }
     }
+    
+    protected function guardarSolicitudNCF()
+    {
+        $id = \filter_input(INPUT_POST, 'id');
+        $solicitud = \filter_input(INPUT_POST, 'solicitud');
+        $autorizacion = \filter_input(INPUT_POST, 'autorizacion');
+        $codalmacen = \filter_input(INPUT_POST, 'codalmacen');
+        $serie = \filter_input(INPUT_POST, 'serie');
+        $tipo_comprobante = \str_pad(\filter_input(INPUT_POST, 'tipo_comprobante'), 2, "0", STR_PAD_LEFT);
+        $secuencia_inicio = \filter_input(INPUT_POST, 'secuencia_inicio');
+        $secuencia_fin = \filter_input(INPUT_POST, 'secuencia_fin');
+        $correlativo = \filter_input(INPUT_POST, 'correlativo');
+        $fecha_vencimiento = \filter_input(INPUT_POST, 'fecha_vencimiento');
+        $estado_val = \filter_input(INPUT_POST, 'estado');
+        $estado = (isset($estado_val))?true:false;
+        $contado_val = \filter_input(INPUT_POST, 'contado');
+        $contado = (isset($contado_val))?true:false;
+        
+        $ncf0 = $this->ncf_rango->get_information($this->empresa->id, $solicitud, $autorizacion, $serie, $tipo_comprobante, $estado);
+        if ($id) {
+            $ncf0 = $this->ncf_rango->get_by_id($this->empresa->id, $id);
+            $estado = (isset($id))?$estado:true;
+        }
+        
+        if (!$ncf0) {
+            $ncf0 = new ncf_rango();
+        }
+        
+        $ncf0->idempresa = $this->empresa->id;
+        $ncf0->id = $id;
+        $ncf0->solicitud = $solicitud;
+        $ncf0->autorizacion = $autorizacion;
+        $ncf0->codalmacen = $codalmacen;
+        $ncf0->serie = $serie;
+        $ncf0->tipo_comprobante = $tipo_comprobante;
+        $ncf0->secuencia_inicio = $secuencia_inicio;
+        $ncf0->secuencia_fin = $secuencia_fin;
+        $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
+        $ncf0->usuario_creacion = $this->user->nick;
+        $ncf0->fecha_vencimiento = \date('d-m-Y', strtotime($fecha_vencimiento));
+        $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
+        $ncf0->usuario_modificacion = $this->user->nick;
+        $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
+        $ncf0->estado = $estado;
+        $ncf0->contado = $contado;
+        if ($ncf0->save()) {
+            $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
+        } else {
+            $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
+        }
 
+    }
+
+    protected function verifica_correlativo_old($ncf, $correlativo)
+    {
+        $ultimo_correlativo = 0;
+        if (($ncf->correlativo != $correlativo) and ($ncf->correlativo > $ncf->secuencia_inicio)) {
+            $this->ncf_ventas = new ncf_ventas();
+            $facturas = $this->ncf_ventas->get_tipo_old($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
+            if ($facturas) {
+                $ultimo_documento = end($facturas);
+                $ultimo_correlativo = substr($ultimo_documento->ncf, 12, 8)+0;
+            }
+        }
+        return $ultimo_correlativo;
+    }
+    
     protected function verifica_correlativo($ncf, $correlativo)
     {
         $ultimo_correlativo = 0;
         if (($ncf->correlativo != $correlativo) and ($ncf->correlativo > $ncf->secuencia_inicio)) {
             $this->ncf_ventas = new ncf_ventas();
-            $facturas = $this->ncf_ventas->get_tipo($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
+            $facturas = $this->ncf_ventas->get_ultimo_documento($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
             if ($facturas) {
                 $ultimo_documento = end($facturas);
-                $ultimo_correlativo = substr($ultimo_documento->ncf, 12, 8)+0;
+                $ultimo_correlativo = substr($ultimo_documento->ncf, -8)+0;
             }
         }
         return $ultimo_correlativo;

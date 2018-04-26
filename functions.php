@@ -34,7 +34,7 @@ if (!function_exists('fs_tipos_id_fiscal')) {
  * @return string
  */
 
-function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
+function generar_numero2_old($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
 {
     require_model('empresa.php');
     require_model('ncf_rango.php');
@@ -50,7 +50,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false,
     if ($terminal) {
         $numero_ncf = $ncf_rango->generate_terminal($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $terminal->area_impresion);
     } else {
-        $numero_ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
+        $numero_ncf = $ncf_rango->generate_old($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
     }
 
     if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
@@ -65,7 +65,39 @@ function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false,
     }
 }
 
-function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $terminal=false, $json = false)
+/**
+ * Se debe migrar aquí la funcionalidad de generar el ncf para insertarlo en
+ * el campo numero2
+ * @return string
+ */
+
+function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
+{
+    require_model('empresa.php');
+    require_model('ncf_rango.php');
+    $empresa = new empresa();
+    $ncf_numero = array();
+    $ncf_rango = new ncf_rango();
+    /*
+    * Verificación de disponibilidad del Número de NCF para República Dominicana
+    */
+    //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
+    $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
+    //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+    $numero_ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
+    if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
+        $ncf_numero = $numero_ncf['NCF'];
+    }
+
+    if ($json) {
+        header('Content-Type: application/json');
+        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente));
+    } else {
+        return $ncf_numero;
+    }
+}
+
+function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha, $terminal=false, $json = false)
 {
     require_model('empresa.php');
     require_model('ncf_rango.php');
@@ -77,8 +109,9 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $termin
     $proveedor = $prov->get($codproveedor);
     $tipo_comprobante = 11;
     //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
+    $funcion_generate = (\strtotime($fecha) < (\strtotime('01-05-2018'))) ? 'generate_old' : 'generate';
     if($proveedor->personafisica == true){
-        $ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
+        $ncf = $ncf_rango->$funcion_generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
         if ($ncf['NCF'] != 'NO_DISPONIBLE') {
             $ncf_numero = $ncf['NCF'];
         }else{
@@ -117,7 +150,7 @@ function buscar_ncf($idempresa,$documento){
  * @param string $numero_ncf
  * @param string $motivo
  */
-function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
+function guardar_ncf_old($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');
     $ncf_rango = new ncf_rango();
@@ -134,9 +167,57 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         $ncf_factura->area_impresion = substr($numero_ncf, 6, 3);
         $ncf_factura->ncf = $numero_ncf;
         $ncf_factura->usuario_creacion = $usuario;
-        $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
+        $ncf_factura->fecha_creacion = \date('d-m-Y H:i:s');
         $ncf_factura->usuario_modificacion = $usuario;
-        $ncf_factura->fecha_modificacion = Date('d-m-Y H:i:s');
+        $ncf_factura->fecha_modificacion = \date('d-m-Y H:i:s');
+        $ncf_factura->estado = true;
+        if ($factura->idfacturarect) {
+            $ncf_orig = new ncf_ventas();
+            $val_ncf = $ncf_orig->get_ncf($idempresa, $factura->idfacturarect, $factura->codcliente);
+            $ncf_factura->documento_modifica = $factura->idfacturarect;
+            $ncf_factura->ncf_modifica = $val_ncf->ncf;
+            $ncf_factura->motivo = $motivo;
+        }
+        if ($ncf_factura->save()) {
+            $solicitud = $ncf_rango->get_solicitud_old($idempresa, $factura->codalmacen, $numero_ncf);
+            $ncf_rango->update_old($ncf_factura->idempresa, $ncf_factura->codalmacen, $solicitud, $numero_ncf, $usuario);
+        } else {
+           $numero_ncf = '';
+        }
+
+        $factura->numero2 = $numero_ncf;
+        $factura->save();
+    }
+}
+
+/**
+ * Guardar información de NCF
+ * @param integer $idempresa
+ * @param \factura_cliente $factura
+ * @param string $tipo_comprobante
+ * @param string $numero_ncf
+ * @param string $motivo
+ */
+function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
+{
+    require_model('ncf_rango.php');
+    $ncf_rango = new ncf_rango();
+    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    if (!empty($numero_ncf)) {
+        $ncf_factura = new ncf_ventas();
+        $ncf_factura->idempresa = $idempresa;
+        $ncf_factura->codalmacen = $factura->codalmacen;
+        $ncf_factura->entidad = $factura->codcliente;
+        $ncf_factura->cifnif = $factura->cifnif;
+        $ncf_factura->documento = $factura->idfactura;
+        $ncf_factura->fecha = $factura->fecha;
+        $ncf_factura->tipo_comprobante = $tipo_comprobante;
+        $ncf_factura->area_impresion = '';
+        $ncf_factura->ncf = $numero_ncf;
+        $ncf_factura->usuario_creacion = $usuario;
+        $ncf_factura->fecha_creacion = \date('d-m-Y H:i:s');
+        $ncf_factura->usuario_modificacion = $usuario;
+        $ncf_factura->fecha_modificacion = \date('d-m-Y H:i:s');
         $ncf_factura->estado = true;
         if ($factura->idfacturarect) {
             $ncf_orig = new ncf_ventas();
@@ -230,13 +311,14 @@ if (!function_exists('fs_generar_numero2')) {
         if(\filter_input(INPUT_GET,'numero2')){
             $numero2 = \filter_input(INPUT_GET,'numero2');
         }
-
+        $ncf_length = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 19 : 11;
+        $funcion_generar_numero2 = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero2_old' : 'generar_numero2';
         if($tipo_documento == 'factura_cliente') {
             $rectificativa = ($documento->idfacturarect)?true:false;
-            $numero2 = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
-            if(strlen($documento->numero2) != 19){
+            $numero2 = $funcion_generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
+            if(strlen($documento->numero2) != $ncf_length){
                 $documento->numero2 = '';
-            }elseif(strlen($documento->numero2) === 19){
+            }elseif(strlen($documento->numero2) === $ncf_length){
                 $numero2 = $documento->numero2;
             }
         }
@@ -264,7 +346,7 @@ if (!function_exists('fs_generar_numproveedor')) {
         }
 
         if($tipo_documento == 'factura_proveedor') {
-            $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago);
+            $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago, $documento->fecha);
         }
 
         if(!empty($documento->numproveedor) && empty($numproveedor)){
@@ -307,9 +389,12 @@ function fs_documento_venta_post_save(&$documento)
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
     $rectificativa = ($documento->idfacturarect)?true:false;
+    $funcion_generar = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero2_old' : 'generar_numero2';
+    $funcion_tipo_comprobante = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_tipo_comprobante_old' : 'get_tipo_comprobante';
+    $funcion_guardar_ncf = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'guardar_ncf_old' : 'guardar_ncf';
     if(buscar_ncf($empresa->id,$documento) !== true) {
-        $numero_ncf = generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
-        $tipo_comprobante = get_tipo_comprobante($numero_ncf);
+        $numero_ncf = $funcion_generar($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
+        $tipo_comprobante = $funcion_tipo_comprobante($numero_ncf);
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $motivo_doc = '';
         if($motivo){
@@ -317,7 +402,7 @@ function fs_documento_venta_post_save(&$documento)
             $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
             $motivo_doc = $motivo_anulacion->codigo . " " . $motivo_anulacion->descripcion;
         }
-        guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
+        $funcion_guardar_ncf($empresa->id, $documento, $tipo_comprobante, $numero_ncf, $motivo_doc);
     }
 }
 
@@ -330,9 +415,11 @@ function fs_documento_compra_post_save(&$documento)
     $ncf_rango = new ncf_rango();
     $prov = new proveedor();
     $proveedor = $prov->get($documento->codproveedor);
+    $function_get_solicitud = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_solicitud_old' : 'get_solicitud';
+    $function_update = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'update_old' : 'update';
     if($proveedor->personafisica){
-        $solicitud = $ncf_rango->get_solicitud($empresa->id, $documento->codalmacen, $documento->numproveedor);
-        $ncf_rango->update($empresa->id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
+        $solicitud = $ncf_rango->$function_get_solicitud($empresa->id, $documento->codalmacen, $documento->numproveedor);
+        $ncf_rango->$function_update($empresa->id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
     }
 }
 
@@ -364,7 +451,12 @@ function compatibilidad_distribucion(&$documento)
     }
 }
 
-function get_tipo_comprobante($numero_ncf)
+function get_tipo_comprobante_old($numero_ncf)
 {
     return substr($numero_ncf, 9,2);
+}
+
+function get_tipo_comprobante($numero_ncf)
+{
+    return substr($numero_ncf, 1,2);
 }

@@ -1,0 +1,110 @@
+<!--
+Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="modal" id="modal_nueva_solicitud">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form name="f_nueva_solicitud_ncf" action="{$fsc->url()}" method="post" class="form-horizontal" role="form">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Nueva Solicitud de NCF</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Solicitud:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" name="solicitud" maxlength="4" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">
+                            <a href="{$fsc->almacen->url()}">Almacén</a>:
+                        </label>
+                        <div class="col-sm-8">
+                            <select name="codalmacen" class="form-control">
+                                {loop="$fsc->almacen->all()"}
+                                <option value="{$value->codalmacen}"{if="$value->is_default()"} selected=""{/if}>{$value->nombre}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Serie: (A - U)</label>
+                        <div class="col-sm-8">
+                            <select name="serie" class="form-control">
+                                {loop="$fsc->array_series"}
+                                <option value="{$value[0]}">{$value[0]}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">División: (00)</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" name="division" min="1" max="99" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Punto de emisión: (000)</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" name="punto_emision" min="1" max="999" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Area de impresión: (000)</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" name="area_impresion" min="1" max="999" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Tipo Comprobante: (00)</label>
+                        <div class="col-sm-8">
+                            <select name="tipo_comprobante" class="form-control">
+                                {loop="$fsc->ncf_tipo->all()"}
+                                <option value="{$value->tipo_comprobante}">{$value->tipo_comprobante} - {$value->descripcion}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Secuencia Inicio:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" name="secuencia_inicio" min="1" max="99999999" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Secuencia Fin:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Aplica a registros al <b>Contado</b>?:</label>
+                        <div class="col-sm-8 text-left">
+                            <input class="form-control" type="checkbox" name="contado" value="TRUE"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
+                       this.form.submit();">
+                        <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

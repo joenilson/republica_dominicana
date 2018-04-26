@@ -35,6 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <a class="btn btn-sm btn-default" href="index.php?page=ncf" title="Regresar al Maestro de NCF">
                         <span class="fa fa-arrow-left"></span>&nbsp;Maestro de NCF
                     </a>
+                    <button class="btn btn-sm btn-danger" title="Restaurar Nombres de Tipo NCF" onClick="advertenciaRestoreNames()">
+                        <span class="fa fa-reply fa-fw"></span>Restaurar Nombres de Tipo NCF
+                    </button>
                     {loop="$fsc->extensions"}
                         {if="$value->type=='button'"}
                             <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
@@ -177,4 +180,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
+<script>
+    /**
+     * @name advertenciaRestoreNames
+     * @returns {none}
+     */
+    function advertenciaRestoreNames()
+    {
+        bootbox.setLocale('es');
+        bootbox.confirm({
+            title: '¿Restaurar nombres de Tipos de NCF?',
+            message: '¿Está seguro que quiere Restaurar los nombres originales de los Tipos de NCF?', 
+            callback: function(response){
+                if(response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "{$fsc->url()}",
+                        data: "accion=restore_names",
+                        dataType: "json",
+                        success: function (data) {
+                            setTimeout(function () {
+                                bootbox.alert('Se restauró el nombre de '+data.cantidad+' Tipos de NCF.', function(){
+                                    window.location.href = '{$fsc->url()}';
+                                });
+                            }, 1000);
+
+                        },
+                        error: function (er) {
+                            bootbox.alert(er);
+                        }
+                    });
+                }
+            }
+        });
+    }
+    
+</script>
 {include="footer"}

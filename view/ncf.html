@@ -15,12 +15,22 @@
             }
         });
     }
+    
+    function mostrarFechaVencimiento(valor)
+    {
+        if(valor === '02' || valor === '04') {
+            $('#div_fecha_vencimiento').hide();
+        } else {
+            $('#div_fecha_vencimiento').show();
+        }
+    }
+    
     $(document).ready(function () {
         bootbox.setLocale('es');
         $("#b_nueva_solicitud_ncf").click(function (event) {
             event.preventDefault();
-            $("#modal_nueva_solicitud").modal('show');
-            document.f_nueva_solicitud_ncf.solicitud.focus();
+            $("#modal_nueva_solicitud_2018").modal('show');
+            document.f_nueva_solicitud_ncf_2018.solicitud.focus();
         });
     });
 </script>
@@ -46,218 +56,138 @@
                         {/loop}
                     </span>
                 </h1>
+                <p class="help-block bg-info">
+                    <span class="fa fa-info-circle fa-fw"></span>
+                    A partir del <b>01 de Mayo del 2018</b> se debe tener las nuevas secuencias de NCF para generar los comprobantes fiscales. Para que el sistema tome el NCF Correcto
+                    debe desactivar el 01 de Mayo sus Solicitudes de NCF anteriores y agregar las Nuevas Solicitudes, si deja activas las anteriores y agrega las nuevas el 
+                    sistema no tendrá la capacidad de saber que rango utilizar.
+                </p>
                 <p class="help-block">
-                    <span class="fa fa-info-circle"></span>&nbsp;Se debe registrar en esta página la lista de Solicitudes de NCF autorizadas por DGII en República Dominicana,
+                    <span class="fa fa-info-circle fa-fw"></span>
+                    Para más información puede revisar la 
+                    <a class="btn btn-sm btn-danger" target="_blank" href="http://www.dgii.gov.do/informacionTributaria/publicaciones/manualesTributarios/Documents/Guia-Informativa-NCF.pdf">
+                       <span class="fa fa-file fa-fw"></span>Guía Informativa sobre Comprobantes Fiscales
+                    </a>
+                    donde dá información de estos cambios.s
+                </p>
+                <p class="help-block">
+                    <span class="fa fa-info-circle fa-fw"></span>
+                    <b>NCF por sucursal:</b> Los rangos de NCF ya no se dan por sucursal, por lo que si quiere realizar esta tarea deberá pedir un rango mayor de NCF
+                    por tipo de documento y partir esta rango equitativamente entre sus sucursales, por ejemplo si solicita 100mil NCF y tiene 2 sucursales puede hacer que 
+                    la Sucursal Uno tenga el rango del 1 al 50000 y la Sucursal Dos tenga del rango 50001 al 100000, para lo cual deberá ingresar la solicitud
+                    de NCF para sucursal con su rango de numeros, si no desea tener el control de esta forma puede ingresar la Solicitud de NCF y colocar el almacén principal, 
+                    y el sistema automáticamente tomará este rango para todas las sucursales.
+                </p>
+                <p class="help-block">
+                    <span class="fa fa-info-circle fa-fw"></span>Se debe registrar en esta página la lista de Solicitudes de NCF autorizadas por DGII en República Dominicana,
                     si este no es su país, por favor revise su configuración ya que se activará información para este pais.
                     <a href="index.php?page=admin_empresa#facturacion">Ir a configuración de la empresa</a>.
                 </p>
-                <p class="help-block">
-                    <span class="fa fa-info-circle"></span>&nbsp;Si vas a usar cajas registradoras o TPVs debes asignar a las cajas el Area de Impresión correcta y esta debe ser una por cada Caja Registradora o TPV
-                </p>
             </div>
         </div>
     </div>
-    <table class="table table-responsive">
-        <thead>
-            <tr>
-                <th style="width: 180px;"><a href="{$fsc->almacen->url()}">Almac&eacute;n</a></th>
-                <th style="width: 80px;">Serie</th>
-                <th style="width: 80px;">Divisi&oacute;n</th>
-                <th style="width: 80px;">Punto Emi.</th>
-                <th style="width: 80px;">Area Imp.</th>
-                <th style="width: 260px;">Tipo Comprobante</th>
-                <th style="width: 120px;">Inicia</th>
-                <th style="width: 140px;">Fin</th>
-                <th style="width: 120px;">Correlativo</th>
-                <th>Contado</th>
-                <th>Activo</th>
-            </tr>
-        </thead>
-    {loop="$fsc->ncf_rango->all($fsc->empresa->id)"}
-    <form class="form" role="form" action="{$fsc->url()}" method="POST">
-        <input type="hidden" name="id" value="{$value->id}"/>
-        <input type="hidden" name="solicitud" value="{$value->solicitud}"/>
-    <tr>
-        <td>
-            <select name="codalmacen" class="form-control">
-                {loop="$fsc->almacen->all()"}
-                {if="$value1->codalmacen==$value2->codalmacen"}
-                <option value="{$value2->codalmacen}" selected="">{$value2->nombre}</option>
+    <div class="table-responsive">
+        <table class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th class="col-sm-1 text-center">Solicitud</th>
+                    <th class="col-sm-1 text-center">Autorización</th>
+                    <th class="col-sm-1 text-center">Almacén</th>
+                    <th class="col-sm-1 text-center">Serie</th>
+                    <th class="col-sm-2 text-center">Tipo Comprobante</th>
+                    <th class="col-sm-1 text-center">Inicia</th>
+                    <th class="col-sm-1 text-center">Fin</th>
+                    <th class="col-sm-1 text-center">Correlativo</th>
+                    <th class="col-sm-1 text-center">Fec. Vencimiento</th>
+                    <th class="col-sm-1 text-center">Activo</th>
+                    <th class="col-sm-1 text-center"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {loop="$fsc->ncf_rango->all($fsc->empresa->id)"}
+                <form class="form" role="form" action="{$fsc->url()}" method="POST">
+                <tr {if="!$value->estado"}class="bg-danger"{/if}>
+                    <td>
+                        <input type="hidden" name="id" value="{$value->id}"/>
+                        <input type="hidden" name="solicitud" value="{$value->solicitud}"/>
+                        <input type="hidden" name="autorizacion" value="{$value->autorizacion}"/>
+                        {$value->solicitud}
+                    </td>
+                    <td>{$value->autorizacion}</td>
+                    <td>
+                        <select name="codalmacen" class="form-control">
+                            {loop="$fsc->almacen->all()"}
+                            <option value="{$value2->codalmacen}"{if="$value1->codalmacen==$value2->codalmacen"} selected=""{/if}>{$value2->nombre}</option>
+                            {/loop}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="serie" class="form-control">
+                        {loop="$fsc->array_series"}                        
+                            <option value="{$value2[0]}"{if="$value1->serie==$value2[0]"} selected=""{/if}>{$value2[0]}</option>
+                        {/loop}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="tipo_comprobante" class="form-control">
+                            {loop="$fsc->ncf_tipo->all()"}
+                                {if="$value1->tipo_comprobante==$value2->tipo_comprobante"}
+                                <option value="{$value2->tipo_comprobante}" selected="">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
+                                {else}
+                                <option value="{$value2->tipo_comprobante}">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
+                                {/if}
+                            {/loop}
+                        </select>
+                    </td>
+                    <td>
+                        <input class="form-control text-right" type="number" name="secuencia_inicio" min="1" max="99999999" value="{$value->secuencia_inicio}" autocomplete="off"/>
+                    </td>
+                    <td>
+                        <input class="form-control text-right" type="number" name="secuencia_fin" min="1" max="99999999" value="{$value->secuencia_fin}" autocomplete="off"/>
+                    </td>
+                    <td>
+                        <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
+                    </td>
+                    <td>
+                        <input class="form-control datepicker" type="text" name="fecha_vencimiento" value="{$value->fecha_vencimiento}" autocomplete="off"/>
+                    </td>
+                    <td class="text-center">
+                        <div class="checkbox">
+                        <input type="checkbox" name="estado" value="TRUE" {if="$value->estado=='t'"}checked=""{/if}/>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            {if="$fsc->allow_delete"}
+                                {if="$value->correlativo>$value->secuencia_inicio"}
+                                <a class="btn btn-sm btn-warning pull-left" onclick="bootbox.alert('No puedes eliminar esta información porque ya esta en uso.')">
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                </a>
+                                {else}
+                                <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->id}')">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </a>
+                                {/if}
+                            {/if}
+                            <button class="btn btn-sm btn-primary" name="accion" value="modificar" type="submit">
+                                <span class="glyphicon glyphicon-floppy-disk"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </form>
                 {else}
-                <option value="{$value2->codalmacen}">{$value2->nombre}</option>
-                {/if}
+                <tr>
+                    <td colspan="10">
+                         <div class="alert alert-danger">Ninguna solicitud de NCF registrada.</div>
+                    </td>
+                </tr>
                 {/loop}
-            </select>
-        </td>
-        <td>
-            <select name="serie" class="form-control">
-                {loop="$fsc->array_series"}
-                {if="$value1->serie==$value2[0]"}
-                <option value="{$value2[0]}" selected="">{$value2[0]}</option>
-                {else}
-                <option value="{$value2[0]}">{$value2[0]}</option>
-                {/if}
-                {/loop}
-            </select>
-        </td>
-        <td>
-            <input class="form-control" type="number" name="division" min="1" max="999" value="{$value->division}" autocomplete="off"/>
-        </td>
-        <td>
-            <input class="form-control" type="number" name="punto_emision" min="1" max="999" value="{$value->punto_emision}" autocomplete="off"/>
-        </td>
-        <td>
-            <input class="form-control" type="number" name="area_impresion" min="1" max="999" value="{$value->area_impresion}" autocomplete="off"/>
-        </td>
-        <td>
-            <select name="tipo_comprobante" class="form-control">
-                {loop="$fsc->ncf_tipo->all()"}
-                {if="$value1->tipo_comprobante==$value2->tipo_comprobante"}
-                <option value="{$value2->tipo_comprobante}" selected="">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
-                {else}
-                <option value="{$value2->tipo_comprobante}">{$value2->tipo_comprobante} - {$value2->descripcion}</option>
-                {/if}
-                {/loop}
-            </select>
-        </td>
-        <td>
-            <input class="form-control text-right" type="number" name="secuencia_inicio" min="1" max="99999999" value="{$value->secuencia_inicio}" autocomplete="off"/>
-        </td>
-        <td>
-            <input class="form-control text-right" type="number" name="secuencia_fin" min="1" max="99999999" value="{$value->secuencia_fin}" autocomplete="off"/>
-        </td>
-        <td>
-            <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
-        </td>
-        <td class="text-center">
-            <input type="checkbox" name="contado" value="TRUE" {if="$value->contado=='t'"}checked=""{/if}/>
-        </td>
-        <td class="text-center">
-            <input type="checkbox" name="estado" value="TRUE" {if="$value->estado=='t'"}checked=""{/if}/>
-        </td>
-        <td>
-            <div class="form-group">
-                {if="$fsc->allow_delete"}
-                {if="$value->correlativo>$value->secuencia_inicio"}
-                <a class="btn btn-sm btn-warning pull-left" onclick="bootbox.alert('No puedes eliminar esta información porque ya esta en uso.')">
-                    <span class="glyphicon glyphicon-lock"></span>
-                </a>
-                {else}
-                <a class="btn btn-sm btn-danger pull-left" onclick="delete_datos_solicitud('{$fsc->url()}&delete={$value->id}')">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </a>
-                {/if}
-                {/if}
-                <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
-                    <span class="glyphicon glyphicon-floppy-disk"></span>
-                </button>
-            </div>
-        </td>
-    </tr>
-    </form>
-    {else}
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="alert alert-danger">Ninguna solicitud de NCF registrada.</div>
-        </div>
+            </tbody>
+        </table>
     </div>
-    {/loop}
-    </table>
 </div>
 
-<div class="modal" id="modal_nueva_solicitud">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form name="f_nueva_solicitud_ncf" action="{$fsc->url()}" method="post" class="form-horizontal" role="form">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Nueva Solicitud de NCF</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Solicitud:</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="text" name="solicitud" maxlength="4" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">
-                            <a href="{$fsc->almacen->url()}">Almacén</a>:
-                        </label>
-                        <div class="col-sm-8">
-                            <select name="codalmacen" class="form-control">
-                                {loop="$fsc->almacen->all()"}
-                                <option value="{$value->codalmacen}"{if="$value->is_default()"} selected=""{/if}>{$value->nombre}</option>
-                                {/loop}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Serie: (A - U)</label>
-                        <div class="col-sm-8">
-                            <select name="serie" class="form-control">
-                                {loop="$fsc->array_series"}
-                                <option value="{$value[0]}">{$value[0]}</option>
-                                {/loop}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">División: (00)</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="number" name="division" min="1" max="99" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Punto de emisión: (000)</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="number" name="punto_emision" min="1" max="999" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Area de impresión: (000)</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="number" name="area_impresion" min="1" max="999" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Tipo Comprobante: (00)</label>
-                        <div class="col-sm-8">
-                            <select name="tipo_comprobante" class="form-control">
-                                {loop="$fsc->ncf_tipo->all()"}
-                                <option value="{$value->tipo_comprobante}">{$value->tipo_comprobante} - {$value->descripcion}</option>
-                                {/loop}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Secuencia Inicio:</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="number" name="secuencia_inicio" min="1" max="99999999" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Secuencia Fin:</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" autocomplete="off"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Aplica a registros al <b>Contado</b>?:</label>
-                        <div class="col-sm-8 text-left">
-                            <input class="form-control" type="checkbox" name="contado" value="TRUE"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
-                       this.form.submit();">
-                        <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{include="modal_nueva_solicitud_ncf_2018"}
 
 {include="footer"}

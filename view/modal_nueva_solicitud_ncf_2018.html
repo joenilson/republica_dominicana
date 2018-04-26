@@ -1,0 +1,103 @@
+<!--
+Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<div class="modal" id="modal_nueva_solicitud_2018">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form name="f_nueva_solicitud_ncf_2018" action="{$fsc->url()}" method="post" class="form-horizontal" role="form">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Nueva Solicitud de NCF 2018</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="hidden" name="estado" value="TRUE">
+                            <label class="control-label">Nro Solicitud:</label>
+                            <input class="form-control" required type="number" name="solicitud" autocomplete="off" placeholder="Número de solicitud"/>
+                            <span class="help-block">Solicitud Oficina Virtual menos los 3 primeros dígitos 800XXXXXXX</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="control-label">Nro Autorización:</label>
+                            <input class="form-control" required type="number" name="autorizacion" autocomplete="off" placeholder="Autorización DGII"/>
+                            <span class="help-block">Autorización de la DGII menos los 3 primeros dígitos 800XXXXXXX</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-8">
+                            <label class="control-label">Tipo Comprobante: (00)</label>
+                            <select name="tipo_comprobante" required class="form-control" onChange="mostrarFechaVencimiento(this.value)">
+                                {loop="$fsc->ncf_tipo->all()"}
+                                <option value="{$value->tipo_comprobante}">{$value->tipo_comprobante} - {$value->descripcion}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                        <div class="col-sm-4" id="div_fecha_vencimiento">
+                            <label class="control-label">Fecha de Vencimiento:</label>
+                            <input class="form-control datepicker" type="text" name="fecha_vencimiento" placeholder="Fec. venc. documento" value="" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            <label class="control-label">Serie: (A - Z)</label>
+
+                            <select name="serie" required class="form-control">
+                                {loop="$fsc->array_series"}
+                                <option value="{$value[0]}">{$value[0]}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="control-label">Secuencia Inicio:</label>
+                            <input class="form-control" type="number" name="secuencia_inicio" min="1" max="99999999" required autocomplete="off"/>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="control-label">Secuencia Fin:</label>
+                            <input class="form-control" type="number" name="secuencia_fin" min="1" max="99999999" required placeholder="Cantidad Aprobada" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-8">
+                            <label class="control-label">
+                                <a href="{$fsc->almacen->url()}">Almacén</a>:
+                            </label>                        
+                            <select name="codalmacen" class="form-control">
+                                {loop="$fsc->almacen->all()"}
+                                <option value="{$value->codalmacen}"{if="$value->is_default()"} selected=""{/if}>{$value->nombre}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 bg-warning">
+                        <p class="text-justify">
+                            A partir del 01 de Mayo del 2018 la DGII no controlará los correlativos de NCF por Area/Almacén/Oficina/Lugar/Sucursal de impresión.
+                        </p>
+                        <p class="text-justify">
+                            Al momento de imprimirse un documento esté mostrará Area/Almacén/Oficina/Lugar/Sucursal de impresión por lo que deberán colocar el nombre 
+                            correcto y datos del mismo en la opción de <a href="{$fsc->almacen->url()}">Almacenes</a> y al momento de generar su factura elegir el almacén que 
+                            despachará los artículos.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-primary" name="accion" value="guardar" type="submit">
+                        <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

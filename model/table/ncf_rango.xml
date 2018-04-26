@@ -6,14 +6,19 @@
 -->
 <tabla>
     <columna>
+        <nombre>autorizacion</nombre>
+        <tipo>integer</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>area_impresion</nombre>
         <tipo>character varying(3)</tipo>
-        <nulo>NO</nulo>
+        <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>codalmacen</nombre>
         <tipo>character varying(4)</tipo>
-        <nulo>NO</nulo>
+        <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>contado</nombre>
@@ -28,7 +33,7 @@
     <columna>
         <nombre>division</nombre>
         <tipo>character varying(2)</tipo>
-        <nulo>NO</nulo>
+        <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>estado</nombre>
@@ -46,6 +51,11 @@
         <nulo>YES</nulo>
     </columna>
     <columna>
+        <nombre>fecha_vencimiento</nombre>
+        <tipo>date</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>id</nombre>
         <tipo>serial</tipo>
         <nulo>NO</nulo>
@@ -59,7 +69,7 @@
     <columna>
         <nombre>punto_emision</nombre>
         <tipo>character varying(3)</tipo>
-        <nulo>NO</nulo>
+        <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>secuencia_fin</nombre>

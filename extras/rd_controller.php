@@ -57,6 +57,8 @@ class rd_controller extends fbase_controller
     public $documentosDir;
     public $exportDir;
     public $publicPath;
+    public $ncf_length;
+    public $tipo_documento_pos;
     protected function private_core()
     {
         $this->agente = new agente();
@@ -72,7 +74,7 @@ class rd_controller extends fbase_controller
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->ncf_ventas = new ncf_ventas();
-        $this->array_series = \range('A', 'U');
+        $this->array_series = \range('A', 'Z');
         $fsvar = new fs_var();
         $this->multi_almacen = $fsvar->simple_get('multi_almacen');
         $this->periodos = range(2016, \date('Y'));
@@ -80,6 +82,8 @@ class rd_controller extends fbase_controller
         $this->control_usuarios();
         $this->get_config();
         $this->verificar_plugin_distribucion();
+        $this->ncf_length = 11;
+        $this->tipo_documento_pos = 1;
     }
 
     public function verificar_plugin_distribucion()
@@ -175,6 +179,16 @@ class rd_controller extends fbase_controller
         return $tipo_comprobante;
     }
 
+    public function generar_numero_ncf_old($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
+    {
+        $numero_ncf = $this->ncf_rango->generate_old($idempresa, $codalmacen, $tipo_comprobante, $condicion_pago);
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+            $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', no se podrá generar la Nota de Crédito.');
+            return false;
+        }
+        return $numero_ncf;
+    }
+
     public function generar_numero_ncf($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
     {
         $numero_ncf = $this->ncf_rango->generate($idempresa,$codalmacen, $tipo_comprobante, $condicion_pago);
@@ -187,6 +201,7 @@ class rd_controller extends fbase_controller
 
     public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
     {
+        $function_update = (\strtotime($factura->fecha) < (\strtotime('01-05-2018'))) ? 'update_old' : 'update';
         if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
             return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {
@@ -198,7 +213,7 @@ class rd_controller extends fbase_controller
             $ncf_factura->documento = $factura->idfactura;
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
-            $ncf_factura->area_impresion = substr($numero_ncf['NCF'], 6, 3);
+            $ncf_factura->area_impresion = NULL;
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;
             $ncf_factura->fecha_creacion = Date('d-m-Y H:i:s');
@@ -217,7 +232,7 @@ class rd_controller extends fbase_controller
             } else {
                 $factura->numero2 = $numero_ncf['NCF'];
                 $factura->save();
-                $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
+                $this->ncf_rango->$function_update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
             }
         }
     }

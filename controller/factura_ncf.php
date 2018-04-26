@@ -123,11 +123,14 @@ class factura_ncf extends rd_controller
                     $ncf_datos = new ncf_ventas();
                     $valores = $ncf_datos->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
                     $ncf_tipo = new ncf_tipo();
+                    $ncf_rango = new ncf_rango();
                     $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
+                    $tipo_comprobante_data = $ncf_rango->get_by_tipo($this->empresa->id, $tipo_comprobante->tipo_comprobante);
                     $this->factura->ncf = $valores->ncf;
                     $this->factura->ncf_afecta = $valores->ncf_modifica;
                     $this->factura->estado = $valores->estado;
                     $this->factura->tipo_comprobante = ($tipo_comprobante)?$tipo_comprobante->descripcion:'';
+                    $this->factura->fecha_vencimiento_comprobante = ($tipo_comprobante_data)?$tipo_comprobante_data->fecha_vencimiento:'';
                     if ($this->distrib_transporte) {
                         $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
                         $this->idtransporte = (isset($transporte[0]->idtransporte)) ? str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT) : false;
@@ -272,6 +275,7 @@ class factura_ncf extends rd_controller
         $pdf_doc->fdf_tipodocumento = $this->factura->tipo_comprobante;
         $pdf_doc->fdf_codigo = $this->factura->ncf;
         $pdf_doc->fdf_codigorect = $this->factura->ncf_afecta;
+        $pdf_doc->fdf_tipodocumento_vencimiento = $this->factura->fecha_vencimiento_comprobante;
         $pdf_doc->fdf_estado = ($this->factura->estado) ? "" : "DOCUMENTO ANULADO";
     }
 

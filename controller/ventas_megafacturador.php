@@ -492,11 +492,12 @@ class ventas_megafacturador extends rd_controller
              */
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $albaran->codcliente);
+            $funcion_generar_numero = (\strtotime($this->fecha_facturas_gen) < (\strtotime('01-05-2018'))) ? 'generar_numero_ncf_old':'generar_numero_ncf';  
             if (strlen($albaran->cifnif) < 9 and $tipo_comprobante == '01') {
                 $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
             }else{
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
+                $numero_ncf = $this->$funcion_generar_numero($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
                 $contador++;
                 $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);
             }
