@@ -103,8 +103,6 @@ class ncf extends fs_controller
         $fecha_vencimiento = \filter_input(INPUT_POST, 'fecha_vencimiento');
         $estado_val = \filter_input(INPUT_POST, 'estado');
         $estado = (isset($estado_val))?true:false;
-        $contado_val = \filter_input(INPUT_POST, 'contado');
-        $contado = (isset($contado_val))?true:false;
         
         $ncf0 = $this->ncf_rango->get_information($this->empresa->id, $solicitud, $autorizacion, $serie, $tipo_comprobante, $estado);
         if ($id) {
@@ -132,40 +130,11 @@ class ncf extends fs_controller
         $ncf0->usuario_modificacion = $this->user->nick;
         $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');
         $ncf0->estado = $estado;
-        $ncf0->contado = $contado;
         if ($ncf0->save()) {
             $this->new_message("Datos de la Solicitud " . $ncf0->solicitud . " guardados correctamente.");
         } else {
             $this->new_error_msg("¡Imposible guardar los datos de la solicitud!");
         }
 
-    }
-
-    protected function verifica_correlativo_old($ncf, $correlativo)
-    {
-        $ultimo_correlativo = 0;
-        if (($ncf->correlativo != $correlativo) and ($ncf->correlativo > $ncf->secuencia_inicio)) {
-            $this->ncf_ventas = new ncf_ventas();
-            $facturas = $this->ncf_ventas->get_tipo_old($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
-            if ($facturas) {
-                $ultimo_documento = end($facturas);
-                $ultimo_correlativo = substr($ultimo_documento->ncf, 12, 8)+0;
-            }
-        }
-        return $ultimo_correlativo;
-    }
-    
-    protected function verifica_correlativo($ncf, $correlativo)
-    {
-        $ultimo_correlativo = 0;
-        if (($ncf->correlativo != $correlativo) and ($ncf->correlativo > $ncf->secuencia_inicio)) {
-            $this->ncf_ventas = new ncf_ventas();
-            $facturas = $this->ncf_ventas->get_ultimo_documento($ncf->idempresa, $ncf->tipo_comprobante, $ncf->codalmacen, $ncf->area_impresion);
-            if ($facturas) {
-                $ultimo_documento = end($facturas);
-                $ultimo_correlativo = substr($ultimo_documento->ncf, -8)+0;
-            }
-        }
-        return $ultimo_correlativo;
     }
 }

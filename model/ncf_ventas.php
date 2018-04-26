@@ -278,16 +278,19 @@ class ncf_ventas extends fs_model
     
     public function get_ultimo_documento($idempresa, $tipo_comprobante, $codalmacen)
     {
+        $lista = array();
         $sql = "SELECT * from ".$this->table_name." WHERE ".
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "codalmacen = ".$this->var2str($codalmacen)." AND ".
                 "tipo_comprobante = ".$this->var2str($tipo_comprobante)." ".
                 "ORDER BY idempresa, fecha DESC LIMIT 1";
+        $data = $this->db->select($sql);
         if ($data) {
             foreach ($data as $d) {
                 $lista[] = new ncf_ventas($d);
             }
         }
+        return $lista;
     }
 
     public function info_factura($idfactura)

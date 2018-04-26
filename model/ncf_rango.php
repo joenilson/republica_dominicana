@@ -156,7 +156,7 @@ class ncf_rango extends fs_model
             $this->contado = $this->str2bool($t['contado']);
         } else {
             $this->id = null;
-            $this->idempresa = null;
+            $this->idempresa = 1;
             $this->autorizacion = 0;
             $this->solicitud = 0;
             $this->codalmacen = null;
@@ -396,10 +396,9 @@ class ncf_rango extends fs_model
      * @param type $codpago
      * @return type array
      */
-    public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago)
+    public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago = '')
     {
         $ncf = array('NCF'=>'NO_DISPONIBLE');
-        $contado = ($codpago == 'CONT')?"TRUE":"FALSE";
         $data = $this->db->select("SELECT ".
         " * ".
         " FROM ".$this->table_name.

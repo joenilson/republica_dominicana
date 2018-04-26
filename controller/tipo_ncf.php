@@ -104,6 +104,7 @@ class tipo_ncf extends fs_controller
         $ncf_tipo = new ncf_tipo();
         $nombresRestaurados = $ncf_tipo->restore_names();
         $this->template = false;
+        $data = array();
         $data['success']=true;
         $data['cantidad']=$nombresRestaurados;
         header('Content-Type: application/json');
