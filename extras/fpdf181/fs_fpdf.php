@@ -668,7 +668,9 @@ class PDF_MC_Table extends FPDF
         $y1++;
         $this->SetXY($r1+1, $y1+4);
         if (empty($estado)) {
-            $this->MultiCell($r2-$r1-1, 3, utf8_decode('Válida hasta: '.$fecha_vencimiento), 0, "C");
+            if ($fecha_vencimiento) {
+                $this->MultiCell($r2-$r1-1, 3, utf8_decode('Válida hasta: '.$fecha_vencimiento), 0, "C");
+            }
         } else {
             $this->MultiCell($r2-$r1-1, 3, 'Estado: '.$estado, 0, "C");
         }
