@@ -599,8 +599,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 {loop="$fsc->total_forma_pago_dgii"}
                                 <tr>
                                     <td class="col-sm-2"><strong>{$value->codpago}</strong></td>
-                                    <td class="col-sm-2 text-right">{$fsc->show_numero($value->totalneto)}</td>
                                     <td class="col-sm-2 text-right">{$fsc->show_numero($value->totaliva)}</td>
+                                    <td class="col-sm-2 text-right">{$fsc->show_numero($value->totalneto)}</td>
                                     <td class="col-sm-2 text-right">{$fsc->show_numero(($value->totalneto+$value->totaliva))}</td>
                                     <!-- {$total_neto += $value->totalneto} !-->
                                     <!-- {$total_iva += $value->totaliva} !-->
@@ -615,8 +615,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             <tfoot>
                                 <tr>
                                     <th>Total</th>
-                                    <th class="col-sm-2 text-right">{$fsc->show_numero($total_neto)}</th>
                                     <th class="col-sm-2 text-right">{$fsc->show_numero($total_iva)}</th>
+                                    <th class="col-sm-2 text-right">{$fsc->show_numero($total_neto)}</th>
                                     <th class="col-sm-2 text-right">{$fsc->show_numero($total_general)}</th>
                                 </tr>
                             </tfoot>
