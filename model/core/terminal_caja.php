@@ -91,6 +91,7 @@ class terminal_caja extends \fs_model
     /**
      * El punto de emisión configurado en el maestro de NCF
      * @var varchar(3)
+     * @deprecated since version 134
      */
     public $area_impresion;
     /**
@@ -151,7 +152,7 @@ class terminal_caja extends \fs_model
         if ($this->db->select("SELECT * FROM cajas WHERE f_fin IS NULL AND fs_id = " . $this->var2str($this->id) . ";")) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -270,7 +271,7 @@ class terminal_caja extends \fs_model
         if (is_null($this->id)) {
             return false;
         }
-        
+
         return $this->db->select("SELECT * FROM cajas_terminales WHERE id = " . $this->var2str($this->id) . ";");
     }
 
@@ -308,7 +309,7 @@ class terminal_caja extends \fs_model
             $this->id = $this->db->lastval();
             return true;
         }
-        
+
         return false;
     }
 

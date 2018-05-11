@@ -163,7 +163,6 @@
                      <th width="90">ID</th>
                      <th>Almacén</th>
                      <th>Serie</th>
-                     <th>Area Imp. NCF</th>
                      <th>Código Cliente</th>
                      <th width="145">Caracteres por linea</th>
                      <th>Comando corte</th>
@@ -199,9 +198,6 @@
                            {/if}
                         {/loop}
                         </select>
-                     </td>
-                     <td>
-                         <input type="text" name="area_impresion" value="{$value->area_impresion}" class="form-control" maxlength="3" minlength="3" placeholder="000" autocomplete="off"/>
                      </td>
                      <td>
                         <input type="text" name="codcliente" value="{$value->codcliente}" class="form-control" maxlength="6" placeholder="Código" autocomplete="off"/>
@@ -259,9 +255,6 @@
                            <option value="{$value->codserie}">{$value->descripcion}</option>
                            {/loop}
                         </select>
-                     </td>
-                     <td>
-                         <input type="text" name="area_impresion" class="form-control" maxlength="3" minlength="3" placeholder="000" autocomplete="off"/>
                      </td>
                      <td><input type="text" name="codcliente" class="form-control" maxlength="6" placeholder="Código" autocomplete="off"/></td>
                      <td>

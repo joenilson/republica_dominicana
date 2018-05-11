@@ -65,13 +65,13 @@ class ncf_rango extends fs_model
      * Punto de emisión del documento
      * @deprecated since version 133
      * @var string
-     */    
+     */
     public $punto_emision;
     /**
      * Area de impresión del documento
      * @deprecated since version 133
      * @var string
-     */    
+     */
     public $area_impresion;
     /**
      * Tipo de Comprobante Fiscal
@@ -115,7 +115,7 @@ class ncf_rango extends fs_model
     public $usuario_modificacion;
     /**
      * Fecha de Modificaión del registro
-     * @var string 
+     * @var string
      */
     public $fecha_modificacion;
     /**
@@ -239,7 +239,7 @@ class ncf_rango extends fs_model
             return false;
         }
     }
-    
+
     public function get_by_tipo($idempresa, $tipo_comprobante)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
@@ -251,7 +251,7 @@ class ncf_rango extends fs_model
             return false;
         }
     }
-    
+
     public function get_information($idempresa, $solicitud, $autorizacion, $serie, $tipo_comprobante, $estado)
     {
         $data = $this->db->select("SELECT * FROM ncf_rango WHERE ".
@@ -544,7 +544,6 @@ class ncf_rango extends fs_model
             $sql_almacen.
             "serie = ".$this->var2str(\substr($ncf, 0, 1))." AND ".
             "tipo_comprobante = ".$this->var2str(\substr($ncf, 1, 2))." and estado = true;";
-        $this->new_message($sql);
         return $this->db->exec($sql);
     }
 
@@ -591,7 +590,7 @@ class ncf_rango extends fs_model
         }
         return $solicitud;
     }
-    
+
     public function verificar_solicitud($idempresa, $codalmacen, $ncf, $solicitud)
     {
         $sql = "SELECT solicitud FROM ".$this->table_name.
@@ -604,10 +603,10 @@ class ncf_rango extends fs_model
         $data = $this->db->select($sql);
         if($data) {
             return true;
-        } 
+        }
         return false;
     }
-    
+
     public function get_correlativo_old($idempresa, $codalmacen, $ncf)
     {
         $sql = "SELECT correlativo FROM ".$this->table_name.
@@ -626,7 +625,7 @@ class ncf_rango extends fs_model
         }
         return $item;
     }
-    
+
     public function get_correlativo($idempresa, $codalmacen, $ncf)
     {
         $sql = "SELECT correlativo, solicitud FROM ".$this->table_name.

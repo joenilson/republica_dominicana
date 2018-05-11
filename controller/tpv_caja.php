@@ -70,7 +70,7 @@ class tpv_caja extends rd_controller
     {
         $terminal->codalmacen = $_POST['codalmacen'];
         $terminal->codserie = $_POST['codserie'];
-        $terminal->area_impresion = $_POST['area_impresion'];
+        $terminal->area_impresion = '001';
         $terminal->codcliente = NULL;
         if ($_POST['codcliente'] != '') {
             $terminal->codcliente = $_POST['codcliente'];
@@ -95,7 +95,7 @@ class tpv_caja extends rd_controller
         if ($t2) {
             $t2->codalmacen = $_POST['codalmacen'];
             $t2->codserie = $_POST['codserie'];
-            $t2->area_impresion = $_POST['area_impresion'];
+            $t2->area_impresion = '001';
             $t2->codcliente = NULL;
             if ($_POST['codcliente'] != '') {
                 $t2->codcliente = $_POST['codcliente'];
