@@ -77,7 +77,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <a href="#detalle-ventas-agente" aria-controls="detalle-ventas" role="tab" data-toggle="tab" onclick="seleccionar('detalle-ventas-agente');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Detalle Ventas por Vendedor
                     </a>
-                </li>                
+                </li>
                 <li role="presentation" {if="$fsc->reporte=='resumen-ventas'"}class="active"{/if}>
                     <a href="#resumen-ventas" aria-controls="resumen-ventas" role="tab" data-toggle="tab" onclick="seleccionar('resumen-ventas');">
                         <span class="glyphicon glyphicon-book"></span> &nbsp; Resumen de Ventas
@@ -328,7 +328,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             data-side-pagination="server">
                         <thead>
                             <tr>
-                                <th colspan="17" class="text-center">Detalle de Ventas por Vendedor del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="18" class="text-center">Detalle de Ventas por Vendedor del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                           <tr class="text-center">
                               <th data-sortable="true" data-field="fecha" data-footer-formatter="totalTextFormatter">Fecha</th>
@@ -338,6 +338,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                               <th data-sortable="true" data-field="nombrecliente">Cliente</th>
                               <th data-sortable="true" data-field="cifnif">{#FS_CIFNIF#}</th>
                               <th data-sortable="true" data-field="ncf">NCF</th>
+                              <th data-sortable="true" data-field="direccion">Dirección</th>
                               <th data-sortable="true" data-field="idfactura">Id Fac</th>
                               <th data-sortable="true" data-field="afecta_a">Afecta A</th>
                               <th data-sortable="true" data-field="referencia">Codigo</th>
@@ -402,7 +403,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <div class="row">
                         <div class="col-sm-2"><strong>Total Facturado</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalMonto)}</div>
-                    </div>                    
+                    </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-compras'"}active{/if}" id="reporte-compras">
                     <table id="table-reporte-compras"
@@ -531,11 +532,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <div class="row">
                         <div class="col-sm-2"><strong>Total {#FS_IVA#}</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalItbis)}</div>
-                    </div>                    
+                    </div>
                     <div class="row">
                         <div class="col-sm-2"><strong>Total Neto</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalNeto)}</div>
-                    </div>                    
+                    </div>
                 </div>
                 <div role="tabpanel" class="tab-pane {if="$fsc->reporte=='reporte-607'"}active{/if}" id="reporte-607">
                     <table id="table-reporte-607"
@@ -576,7 +577,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <div class="row">
                         <div class="col-sm-2"><strong>Total {#FS_IVA#}</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalItbis)}</div>
-                    </div>                    
+                    </div>
                     <div class="row">
                         <div class="col-sm-2"><strong>Total Neto</strong></div>
                         <div class="col-sm-2 text-right">{$fsc->show_numero($fsc->totalNeto)}</div>

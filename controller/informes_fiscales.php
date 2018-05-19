@@ -297,7 +297,7 @@ class informes_fiscales extends rd_controller
         $sql_resumen = "SELECT t1.tipo,sum(CASE WHEN pagada = 'Si' THEN total ELSE 0 END) as total_pagada,sum(total) as total_general FROM (".
                 $sql_consolidado.") as t1 GROUP BY t1.tipo;";
         $data_resumen = $this->db->select($sql_resumen);
-        
+
         $sql_forma_pago = "SELECT codpago, sum(total) as total ".
         " FROM (".
         $sql_consolidado.") as t1 WHERE tipo = 'Venta' group by codpago ORDER BY codpago;";
@@ -308,7 +308,7 @@ class informes_fiscales extends rd_controller
                 $this->total_forma_pago[] = (object) $fpago;
             }
         }
-        
+
         if ($json) {
             $resultados = $this->db->select_limit($sql_consolidado, $this->limit, $this->offset);
         } else {
@@ -324,7 +324,7 @@ class informes_fiscales extends rd_controller
                 $this->sumaCompras += $linea['total_general'];
             }
         }
-        
+
         return array($resultados, $total_informacion);
     }
 
@@ -547,9 +547,16 @@ class informes_fiscales extends rd_controller
 
     public function reporteVentasAgente($almacenes, $json)
     {
+        $disabled = array();
+        if (defined('FS_DISABLED_PLUGINS')) {
+            foreach (explode(',', FS_DISABLED_PLUGINS) as $aux) {
+                $disabled[] = $aux;
+            }
+        }
+        $sql_data_nomina = (in_array('nomina', $GLOBALS['plugins']) and ! in_array('nomina', $disabled)) ? "',' ',a.segundo_apellido'":"";
         $total_informacion = 0;
-        $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre,' ',a.apellidos,' ',a.segundo_apellido) as nombre_vendedor, ".
-            " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, ".
+        $sql_ventas_agente = "SELECT fecha,f.codalmacen, f.codagente, concat(a.nombre$sql_data_nomina) as nombre_vendedor, ".
+            " g.nombre as grupo_cliente, f.nombrecliente, f.cifnif, f.direccion, ".
             " numero2 as ncf, f.idfactura, f.idfacturarect as afecta_a, referencia, lf.descripcion, ".
             " cantidad, pvpunitario as precio,((pvpunitario*cantidad)*(dtopor/100)) as descuento, pvptotal as monto, ".
             " fp.descripcion as forma_pago, ".
@@ -591,11 +598,11 @@ class informes_fiscales extends rd_controller
         $this->resultados_ventas_agente = $this->datos_reporte($this->reporte);
         $this->total_resultados_ventas = 0;
         $this->generar_excel(
-            array('Fecha','Almacén','Cod Vend.','Nombre Vendedor','Grupo de Cliente','Cliente','RNC','NCF','Id Fact','Afecta A','Articulo','Descripcion','Cantidad','Precio','Descuento','Monto','Forma Pago','Tipo'),
+            array('Fecha','Almacén','Cod Vend.','Nombre Vendedor','Grupo de Cliente','Cliente','RNC','Direccion','NCF','Id Fact','Afecta A','Articulo','Descripcion','Cantidad','Precio','Descuento','Monto','Forma Pago','Tipo'),
             $this->resultados_ventas_agente,
-            array('Total','','','','','','','','','','',$this->totalCantidad,'',$this->totalDescuento,$this->totalMonto,'',''),
+            array('Total','','','','','','','','','','','',$this->totalCantidad,'',$this->totalDescuento,$this->totalMonto,'',''),
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             false
         );
     }
