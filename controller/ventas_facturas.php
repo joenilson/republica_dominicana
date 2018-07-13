@@ -408,11 +408,52 @@ class ventas_facturas extends rd_controller
         }
     }
 
+    private function delete_factura()
+    {
+        $fact = $this->factura->get($_GET['delete']);
+        if ($fact) {
+            /// obtenemos las líneas de la factura antes de eliminar
+            $lineas = $fact->get_lineas();
+
+            if ($fact->delete()) {
+                $this->new_message('Factura '.$fact->idfactura.' - '.$fact->codigo.' del cliente '.$fact->nombrecliente.' por un valor de: '.$fact->total.' '.$fact->coddivisa.' del '.$fact->fecha.' eliminada por '.$this->user->nick, TRUE, 'log');
+                if (!$fact->anulada) {
+                    /// Restauramos el stock
+                    $art0 = new articulo();
+                    foreach ($lineas as $linea) {
+                        /// si la línea pertenece a un albarán no descontamos stock
+                        if (is_null($linea->idalbaran)) {
+                            $articulo = $art0->get($linea->referencia);
+                            if ($articulo) {
+                                $articulo->sum_stock($fact->codalmacen, $linea->cantidad, FALSE, $linea->codcombinacion);
+                            }
+                        }
+                    }
+                }
+
+                /// ¿Esta factura es rectificativa de otra?
+                if ($fact->idfacturarect) {
+                    $original = $this->factura->get($fact->idfacturarect);
+                    if ($original) {
+                        $original->anulada = FALSE;
+                        $original->save();
+                    }
+                }
+
+                $this->clean_last_changes();
+            } else {
+                $this->new_error_msg("¡Imposible eliminar la factura!");
+            }
+        } else {
+            $this->new_error_msg("Factura no encontrada.");
+        }
+    }
+
     /**
      * Cuando se le da a eliminar factura en realidad se anula
      * generando un albaran con las cantidades en negativo para retornar el stock
      */
-    private function delete_factura()
+    private function delete_factura_old()
     {
         $delete = \filter_input(INPUT_GET, 'delete');
         $motivo = \filter_input(INPUT_POST, 'motivo');

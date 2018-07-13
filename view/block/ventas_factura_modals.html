@@ -230,9 +230,10 @@
                </div>
             </div>
             <div class="modal-footer">
-               <button id="link_eliminar" type="button" class="btn btn-sm btn-danger pull-left">
-                  <span class="glyphicon glyphicon-trash"></span>&nbsp; Eliminar
-               </button>
+               <a class="btn btn-sm btn-danger pull-left" href="{$fsc->ppage->url()}&delete={$fsc->factura->idfactura}">
+                  <span class="glyphicon glyphicon-trash"></span>
+                  <span class='hidden-xs'>&nbsp;Eliminar</span>
+               </a>
                <button type="submit" class="btn btn-sm btn-warning">
                   <span class="glyphicon glyphicon-flag"></span>&nbsp; Anular
                </button>

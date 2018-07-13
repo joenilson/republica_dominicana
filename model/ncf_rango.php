@@ -494,7 +494,7 @@ class ncf_rango extends fs_model
         $solicitud = new ncf_rango($data);
         $rango = $solicitud->serie.$solicitud->tipo_comprobante;
         $correlativo = str_pad($solicitud->correlativo, 8, '0', STR_PAD_LEFT);
-        $ncf_number = ($correlativo == $solicitud->secuencia_fin)?"NO_DISPONIBLE":$rango.$correlativo;
+        $ncf_number = ($correlativo == ($solicitud->secuencia_fin+1))?"NO_DISPONIBLE":$rango.$correlativo;
         return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
     }
 
