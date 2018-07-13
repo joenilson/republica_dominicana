@@ -416,7 +416,8 @@ class ventas_facturas extends rd_controller
             $lineas = $fact->get_lineas();
 
             if ($fact->delete()) {
-                $this->new_message('Factura '.$fact->idfactura.' - '.$fact->codigo.' del cliente '.$fact->nombrecliente.' por un valor de: '.$fact->total.' '.$fact->coddivisa.' del '.$fact->fecha.' eliminada por '.$this->user->nick, TRUE, 'log');
+                $this->delete_ncf($fact);
+                $this->new_message('Factura '.$fact->idfactura.' '.$fact->codigo.' - '.$fact->numero2.' del cliente '.$fact->nombrecliente.' por un valor de: '.$fact->total.' '.$fact->coddivisa.' del '.$fact->fecha.' eliminada por '.$this->user->nick, TRUE, 'log');
                 if (!$fact->anulada) {
                     /// Restauramos el stock
                     $art0 = new articulo();

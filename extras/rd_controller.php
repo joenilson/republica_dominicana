@@ -179,6 +179,22 @@ class rd_controller extends fbase_controller
         return $tipo_comprobante;
     }
 
+    /**
+     * Delete a factura by sending the FacturaCliente object
+     * @param object $factura \Facturacliente
+     */
+    public function delete_ncf($factura)
+    {
+        $ncf = false;
+        if($factura->numero2) {
+            $ncf = $this->ncf_ventas->get($this->empresa->id, $factura->numero2);
+        }
+
+        if($ncf[0]) {
+            $ncf[0]->delete();
+        }
+    }
+
     public function generar_numero_ncf_old($idempresa,$codalmacen,$tipo_comprobante, $condicion_pago)
     {
         $numero_ncf = $this->ncf_rango->generate_old($idempresa, $codalmacen, $tipo_comprobante, $condicion_pago);

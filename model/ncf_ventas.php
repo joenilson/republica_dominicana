@@ -170,7 +170,7 @@ class ncf_ventas extends fs_model
 
     public function delete()
     {
-        return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
+        return $this->db->exec("DELETE FROM ncf_ventas WHERE idempresa = ".$this->intval($this->idempresa)." AND ncf = ".$this->var2str($this->ncf)." AND fecha = ".$this->var2str($this->fecha).";");
     }
 
     public function all($idempresa)
@@ -275,7 +275,7 @@ class ncf_ventas extends fs_model
 
         return $lista;
     }
-    
+
     public function get_ultimo_documento($idempresa, $tipo_comprobante, $codalmacen)
     {
         $lista = array();
