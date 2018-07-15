@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_once 'plugins/republica_dominicana/extras/simple_html_dom.php';
+require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 /**
  * Description of buscador_rnc
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class buscador_rnc extends fs_controller
+class buscador_rnc extends rd_controller
 {
     public $dgii_web;
     public $resultados;
@@ -35,7 +35,7 @@ class buscador_rnc extends fs_controller
     public $nombre;
     public $viewstate;
     public $eventvalidation;
-
+    public $offset;
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', false, false, true);
@@ -44,132 +44,114 @@ class buscador_rnc extends fs_controller
     protected function private_core()
     {
         parent::private_core();
+        $this->cargar_config();
+        $this->grupo = new grupo_clientes();
+        $this->grupos = $this->grupo->all();
+        $this->pais = new pais();
+        $this->serie = new serie();
         $this->resultados = false;
         $this->total_resultados = 0;
 
-        $tipo = filter_input(INPUT_POST, 'tipo');
+        $tipo = $this->filter_request('tipo');
         switch ($tipo) {
             case "buscar":
                 $this->buscar();
-                break;
-            case "guardar":
-                $this->guardar();
                 break;
             default:
                 break;
         }
     }
 
-    //Pedimos que nos den el VIEWSTATE y el EVENTVALIDATION a la página de busqueda
-    public function autorizacion()
-    {
-        $h = curl_init();
-        curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx');
-        curl_setopt($h, CURLOPT_HEADER, false);
-        curl_setopt($h, CURLOPT_RETURNTRANSFER, 1);
-        $result = curl_exec($h);
-        curl_close($h);
-        $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
-    }
-
-    //Si la busqueda no es por RNC y en su lugar es por nombre actualizamos viewstate y eventvalidation
-    public function actualizacion_autorizacion($tipoBusqueda)
-    {
-        $post = array(
-            '__EVENTTARGET' => 'rbtnlTipoBusqueda$1',
-            '__EVENTARGUMENT' => "",
-            '__LASTFOCUS' => "",
-            '__VIEWSTATE' => $this->viewstate,
-            '__EVENTVALIDATION' => $this->eventvalidation,
-            'rbtnlTipoBusqueda' => $tipoBusqueda,
-            'txtRncCed' => ''
-        );
-        $query = http_build_query($post);
-        $h = curl_init();
-        curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx');
-        curl_setopt($h, CURLOPT_POST, true);
-        curl_setopt($h, CURLOPT_POSTFIELDS, $query);
-        curl_setopt($h, CURLOPT_HEADER, false);
-        curl_setopt($h, CURLOPT_RETURNTRANSFER, 1);
-        $result = curl_exec($h);
-        curl_close($h);
-        $html = str_get_html($result);
-        $this->viewstate = $html->getElementById('#__VIEWSTATE', 0)->value;
-        $this->eventvalidation = $html->getElementById('#__EVENTVALIDATION', 0)->value;
-    }
-
     public function buscar()
     {
-        $this->autorizacion();
-        $rnc = filter_input(INPUT_POST, 'rnc');
-        $nombre = filter_input(INPUT_POST, 'nombre');
-        $tipoBusqueda = (!empty($rnc)) ? 0 : 1;
-        $valor_a_buscar = (!empty($rnc)) ? $rnc : strtoupper(trim($nombre));
+        $rnc = $this->filter_request('rnc');
+        $nombre = $this->filter_request('nombre');
+        $offset = $this->filter_request('offset');
         $this->rnc = $rnc;
         $this->nombre = $nombre;
-        $campo = (!empty($rnc)) ? 'txtRncCed' : 'txtRazonSocial';
-        $boton = (!empty($rnc)) ? 'btnBuscaRncCed' : 'btnBuscaRazonSocial';
-        if ($tipoBusqueda == 1) {
-            $this->actualizacion_autorizacion($tipoBusqueda);
+        $patronBusqueda = (!empty($rnc)) ? 0 : 1;
+        $paramValue = (!empty($rnc)) ? $rnc : strtoupper(trim($nombre));
+
+        $wsdlConn = $this->wdslConnection();
+
+        $this->total_resultados = ($patronBusqueda == 1)?$this->wdslSearchCount($wsdlConn, $paramValue):1;
+        if($this->total_resultados) {
+            $this->offset = (!empty($offset)) ? $offset : 0;
+            $this->wdslSearch($wsdlConn, $patronBusqueda, $paramValue, ($this->offset+1), (($this->offset)+50));
         }
-        $post = array(
-            '__EVENTTARGET' => "",
-            '__EVENTARGUMENT' => "",
-            '__LASTFOCUS' => "",
-            '__VIEWSTATE' => $this->viewstate,
-            '__EVENTVALIDATION' => $this->eventvalidation,
-            'rbtnlTipoBusqueda' => $tipoBusqueda,
-            $campo => $valor_a_buscar,
-            $boton => 'Buscar'
+    }
+
+    public function paginas()
+    {
+        $url = $this->url() . "&tipo=buscar"
+            . "&rnc=" . $this->rnc
+            . "&nombre=" . $this->nombre;
+
+        return $this->fbase_paginas($url, $this->total_resultados, $this->offset);
+    }
+
+    public function wdslConnection()
+    {
+        $client =  new \SoapClient('http://www.dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx?WSDL', array('soap_version' => SOAP_1_2));
+        return $client;
+    }
+
+    public function wdslSearch($wsdlConn, $patronBusqueda = 0, $paramValue = '', $inicioFilas, $filaFilas)
+    {
+        $result = $wsdlConn->__soapCall('GetContribuyentes', array('GetContribuyentes' => array('patronBusqueda'=>$patronBusqueda,'value'=>$paramValue, 'inicioFilas'=>$inicioFilas, 'filaFilas'=>$filaFilas, 'IMEI'=>0)));
+        $list = array();
+        $getResult = explode("@@@", $result->GetContribuyentesResult);
+        foreach($getResult as $line) {
+            $item = json_decode($line);
+            $this->buscarCliente($item);
+            $list[] = $item;
+        }
+
+        $this->resultados = $list;
+
+    }
+
+    public function wdslSearchCount($wsdlConn, $paramValue = '')
+    {
+        $result = $wsdlConn->__soapCall('GetContribuyentesCount', array('GetContribuyentesCount' => array('value'=>$paramValue, 'IMEI'=>0)));
+        return $result->GetContribuyentesCountResult;
+    }
+
+    public function buscarCliente(&$item)
+    {
+        $item->existe = false;
+        $item->codcliente = '';
+        $cli = new cliente();
+        if ($cliente = $cli->get_by_cifnif($item->RGE_RUC)) {
+            $item->existe = true;
+            $item->codcliente = $cliente->codcliente;
+        }
+    }
+
+    private function cargar_config()
+    {
+        $fsvar = new fs_var();
+        $this->nuevocli_setup = $fsvar->array_get(
+                array(
+            'nuevocli_cifnif_req' => 0,
+            'nuevocli_direccion' => 1,
+            'nuevocli_direccion_req' => 0,
+            'nuevocli_codpostal' => 1,
+            'nuevocli_codpostal_req' => 0,
+            'nuevocli_pais' => 0,
+            'nuevocli_pais_req' => 0,
+            'nuevocli_provincia' => 1,
+            'nuevocli_provincia_req' => 0,
+            'nuevocli_ciudad' => 1,
+            'nuevocli_ciudad_req' => 0,
+            'nuevocli_telefono1' => 0,
+            'nuevocli_telefono1_req' => 0,
+            'nuevocli_telefono2' => 0,
+            'nuevocli_telefono2_req' => 0,
+            'nuevocli_email' => 0,
+            'nuevocli_email_req' => 0,
+            'nuevocli_codgrupo' => '',
+            ), FALSE
         );
-        $query = http_build_query($post);
-
-        $h = curl_init();
-        curl_setopt($h, CURLOPT_URL, 'http://www.dgii.gov.do/app/WebApps/Consultas/rnc/RncWeb.aspx');
-        curl_setopt($h, CURLOPT_POST, true);
-        curl_setopt($h, CURLOPT_POSTFIELDS, $query);
-        curl_setopt($h, CURLOPT_HEADER, false);
-        curl_setopt($h, CURLOPT_RETURNTRANSFER, 1);
-        $result = curl_exec($h);
-        curl_close($h);
-        $html = str_get_html($result);
-        $vacio = trim($html->getElementById('#lblMsg', 0)->plaintext);
-        if ($vacio) {
-            $this->resultados = $html->getElementById('#lblMsg', 0)->plaintext;
-        } else {
-            $cabeceras = array();
-            $detalles = array();
-            foreach ($html->find('.tabla_titulo') as $lista) {
-                $cabeceras = $this->loop_lista($lista);
-            }
-            $this->cabecera = $cabeceras;
-            $lista_interna = 0;
-            foreach ($html->find('.GridItemStyle') as $lista) {
-                $detalles[$lista_interna] = $this->loop_lista($lista);
-                $lista_interna++;
-            }
-            foreach ($html->find('.bg_celdas_alt') as $lista) {
-                $detalles[$lista_interna] = $this->loop_lista($lista);
-                $lista_interna++;
-            }
-            $this->detalle = $detalles;
-            $this->total_cabecera = count($cabeceras);
-            $this->total_resultados = count($this->detalle);
-        }
-    }
-    
-    private function loop_lista($lista)
-    {
-        $array = array();
-        foreach ($lista->find('td') as $item) {
-            $array[] = $item->plaintext;
-        }
-        return $array;
-    }
-
-    public function guardar()
-    {
     }
 }
