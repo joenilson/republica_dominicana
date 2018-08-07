@@ -379,6 +379,7 @@ class terminal_caja extends \fs_model
         $linea .= $factura->fecha . " " . Date('H:i', strtotime($factura->hora)) . "\n";
         $this->add_linea($linea);
         $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
+        $this->add_linea(FS_CIFNIF.": " . $this->sanitize($factura->cifnif) . "\n");
         $this->add_linea("Empleado: " . $factura->codagente . "\n\n");
 
         if ($imprimir_observaciones) {
