@@ -179,6 +179,8 @@ class ncf_tipo extends fs_model
     
     public function restore_names()
     {
+        $sqlClean = "DELETE FROM ".$this->table_name." WHERE tipo_comprobante=''";
+        $this->db->exec($sqlClean);
         $counter = 0;
         foreach($this->array_comprobantes as $comprobante) {
             $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($comprobante['descripcion']).
