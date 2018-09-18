@@ -75,7 +75,7 @@ class tipo_ncf extends fs_controller
         $tc0->ventas = $ventas;
         $tc0->compras = $compras;
         $tc0->contribuyente = $contribuyente;
-        $tc0->estado = ($estado) ? "TRUE" : "FALSE";
+        $tc0->estado = ($estado) ? true : false;
         if ($tc0->save()) {
             $this->new_message('¡Tipo de comprobante agregado con exito!');
         } else {
