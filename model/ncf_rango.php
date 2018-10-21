@@ -20,66 +20,80 @@
 /**
  * Description of ncf_rango
  *
- * @author Joe Nilson <joenilson@gmail.com>
+ * @author  Joe Nilson <joenilson@gmail.com>
+ * @license LGPLv3 
  */
 class ncf_rango extends fs_model
 {
     /**
      * Id del registro
+     * 
      * @var integer
      */
     public $id;
     /**
      * Id de la empresa
+     * 
      * @var integer
      */
     public $idempresa;
     /**
      * Número de Solicitud a DGII
+     * 
      * @var integer
      */
     public $solicitud;
     /**
      * Número de Autorización de DGII
+     * 
      * @var integer
      */
     public $autorizacion;
     /**
      * Codigo de Almacen
+     * 
      * @var string
      */
     public $codalmacen;
     /**
      * Letra de Serie
+     * 
      * @var string
      */
     public $serie;
     /**
-     * División desde donde se imprimie
+     * División desde donde se imprime
+     * 
      * @deprecated since version 133
+     * 
      * @var string
      */
     public $division;
     /**
      * Punto de emisión del documento
-     * Punto de emisión del documento
+     * 
      * @deprecated since version 133
+     * 
      * @var string
      */
     public $punto_emision;
     /**
      * Area de impresión del documento
-     * @deprecated since version 133
-     * @var string
+     * 
+     * @deprecated since version 133 
+     * 
+     * @var string 
      */
     public $area_impresion;
     /**
      * Tipo de Comprobante Fiscal
-     * @var string
+     * 
+     * @var string 
      */
     public $tipo_comprobante;
     /**
      * Secuencia de inicio de los comprobantes
+     * 
      * @var integer
      */
     public $secuencia_inicio;
@@ -272,26 +286,26 @@ class ncf_rango extends fs_model
     {
         if ($this->exists()) {
             $sql = "UPDATE ncf_rango SET ".
-                    "solicitud = ".$this->intval($this->solicitud).", ".
-                    "autorizacion = ".$this->intval($this->autorizacion).", ".
-                    "codalmacen = ".$this->var2str($this->codalmacen).", ".
-                    "serie = ".$this->var2str($this->serie).", ".
-                    "division = ".$this->var2str($this->division).", ".
-                    "punto_emision = ".$this->var2str($this->punto_emision).", ".
-                    "area_impresion = ".$this->var2str($this->area_impresion).", ".
-                    "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
-                    "secuencia_inicio = ".$this->intval($this->secuencia_inicio).", ".
-                    "secuencia_fin = ".$this->intval($this->secuencia_fin).", ".
-                    "correlativo = ".$this->intval($this->correlativo).", ".
-                    "estado = ".$this->var2str($this->estado).", ".
-                    "contado = ".$this->var2str($this->contado).", ".
-                    "fecha_vencimiento = ".$this->var2str($this->fecha_vencimiento).", ".
-                    "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
-                    "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
-                    "WHERE ".
-                    "id = ".$this->intval($this->id)." AND ".
-                    "idempresa = ".$this->intval($this->idempresa).";";
-            if($this->db->exec($sql)) {
+                "solicitud = ".$this->intval($this->solicitud).", ".
+                "autorizacion = ".$this->intval($this->autorizacion).", ".
+                "codalmacen = ".$this->var2str($this->codalmacen).", ".
+                "serie = ".$this->var2str($this->serie).", ".
+                "division = ".$this->var2str($this->division).", ".
+                "punto_emision = ".$this->var2str($this->punto_emision).", ".
+                "area_impresion = ".$this->var2str($this->area_impresion).", ".
+                "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
+                "secuencia_inicio = ".$this->intval($this->secuencia_inicio).", ".
+                "secuencia_fin = ".$this->intval($this->secuencia_fin).", ".
+                "correlativo = ".$this->intval($this->correlativo).", ".
+                "estado = ".$this->var2str($this->estado).", ".
+                "contado = ".$this->var2str($this->contado).", ".
+                "fecha_vencimiento = ".$this->var2str($this->fecha_vencimiento).", ".
+                "usuario_modificacion = ".$this->var2str($this->usuario_modificacion).", ".
+                "fecha_modificacion = ".$this->var2str($this->fecha_modificacion)." ".
+                "WHERE ".
+                "id = ".$this->intval($this->id)." AND ".
+                "idempresa = ".$this->intval($this->idempresa).";";
+            if ($this->db->exec($sql)) {
                 return true;
             } else {
                 return false;
@@ -352,10 +366,12 @@ class ncf_rango extends fs_model
 
     /**
      * Genera el NCF para ventas_facturas o nueva_venta
-     * @param type $idempresa
-     * @param type $codalmacen
-     * @param type $tipo_comprobante
-     * @param type $codpago
+     * 
+     * @param integer $idempresa 
+     * @param string  $codalmacen 
+     * @param string  $tipo_comprobante 
+     * @param string  $codpago 
+     * 
      * @return type array
      */
     public function generate_old($idempresa, $codalmacen, $tipo_comprobante, $codpago)
@@ -390,11 +406,13 @@ class ncf_rango extends fs_model
 
     /**
      * Genera el NCF para ventas_facturas o nueva_venta
-     * @param type $idempresa
-     * @param type $codalmacen
-     * @param type $tipo_comprobante
-     * @param type $codpago
-     * @return type array
+     * 
+     * @param integer $idempresa 
+     * @param string  $codalmacen 
+     * @param string  $tipo_comprobante 
+     * @param string  $codpago 
+     * 
+     * @return array
      */
     public function generate($idempresa, $codalmacen, $tipo_comprobante, $codpago = '')
     {
@@ -425,12 +443,14 @@ class ncf_rango extends fs_model
 
     /**
      * Genera el NCF para un TPV
-     * @param type $idempresa
-     * @param type $codalmacen
-     * @param type $tipo_comprobante
-     * @param type $codpago
-     * @param type $area_impresion
-     * @return type array
+     * 
+     * @param integer $idempresa 
+     * @param string  $codalmacen 
+     * @param string  $tipo_comprobante 
+     * @param string  $codpago 
+     * @param string  $area_impresion 
+     * 
+     * @return type array 
      */
     public function generate_terminal($idempresa, $codalmacen, $tipo_comprobante, $codpago, $area_impresion)
     {
@@ -495,7 +515,7 @@ class ncf_rango extends fs_model
         $rango = $solicitud->serie.$solicitud->tipo_comprobante;
         $correlativo = str_pad($solicitud->correlativo, 8, '0', STR_PAD_LEFT);
         $ncf_number = ($correlativo == ($solicitud->secuencia_fin+1))?"NO_DISPONIBLE":$rango.$correlativo;
-        return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud);
+        return array('NCF'=>$ncf_number,'SOLICITUD'=>$solicitud->solicitud, 'VENCIMIENTO' => $solicitud->fecha_vencimiento);
     }
 
     public function update_old($idempresa, $codalmacen, $solicitud, $ncf, $usuario)

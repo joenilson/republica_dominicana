@@ -33,6 +33,7 @@ class ncf_ventas extends fs_model
     public $documento;
     public $documento_modifica;
     public $fecha;
+    public $fecha_vencimiento;
     public $tipo_comprobante;
     public $area_impresion;
     public $ncf;
@@ -46,27 +47,29 @@ class ncf_ventas extends fs_model
 
     public $ncf_tipo;
     public $factura_cliente;
-    public function __construct($t = false)
+    public function __construct($data = false)
     {
         parent::__construct('ncf_ventas', 'plugins/republica_dominicana/');
-        if ($t) {
-            $this->idempresa = $t['idempresa'];
-            $this->codalmacen = $t['codalmacen'];
-            $this->entidad = $t['entidad'];
-            $this->cifnif = $t['cifnif'];
-            $this->documento = $t['documento'];
-            $this->documento_modifica = $t['documento_modifica'];
-            $this->fecha = $t['fecha'];
-            $this->tipo_comprobante = $t['tipo_comprobante'];
-            $this->area_impresion = $t['area_impresion'];
-            $this->ncf = $t['ncf'];
-            $this->ncf_modifica = $t['ncf_modifica'];
-            $this->usuario_creacion = $t['usuario_creacion'];
-            $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
-            $this->usuario_modificacion = $t['usuario_modificacion'];
+        
+        if ($data) {
+            $this->idempresa = $data['idempresa'];
+            $this->codalmacen = $data['codalmacen'];
+            $this->entidad = $data['entidad'];
+            $this->cifnif = $data['cifnif'];
+            $this->documento = $data['documento'];
+            $this->documento_modifica = $data['documento_modifica'];
+            $this->fecha = $data['fecha'];
+            $this->fecha_vencimiento = $data['fecha_vencimiento'];
+            $this->tipo_comprobante = $data['tipo_comprobante'];
+            $this->area_impresion = $data['area_impresion'];
+            $this->ncf = $data['ncf'];
+            $this->ncf_modifica = $data['ncf_modifica'];
+            $this->usuario_creacion = $data['usuario_creacion'];
+            $this->fecha_creacion = Date('d-m-Y H:i:s', strtotime($data['fecha_creacion']));
+            $this->usuario_modificacion = $data['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i:s');
-            $this->estado = $this->str2bool($t['estado']);
-            $this->motivo = $t['motivo'];
+            $this->estado = $this->str2bool($data['estado']);
+            $this->motivo = $data['motivo'];
         } else {
             $this->idempresa = null;
             $this->codalmacen = null;
@@ -75,6 +78,7 @@ class ncf_ventas extends fs_model
             $this->documento = null;
             $this->documento_modifica = null;
             $this->fecha = Date('d-m-Y');
+            $this->fecha_vencimiento = null;
             $this->tipo_comprobante = null;
             $this->area_impresion = null;
             $this->ncf = null;
@@ -110,7 +114,7 @@ class ncf_ventas extends fs_model
     public function save()
     {
         if (!$this->exists()) {
-            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, fecha_vencimiento, tipo_comprobante, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
                     $this->var2str($this->codalmacen).", ".
@@ -119,6 +123,7 @@ class ncf_ventas extends fs_model
                     $this->intval($this->documento).", ".
                     $this->var2str($this->documento_modifica).", ".
                     $this->var2str($this->fecha).", ".
+                    $this->var2str($this->fecha_vencimiento).", ".
                     $this->var2str($this->tipo_comprobante).", ".
                     $this->var2str($this->area_impresion).", ".
                     $this->var2str($this->ncf).", ".
@@ -214,9 +219,11 @@ class ncf_ventas extends fs_model
 
     /**
      * Return ncf information by factura
-     * @param integer $idempresa
-     * @param integner $documento idfactura
-     * @param string $entidad codcliente
+     * 
+     * @param integer $idempresa 
+     * @param integer $documento idfactura 
+     * @param string  $entidad   codcliente 
+     * 
      * @return \ncf_ventas
      */
     public function get_ncf($idempresa, $documento, $entidad)
@@ -226,7 +233,7 @@ class ncf_ventas extends fs_model
                 "documento = ".$this->intval($documento)." AND ".
                 "entidad = ".$this->var2str($entidad).";");
         $result = false;
-        if($data){
+        if ($data) {
             $result = $data[0];
         }
         return new ncf_ventas($result);

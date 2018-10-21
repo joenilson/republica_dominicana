@@ -556,6 +556,7 @@ class tpv_recambios extends rd_controller
                         $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $_POST['almacen'], $tipo_comprobante, $factura->codpago);
                         if ($numero_ncf['NCF'] == $factura->numero2) {
                             $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
+                            $factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
                         } else {
                             $this->new_error_msg('Ocurrió un error al actualizar el correlativo de NCF por favor informe al contador antes de seguir facturando. La factura se grabó con el NCF ' . $factura->numero2 . ' y el NCF segun el listado debió ser ' . $numero_ncf['NCF']);
                         }
@@ -657,9 +658,12 @@ class tpv_recambios extends rd_controller
 
     /**
      * Añade el ticket a la cola de impresión.
-     * @param factura_cliente $factura
-     * @param type $num_tickets
-     * @param type $cajon
+     * 
+     * @param \factura_cliente $factura 
+     * @param int              $num_tickets 
+     * @param boolean          $cajon 
+     * 
+     * @return none
      */
     private function imprimir_ticket($factura, $num_tickets = 1, $cajon = TRUE)
     {

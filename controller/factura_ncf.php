@@ -102,6 +102,17 @@ class factura_ncf extends rd_controller
         return $mostrar;
     }
 
+    public function checkFechaVencimiento($ncf_datos, $tipo_comprobante)
+    {
+        if (isset($ncf_datos)) {
+            $fecha_vencimiento_comprobante = \date("d-m-Y", \strtotime($ncf_datos));
+        } else {
+            $fecha_vencimiento_comprobante = \date("d-m-Y", \strtotime($tipo_comprobante));
+        }
+
+        return $fecha_vencimiento_comprobante;
+    }
+
     public function procesar_facturas($valores_id, $archivo = false)
     {
         if (!empty($valores_id)) {
@@ -130,7 +141,11 @@ class factura_ncf extends rd_controller
                     $this->factura->ncf_afecta = $valores->ncf_modifica;
                     $this->factura->estado = $valores->estado;
                     $this->factura->tipo_comprobante = ($tipo_comprobante)?$tipo_comprobante->descripcion:'';
-                    $this->factura->fecha_vencimiento_comprobante = ($tipo_comprobante_data)?$tipo_comprobante_data->fecha_vencimiento:'';
+                    $this->factura->fecha_vencimiento_comprobante = '';
+                    if ($tipo_comprobante->tipo_comprobante == '01') {
+                        $this->factura->fecha_vencimiento_comprobante = $this->checkFechaVencimiento($valores->fecha_vencimiento, $tipo_comprobante_data->fecha_vencimiento);
+                    }
+                    
                     if ($this->distrib_transporte) {
                         $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
                         $this->idtransporte = (isset($transporte[0]->idtransporte)) ? str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT) : false;

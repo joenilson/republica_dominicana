@@ -45,6 +45,11 @@
         <tipo>timestamp without time zone</tipo>
         <nulo>YES</nulo>
     </columna>
+        <columna>
+        <nombre>fecha_vencimiento</nombre>
+        <tipo>date</tipo>
+        <nulo>YES</nulo>
+    </columna>
     <columna>
         <nombre>idempresa</nombre>
         <tipo>integer</tipo>

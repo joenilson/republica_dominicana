@@ -84,6 +84,7 @@ class rd_controller extends fbase_controller
         $this->verificar_plugin_distribucion();
         $this->ncf_length = 11;
         $this->tipo_documento_pos = 1;
+        $this->cache->delete('ncf_ventas');
     }
 
     public function verificar_plugin_distribucion()
@@ -117,15 +118,17 @@ class rd_controller extends fbase_controller
     /**
      * Función para devolver un valor u otro dependiendo si está presente
      * el primer valor y si la variable existe
-     * @param string $variable
-     * @param string $valor_si
-     * @param string $valor_no
+     * 
+     * @param string $variable 
+     * @param string $valor_si 
+     * @param string $valor_no 
+     * 
      * @return string
      */
     public function setValor($variable, $valor_si, $valor_no)
     {
         $valor = $valor_no;
-        if(!empty($variable) and ($variable == $valor_si)){
+        if (!empty($variable) and ($variable == $valor_si)) {
             $valor = $valor_si;
         }
         return $valor;
@@ -133,14 +136,16 @@ class rd_controller extends fbase_controller
 
     /**
      * Función para devolver el valor que no esté vacio
-     * @param string $valor1
-     * @param string $valor2
+     * 
+     * @param string $valor1 
+     * @param string $valor2 
+     * 
      * @return string
      */
     public function confirmarValor($valor1, $valor2)
     {
         $valor = $valor2;
-        if(!empty($valor1)){
+        if (!empty($valor1)) {
             $valor = $valor1;
         }
         return $valor;
@@ -149,7 +154,7 @@ class rd_controller extends fbase_controller
     public function control_usuarios()
     {
         $this->allow_delete = $this->user->allow_delete_on($this->class_name);
-        //Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
+        // Si el usuario es admin puede ver todos los recibos, pero sino, solo los de su almacén designado
         if (!$this->user->admin) {
             $this->agente = new agente();
             $cod = $this->agente->get($this->user->codagente);
@@ -181,16 +186,19 @@ class rd_controller extends fbase_controller
 
     /**
      * Delete a factura by sending the FacturaCliente object
-     * @param object $factura \Facturacliente
+     * 
+     * @param object $factura \Facturacliente 
+     * 
+     * @return void
      */
     public function delete_ncf($factura)
     {
         $ncf = false;
-        if($factura->numero2) {
+        if ($factura->numero2) {
             $ncf = $this->ncf_ventas->get($this->empresa->id, $factura->numero2);
         }
 
-        if($ncf[0]) {
+        if ($ncf[0]) {
             $ncf[0]->delete();
         }
     }
@@ -228,6 +236,7 @@ class rd_controller extends fbase_controller
             $ncf_factura->cifnif = $factura->cifnif;
             $ncf_factura->documento = $factura->idfactura;
             $ncf_factura->fecha = $factura->fecha;
+            $ncf_factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->area_impresion = NULL;
             $ncf_factura->ncf = $numero_ncf['NCF'];
@@ -255,8 +264,10 @@ class rd_controller extends fbase_controller
 
     /**
      * Función para devolver el valor de una variable pasada ya sea por POST o GET
-     * @param type string
-     * @return type string
+     * 
+     * @param string $nombre  
+     * 
+     * @return string
      */
     public function filter_request($nombre)
     {

@@ -100,38 +100,38 @@ class terminal_caja extends \fs_model
      */
     public $ncf_tipo;
 
-    public function __construct($t = false)
+    public function __construct($data = false)
     {
         parent::__construct('cajas_terminales');
-        if ($t) {
-            $this->id = $this->intval($t['id']);
-            $this->codalmacen = $t['codalmacen'];
-            $this->codserie = $t['codserie'];
-            $this->area_impresion = $t['area_impresion'];
-            $this->codcliente = $t['codcliente'];
-            $this->tickets = $t['tickets'];
+        if ($data) {
+            $this->id = $this->intval($data['id']);
+            $this->codalmacen = $data['codalmacen'];
+            $this->codserie = $data['codserie'];
+            $this->area_impresion = $data['area_impresion'];
+            $this->codcliente = $data['codcliente'];
+            $this->tickets = $data['tickets'];
 
             $this->anchopapel = 40;
-            if (isset($t['anchopapel'])) {
-                $this->anchopapel = intval($t['anchopapel']);
+            if (isset($data['anchopapel'])) {
+                $this->anchopapel = intval($data['anchopapel']);
             }
 
             $this->comandocorte = '27.105';
-            if (isset($t['comandocorte'])) {
-                $this->comandocorte = $t['comandocorte'];
+            if (isset($data['comandocorte'])) {
+                $this->comandocorte = $data['comandocorte'];
             }
 
             $this->comandoapertura = '27.112.48';
-            if (isset($t['comandoapertura'])) {
-                $this->comandoapertura = $t['comandoapertura'];
+            if (isset($data['comandoapertura'])) {
+                $this->comandoapertura = $data['comandoapertura'];
             }
 
             $this->num_tickets = 1;
-            if (isset($t['num_tickets'])) {
-                $this->num_tickets = intval($t['num_tickets']);
+            if (isset($data['num_tickets'])) {
+                $this->num_tickets = intval($data['num_tickets']);
             }
 
-            $this->sin_comandos = $this->str2bool($t['sin_comandos']);
+            $this->sin_comandos = $this->str2bool($data['sin_comandos']);
         } else {
             $this->id = null;
             $this->codalmacen = null;
@@ -277,6 +277,10 @@ class terminal_caja extends \fs_model
 
     public function save()
     {
+        if(strlen($this->tickets) > 50000) {
+            $this->tickets = '';
+        }
+        
         if ($this->exists()) {
             $sql = "UPDATE cajas_terminales SET codalmacen = " . $this->var2str($this->codalmacen) .
                     ", codserie = " . $this->var2str($this->codserie) .
@@ -347,10 +351,13 @@ class terminal_caja extends \fs_model
 
     /**
      * A partir de una factura añade un ticket a la cola de impresión de este terminal.
-     * @param \factura_cliente $factura
-     * @param \empresa $empresa
-     * @param type $imprimir_descripciones
-     * @param type $imprimir_observaciones
+     * 
+     * @param \factura_cliente $factura 
+     * @param \empresa         $empresa 
+     * @param boolean          $imprimir_descripciones 
+     * @param boolean          $imprimir_observaciones 
+     * 
+     * @return void
      */
     public function imprimir_ticket(&$factura, &$empresa, $imprimir_descripciones = true, $imprimir_observaciones = false)
     {
@@ -364,7 +371,7 @@ class terminal_caja extends \fs_model
         }
 
         $this->add_linea(
-                $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
+            $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
         );
         $this->add_linea($this->center_text(FS_CIFNIF . ": " . $empresa->cifnif));
         $this->add_linea("\n\n");
@@ -376,6 +383,9 @@ class terminal_caja extends \fs_model
         $linea = "\n" . ucfirst(FS_FACTURA_SIMPLIFICADA) . ": " . $factura->codigo . "\n";
         $linea .= "\n" . $factura->tipo_comprobante . "\n";
         $linea .= "NCF: " . $factura->numero2 . "\n";
+        if (substr($factura->numero2, -10, 2) == '01') {
+            $linea .= "VALIDO HASTA: " . $factura->fecha_vencimiento . "\n";
+        }
         $linea .= $factura->fecha . " " . Date('H:i', strtotime($factura->hora)) . "\n";
         $this->add_linea($linea);
         $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
@@ -388,14 +398,14 @@ class terminal_caja extends \fs_model
 
         $width = $this->anchopapel - 15;
         $this->add_linea(
-                sprintf("%3s", "Ud.") . " " .
-                sprintf("%-" . $width . "s", "Articulo") . " " .
-                sprintf("%10s", "TOTAL") . "\n"
+            sprintf("%3s", "Ud.") . " " .
+            sprintf("%-" . $width . "s", "Articulo") . " " .
+            sprintf("%10s", "TOTAL") . "\n"
         );
         $this->add_linea(
-                sprintf("%3s", "---") . " " .
-                sprintf("%-" . $width . "s", substr("--------------------------------------------------------", 0, $width - 1)) . " " .
-                sprintf("%10s", "----------") . "\n"
+            sprintf("%3s", "---") . " " .
+            sprintf("%-" . $width . "s", substr("--------------------------------------------------------", 0, $width - 1)) . " " .
+            sprintf("%10s", "----------") . "\n"
         );
         foreach ($factura->get_lineas() as $col) {
             if ($imprimir_descripciones) {
@@ -415,24 +425,25 @@ class terminal_caja extends \fs_model
         }
         $this->add_linea($lineaiguales . "\n");
         $this->add_linea(
-                'TOTAL A PAGAR: ' . sprintf("%" . ($this->anchopapel - 15) . "s", $this->show_precio($factura->total, $factura->coddivisa)) . "\n"
+            'TOTAL A PAGAR: ' . sprintf("%" . ($this->anchopapel - 15) . "s", $this->show_precio($factura->total, $factura->coddivisa)) . "\n"
         );
         $this->add_linea($lineaiguales . "\n");
 
         /// imprimimos los impuestos desglosados
         $this->add_linea(
-                'TIPO   BASE    ' . FS_IVA . '    RE' .
-                sprintf('%' . ($this->anchopapel - 24) . 's', 'TOTAL') .
-                "\n"
+            'TIPO   BASE    ' . FS_IVA . 
+            //'    RE' .
+            sprintf('%' . ($this->anchopapel - 24) . 's', 'TOTAL') .
+            "\n"
         );
         foreach ($factura->get_lineas_iva() as $imp) {
             $this->add_linea(
-                    sprintf("%-6s", $imp->iva . '%') . ' ' .
-                    sprintf("%-7s", $this->show_numero($imp->neto)) . ' ' .
-                    sprintf("%-6s", $this->show_numero($imp->totaliva)) . ' ' .
-                    sprintf("%-6s", $this->show_numero($imp->totalrecargo)) . ' ' .
-                    sprintf('%' . ($this->anchopapel - 29) . 's', $this->show_numero($imp->totallinea)) .
-                    "\n"
+                sprintf("%-6s", $imp->iva . '%') . ' ' .
+                sprintf("%-7s", $this->show_numero($imp->neto)) . ' ' .
+                sprintf("%-6s", $this->show_numero($imp->totaliva)) . ' ' .
+                //sprintf("%-6s", $this->show_numero($imp->totalrecargo)) . ' ' .
+                sprintf('%' . ($this->anchopapel - 24) . 's', $this->show_numero($imp->totallinea)) .
+                "\n"
             );
         }
 
@@ -458,7 +469,7 @@ class terminal_caja extends \fs_model
         }
 
         $this->add_linea(
-                $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
+            $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
         );
         $this->add_linea($this->center_text(FS_CIFNIF . ": " . $empresa->cifnif));
         $this->add_linea("\n\n");
@@ -470,6 +481,9 @@ class terminal_caja extends \fs_model
         $linea = "\n" . ucfirst(FS_FACTURA_SIMPLIFICADA) . ": " . $factura->codigo . "\n";
         $linea .= "\n" . $factura->tipo_comprobante . "\n";
         $linea .= "NCF: " . $factura->numero2 . "\n";
+        if (substr($factura->numero2, -10, 2) == '01') {
+            $linea .= "VALIDO HASTA: " . $factura->fecha_vencimiento . "\n";
+        }
         $linea .= $factura->fecha . " " . Date('H:i', strtotime($factura->hora)) . "\n";
         $this->add_linea($linea);
         $this->add_linea("Cliente: " . $this->sanitize($factura->nombrecliente) . "\n");
@@ -522,7 +536,7 @@ class terminal_caja extends \fs_model
             '/ñ/' => 'n', '/ò/' => 'o', '/ó/' => 'o', '/ô/' => 'o', '/õ/' => 'o', '/ö/' => 'o',
             '/ő/' => 'o', '/ø/' => 'o', '/ù/' => 'u', '/ú/' => 'u', '/û/' => 'u', '/ü/' => 'u',
             '/ű/' => 'u', '/ý/' => 'y', '/þ/' => 'th', '/ÿ/' => 'y',
-            '/&quot;/' => '-',
+            '/&quot;/' => '-', '/´/' => '/\'/',
             '/À/' => 'A', '/Á/' => 'A', '/Â/' => 'A', '/Ä/' => 'A',
             '/Ç/' => 'C', '/È/' => 'E', '/É/' => 'E', '/Ê/' => 'E',
             '/Ë/' => 'E', '/Ì/' => 'I', '/Í/' => 'I', '/Î/' => 'I', '/Ï/' => 'I',
