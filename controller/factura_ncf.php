@@ -1,6 +1,5 @@
 <?php
-
-/*
+/**
  * This file is part of FacturaSctipts
  * Copyright (C) 2014  Valentín González    valengon@hotmail.com
  * Copyright (C) 2014-2015  Carlos Garcia Gomez  neorazorx@gmail.com
@@ -79,7 +78,7 @@ class factura_ncf extends rd_controller
     public function ckeckEuro($cadena)
     {
         $mostrar = '';
-        if(!empty($cadena)){
+        if (!empty($cadena)) {
             $mostrar = $this->show_precio($cadena, $this->factura->coddivisa);
             $pos = strpos($mostrar, '€');
             if ($pos !== false) {
@@ -96,7 +95,7 @@ class factura_ncf extends rd_controller
     public function checkPorcentaje($cadena)
     {
         $mostrar = '';
-        if(!empty($cadena)){
+        if (!empty($cadena)) {
             $mostrar = $cadena.'%';
         }
         return $mostrar;
@@ -462,7 +461,7 @@ class factura_ncf extends rd_controller
 
             $pdf_doc->fdf_pagada = $this->factura->pagada;
             $pdf_doc->fdf_fecha_pagada = '';
-            if($this->factura->pagada){
+            if ($this->factura->pagada) {
                 $dato_pago = $this->factura->get_asiento_pago();
                 $pdf_doc->fdf_fecha_pagada = ($dato_pago)?$dato_pago->fecha:$this->factura->fecha;
             }
@@ -499,6 +498,13 @@ class factura_ncf extends rd_controller
         }
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param string $txt 
+     * 
+     * @return void
+     */
     private function fix_html($txt)
     {
         $newt1 = str_replace('&lt;', '<', $txt);
