@@ -1,9 +1,9 @@
 {include="header"}
 <!--
-Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
+it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
@@ -35,8 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <a class="btn btn-sm btn-default" href="index.php?page=ncf" title="Regresar al Maestro de NCF">
                         <span class="fa fa-arrow-left"></span>&nbsp;Maestro de NCF
                     </a>
-                    <button class="btn btn-sm btn-danger" title="Restaurar Nombres de Tipo NCF" onClick="advertenciaRestoreNames()">
-                        <span class="fa fa-reply fa-fw"></span>Restaurar Nombres de Tipo NCF
+                    <button class="btn btn-sm btn-danger" title="Restaurar Nombres de Tipo de Compra" onClick="advertenciaRestoreNames()">
+                        <span class="fa fa-reply fa-fw"></span>Restaurar Nombres de Tipo de Compra
                     </button>
                     {loop="$fsc->extensions"}
                         {if="$value->type=='button'"}
@@ -48,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
         <div class="col-sm-6 col-xs-6 text-right">
             <h4>
-                <span class="fa fa-list-ol"></span>&nbsp;Tipos de NCF
+                <span class="fa fa-list-ol"></span>&nbsp;Tipos de Compras
             </h4>
         </div>
     </div>
@@ -57,12 +57,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <table class="table table-condensed">
                 <thead>
                     <tr>
-                        <th class="col-sm-1">Tipo</th> 
+                        <th class="col-sm-1">C&oacute;digo</th>
                         <th class="col-sm-3">Descripcion</th> 
-                        <th class="col-sm-1 text-center">Tipo Mov</th> 
-                        <th class="col-sm-2">Ventas</th> 
-                        <th class="col-sm-2">Compras</th> 
-                        <th class="col-sm-1">Contribuyente</th> 
                         <th class="col-sm-1">Estado</th> 
                         <th class="col-sm-1">&nbsp;</th>
                     </tr>
@@ -71,39 +67,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <form class="form" role="form" method="POST" action="{$fsc->url()}">
                     <tr class="info">
                         <td>
-                            <input type="text" maxlength="2" name="tipo_comprobante" required autocomplete="off" class="form-control input-sm">
+                            <input type="text" maxlength="2" name="codigo" required autocomplete="off" class="form-control input-sm">
                         </td>
                         <td>
                             <input type="text" maxlength="180" name="descripcion" required autocomplete="off" class="form-control input-sm">
-                        </td>
-                        <td class="text-center">
-                            <label class='radio-inline'>
-                                <input type="radio" name="clase_movimiento" value="suma">&nbsp;<span class="fa fa-plus"></span>
-                            </label>
-                            <label class='radio-inline'>
-                                <input type="radio" name="clase_movimiento" value="resta">&nbsp;<span class="fa fa-minus"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="ventas" value="X">&nbsp;Ventas
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="compras" value="X">&nbsp;Compras
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label class="control-label">
-                                    <input type="checkbox" name="contribuyente" value="X">
-                                </label>
-                            </div>
                         </td>
                         <td>
                             <div class="checkbox">
@@ -114,48 +81,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         </td>
                         <td>
                             <button class="btn btn-sm btn-primary" name="accion" value="agregar" type="submit">
-                                <span class="fa fa-save"></span>&nbsp;Guardar
+                                <span class="fa fa-fw fa-save"></span>&nbsp;Guardar
                             </button>
                         </td>
                     </tr>
                     </form>
-                    {loop="$fsc->ncf_tipo->all()"}
+                    {loop="$fsc->ncf_tipo_compras->all()"}
                     <form class="form" role="form" method="POST" action="{$fsc->url()}">
                     <tr>
                         <td>
-                            <input type="text" required maxlength="2" name="tipo_comprobante" value="{$value->tipo_comprobante}" autocomplete="off" class="form-control input-sm">
+                            <input type="text" required maxlength="2" name="codigo" value="{$value->codigo}" autocomplete="off" class="form-control input-sm">
                         </td>
                         <td>
                             <input type="text" required maxlength="180" name="descripcion" value="{$value->descripcion}" autocomplete="off" class="form-control input-sm">
-                        </td>
-                        <td class="text-center">
-                            <label class='radio-inline'>
-                                <input type="radio" name="clase_movimiento" value="suma" {if="$value->clase_movimiento=='suma'"}checked{/if}>&nbsp;<span class="fa fa-plus"></span>
-                            </label>
-                            <label class='radio-inline'>
-                                <input type="radio" name="clase_movimiento" value="resta" {if="$value->clase_movimiento=='resta'"}checked{/if}>&nbsp;<span class="fa fa-minus"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="ventas" value="X" {if="$value->ventas=='X'"}checked{/if}>&nbsp;Ventas
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="compras" value="X" {if="$value->compras=='X'"}checked{/if}>&nbsp;Compras
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="checkbox">
-                                <label class="control-label">
-                                    <input type="checkbox" name="contribuyente" value="X" {if="$value->contribuyente=='X'"}checked{/if}>
-                                </label>
-                            </div>
                         </td>
                         <td>
                             <div class="checkbox">
@@ -165,7 +103,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             </div>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-danger" name="accion" value="eliminar" type="submit" onclick="return confirm('¿Esta seguro que quiere eliminar el Tipo de comprobante: \n {$value->tipo_comprobante} - {$value->descripcion}?')">
+                            <button class="btn btn-sm btn-danger" name="accion" value="eliminar" type="submit" onclick="return confirm('¿Esta seguro que quiere eliminar el Tipo de compra: \n {$value->codigo} - {$value->descripcion}?')">
                                 <span class="fa fa-trash"></span>
                             </button>
                             <button class="btn btn-sm btn-primary" name="accion" value="agregar" type="submit">
@@ -183,14 +121,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <script>
     /**
      * @name advertenciaRestoreNames
-     * @returns {none}
+     * @returns void
      */
     function advertenciaRestoreNames()
     {
         bootbox.setLocale('es');
         bootbox.confirm({
-            title: '¿Restaurar nombres de Tipos de NCF?',
-            message: '¿Está seguro que quiere Restaurar los nombres originales de los Tipos de NCF?', 
+            title: '¿Restaurar nombres de Tipos de Compra?',
+            message: '¿Está seguro que quiere Restaurar los nombres originales de los Tipos de Compra?', 
             callback: function(response){
                 if(response) {
                     $.ajax({
@@ -200,7 +138,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         dataType: "json",
                         success: function (data) {
                             setTimeout(function () {
-                                bootbox.alert('Se restauró el nombre de '+data.cantidad+' Tipos de NCF.', function(){
+                                bootbox.alert('Se restauró el nombre de '+data.cantidad+' Tipos de Compra.', function(){
                                     window.location.href = '{$fsc->url()}';
                                 });
                             }, 1000);

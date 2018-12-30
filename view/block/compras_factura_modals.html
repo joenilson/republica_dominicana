@@ -81,9 +81,14 @@
                {/if}
                {if="!$fsc->factura->anulada"}
                 <br/><br/>
-               Si decide <b>anular</b>, se generará una <b>{#FS_FACTURA_RECTIFICATIVA#}</b>
-               y se restaurará el stock de los artículos, aunque primero debe elegir
-               la serie para la {#FS_FACTURA_RECTIFICATIVA#}:
+                  {if="$fsc->empresa->codpais!='ESP'"}
+                  Si decide <b>anular</b> la factura se restaurará el stock, a menos que haya asociado
+                  un {#FS_ALBARAN#} o {#FS_ALBARANES#}.
+                  <br/><br/>
+                  {/if}
+                  Y si decide generarar una <b>{#FS_FACTURA_RECTIFICATIVA#}</b>, se anulará esta
+                  y se restaurará el stock de los artículos, aunque primero debe elegir la serie
+                  para la nueva {#FS_FACTURA_RECTIFICATIVA#}:
                 <div class="form-group">
                    <select name="codserie" class="form-control">
                    {loop="$fsc->serie->all()"}

@@ -1,0 +1,37 @@
+{include="header2"}
+
+{if="$fsc->factura"}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Total Bienes</th>
+                <th>Total Servicios</th>
+                <th>Tipo Compra</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">{$fsc->show_precio($fsc->ncf_compra->total_bienes, $fsc->empresa->coddivisa)}</td>
+                <td class="text-right">{$fsc->show_precio($fsc->ncf_compra->total_servicios, $fsc->empresa->coddivisa)}</td>
+                <td>{$fsc->ncf_compra->tipo_compra} - {$fsc->ncf_compra->descripcion_compra}</td>
+                <td>{$fsc->ncf_compra->fecha}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br/>
+
+{if="$fsc->factura->anulada"}
+<div class="alert alert-danger">
+   <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> &nbsp; Esta factura está anulada.
+</div>
+{else}
+
+{/if}
+<br/>
+{/if}
+
+{include="footer2"}

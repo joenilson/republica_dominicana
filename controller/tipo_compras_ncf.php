@@ -1,10 +1,10 @@
 <?php
 
 /*
- * Copyright (C) 2016 Joe Nilson <joenilson at gmail.com>
+ * Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('ncf_tipo.php');
+require_model('ncf_tipo_compras.php');
 
 /**
  * Description of tipo_ncf
- * Clase para manejar los tipos de NCF configurados
+ * Clase para manejar los tipos de Compras para las facturas de proveedor
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class tipo_ncf extends fs_controller
+class tipo_compras_ncf extends fs_controller
 {
-    public $ncf_tipo;
+    public $ncf_tipo_compras;
     public $allow_delete;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Tipo de NCF', 'contabilidad', false, false, false);
+        parent::__construct(__CLASS__, 'Tipo de Compras', 'contabilidad', false, false, false);
     }
 
     protected function private_core()
@@ -43,7 +43,7 @@ class tipo_ncf extends fs_controller
             $this->tratarTipos($accion);
         }
         
-        $this->ncf_tipo = new ncf_tipo();
+        $this->ncf_tipo_compras = new ncf_tipo_compras();
     }
 
     public function tratarTipos($accion)
@@ -52,7 +52,7 @@ class tipo_ncf extends fs_controller
             $this->agregar();
         } elseif ($accion == 'eliminar') {
             $this->eliminar();
-        } elseif ($accion == 'restore_names') {
+        } elseif ($accion == 'restaurar_nombres') {
             $this->restaurarNombres();
         } else {
             $this->new_error_msg('Se recibió una solicitud incompleta.');
@@ -61,38 +61,30 @@ class tipo_ncf extends fs_controller
     
     protected function agregar()
     {
-        $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
+        $codigo = filter_input(INPUT_POST, 'codigo');
         $descripcion = filter_input(INPUT_POST, 'descripcion');
-        $clase_movimiento = filter_input(INPUT_POST, 'clase_movimiento');
-        $ventas = filter_input(INPUT_POST, 'ventas');
-        $compras = filter_input(INPUT_POST, 'compras');
-        $contribuyente = filter_input(INPUT_POST, 'contribuyente');
         $estado = filter_input(INPUT_POST, 'estado');
-        $tc0 = new ncf_tipo();
-        $tc0->tipo_comprobante = strtoupper(strip_tags(trim($tipo_comprobante)));
+        $tc0 = new ncf_tipo_compras();
+        $tc0->codigo = $codigo;
         $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
-        $tc0->clase_movimiento = $clase_movimiento;
-        $tc0->ventas = $ventas;
-        $tc0->compras = $compras;
-        $tc0->contribuyente = $contribuyente;
         $tc0->estado = ($estado) ? true : false;
         if ($tc0->save()) {
-            $this->new_message('¡Tipo de comprobante agregado con exito!');
+            $this->new_message('¡Tipo de compra agregado con exito!');
         } else {
-            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de comprobante, por favor revise los datos ingresados.');
+            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de compra, por favor revise los datos ingresados.');
         }
     }
     
     protected function eliminar()
     {
         if($this->allow_delete) {
-            $tipo_comprobante = filter_input(INPUT_POST, 'tipo_comprobante');
-            $tc1 = new ncf_tipo();
-            $registro = $tc1->get($tipo_comprobante);
+            $codigo = filter_input(INPUT_POST, 'codigo');
+            $tc1 = new ncf_tipo_compras();
+            $registro = $tc1->get($codigo);
             if ($registro->delete()) {
-                $this->new_message('¡Tipo de comprobante eliminado con exito!');
+                $this->new_message('¡Tipo de compras desactivado con exito!');
             } else {
-                $this->new_error_msg('Ocurrio un error al tratar de eliminar el Tipo de comprobante, por favor verifique los datos');
+                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de compras, por favor verifique los datos');
             }
         } else {
             $this->new_error_msg('No tiene permiso para borrar información');
@@ -115,11 +107,11 @@ class tipo_ncf extends fs_controller
     {
         $extensiones = array(
             array(
-                'name' => 'tipo_ncfs',
+                'name' => 'tipo_compras_ncf',
                 'page_from' => __CLASS__,
                 'page_to' => 'ncf',
                 'type' => 'button',
-                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos NCF',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos Compra',
                 'params' => ''
             ),
         );

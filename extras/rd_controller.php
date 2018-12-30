@@ -111,6 +111,8 @@ class rd_controller extends fbase_controller
             'rd_imprimir_cabecera_fcolor' => '#000000',
             'rd_imprimir_cabecera_tcolor' => '#dadada',
             'rd_imprimir_detalle_color' => '#000000',
+            'rd_subcuenta_compras_bienes' => '',
+            'rd_subcuenta_compras_servicios' => '',
             ), false
         );
     }

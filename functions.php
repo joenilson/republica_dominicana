@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2017 Joe Nilson <joenilson at gmail.com>
+ * Copyright (C) 2018 Joe Nilson <joenilson at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -234,6 +234,7 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         $ncf_factura->fecha = $factura->fecha;
         $ncf_factura->fecha_vencimiento = $factura->fecha_vencimiento;
         $ncf_factura->tipo_comprobante = $tipo_comprobante;
+        $ncf_factura->tipo_ingreso = $factura->tipo_ingreso;
         $ncf_factura->area_impresion = '';
         $ncf_factura->ncf = $numero_ncf;
         $ncf_factura->usuario_creacion = $usuario;
@@ -410,8 +411,11 @@ function fs_documento_venta_post_save(&$documento)
 {
     require_model('empresa.php');
     require_model('ncf_tipo_anulacion.php');
+    require_model('ncf_tipo_ingresos.php');
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
+    $ncf_tipo_ingresos = new ncf_tipo_ingresos();
+    $tipo_ingreso = \filter_input(INPUT_POST, 'tipo_ingreso');
     $rectificativa = ($documento->idfacturarect)?true:false;
     $funcion_generar = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero2_old' : 'generar_numero2';
     $funcion_tipo_comprobante = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_tipo_comprobante_old' : 'get_tipo_comprobante';
@@ -422,6 +426,12 @@ function fs_documento_venta_post_save(&$documento)
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $motivo_doc = '';
         $documento->fecha_vencimiento = $vencimiento;
+        $documento->tipo_ingreso = '01';
+        
+        if(isset($tipo_ingreso)) {
+            $documento->tipo_ingreso = ($tipo_ingreso !== '') ? $tipo_ingreso: '01';
+        }
+
         if ($motivo) {
             $motivo_anulacion = $ncf_tipo_anulacion->get($motivo);
             $documento->observaciones = ucfirst(FS_FACTURA_RECTIFICATIVA) . " por " . $motivo_anulacion->descripcion;
@@ -435,17 +445,76 @@ function fs_documento_compra_post_save(&$documento)
 {
     $usuario = \filter_input(INPUT_COOKIE, 'user');
     require_model('ncf_rango.php');
+    require_model('ncf_tipo_compras.php');
+    require_model('ncf_compras.php');
     require_model('empresa.php');
+    require_model('fs_var.php');
+
     $empresa = new empresa();
     $ncf_rango = new ncf_rango();
+    $ncf_tipo_compras = new ncf_tipo_compras();
+    $fsvar = new fs_var();
     $prov = new proveedor();
     $proveedor = $prov->get($documento->codproveedor);
     $function_get_solicitud = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_solicitud_old' : 'get_solicitud';
     $function_update = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'update_old' : 'update';
+    $rd_setup = $fsvar->array_get(
+        array(
+        'rd_subcuenta_compras_bienes' => '',
+        'rd_subcuenta_compras_servicios' => '',
+        ), false
+    );
+    /**
+     * Si el proveedor es persona física actualizamos el NCF de Proveedores informales
+     */
     if ($proveedor->personafisica) {
         $solicitud = $ncf_rango->$function_get_solicitud($empresa->id, $documento->codalmacen, $documento->numproveedor);
         $ncf_rango->$function_update($empresa->id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
     }
+    /**
+     * Si modifica a otro documento lo buscamos
+     */
+    $fact_compras = new factura_proveedor();
+    $documento_modifica = $fact_compras->get($documento->idfacturarect);
+    $tipo_compra = $ncf_tipo_compras->get(\filter_input(INPUT_POST, 'tipo_compra'));
+    /** 
+     * Guardamos la información de la compra en la tabla NCF Compra
+     */
+    $ncf_compras = new ncf_compras();
+    $ncf_compras->idempresa = $empresa->id;
+    $ncf_compras->entidad = $documento->codproveedor;
+    $ncf_compras->codalmacen = $documento->codalmacen;
+    $ncf_compras->fecha = $documento->fecha;
+    $ncf_compras->documento = $documento->idfactura;
+    $ncf_compras->documento_modifica = $documento->idfacturarect;
+    $ncf_compras->cifnif = $documento->cifnif;
+    $ncf_compras->ncf = $documento->numproveedor;
+    $ncf_compras->ncf_modifica = $documento_modifica->numproveedor;
+    $ncf_compras->tipo_comprobante = \substr($documento->numproveedor, -10,2);
+    $ncf_compras->tipo_compra = $tipo_compra->codigo;
+    $ncf_compras->estado = TRUE;
+    $ncf_compras->usuario_creacion = $usuario;
+    $ncf_compras->fecha_creacion = \date('Y-m-d H:i:s');
+    $ncf_compras->usuario_modificacion = $usuario;
+    $ncf_compras->fecha_modificacion = \date('Y-m-d H:i:s');
+    /**
+     * Calculamos el total de Bienes y Servicios 
+     * para eso buscamos los valores que estén en las cuentas
+     * 05010101 Bienes
+     * 05010102 Servicios
+     */
+    $ncf_compras->total_bienes = 0;
+    $ncf_compras->total_servicios = 0;
+    $asiento = $documento->get_asiento();
+    $partidas = $asiento->get_partidas();
+    foreach ($partidas as $partida) {
+        if($partida->codsubcuenta === $rd_setup['rd_subcuenta_compras_bienes']) {
+            $ncf_compras->total_bienes += $partida->debe;
+        } elseif ($partida->codsubcuenta === $rd_setup['rd_subcuenta_compras_servicios']) {
+            $ncf_compras->total_servicios += $partida->debe;
+        }
+    }
+    $ncf_compras->save();   
 }
 
 /**
@@ -484,4 +553,42 @@ function get_tipo_comprobante_old($numero_ncf)
 function get_tipo_comprobante($numero_ncf)
 {
     return substr($numero_ncf, 1,2);
+}
+
+/**
+ * Convierte un precio de la divisa_desde a la divisa especificada
+ * 
+ * @param float  $precio
+ * @param string $coddivisa_desde
+ * @param string $coddivisa
+ * 
+ * @return float
+ */
+function rd_divisa_convert($precio, $coddivisa_desde, $coddivisa)
+{
+    require_model('divisa.php');
+    $divisa_model = new divisa();
+    $divisas = $divisa_model->all();
+    $euro = $divisa_model->get('EUR');
+    if ($coddivisa_desde != $coddivisa) {
+        $divisa = $divisa_desde = FALSE;
+
+        /// buscamos las divisas en la lista
+        foreach ($divisas as $div) {
+            if ($div->coddivisa == $coddivisa) {
+                $divisa = $div;
+            } elseif ($div->coddivisa == $coddivisa_desde) {
+                $divisa_desde = $div;
+            }
+        }
+
+        if ($divisa && $divisa_desde) {
+            //Primer Paso convertir la moneda a Euro
+            $precio_euro = $precio / $divisa_desde->tasaconv * $euro->tasaconv;
+            //Segundo Paso convertir el valor de Euro a la moneda destino
+            $precio = $precio_euro / $euro->tasaconv * $divisa->tasaconv;
+        }
+    }
+
+    return $precio;
 }

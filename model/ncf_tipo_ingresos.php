@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_once 'plugins/republica_dominicana/model/core/ncf_ventas.php';
+require_once 'plugins/republica_dominicana/model/core/ncf_tipo_ingresos.php';
 
 /**
- * Configuración clase ncf_ventas para almacenar la información
- * fiscal de una venta para presentar a la DGII
+ * Configuración clase ncf_tipo_ingresos para elegir el tipo de ingreso en una
+ * factura de clientes o de venta
  *
  * @author Joe Nilson <joenilson@gmail.com>
  */
-class ncf_ventas extends FacturaScripts\model\ncf_ventas
+class ncf_tipo_ingresos extends FacturaScripts\model\ncf_tipo_ingresos
 {
 }

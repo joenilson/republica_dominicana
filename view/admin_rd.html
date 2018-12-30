@@ -20,7 +20,7 @@
                 nota de crédito con NCF.<br />
                 Al crear clientes debes de indicar que tipo de comprobante fiscal se le va generar.<br/>
                 Para la parte de Compras deberás usar el campo <b>Numero2</b> para ingresar allí el comprobante fiscal de la
-                factura del proveedor.<br />
+                factura del proveedor y elegir el tipo de compra para poder generar correctamente el 606.<br />
                 En <b>Informes > Informes Fiscales</b> tienes los reportes 606, 607 y 608 para que los exportes y copies en las
                 Herramientas de la DGII.<br />
                 <div class="alert alert-info" role="alert">
@@ -43,24 +43,64 @@
         </div>
     </div>
     <div class="row">
-        <a href="{$fsc->url()}&opcion=moneda" class="btn btn-sm {if="$fsc->conf_divisa"}btn-success{else}btn-default{/if} col-sm-3">
-            {if="$fsc->conf_divisa"}<span class="fa fa-check"></span>&nbsp;{/if}Establecer DOP como moneda por defecto
-        </a>
-        <a href="{$fsc->url()}&opcion=pais" class="btn btn-sm {if="$fsc->conf_pais"}btn-success{else}btn-default{/if} col-sm-3">
-            {if="$fsc->conf_pais"}<span class="fa fa-check"></span>&nbsp;{/if}República Dominicana como pais por defecto
-        </a>
-        <a href="{$fsc->url()}&opcion=configuracion_regional" class="btn btn-sm {if="$fsc->conf_regional"}btn-success{else}btn-default{/if} col-sm-3">
-            {if="$fsc->conf_regional"}<span class="fa fa-check"></span>&nbsp;{/if}Zona Horaria, Decimales y traducciones
-        </a>
-        <a href="{$fsc->url()}&opcion=impuestos" class="btn btn-sm {if="$fsc->conf_impuestos"}btn-success{else}btn-default{/if} col-sm-3">
-            {if="$fsc->conf_impuestos"}<span class="fa fa-check"></span>&nbsp;{/if}Agregar Impuestos ITBIS y Exentos
-        </a>
+        <div class="col-sm-12">
+            <a href="{$fsc->url()}&opcion=moneda" class="btn btn-sm {if="$fsc->conf_divisa"}btn-success{else}btn-default{/if} col-sm-3">
+                {if="$fsc->conf_divisa"}<span class="fa fa-check"></span>&nbsp;{/if}Establecer DOP como moneda por defecto
+            </a>
+            <a href="{$fsc->url()}&opcion=pais" class="btn btn-sm {if="$fsc->conf_pais"}btn-success{else}btn-default{/if} col-sm-3">
+                {if="$fsc->conf_pais"}<span class="fa fa-check"></span>&nbsp;{/if}República Dominicana como pais por defecto
+            </a>
+            <a href="{$fsc->url()}&opcion=configuracion_regional" class="btn btn-sm {if="$fsc->conf_regional"}btn-success{else}btn-default{/if} col-sm-3">
+                {if="$fsc->conf_regional"}<span class="fa fa-check"></span>&nbsp;{/if}Zona Horaria, Decimales y traducciones
+            </a>
+            <a href="{$fsc->url()}&opcion=impuestos" class="btn btn-sm {if="$fsc->conf_impuestos"}btn-success{else}btn-default{/if} col-sm-3">
+                {if="$fsc->conf_impuestos"}<span class="fa fa-check"></span>&nbsp;{/if}Agregar Impuestos ITBIS y Exentos
+            </a>
+        </div>
     </div>
     <div class="row" style='margin-top: 15px;'>
         <div class="col-sm-12">
             <div class="panel panel-warning">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Opciones de Impresión de Facturas</h3>
+                    <h3 class="panel-title">Contabilidad: Subcuentas de compras para bienes y servicios</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="col-sm-12 bg-warning" style="margin-bottom: 15px;">
+                        Para que esta opción funcione correctamente debe configurar en el Tab <b>Subcuentas</b>
+                        de cada <b>Articulo</b> a que subcuenta de compras se cargarán los valores del artículo, si será de bienes o servicios.
+                    </div>
+                    <form method="POST" action="{$fsc->url()}&opcion=subcuentas_compras" class='form-inline'>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_subcuenta_compras_bienes" class="label label-warning">Subcuenta de Bienes</label>
+                            <div class="input-group ">
+                                <input type="text" name="rd_subcuenta_compras_bienes" value="{$fsc->rd_setup['rd_subcuenta_compras_bienes']}" class="form-control" />
+                                <span class="input-group-addon"><i class="fa fa-desktop fa-fw"></i></span>
+                            </div>
+                            <input type="hidden" name="rd_subcuenta_compras_bienes_val" value="0">
+                        </div>
+                        <div class='form-group col-sm-3'>
+                            <label for="rd_subcuenta_compras_servicios" class="label label-warning">Subcuenta de Servicios</label>
+                            <div class="input-group ">
+                                <input type="text" name="rd_subcuenta_compras_servicios" value="{$fsc->rd_setup['rd_subcuenta_compras_servicios']}" class="form-control" />
+                                <span class="input-group-addon"><i class="fa fa-desktop fa-fw"></i></span>
+                            </div>
+                            <input type="hidden" name="rd_subcuenta_compras_servicios_val" value="0">
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class='form-group col-sm-3 pull-right'>
+                            <br/>
+                            <button class='btn btn-sm btn-success pull-right'>
+                                <span class="fa fa-save"></span>&nbsp;Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Opciones de Impresión de Facturas de Venta</h3>
                 </div>
                 <div class="panel-body">
                     <form method="POST" action="{$fsc->url()}&opcion=impresion" class='form-inline'>
@@ -163,4 +203,60 @@
         </div>
     </div>
 </div>
+<!--  Script que permite el autocomplete de la subcuenta  -->
+<script>
+    //Autocomplete en el campo rd_subcuenta_compras_bienes
+    $("input[name='rd_subcuenta_compras_bienes']").each(function () {
+        $(this).autocomplete({
+            serviceUrl: 'index.php?page=admin_empresa',
+            paramName: 'subcuenta',
+            onSelect: function (data){
+                $(this).val(data.data);
+                $('input[name="rd_subcuenta_compras_bienes_val"]').val('1');
+            }
+        });
+    });
+    // Validar que se seleccione una subcuenta para Bienes
+    $('input[name="rd_subcuenta_compras_bienes"]').on("keydown", function(e) {
+        if ($('input[name="rd_subcuenta_compras_bienes_val"]').val() == '1' ) {
+            if(e.keyCode == 8 || e.keyCode == 46) {
+               $('input[name="rd_subcuenta_compras_bienes"]').val('');
+               $('input[name="rd_subcuenta_compras_bienes_val"]').val('0');
+            }
+        }
+    });
+    // Validar que se seleccione una subcuenta para Bienes
+    $('input[name="rd_subcuenta_compras_bienes"]').blur(function() { 
+        if ($('input[name="rd_subcuenta_compras_bienes_val"]').val() == '0' ) {
+            $('input[name="rd_subcuenta_compras_bienes"]').val('');
+        }
+    });
+    
+    //Autocomplete en el campo rd_subcuenta_compras_bienes
+    $("input[name='rd_subcuenta_compras_servicios']").each(function () {
+        $(this).autocomplete({
+            serviceUrl: 'index.php?page=admin_empresa',
+            paramName: 'subcuenta',
+            onSelect: function (data){
+                $(this).val(data.data);
+                $('input[name="rd_subcuenta_compras_servicios_val"]').val('1');
+            }
+        });
+    });
+    // Validar que se seleccione una subcuenta para Bienes
+    $('input[name="rd_subcuenta_compras_servicios"]').on("keydown", function(e) {
+        if ($('input[name="rd_subcuenta_compras_servicios_val"]').val() == '1' ) {
+            if(e.keyCode == 8 || e.keyCode == 46) {
+               $('input[name="rd_subcuenta_compras_servicios"]').val('');
+               $('input[name="rd_subcuenta_compras_servicios_val"]').val('0');
+            }
+        }
+    });
+    // Validar que se seleccione una subcuenta para Bienes
+    $('input[name="rd_subcuenta_compras_servicios"]').blur(function() { 
+        if ($('input[name="rd_subcuenta_compras_servicios_val"]').val() == '0' ) {
+            $('input[name="rd_subcuenta_compras_servicios"]').val('');
+        }
+    });
+</script>
 {include="footer"}

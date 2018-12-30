@@ -3,16 +3,16 @@
 Copyright (C) 2015 joenilson
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
+it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
+You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <div class="container-fluid" style="margin-top: -10px;">
@@ -505,22 +505,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             data-side-pagination="server">
                         <thead>
                             <tr>
-                                <th colspan="13" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="23" class="text-center">Reporte DGII 606 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr class="text-center">
                                 <th data-field="cifnif" data-footer-formatter="totalTextFormatter">RNC o Cédula</th>
                                 <th data-field="tipo_id">Tipo Id.</th>
-                                <th data-field="descripcion" data-footer-formatter="totalFormatter">Tipo Bienes o Servicios Comprados</th>
+                                <th data-field="descripcion" data-footer-formatter="totalFormatter">Tipo de Compra</th>
                                 <th data-field="ncf">NCF</th>
                                 <th data-field="ncf_modifica">NCF Modifica</th>
-                                <th data-field="fechaym">Fec. NCF AAAAMM</th>
-                                <th data-field="fechadd">Fec. NCF DD</th>
-                                <th data-field="fechapym">Fec. Pago AAAAMM</th>
-                                <th data-field="fechapdd">Fec. Pago DD</th>
-                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
-                                <th data-field="totalivaretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Retenido</th>
-                                <th data-field="neto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
-                                <th data-field="totalnetoretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Retencion Renta</th>
+                                <th data-field="fecha">Fec. NCF </th>
+                                <th data-field="fechap">Fec. Pago</th>
+                                <th data-field="total_servicios" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Servicios</th>
+                                <th data-field="total_bienes" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Bienes</th>
+                                <th data-field="totalfacturado" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS Facturado</th>
+                                <th data-field="totalivaretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS Retenido</th>
+                                <th data-field="totalivasujeto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS sujeto a Proporcionalidad (Art. 349)</th>
+                                <th data-field="totalivallevadocosto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS llevado al Costo</th>
+                                <th data-field="totalivaporadelantar" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS por Adelantar</th>
+                                <th data-field="totalivapercibidocompras" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS percibido en compras</th>
+                                <th data-field="tiporetencionisr">Tipo de Retención en ISR</th>
+                                <th data-field="totalretencionrenta" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Retencion Renta</th>
+                                <th data-field="totalisrpercibidocompra" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ISR Percibido en compras</th>
+                                <th data-field="totalisc" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Impuesto Selectivo al Consumo</th>
+                                <th data-field="totalotrosimpuestos" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Otros Impuestos/Tasas</th>
+                                <th data-field="totalpropinalegal" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Propina Legal</th>
+                                <th data-field="codpago">Forma de Pago</th>
                             </tr>
                         </thead>
                     </table>
@@ -554,7 +564,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             data-side-pagination="server">
                         <thead>
                             <tr>
-                                <th colspan="9" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
+                                <th colspan="25" class="text-center">Reporte DGII 607 del {$fsc->fecha_inicio} al {$fsc->fecha_fin}</th>
                             </tr>
                             <tr>
                                 <th data-formatter="runningFormatter">Item</th>
@@ -562,9 +572,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                                 <th data-field="tipo_id">Tipo Ident.</th>
                                 <th data-field="ncf">NCF</th>
                                 <th data-field="ncf_modifica">NCF Modifica</th>
-                                <th data-field="fecha">Fecha</th>
-                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Itbis Facturado</th>
+                                <th data-field="tipo_ingreso">Tipo de Ingreso</th>
+                                <th data-field="fecha">Fecha Comprobante</th>
+                                <th data-field="fecha_retencion">Fecha Retencion</th>
                                 <th data-field="neto" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Facturado</th>
+                                <th data-field="totaliva" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS Facturado</th>
+                                <th data-field="totalivaretenido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS Retenido a terceros</th>
+                                <th data-field="totalivapercibido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ITBIS Percibido</th>
+                                <th data-field="totalretencionrenta" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Retención Renta por Terceros</th>
+                                <th data-field="totalisrpercibido" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">ISR Percibido</th>
+                                <th data-field="totalisc" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Impuesto Selectivo al Consumo</th>
+                                <th data-field="totalotrosimpuestos" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Otros Impuestos/Tasas</th>
+                                <th data-field="totalpropinalegal" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Monto Propina Legal</th>
+                                <th data-field="totalefectivo" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Efectivo</th>
+                                <th data-field="totalcheque" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Cheque/Transferencia/Depósito</th>
+                                <th data-field="totaltarjeta" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Tarjeta Débito/Crédito</th>
+                                <th data-field="totalcredito" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Venta a Crédito</th>
+                                <th data-field="totalbonos" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Bonos o Certificados de Regalo</th>
+                                <th data-field="totalpermuta" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Permuta</th>
+                                <th data-field="totalotrasformas" data-align="right" data-falign="right" data-footer-formatter="sumNormalFormatter">Otras Formas de Ventas</th>
                                 <th data-field="estado">Estado</th>
                             </tr>
                         </thead>

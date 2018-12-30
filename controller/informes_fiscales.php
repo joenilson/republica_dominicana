@@ -4,16 +4,16 @@
  * Copyright (C) 2017 joenilson at gmail dot com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/facturacion_base/extras/xlsxwriter.class.php';
@@ -660,19 +660,27 @@ class informes_fiscales extends rd_controller
 
     public function reporte606($almacenes, $json)
     {
+        $divisas = new divisa();
+        $euro = $divisas->get('EUR');
         $total_informacion = 0;
         $sql_606 = " SELECT fp.cifnif, ".
             " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
-            " CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
+            //" CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
+            " concat(ncftc.codigo,' - ',ncftc.descripcion) as descripcion, ".
             " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
-            " concat(extract(year from fp.fecha),lpad(CAST(extract(month from fp.fecha) as char),2,'0')) as fechaym, ".
-            " lpad(CAST(extract(day from fp.fecha) as char),2,'0') as fechadd, ".
-            " concat(extract(year from ca.fecha),lpad(CAST(extract(month from ca.fecha) as char),2,'0')) as fechapym, ".
-            " lpad(CAST(extract(day from ca.fecha) as char),2,'0') as fechapdd, ".
-            " fp.totaliva, 0 as totalivaretenido, fp.neto, 0 as totalnetoretenido ".
+            " concat(extract(year from fp.fecha),lpad(CAST(extract(month from fp.fecha) as char),2,'0'), lpad(CAST(extract(day from fp.fecha) as char),2,'0')) as fecha, ".
+            " concat(extract(year from ca.fecha),lpad(CAST(extract(month from ca.fecha) as char),2,'0'), lpad(CAST(extract(day from ca.fecha) as char),2,'0')) as fechap, ".
+            " ncfc.total_servicios, ncfc.total_bienes, "
+            . "CASE WHEN fp.coddivisa != 'DOP' THEN round((fp.neto / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) ELSE fp.neto END as totalfacturado, "
+            . "CASE WHEN fp.coddivisa != 'DOP' THEN round((fp.totaliva / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) ELSE fp.totaliva END as totaliva, "
+            . " 0 as totalivaretenido, 0 as totalivasujeto, 0 as totalivallevadocosto, ".
+            " 0 as totalivaporadelantar, 0 as totalivapercibidocompras, '' as tiporetencionisr, 0 as totalretencionrenta,0 as totalisrpercibidocompra, 0 as totalisc, ".
+            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, fp.codpago ".
             " FROM facturasprov as fp ".
             " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
-            " left join facturasprov as fp2 ON (fp.idfacturarect = fp2.idfactura) ".
+            " left JOIN ncf_compras as ncfc on (fp.idfactura = ncfc.documento) ".
+            " left JOIN ncf_tipo_compras as ncftc on (ncfc.tipo_compra = ncftc.codigo) ".
+            " left join facturasprov as fp2 on (fp.idfacturarect = fp2.idfactura) ".
             " left join co_asientos as ca on (fp.idasientop = ca.idasiento AND fp.codejercicio = ca.codejercicio) ".
             " WHERE fp.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).
             " AND ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_fin))).
@@ -681,7 +689,7 @@ class informes_fiscales extends rd_controller
         $sql_cantidad = "SELECT count(*) as total FROM ( ".$sql_606." ) as t1;";
         $data_cantidad = $this->db->select($sql_cantidad);
         $sql_resumen = "SELECT sum(totaliva) as totaliva, ".
-                " sum(neto) as totalneto FROM (".
+                " sum(totalfacturado) as totalneto FROM (".
                 $sql_606.") as t1;";
         $data_resumen = $this->db->select($sql_resumen);
         if ($json) {
@@ -705,11 +713,11 @@ class informes_fiscales extends rd_controller
         $this->resultados_606 = $this->datos_reporte($this->reporte);
         $this->total_resultados_606 = 0;
         $this->generar_excel(
-            array('RNC/Cédula','Tipo Id','Tipo Bienes o Servicios Comprados','NCF','NCF Modifica','Fecha AAAAMM','Fecha DD','Fecha Pago AAAAMM','Fecha Pago DD','ITBIS Facturado','ITBIS Retenido','Monto Facturado','Retencion Renta'),
+            array('RNC/Cédula','Tipo Id','Tipo Compra','NCF','NCF Modifica','Fecha Documento','Fecha Pago','Total Servicios','Total Bienes','Total Facturado','ITBIS Facturado','ITBIS Retenido','ITBIS sujeto a Proporcionalidad (Art. 349)','ITBIS llevado al Costo','ITBIS por Adelantar','ITBIS percibido en compras','Tipo de Retención en ISR','Monto Retencion Renta','ISR Percibido en compras','Impuesto Selectivo al Consumo','Otros Impuestos/Tasas','Monto Propina Legal','Forma de Pago'),
             $this->resultados_606,
             false,
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left')),
             false
         );
     }
@@ -721,9 +729,14 @@ class informes_fiscales extends rd_controller
             " CASE WHEN length(nv.cifnif)=9 THEN nv.cifnif WHEN length(nv.cifnif)=11 THEN nv.cifnif ELSE NULL END as cifnif, ".
             " CASE WHEN length(nv.cifnif)=9 THEN 1 WHEN length(nv.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
             " ncf, ncf_modifica, ".
+            " CASE WHEN nv.tipo_ingreso is null THEN 1 ELSE tipo_ingreso END as tipo_ingreso, ".
             " concat(extract(year from nv.fecha),lpad(CAST(extract(month from nv.fecha) as char),2,'0'),lpad(CAST(extract(day from nv.fecha) as char),2,'0')) as fecha, ".
-            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " '' as fecha_retencion, ".
             " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
+            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " 0 as totalivaretenido, 0 as totalivapercibido, 0 as totalrentencionrenta, 0 as totalisrpercibido, 0 as totalisc, ".
+            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, 0 as totalefectivo, 0 as totalcheque, 0 as totaltarjeta, 0 as totalcredito, ".
+            " 0 as totalbonos, 0 as totalpermuta, 0 as totalotrasformas, ".
             " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado, ".
             " codpago ".
             " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".
@@ -769,11 +782,11 @@ class informes_fiscales extends rd_controller
         $this->resultados_607 = $this->datos_reporte($this->reporte);
         $this->total_resultados_607 = 0;
         $this->generar_excel(
-            array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Fecha','ITBIS Facturado','Monto Facturado','Estado','F. Pago'),
+            array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Tipo de Ingreso','Fecha Comprobante','Fecha Retención','Monto Facturado','ITBIS Facturado','ITBIS Retenido por Terceros','ITBIS Percibido','Retención Renta por Terceros','ISR Percibido','Impuesto Selectivo al Consumo','Otros Impuestos/Tasas','Monto Propina Legal','Efectivo','Cheque/Transferencia/Depósito','Tarjeta Débito/Crédito','Venta a Crédito','Bonos o Certificados de Regalo','Permuta','Otras Formas de Ventas','Estado','F. Pago'),
             $this->resultados_607,
             array('Total',count($this->resultados_607).' Documentos','','','','','','',''),
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
             false
         );
     }

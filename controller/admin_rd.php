@@ -11,9 +11,9 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
@@ -72,6 +72,9 @@ class admin_rd extends rd_controller
                 break;
             case 'impresion':
                 $this->impresion();
+                break;
+            case 'subcuentas_compras':
+                $this->configuracion_subcuentas_compras();
                 break;
             default:
                 break;
@@ -350,6 +353,24 @@ class admin_rd extends rd_controller
                 fclose($file);
             }
             $this->new_message('Datos de configuracion regional guardados correctamente.');
+        }
+    }
+    
+    public function configuracion_subcuentas_compras()
+    {           
+        $fsvar = new fs_var();
+        $op_rd_subcuenta_compras_bienes = \filter_input(INPUT_POST, 'rd_subcuenta_compras_bienes');
+        $op_rd_subcuenta_compras_servicios = \filter_input(INPUT_POST, 'rd_subcuenta_compras_servicios');
+
+        $rd_config = array(
+            'rd_subcuenta_compras_bienes' => $this->confirmarValor($op_rd_subcuenta_compras_bienes, ''),
+            'rd_subcuenta_compras_servicios' => $this->confirmarValor($op_rd_subcuenta_compras_servicios, ''),
+        );
+
+        if ($fsvar->array_save($rd_config)) {
+            $this->new_message('Opciones de Subcuentas de Compras actualizadas correctamente.');
+        } else {
+            $this->new_error_msg('Ocurrió un error al intentar actualizar la información de Subcuentas de Compras, por favor revise sus datos.');
         }
     }
 
