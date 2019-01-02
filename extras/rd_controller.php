@@ -43,6 +43,7 @@ class rd_controller extends fbase_controller
     public $ncf_tipo;
     public $ncf_entidad_tipo;
     public $ncf_tipo_anulacion;
+    public $ncf_tipo_ingresos;
     public $ncf_ventas;
     public $agente;
     public $almacen;
@@ -61,6 +62,21 @@ class rd_controller extends fbase_controller
     public $tipo_documento_pos;
     protected function private_core()
     {
+        $this->init_models();
+        $fsvar = new fs_var();
+        $this->multi_almacen = $fsvar->simple_get('multi_almacen');
+        $this->periodos = range(2016, \date('Y'));
+        $this->existe_tesoreria();
+        $this->control_usuarios();
+        $this->get_config();
+        $this->verificar_plugin_distribucion();
+        $this->ncf_length = 11;
+        $this->tipo_documento_pos = 1;
+        $this->cache->delete('ncf_ventas');
+    }
+    
+    public function init_models()
+    {
         $this->agente = new agente();
         $this->almacen = new almacen();
         $this->almacenes = new almacen();
@@ -73,18 +89,9 @@ class rd_controller extends fbase_controller
         $this->ncf_tipo = new ncf_tipo();
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+        $this->ncf_tipo_ingresos = new ncf_tipo_ingresos();
         $this->ncf_ventas = new ncf_ventas();
         $this->array_series = \range('A', 'Z');
-        $fsvar = new fs_var();
-        $this->multi_almacen = $fsvar->simple_get('multi_almacen');
-        $this->periodos = range(2016, \date('Y'));
-        $this->existe_tesoreria();
-        $this->control_usuarios();
-        $this->get_config();
-        $this->verificar_plugin_distribucion();
-        $this->ncf_length = 11;
-        $this->tipo_documento_pos = 1;
-        $this->cache->delete('ncf_ventas');
     }
 
     public function verificar_plugin_distribucion()
@@ -240,6 +247,7 @@ class rd_controller extends fbase_controller
             $ncf_factura->fecha = $factura->fecha;
             $ncf_factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
+            $ncf_factura->tipo_ingreso = (isset($factura->tipo_ingreso))? $factura->tipo_ingreso : '1';
             $ncf_factura->area_impresion = NULL;
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;

@@ -660,12 +660,9 @@ class informes_fiscales extends rd_controller
 
     public function reporte606($almacenes, $json)
     {
-        $divisas = new divisa();
-        $euro = $divisas->get('EUR');
         $total_informacion = 0;
         $sql_606 = " SELECT fp.cifnif, ".
             " CASE WHEN length(fp.cifnif)=9 THEN 1 WHEN length(fp.cifnif)=11 THEN 1 ELSE 3 END as tipo_id, ".
-            //" CASE WHEN acreedor = TRUE THEN 'Servicios' ELSE 'Bienes y Servicios' END as descripcion, ".
             " concat(ncftc.codigo,' - ',ncftc.descripcion) as descripcion, ".
             " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
             " concat(extract(year from fp.fecha),lpad(CAST(extract(month from fp.fecha) as char),2,'0'), lpad(CAST(extract(day from fp.fecha) as char),2,'0')) as fecha, ".

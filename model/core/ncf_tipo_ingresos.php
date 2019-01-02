@@ -28,7 +28,15 @@ class ncf_tipo_ingresos extends \fs_model
     public $codigo;
     public $descripcion;
     public $estado;
-
+    public $array_tipos = array(
+        array ('codigo' => '1', 'descripcion' => 'Ingresos por operaciones (No financieros)'),
+        array ('codigo' => '2', 'descripcion' => 'Ingresos Financieros'),
+        array ('codigo' => '3', 'descripcion' => 'Ingresos Extraordinarios'),
+        array ('codigo' => '4', 'descripcion' => 'Ingresos por Arrendamientos'),
+        array ('codigo' => '5', 'descripcion' => 'Ingresos por Venta de Activo Depreciable'),
+        array ('codigo' => '6', 'descripcion' => 'Otros Ingresos')
+    );
+    
     public function __construct($t = false)
     {
         parent::__construct('ncf_tipo_ingresos', 'plugins/republica_dominicana/');
@@ -127,5 +135,20 @@ class ncf_tipo_ingresos extends \fs_model
         $data = $this->db->select("SELECT descripcion FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
 
         return $data[0]['descripcion'];
+    }
+        
+    public function restore_names()
+    {
+        $sqlClean = "DELETE FROM ".$this->table_name." WHERE codigo=''";
+        $this->db->exec($sqlClean);
+        $counter = 0;
+        foreach($this->array_tipos as $tipo) {
+            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($tipo['descripcion']).
+                    " WHERE codigo = ".$this->var2str($tipo['codigo']);
+            if($this->db->exec($sql)) {
+               $counter ++; 
+            }
+        }
+        return $counter;  
     }
 }

@@ -198,33 +198,14 @@ class admin_rd extends rd_controller
 
     public function moneda()
     {
+        $div0 = new divisa();
         $tratamiento = false;
         //Validamos si existe la moneda DOP
-        $div0 = new divisa();
-        $divisa1 = $div0->get('DOP');
-        if (!$divisa1) {
-            $div0->coddivisa = 'DOP';
-            $div0->codiso = '214';
-            $div0->descripcion = 'PESOS DOMINICANOS';
-            $div0->simbolo = 'RD$';
-            $div0->tasaconv = 45.15;
-            $div0->tasaconv_compra = 45.90;
-            $div0->save();
-            $tratamiento = true;
-        }
+        $this->moneda_dop($div0, $tratamiento);
+        
         //Validamos si existe la moneda USD
         //por temas de operaciones en dolares
-        $divisa2 = $div0->get('USD');
-        if (!$divisa2) {
-            $div0->coddivisa = 'USD';
-            $div0->codiso = '840';
-            $div0->descripcion = 'DÓLARES EE.UU.';
-            $div0->simbolo = '$';
-            $div0->tasaconv = 1;
-            $div0->tasaconv_compra = 1;
-            $div0->save();
-            $tratamiento = true;
-        }
+        $this->moneda_usd($div0, $tratamiento);
 
         if ($tratamiento) {
             $this->new_message('Datos de moneda DOP y USD actualizados correctamente.');
@@ -237,6 +218,37 @@ class admin_rd extends rd_controller
                 $this->new_message('Datos de moneda para la empresa guardados correctamente.');
             }
         }
+    }
+    
+    private function moneda_dop($div0, &$tratamiento)
+    {
+        
+        $divisa1 = $div0->get('DOP');
+        if (!$divisa1) {
+            $div0->coddivisa = 'DOP';
+            $div0->codiso = '214';
+            $div0->descripcion = 'PESOS DOMINICANOS';
+            $div0->simbolo = 'RD$';
+            $div0->tasaconv = 57.1438;
+            $div0->tasaconv_compra = 57.1438;
+            $div0->save();    
+        }
+        $tratamiento = true;
+    }
+    
+    private function moneda_usd($div0, &$tratamiento)
+    {
+        $divisa2 = $div0->get('USD');
+        if (!$divisa2) {
+            $div0->coddivisa = 'USD';
+            $div0->codiso = '840';
+            $div0->descripcion = 'DÓLARES EE.UU.';
+            $div0->simbolo = '$';
+            $div0->tasaconv = 1;
+            $div0->tasaconv_compra = 1;
+            $div0->save();
+        }
+        $tratamiento = true;
     }
 
     public function impuestos()
@@ -274,6 +286,25 @@ class admin_rd extends rd_controller
         }
 
         //Corregimos la información de las Cuentas especiales con los nombres correctos
+        $this->cuentas_especiales();
+        
+
+        //Cargamos el ejercicio configurando la longitud de cuentas a 8
+        $cod = $this->empresa->codejercicio;
+        $ejer0 = new ejercicio();
+        $ejer = $ejer0->get($cod);
+        $ejer->longsubcuenta = 8;
+        $ejer->save();
+
+        if ($tratamiento) {
+            $this->new_message('Información de impuestos actualizada correctamente');
+        } else {
+            $this->new_message('No se modificaron datos de impuestos previamente tratados.');
+        }
+    }
+    
+    private function cuentas_especiales()
+    {
         $cuentas_especiales_rd = array();
         $cuentas_especiales_rd['IVAACR'] = 'Cuentas acreedoras de ITBIS en la regularización';
         $cuentas_especiales_rd['IVASOP'] = 'Cuentas de ITBIS Compras';
@@ -288,19 +319,6 @@ class admin_rd extends rd_controller
                 $linea->descripcion = $desc;
                 $linea->save();
             }
-        }
-
-        //Cargamos el ejercicio configurando la longitud de cuentas a 8
-        $cod = $this->empresa->codejercicio;
-        $ejer0 = new ejercicio();
-        $ejer = $ejer0->get($cod);
-        $ejer->longsubcuenta = 8;
-        $ejer->save();
-
-        if ($tratamiento) {
-            $this->new_message('Información de impuestos actualizada correctamente');
-        } else {
-            $this->new_message('No se modificaron datos de impuestos previamente tratados.');
         }
     }
 

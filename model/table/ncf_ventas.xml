@@ -76,6 +76,11 @@
         <nulo>YES</nulo>
     </columna>
     <columna>
+        <nombre>tipo_pago</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
         <nombre>usuario_creacion</nombre>
         <tipo>character varying(12)</tipo>
         <nulo>NO</nulo>

@@ -162,7 +162,7 @@ class ncf_rango extends fs_model
             $this->secuencia_fin = $t['secuencia_fin'];
             $this->correlativo = $t['correlativo'];
             $this->usuario_creacion = $t['usuario_creacion'];
-            $this->fecha_vencimiento = \date('d-m-Y', strtotime($t['fecha_vencimiento']));
+            $this->fecha_vencimiento = (isset($t['fecha_vencimiento']))?\date('d-m-Y', strtotime($t['fecha_vencimiento'])):$t['fecha_vencimiento'];
             $this->fecha_creacion = \date('d-m-Y H:i:s', strtotime($t['fecha_creacion']));
             $this->usuario_modificacion = $t['usuario_modificacion'];
             $this->fecha_modificacion = Date('d-m-Y H:i:s');

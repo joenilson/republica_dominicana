@@ -259,7 +259,7 @@ class ncf_compras extends \fs_model
                 "idempresa = ".$this->intval($idempresa)." AND ".
                 "documento = ".$this->intval($documento)." AND ".
                 "entidad = ".$this->var2str($entidad).";");
-        $result = false;
+        $datos = false;
         if ($data) {
             $datos = new ncf_compras($data[0]);
             $this->info_factura($datos);

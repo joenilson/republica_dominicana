@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : ncf_tipo_pagos.xml
+    Description:
+        Estructura de la tabla ncf_tipo_pagos.
+-->
+<tabla>
+    <columna>
+        <nombre>codigo</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>descripcion</nombre>
+        <tipo>character varying(180)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>estado</nombre>
+        <tipo>boolean</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <restriccion>
+        <nombre>ncf_tipo_ingresos_pkey</nombre>
+        <consulta>PRIMARY KEY (codigo)</consulta>
+    </restriccion>
+</tabla>

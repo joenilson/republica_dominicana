@@ -562,6 +562,17 @@
                   </p>
                </div>
                <div class="form-group">
+                    Tipo de Ingreso:
+                    <select name="tipo_compra" class="form-control">
+                        {loop="$fsc->ncf_tipo_ingresos->all()"}
+                        <option value="{$value->codigo}" {if="$value->codigo=='1'"}selected{/if}>{$value->descripcion}</option>
+                        {/loop}
+                    </select>
+                    <p class="help-block">
+                        Debes elegir que tipo de ingreso es para la presentación del 607
+                    </p>
+               </div>
+               <div class="form-group">
                   <a href="{$fsc->forma_pago->url()}">Forma de pago</a>:
                   <select name="forma_pago" class="form-control">
                   {loop="$fsc->forma_pago->all()"}

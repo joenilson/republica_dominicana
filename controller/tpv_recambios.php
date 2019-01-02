@@ -650,6 +650,7 @@ class tpv_recambios extends rd_controller
         }
 
         if ($fac0) {
+            $this->info_factura_dgii($fac0);
             $this->imprimir_ticket($fac0, 1, FALSE);
         } else {
             $this->new_error_msg("Ticket no encontrado.");
@@ -673,9 +674,7 @@ class tpv_recambios extends rd_controller
             }
 
             while ($num_tickets > 0) {
-                $tipo_ncf = substr($factura->numero2, -10, 2);
-                $ncf_tipo = $this->ncf_tipo->get($tipo_ncf);
-                $factura->tipo_comprobante = $ncf_tipo->descripcion;
+                $this->info_factura_dgii($factura);
                 $this->terminal->imprimir_ticket($factura, $this->empresa, $this->imprimir_descripciones, $this->imprimir_observaciones);
                 $num_tickets--;
             }
@@ -701,6 +700,7 @@ class tpv_recambios extends rd_controller
             }
 
             while ($num_tickets > 0) {
+                $this->info_factura_dgii($factura);
                 $this->terminal->imprimir_ticket_regalo($factura, $this->empresa, $this->imprimir_descripciones, $this->imprimir_observaciones);
                 $num_tickets--;
             }
@@ -730,6 +730,14 @@ class tpv_recambios extends rd_controller
             /// de todas formas forzamos la generación de las líneas de iva
             $factura->get_lineas_iva();
         }
+    }
+    
+    private function info_factura_dgii(&$fact)
+    {
+        $ncf_ventas = $this->ncf_ventas->get_ncf($this->empresa->id, $fact->idfactura, $fact->codcliente);
+        $fact->fecha_vencimiento = $ncf_ventas->fecha_vencimiento;
+        $ncf_tipo = $this->ncf_tipo->get($ncf_ventas->tipo_comprobante);
+        $fact->tipo_comprobante = $ncf_tipo->descripcion;
     }
 
     private function share_extensions()

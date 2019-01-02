@@ -125,7 +125,7 @@ class ncf extends fs_controller
         $ncf0->secuencia_fin = $secuencia_fin;
         $ncf0->correlativo = (null !== \filter_input(INPUT_POST, 'correlativo')) ? $correlativo : $secuencia_inicio;
         $ncf0->usuario_creacion = $this->user->nick;
-        $ncf0->fecha_vencimiento = \date('d-m-Y', strtotime($fecha_vencimiento));
+        $ncf0->fecha_vencimiento = (!empty($fecha_vencimiento))?\date('d-m-Y', strtotime($fecha_vencimiento)):null;
         $ncf0->fecha_creacion = \date('d-m-Y H:i:s');
         $ncf0->usuario_modificacion = $this->user->nick;
         $ncf0->fecha_modificacion = \date('d-m-Y H:i:s');

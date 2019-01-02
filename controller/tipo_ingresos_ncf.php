@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('ncf_tipo_compras.php');
+require_model('ncf_tipo_ingresos.php');
 
 /**
  * Description of tipo_ncf
  * Clase para manejar los tipos de Compras para las facturas de proveedor
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class tipo_compras_ncf extends fs_controller
+class tipo_ingresos_ncf extends fs_controller
 {
-    public $ncf_tipo_compras;
+    public $ncf_tipo_ingresos;
     public $allow_delete;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Tipo de Compras', 'contabilidad', false, false, false);
+        parent::__construct(__CLASS__, 'Tipo de Ingresos', 'contabilidad', false, false, false);
     }
 
     protected function private_core()
@@ -43,7 +43,7 @@ class tipo_compras_ncf extends fs_controller
             $this->tratarTipos($accion);
         }
         
-        $this->ncf_tipo_compras = new ncf_tipo_compras();
+        $this->ncf_tipo_ingresos = new ncf_tipo_ingresos();
     }
 
     public function tratarTipos($accion)
@@ -64,7 +64,7 @@ class tipo_compras_ncf extends fs_controller
         $codigo = filter_input(INPUT_POST, 'codigo');
         $descripcion = filter_input(INPUT_POST, 'descripcion');
         $estado = filter_input(INPUT_POST, 'estado');
-        $tc0 = new ncf_tipo_compras();
+        $tc0 = new ncf_tipo_ingresos();
         $tc0->codigo = $codigo;
         $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
         $tc0->estado = ($estado) ? true : false;
@@ -79,7 +79,7 @@ class tipo_compras_ncf extends fs_controller
     {
         if($this->allow_delete) {
             $codigo = filter_input(INPUT_POST, 'codigo');
-            $tc1 = new ncf_tipo_compras();
+            $tc1 = new ncf_tipo_ingresos();
             $registro = $tc1->get($codigo);
             if ($registro->delete()) {
                 $this->new_message('¡Tipo de compras desactivado con exito!');
@@ -93,8 +93,8 @@ class tipo_compras_ncf extends fs_controller
     
     protected function restaurarNombres()
     {
-        $ncf_tipo_compras = new ncf_tipo_compras();
-        $nombresRestaurados = $ncf_tipo_compras->restore_names();
+        $ncf_tipo_ingreso = new ncf_tipo_ingresos();
+        $nombresRestaurados = $ncf_tipo_ingreso->restore_names();
         $this->template = false;
         $data = array();
         $data['success']=true;
@@ -107,11 +107,11 @@ class tipo_compras_ncf extends fs_controller
     {
         $extensiones = array(
             array(
-                'name' => 'tipo_compras_ncf',
+                'name' => 'tipo_ingresos_ncf',
                 'page_from' => __CLASS__,
                 'page_to' => 'ncf',
                 'type' => 'button',
-                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos Compra',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos Ingreso',
                 'params' => ''
             ),
         );

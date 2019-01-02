@@ -98,7 +98,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false,
 
     if ($json) {
         header('Content-Type: application/json');
-        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente));
+        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente, 'vencimiento' => $numero_ncf['VENCIMIENTO']));
     } else {
         return array($ncf_numero, $numero_ncf['VENCIMIENTO']);
     }
@@ -411,10 +411,8 @@ function fs_documento_venta_post_save(&$documento)
 {
     require_model('empresa.php');
     require_model('ncf_tipo_anulacion.php');
-    require_model('ncf_tipo_ingresos.php');
     $empresa = new empresa();
     $ncf_tipo_anulacion = new ncf_tipo_anulacion();
-    $ncf_tipo_ingresos = new ncf_tipo_ingresos();
     $tipo_ingreso = \filter_input(INPUT_POST, 'tipo_ingreso');
     $rectificativa = ($documento->idfacturarect)?true:false;
     $funcion_generar = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero2_old' : 'generar_numero2';
@@ -426,10 +424,10 @@ function fs_documento_venta_post_save(&$documento)
         $motivo = \filter_input(INPUT_POST, 'motivo');
         $motivo_doc = '';
         $documento->fecha_vencimiento = $vencimiento;
-        $documento->tipo_ingreso = '01';
+        $documento->tipo_ingreso = '1';
         
         if(isset($tipo_ingreso)) {
-            $documento->tipo_ingreso = ($tipo_ingreso !== '') ? $tipo_ingreso: '01';
+            $documento->tipo_ingreso = ($tipo_ingreso !== '') ? $tipo_ingreso: '1';
         }
 
         if ($motivo) {

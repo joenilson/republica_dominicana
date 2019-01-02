@@ -384,7 +384,7 @@ class terminal_caja extends \fs_model
         $linea .= "\n" . $factura->tipo_comprobante . "\n";
         $linea .= "NCF: " . $factura->numero2 . "\n";
         if (substr($factura->numero2, -10, 2) == '01') {
-            $linea .= "VALIDO HASTA: " . $factura->fecha_vencimiento . "\n";
+            $linea .= "VALIDO HASTA: " . $factura->fecha_vencimiento . "\n\n\n";
         }
         $linea .= $factura->fecha . " " . Date('H:i', strtotime($factura->hora)) . "\n";
         $this->add_linea($linea);

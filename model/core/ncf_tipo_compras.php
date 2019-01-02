@@ -28,7 +28,20 @@ class ncf_tipo_compras extends \fs_model
     public $codigo;
     public $descripcion;
     public $estado;
-
+    public $array_tipos = array(
+        array ('codigo' => '01', 'descripcion' => 'GASTOS DE PERSONAL'),
+        array ('codigo' => '02', 'descripcion' => 'GASTOS POR TRABAJOS, SUMINISTROS Y SERVICIOS'),
+        array ('codigo' => '03', 'descripcion' => 'ARRENDAMIENTOS'),
+        array ('codigo' => '04', 'descripcion' => 'GASTOS DE ACTIVOS FIJOS'),
+        array ('codigo' => '05', 'descripcion' => 'GASTOS DE REPRESENTACIÓN'),
+        array ('codigo' => '06', 'descripcion' => 'OTRAS DEDUCCIONES ADMITIDAS'),
+        array ('codigo' => '07', 'descripcion' => 'GASTOS FINANCIEROS'),
+        array ('codigo' => '08', 'descripcion' => 'GASTOS EXTRAORDINARIOS'),
+        array ('codigo' => '09', 'descripcion' => 'COMPRAS Y GASTOS QUE FORMARÁN PARTE DEL COSTO DE VENTA'),
+        array ('codigo' => '10', 'descripcion' => 'ADQUISICIONES DE ACTIVOS'),
+        array ('codigo' => '11', 'descripcion' => 'GASTOS DE SEGUROS')
+    );
+    
     public function __construct($t = false)
     {
         parent::__construct('ncf_tipo_compras', 'plugins/republica_dominicana/');
@@ -132,5 +145,20 @@ class ncf_tipo_compras extends \fs_model
         $data = $this->db->select("SELECT descripcion FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
 
         return $data[0]['descripcion'];
+    }
+    
+    public function restore_names()
+    {
+        $sqlClean = "DELETE FROM ".$this->table_name." WHERE codigo=''";
+        $this->db->exec($sqlClean);
+        $counter = 0;
+        foreach($this->array_tipos as $tipo) {
+            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($tipo['descripcion']).
+                    " WHERE codigo = ".$this->var2str($tipo['codigo']);
+            if($this->db->exec($sql)) {
+               $counter ++; 
+            }
+        }
+        return $counter;  
     }
 }

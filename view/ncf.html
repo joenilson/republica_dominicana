@@ -149,7 +149,11 @@
                         <input class="form-control text-right" type="number" name="correlativo" min="1" max="99999999" value="{$value->correlativo}" autocomplete="off"/>
                     </td>
                     <td>
-                        <input class="form-control datepicker" type="text" name="fecha_vencimiento" value="{$value->fecha_vencimiento}" autocomplete="off"/>
+                        {if="$value->tipo_comprobante=='02' OR $value->tipo_comprobante=='04'"}
+                            <input class="form-control" type="text" name="fecha_vencimiento" value="{$value->fecha_vencimiento}" autocomplete="off"/>{$value->fecha_vencimiento}
+                        {else}
+                            <input class="form-control datepicker" type="text" name="fecha_vencimiento" value="{$value->fecha_vencimiento}" autocomplete="off"/>
+                        {/if}
                     </td>
                     <td class="text-center">
                         <div class="checkbox">

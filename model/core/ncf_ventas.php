@@ -34,6 +34,7 @@ class ncf_ventas extends \fs_model
     public $fecha_vencimiento;
     public $tipo_comprobante;
     public $tipo_ingreso;
+    public $tipo_pago;
     public $area_impresion;
     public $ncf;
     public $ncf_modifica;
@@ -62,6 +63,7 @@ class ncf_ventas extends \fs_model
             $this->fecha_vencimiento = $data['fecha_vencimiento'];
             $this->tipo_comprobante = $data['tipo_comprobante'];
             $this->tipo_ingreso = $data['tipo_ingreso'];
+            $this->tipo_pago = $data['tipo_pago'];
             $this->area_impresion = $data['area_impresion'];
             $this->ncf = $data['ncf'];
             $this->ncf_modifica = $data['ncf_modifica'];
@@ -78,15 +80,16 @@ class ncf_ventas extends \fs_model
             $this->cifnif = null;
             $this->documento = null;
             $this->documento_modifica = null;
-            $this->fecha = Date('d-m-Y');
+            $this->fecha = \date('d-m-Y');
             $this->fecha_vencimiento = null;
             $this->tipo_comprobante = null;
-            $this->tipo_ingreso = '01';
+            $this->tipo_ingreso = '1';
+            $this->tipo_pago = '17';
             $this->area_impresion = null;
             $this->ncf = null;
             $this->ncf_modifica = null;
             $this->usuario_creacion = null;
-            $this->fecha_creacion = Date('d-m-Y H:i:s');
+            $this->fecha_creacion = \date('d-m-Y H:i:s');
             $this->usuario_modificacion = null;
             $this->fecha_modificacion = null;
             $this->estado = true;
@@ -115,7 +118,7 @@ class ncf_ventas extends \fs_model
     public function save()
     {
         if (!$this->exists()) {
-            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, fecha_vencimiento, tipo_comprobante, tipo_ingreso, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ncf_ventas (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, fecha_vencimiento, tipo_comprobante, tipo_ingreso, tipo_pago, area_impresion, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                     "(".
                     $this->intval($this->idempresa).", ".
                     $this->var2str($this->codalmacen).", ".
@@ -127,6 +130,7 @@ class ncf_ventas extends \fs_model
                     $this->var2str($this->fecha_vencimiento).", ".
                     $this->var2str($this->tipo_comprobante).", ".
                     $this->var2str($this->tipo_ingreso).", ".
+                    $this->var2str($this->tipo_pago).", ".
                     $this->var2str($this->area_impresion).", ".
                     $this->var2str($this->ncf).", ".
                     $this->var2str($this->ncf_modifica).", ".
@@ -281,7 +285,6 @@ class ncf_ventas extends \fs_model
                 $lista[] = new ncf_ventas($d);
             }
         }
-
         return $lista;
     }
 
