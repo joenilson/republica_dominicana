@@ -23,7 +23,7 @@ require_model('ncf_tipo_pagos.php');
  * Clase para manejar los tipos de Compras para las facturas de proveedor
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class tipo_ingresos_ncf extends fs_controller
+class tipo_pagos_ncf extends fs_controller
 {
     public $ncf_tipo_pagos;
     public $allow_delete;
@@ -93,8 +93,8 @@ class tipo_ingresos_ncf extends fs_controller
     
     protected function restaurarNombres()
     {
-        $ncf_tipo_ingreso = new ncf_tipo_pagos();
-        $nombresRestaurados = $ncf_tipo_ingreso->restore_names();
+        $ncf_tipo_pagos = new ncf_tipo_pagos();
+        $nombresRestaurados = $ncf_tipo_pagos->restore_names();
         $this->template = false;
         $data = array();
         $data['success']=true;
