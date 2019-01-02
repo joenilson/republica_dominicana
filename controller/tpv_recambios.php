@@ -1,7 +1,7 @@
 <?php
 /*
  * This file is part of facturacion_base
- * Copyright (C) 2013-2017  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2013-2018  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -10,11 +10,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
@@ -441,16 +441,16 @@ class tpv_recambios extends rd_controller
                 $factura->tasaconv = floatval($_POST['tasaconv']);
             }
 
-            $factura->codagente = $this->agente->codagente;
+            // Cambia el agente?
+            $factura->codagente = isset($_POST['codagente']) ? $_POST['codagente'] : $this->agente->codagente;
             $factura->observaciones = $_POST['observaciones'];
-            $factura->numero2 = $_POST['numero2'];
             $factura->porcomision = $this->agente->porcomision;
 
             if ($forma_pago->genrecibos == 'Pagados') {
                 $factura->pagada = TRUE;
             }
 
-            $factura->vencimiento = Date('d-m-Y', strtotime($factura->fecha . ' ' . $forma_pago->vencimiento));
+            $factura->vencimiento = $forma_pago->calcular_vencimiento($factura->fecha, $this->cliente_s->diaspago);
 
             $factura->codcliente = $this->cliente_s->codcliente;
             $factura->cifnif = $_POST['cifnif'];
@@ -471,6 +471,11 @@ class tpv_recambios extends rd_controller
                     $factura->provincia = $d->provincia;
                     break;
                 }
+            }
+
+            /// función auxiliar para implementar en los plugins que lo necesiten
+            if (!fs_generar_numero2($factura)) {
+                $factura->numero2 = $_POST['numero2'];
             }
 
             $regularizacion = new regularizacion_iva();
@@ -549,17 +554,9 @@ class tpv_recambios extends rd_controller
                     } else if ($factura->save()) {
                         $this->generar_asiento($factura);
 
-                        /**
-                                            * Función de ejecución de tareas post guardado correcto de la factura
-                                            */
-                        $tipo_comprobante = $_POST['tipo_comprobante'];
-                        $numero_ncf = $this->generar_numero_ncf($this->empresa->id, $_POST['almacen'], $tipo_comprobante, $factura->codpago);
-                        if ($numero_ncf['NCF'] == $factura->numero2) {
-                            $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
-                            $factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
-                        } else {
-                            $this->new_error_msg('Ocurrió un error al actualizar el correlativo de NCF por favor informe al contador antes de seguir facturando. La factura se grabó con el NCF ' . $factura->numero2 . ' y el NCF segun el listado debió ser ' . $numero_ncf['NCF']);
-                        }
+                        /// Función de ejecución de tareas post guardado correcto de la factura
+                        fs_documento_post_save($factura);
+
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente.");
                         if ($_POST['regalo'] == 'TRUE') {
                             $this->imprimir_ticket_regalo($factura);
@@ -595,11 +592,11 @@ class tpv_recambios extends rd_controller
 
     private function abrir_caja()
     {
-        if ($this->user->admin && $this->terminal) {
+        if ($this->terminal) {
                 $this->terminal->abrir_cajon();
                 $this->terminal->save();
         } else {
-            $this->new_error_msg('Sólo un administrador puede abrir la caja.');
+            $this->new_error_msg('Terminal no encontrado.');
         }
     }
 
@@ -659,12 +656,9 @@ class tpv_recambios extends rd_controller
 
     /**
      * Añade el ticket a la cola de impresión.
-     * 
-     * @param \factura_cliente $factura 
-     * @param int              $num_tickets 
-     * @param boolean          $cajon 
-     * 
-     * @return none
+     * @param factura_cliente $factura
+     * @param type $num_tickets
+     * @param type $cajon
      */
     private function imprimir_ticket($factura, $num_tickets = 1, $cajon = TRUE)
     {

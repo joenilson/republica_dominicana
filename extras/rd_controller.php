@@ -73,6 +73,7 @@ class rd_controller extends fbase_controller
         $this->ncf_length = 11;
         $this->tipo_documento_pos = 1;
         $this->cache->delete('ncf_ventas');
+        $this->cache->delete('ncf_compras');
     }
     
     public function init_models()
@@ -248,6 +249,7 @@ class rd_controller extends fbase_controller
             $ncf_factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->tipo_ingreso = (isset($factura->tipo_ingreso))? $factura->tipo_ingreso : '1';
+            $ncf_factura->tipo_pago = (isset($factura->tipo_pago))? $factura->tipo_pago : '17';
             $ncf_factura->area_impresion = NULL;
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;

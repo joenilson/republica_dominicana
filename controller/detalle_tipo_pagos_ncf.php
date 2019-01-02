@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('ncf_tipo_ingresos.php');
+require_model('ncf_tipo_pagos.php');
 
 /**
  * Description of tipo_ncf
  * Clase para manejar los tipos de Compras para las facturas de proveedor
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class tipo_ingresos_ncf extends fs_controller
+class detalle_tipo_pagos_ncf extends fs_controller
 {
-    public $ncf_tipo_ingresos;
+    public $ncf_tipo_pagos;
     public $allow_delete;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Tipo de Ingresos', 'contabilidad', false, false, false);
+        parent::__construct(__CLASS__, 'Detalle de Tipo de Pago', 'contabilidad', false, false, false);
     }
 
     protected function private_core()
@@ -43,7 +43,7 @@ class tipo_ingresos_ncf extends fs_controller
             $this->tratarTipos($accion);
         }
         
-        $this->ncf_tipo_ingresos = new ncf_tipo_ingresos();
+        $this->ncf_tipo_pagos = new ncf_tipo_pagos();
     }
 
     public function tratarTipos($accion)
@@ -64,14 +64,14 @@ class tipo_ingresos_ncf extends fs_controller
         $codigo = filter_input(INPUT_POST, 'codigo');
         $descripcion = filter_input(INPUT_POST, 'descripcion');
         $estado = filter_input(INPUT_POST, 'estado');
-        $tc0 = new ncf_tipo_ingresos();
+        $tc0 = new ncf_tipo_pagos();
         $tc0->codigo = $codigo;
         $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
         $tc0->estado = ($estado) ? true : false;
         if ($tc0->save()) {
-            $this->new_message('¡Tipo de ingreso agregado con exito!');
+            $this->new_message('¡Tipo de compra agregado con exito!');
         } else {
-            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de ingreso, por favor revise los datos ingresados.');
+            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de compra, por favor revise los datos ingresados.');
         }
     }
     
@@ -79,12 +79,12 @@ class tipo_ingresos_ncf extends fs_controller
     {
         if($this->allow_delete) {
             $codigo = filter_input(INPUT_POST, 'codigo');
-            $tc1 = new ncf_tipo_ingresos();
+            $tc1 = new ncf_tipo_pagos();
             $registro = $tc1->get($codigo);
             if ($registro->delete()) {
-                $this->new_message('¡Tipo de ingreso desactivado con exito!');
+                $this->new_message('¡Tipo de compras desactivado con exito!');
             } else {
-                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de ingreso, por favor verifique los datos');
+                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de compras, por favor verifique los datos');
             }
         } else {
             $this->new_error_msg('No tiene permiso para borrar información');
@@ -93,7 +93,7 @@ class tipo_ingresos_ncf extends fs_controller
     
     protected function restaurarNombres()
     {
-        $ncf_tipo_ingreso = new ncf_tipo_ingresos();
+        $ncf_tipo_ingreso = new ncf_tipo_pagos();
         $nombresRestaurados = $ncf_tipo_ingreso->restore_names();
         $this->template = false;
         $data = array();
@@ -107,11 +107,11 @@ class tipo_ingresos_ncf extends fs_controller
     {
         $extensiones = array(
             array(
-                'name' => 'tipo_ingresos_ncf',
+                'name' => 'detalle_tipo_ingresos_ncf',
                 'page_from' => __CLASS__,
-                'page_to' => 'ncf',
+                'page_to' => 'tipo_pagos_ncf',
                 'type' => 'button',
-                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos Ingreso',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar los Tipos Ingreso',
                 'params' => ''
             ),
         );
