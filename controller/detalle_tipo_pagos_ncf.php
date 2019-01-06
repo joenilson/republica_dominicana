@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 require_model('ncf_tipo_pagos.php');
+require_model('ncf_detalle_tipo_pagos.php');
 
 /**
  * Description of tipo_ncf
@@ -25,6 +26,7 @@ require_model('ncf_tipo_pagos.php');
  */
 class detalle_tipo_pagos_ncf extends fs_controller
 {
+    public $ncf_detalle_tipo_pagos;
     public $ncf_tipo_pagos;
     public $allow_delete;
 
@@ -44,74 +46,64 @@ class detalle_tipo_pagos_ncf extends fs_controller
         }
         
         $this->ncf_tipo_pagos = new ncf_tipo_pagos();
+        $this->ncf_detalle_tipo_pagos = new ncf_detalle_tipo_pagos();
     }
 
     public function tratarTipos($accion)
     {
-        if ($accion == 'agregar') {
-            $this->agregar();
+        if ($accion == 'asignar') {
+            $this->asignar();
         } elseif ($accion == 'eliminar') {
             $this->eliminar();
-        } elseif ($accion == 'restaurar_nombres') {
-            $this->restaurarNombres();
         } else {
             $this->new_error_msg('Se recibió una solicitud incompleta.');
         }
     }
     
-    protected function agregar()
+    protected function asignar()
     {
         $codigo = filter_input(INPUT_POST, 'codigo');
-        $descripcion = filter_input(INPUT_POST, 'descripcion');
-        $estado = filter_input(INPUT_POST, 'estado');
-        $tc0 = new ncf_tipo_pagos();
-        $tc0->codigo = $codigo;
-        $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
-        $tc0->estado = ($estado) ? true : false;
-        if ($tc0->save()) {
-            $this->new_message('¡Tipo de compra agregado con exito!');
+        $codpago = filter_input(INPUT_POST, 'codpago');
+        $dtp0 = new ncf_detalle_tipo_pagos();
+        $dtp0->codigo = $codigo;
+        $dtp0->codpago = $codpago;
+        if ($dtp0->save()) {
+            $this->new_message('¡Asignación de Tipo de Pago realizado con exito!');
         } else {
-            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de compra, por favor revise los datos ingresados.');
+            $this->new_error_msg('Ocurrio un error al intengar asignar la forma de pago, por favor revise los datos ingresados.');
         }
     }
     
     protected function eliminar()
     {
+        /// desactivamos la plantilla HTML
+        $this->template = false;
+        header('Content-Type: application/json');
+        
         if($this->allow_delete) {
             $codigo = filter_input(INPUT_POST, 'codigo');
-            $tc1 = new ncf_tipo_pagos();
-            $registro = $tc1->get($codigo);
+            $codpago = filter_input(INPUT_POST, 'codpago');
+            $tc1 = new ncf_detalle_tipo_pagos();
+            $registro = $tc1->get($codigo,$codpago);
             if ($registro->delete()) {
-                $this->new_message('¡Tipo de compras desactivado con exito!');
+                echo json_encode(array('message'=>'¡Asignación de Forma de pago a Tipo de Pago eliminada con exito!'));
             } else {
-                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de compras, por favor verifique los datos');
+                echo json_encode(array('message'=>'Ocurrio un error al tratar de eliminar la asignación, por favor verifique los datos'));
             }
         } else {
-            $this->new_error_msg('No tiene permiso para borrar información');
+            echo json_encode(array('message'=>'No tiene permiso para borrar información'));
         }
-    }
-    
-    protected function restaurarNombres()
-    {
-        $ncf_tipo_ingreso = new ncf_tipo_pagos();
-        $nombresRestaurados = $ncf_tipo_ingreso->restore_names();
-        $this->template = false;
-        $data = array();
-        $data['success']=true;
-        $data['cantidad']=$nombresRestaurados;
-        header('Content-Type: application/json');
-        echo json_encode($data);
     }
 
     public function shared_extensions()
     {
         $extensiones = array(
             array(
-                'name' => 'detalle_tipo_ingresos_ncf',
+                'name' => 'detalle_tipo_pago_ncf',
                 'page_from' => __CLASS__,
                 'page_to' => 'tipo_pagos_ncf',
                 'type' => 'button',
-                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar los Tipos Ingreso',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Detalle de los Tipos Pago',
                 'params' => ''
             ),
         );

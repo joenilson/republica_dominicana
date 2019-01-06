@@ -44,6 +44,8 @@ class rd_controller extends fbase_controller
     public $ncf_entidad_tipo;
     public $ncf_tipo_anulacion;
     public $ncf_tipo_ingresos;
+    public $ncf_tipo_pagos;
+    public $ncf_detalle_tipo_pagos;
     public $ncf_ventas;
     public $agente;
     public $almacen;
@@ -91,6 +93,8 @@ class rd_controller extends fbase_controller
         $this->ncf_entidad_tipo = new ncf_entidad_tipo();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->ncf_tipo_ingresos = new ncf_tipo_ingresos();
+        $this->ncf_tipo_pagos = new ncf_tipo_pagos();
+        $this->ncf_detalle_tipo_pagos = new ncf_detalle_tipo_pagos();
         $this->ncf_ventas = new ncf_ventas();
         $this->array_series = \range('A', 'Z');
     }
@@ -249,7 +253,7 @@ class rd_controller extends fbase_controller
             $ncf_factura->fecha_vencimiento = $numero_ncf['VENCIMIENTO'];
             $ncf_factura->tipo_comprobante = $tipo_comprobante;
             $ncf_factura->tipo_ingreso = (isset($factura->tipo_ingreso))? $factura->tipo_ingreso : '1';
-            $ncf_factura->tipo_pago = (isset($factura->tipo_pago))? $factura->tipo_pago : '17';
+            $ncf_factura->tipo_pago = (isset($factura->tipo_pago))? $this->ncf_detalle_tipo_pagos->get_codigo($factura->codpago) : '17';
             $ncf_factura->area_impresion = NULL;
             $ncf_factura->ncf = $numero_ncf['NCF'];
             $ncf_factura->usuario_creacion = $this->user->nick;

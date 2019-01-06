@@ -32,12 +32,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </a>
                 {/if}
                 <span class="btn-group">
-                    <a class="btn btn-sm btn-default" href="index.php?page=ncf" title="Regresar al Maestro de NCF">
-                        <span class="fa fa-arrow-left"></span>&nbsp;Maestro de NCF
+                    <a class="btn btn-sm btn-default" href="index.php?page=tipo_pagos_ncf" title="Regresar a Tipos de Pago">
+                        <span class="fa fa-arrow-left"></span>&nbsp;Regresar a Tipos de Pago
                     </a>
-                    <button class="btn btn-sm btn-danger" title="Restaurar Nombres de Tipo de Pago" onClick="advertenciaRestoreNames()">
-                        <span class="fa fa-reply fa-fw"></span>Restaurar Nombres de Tipo de Pago
-                    </button>
                     {loop="$fsc->extensions"}
                         {if="$value->type=='button'"}
                             <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
@@ -48,9 +45,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
         <div class="col-sm-6 col-xs-6 text-right">
             <h4>
-                <span class="fa fa-list-ol"></span>&nbsp;Tipos de Ingresos
+                <span class="fa fa-list-ol"></span>&nbsp;Formas de pago
             </h4>
         </div>
+    </div>
+    <div class="row">
+        {loop="$fsc->ncf_tipo_pagos->all()"}
+        <div class="col-sm-4">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="panel-title">Tipo de pago: {$value->codigo} - {$value->descripcion}</div>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group">
+                    {loop="$fsc->ncf_detalle_tipo_pagos->get_codpagos($value1->codigo)"}
+                    <li class="list-group-item clearfix">{$value2->codpago} - {$value2->descripcion_codpago}<div class="pull-right"><a href="#" class="btn btn-xs btn-danger" onClick="advertenciaEliminarAsingacion('{$value1->codigo}','{$value1->descripcion}','{$value2->codpago}','{$value2->descripcion_codpago}')"><span class="fa fa-trash fa-fw"></span></a></div></li>
+                    {else}
+                    <li class="list-group-item list-group-item-warning">No hay Formas de pago asociadas a este Tipo de pago</li>
+                    {/loop}
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    <form class="form" role="form" method="POST" action="{$fsc->url()}">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <input type="hidden" name="codigo" value="{$value->codigo}">
+                                <select class="form-control" name="codpago" required="">
+                                    {loop="$fsc->ncf_detalle_tipo_pagos->get_codpago_libres()"}
+                                    <option value="{$value2->codpago}">{$value2->descripcion}</option>
+                                    {else}
+                                    <option value="">No hay Formas de Pago sin asignar</option>
+                                    {/loop}
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <button class="btn btn-sm btn-primary btn-block" type="submit" name="accion" value="asignar">Asignar</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+        {else}
+        <div class="panel">
+            <div class="panel-heading">
+                <div class="panel-title panel-danger">No hay tipos de pago en la base de datos</div>
+            </div>
+            <div class="panel-body">
+                
+            </div>
+        </div>
+        {/loop}
     </div>
     <div class="row">
         <div class="table-responsive">
@@ -120,29 +166,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </div>
 <script>
     /**
-     * @name advertenciaRestoreNames
+     * @name advertenciaEliminarAsingacion
      * @returns void
      */
-    function advertenciaRestoreNames()
+    function advertenciaEliminarAsingacion(codigo,desc1,codpago,desc2)
     {
         bootbox.setLocale('es');
         bootbox.confirm({
-            title: '¿Restaurar nombres de Tipos de Pago?',
-            message: '¿Está seguro que quiere Restaurar los nombres originales de los Tipos de Pago?', 
+            title: '¿Eliminar asignacion de Forma de Pago a Tipo Pago?',
+            message: '¿Está seguro que quiere eliminar la asignación de Forma de pago <b>'+desc2+'</b> al Tipo de pago  <b>'+desc1+'</b>?', 
             callback: function(response){
                 if(response) {
                     $.ajax({
                         type: "POST",
                         url: "{$fsc->url()}",
-                        data: "accion=restore_names",
+                        data: "accion=eliminar&codigo="+codigo+"&codpago="+codpago,
                         dataType: "json",
                         success: function (data) {
                             setTimeout(function () {
-                                bootbox.alert('Se restauró el nombre de '+data.cantidad+' Tipos de Pago.', function(){
+                                bootbox.alert('Se eliminó la asignación de '+desc2+' a '+desc1, function(){
                                     window.location.href = '{$fsc->url()}';
                                 });
                             }, 1000);
-
                         },
                         error: function (er) {
                             bootbox.alert(er);

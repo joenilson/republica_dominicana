@@ -732,8 +732,14 @@ class informes_fiscales extends rd_controller
             " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
             " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
             " 0 as totalivaretenido, 0 as totalivapercibido, 0 as totalrentencionrenta, 0 as totalisrpercibido, 0 as totalisc, ".
-            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, 0 as totalefectivo, 0 as totalcheque, 0 as totaltarjeta, 0 as totalcredito, ".
-            " 0 as totalbonos, 0 as totalpermuta, 0 as totalotrasformas, ".
+            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, ".
+            " CASE WHEN tipo_pago IS NULL OR tipo_pago = '' OR tipo_pago = '17' THEN neto else 0 END as totalefectivo, ".
+            " CASE WHEN tipo_pago = '18' THEN neto else 0 END as totalcheque, ".
+            " CASE WHEN tipo_pago = '19' THEN neto else 0 END as totaltarjeta, ".
+            " CASE WHEN tipo_pago = '20' THEN neto else 0 END as totalcredito, ".
+            " CASE WHEN tipo_pago = '21' THEN neto else 0 END as totalbonos, ".
+            " CASE WHEN tipo_pago = '22' THEN neto else 0 END as totalpermuta, ".
+            " CASE WHEN tipo_pago = '23' THEN neto else 0 END as totalotrasformas, ".
             " CASE WHEN estado THEN 'Activo' ELSE 'Anulado' END as estado, ".
             " codpago ".
             " FROM ncf_ventas as nv JOIN facturascli as f on (f.idfactura = nv.documento)".

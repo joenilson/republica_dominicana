@@ -58,12 +58,23 @@
                         <th width="150" class="text-right">Precio</th>
                         <th width="120" class="text-right">Descuento</th>
                         <th width="150" class="text-right">Cantidad</th>
+                        <th width="150" class="text-right">Cantidad devuelta</th>
                         <th width="150" class="text-right">Devolver</th>
                      </tr>
                   </thead>
                   <tbody id='lineas_factura'>
                   {loop="$fsc->factura->get_lineas()"}
-                  <tr id='linea_{$value->idlinea}'>
+                  {$devoluciones=$fsc->cantidad_devuelta($value->idfactura, $value->referencia)}
+                  {$devoluciones_max=$value->cantidad+$devoluciones}
+                  {$class=''}
+                  {* ### Añadido para detectar visualmente cuando han habido devoluciones en exceso ### *}
+                  {if="$devoluciones_max<0"}
+                     {$devoluciones_max=0}
+                     <!--{$class=' class="danger"'}-->
+                  {elseif="$devoluciones_max==0"}
+                     <!--{$class=' class="success"'}-->
+                  {/if}
+                  <tr{$class} id='linea_{$value->idlinea}'>
                      <td>
                         <div class="form-control">{$value->referencia} {$value->descripcion}</div>
                      </td>
@@ -78,6 +89,9 @@
                             <input type='hidden' id='cantidad_{$value->idlinea}' name='cantidad_{$value->idlinea}' value='{$value->cantidad}'>
                             {$value->cantidad}
                         </div>
+                     </td>
+                     <td class="text-right">
+                       <div class="form-control">{$devoluciones}</div>
                      </td>
                      <td class="info">
                             <input type="number" id="devolver_{$value->idlinea}" name="devolver_{$value->idlinea}" value="0" min="0" max="{$value->cantidad}" step="any" class="form-control text-right"/>

@@ -104,7 +104,7 @@ class ncf_tipo_pagos extends \fs_model
 
         if ($data) {
             foreach ($data as $d) {
-                $lista[] = new ncf_tipo_compras($d);
+                $lista[] = new ncf_tipo_pagos($d);
             }
         }
 
@@ -118,7 +118,7 @@ class ncf_tipo_pagos extends \fs_model
 
         if ($data) {
             foreach ($data as $d) {
-                $lista[] = new ncf_tipo_compras($d);
+                $lista[] = new ncf_tipo_pagos($d);
             }
         }
 
@@ -129,7 +129,7 @@ class ncf_tipo_pagos extends \fs_model
     {
         $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
 
-        return new ncf_tipo_compras($data[0]);
+        return new ncf_tipo_pagos($data[0]);
     }
     
     public function get_descripcion($codigo)

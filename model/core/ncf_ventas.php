@@ -216,7 +216,9 @@ class ncf_ventas extends \fs_model
 
         if ($data) {
             foreach ($data as $d) {
-                $lista[] = new ncf_ventas($d);
+                 $item = new ncf_ventas($d);
+                 $this->info_factura($item);
+                 $lista[] = $item;
             }
         }
 
@@ -317,18 +319,21 @@ class ncf_ventas extends \fs_model
         $factura_cliente = new factura_cliente();
         $ncf_tipo = new ncf_tipo();
         $ncf_tipo_ingreso = new ncf_tipo_ingresos();
+        $ncf_tipo_pago = new ncf_tipo_pagos();
+        $tipo_pago = (!empty($datos->tipo_pago)) ? $datos->tipo_pago : '17';
         $otros_datos = $factura_cliente->get($datos->documento);
         $datos->pagada = (!empty($otros_datos))?$otros_datos->pagada:false;
         $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
         $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
         $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
-        $datos->tipo_descripcion = $ncf_tipo->get($datos->tipo_comprobante);
+        $datos->tipo_descripcion = $ncf_tipo->get_descripcion($datos->tipo_comprobante);
         $datos->condicion = ($datos->estado)?"Activo":"Anulado";
         $datos->cifnif_len = strlen($datos->cifnif);
         $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;
         $datos->nombrecliente = (!empty($otros_datos))?$otros_datos->nombrecliente:"CLIENTE NO EXISTE";
         $datos->fecha_dgii = str_replace("-", "", $datos->fecha);
         $datos->descripcion_tipo_ingreso = $ncf_tipo_ingreso->get_descripcion($datos->tipo_ingreso);
+        $datos->descripcion_tipo_pago = $ncf_tipo_pago->get_descripcion($tipo_pago);
     }
 
     public function all_desde_hasta($idempresa, $fecha_inicio, $fecha_fin, $codalmacen='')

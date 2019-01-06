@@ -222,7 +222,10 @@ function guardar_ncf_old($idempresa, $factura, $tipo_comprobante, $numero_ncf, $
 function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');
+    require_model('ncf_detalle_tipo_pagos.php');
     $ncf_rango = new ncf_rango();
+    $ncf_detalle_tipo_pago = new ncf_detalle_tipo_pagos();
+    $tipo_pago = $ncf_detalle_tipo_pago->get_codigo($factura->codpago);
     $usuario = \filter_input(INPUT_COOKIE, 'user');
     if (!empty($numero_ncf)) {
         $ncf_factura = new ncf_ventas();
@@ -235,6 +238,7 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
         $ncf_factura->fecha_vencimiento = $factura->fecha_vencimiento;
         $ncf_factura->tipo_comprobante = $tipo_comprobante;
         $ncf_factura->tipo_ingreso = $factura->tipo_ingreso;
+        $ncf_factura->tipo_pago = (!empty($tipo_pago)) ? $tipo_pago : '17';
         $ncf_factura->area_impresion = '';
         $ncf_factura->ncf = $numero_ncf;
         $ncf_factura->usuario_creacion = $usuario;

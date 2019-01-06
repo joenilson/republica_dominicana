@@ -20,20 +20,20 @@
 require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 
 /**
- * Description of compras_factura_fiscal
+ * Description of ventas_factura_fiscal
  * Datos necesarios para la presentación de información a la DGII
  *
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class compras_factura_fiscal extends rd_controller
+class ventas_factura_fiscal extends rd_controller
 {
 
     public $factura;
-    public $ncf_compra;
+    public $ncf_venta;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Información Fiscal de factura de compra', 'compras', FALSE, FALSE);
+        parent::__construct(__CLASS__, 'Información Fiscal de factura de ventas', 'ventas', FALSE, FALSE);
     }
 
     protected function private_core()
@@ -42,12 +42,12 @@ class compras_factura_fiscal extends rd_controller
         $this->share_extension();
         $this->template = 'tab/' . __CLASS__;
 
-        $fact0 = new factura_proveedor();
-        $ncf_compras = new ncf_compras();
+        $fact0 = new factura_cliente();
+        $ncf_ventas = new ncf_ventas();
         $this->factura = FALSE;
         if (isset($_REQUEST['id'])) {
             $this->factura = $fact0->get($_REQUEST['id']);
-            $this->ncf_compra = $ncf_compras->get($this->empresa->id, $this->factura->codproveedor, $this->factura->numproveedor);
+            $this->ncf_venta = $ncf_ventas->get($this->empresa->id, $this->factura->numero2)[0];
         }
 
         if (!$this->factura) {
@@ -58,18 +58,18 @@ class compras_factura_fiscal extends rd_controller
     private function share_extension()
     {
         $fsxet = new fs_extension();
-        $fsxet->name = 'tab_compras_fiscal';
+        $fsxet->name = 'tab_ventas_fiscal';
         $fsxet->from = __CLASS__;
-        $fsxet->to = 'compras_factura';
+        $fsxet->to = 'ventas_factura';
         $fsxet->type = 'tab';
         $fsxet->text = '<span class="fa fa-balance-scale fa-fw" aria-hidden="true"></span>'
                 . '<span class="hidden-xs">&nbsp; Información Fiscal</span>';
         $fsxet->save();
 
         $fsxet2 = new fs_extension();
-        $fsxet2->name = 'tab_compras_fiscal_editar';
+        $fsxet2->name = 'tab_ventas_fiscal_editar';
         $fsxet2->from = __CLASS__;
-        $fsxet2->to = 'editar_factura_prov';
+        $fsxet2->to = 'editar_factura';
         $fsxet2->type = 'tab';
         $fsxet2->text = '<span class="fa fa-balance-scale fa-fw" aria-hidden="true"></span>'
                 . '<span class="hidden-xs">&nbsp; Información Fiscal</span>';
