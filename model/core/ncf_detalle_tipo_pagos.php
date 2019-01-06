@@ -41,11 +41,19 @@ class ncf_detalle_tipo_pagos extends \fs_model
         }
     }
 
+    /**
+     * 
+     * @return string
+     */
     protected function install()
     {
         return "";
     }
 
+    /**
+     * 
+     * @return boolean|object
+     */
     public function exists()
     {
         if (is_null($this->codigo) AND is_null($this->codpago)) {
@@ -55,6 +63,10 @@ class ncf_detalle_tipo_pagos extends \fs_model
         }
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function save()
     {
         if ($this->exists()) {
@@ -70,6 +82,10 @@ class ncf_detalle_tipo_pagos extends \fs_model
         }
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function delete()
     {
         return $this->db->exec("DELETE FROM ".$this->table_name." WHERE codigo = ".$this->var2str($this->codigo)." AND codpago = ".$this->var2str($this->codpago).";");
