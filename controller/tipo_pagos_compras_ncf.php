@@ -16,23 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_model('ncf_tipo_pagos.php');
-require_model('ncf_detalle_tipo_pagos.php');
+require_model('ncf_tipo_pagos_compras.php');
 
 /**
- * Description of tipo_ncf
- * Clase para manejar los tipos de Compras para las facturas de proveedor
+ * Description of ncf_tipo_pagos_compras
+ * Clase para manejar los tipos de Pago para Compras para las facturas de proveedor
  * @author Joe Nilson <joenilson at gmail.com>
  */
-class detalle_tipo_pagos_ncf extends fs_controller
+class tipo_pagos_ncf_compras extends fs_controller
 {
-    public $ncf_detalle_tipo_pagos;
-    public $ncf_tipo_pagos;
+    public $ncf_tipo_pagos_compras;
     public $allow_delete;
 
     public function __construct()
     {
-        parent::__construct(__CLASS__, 'Detalle de Tipo de Pago', 'contabilidad', false, false, false);
+        parent::__construct(__CLASS__, 'Tipo de Pago', 'contabilidad', false, false, false);
     }
 
     protected function private_core()
@@ -45,71 +43,81 @@ class detalle_tipo_pagos_ncf extends fs_controller
             $this->tratarTipos($accion);
         }
         
-        $this->ncf_tipo_pagos = new ncf_tipo_pagos();
-        $this->ncf_detalle_tipo_pagos = new ncf_detalle_tipo_pagos();
+        $this->ncf_tipo_pagos_compras = new ncf_tipo_pagos_compras();
     }
 
     public function tratarTipos($accion)
     {
-        if ($accion == 'asignar') {
-            $this->asignar();
+        if ($accion == 'agregar') {
+            $this->agregar();
         } elseif ($accion == 'eliminar') {
             $this->eliminar();
+        } elseif ($accion == 'restaurar_nombres') {
+            $this->restaurarNombres();
         } else {
             $this->new_error_msg('Se recibió una solicitud incompleta.');
         }
     }
     
-    protected function asignar()
+    protected function agregar()
     {
         $codigo = filter_input(INPUT_POST, 'codigo');
-        $codpago = filter_input(INPUT_POST, 'codpago');
-        $dtp0 = new ncf_detalle_tipo_pagos();
-        $dtp0->codigo = $codigo;
-        $dtp0->codpago = $codpago;
-        if ($dtp0->save()) {
-            $this->new_message('¡Asignación de Tipo de Pago realizado con exito!');
+        $descripcion = filter_input(INPUT_POST, 'descripcion');
+        $estado = filter_input(INPUT_POST, 'estado');
+        $tc0 = new ncf_tipo_pagos();
+        $tc0->codigo = $codigo;
+        $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
+        $tc0->estado = ($estado) ? true : false;
+        if ($tc0->save()) {
+            $this->new_message('¡Tipo de Pago agregado con exito!');
         } else {
-            $this->new_error_msg('Ocurrio un error al intengar asignar la forma de pago, por favor revise los datos ingresados.');
+            $this->new_error_msg('Ocurrio un error al intengar agregar el Tipo de pago, por favor revise los datos ingresados.');
         }
     }
     
     protected function eliminar()
     {
-        /// desactivamos la plantilla HTML
-        $this->template = false;
-        header('Content-Type: application/json');
-        
         if($this->allow_delete) {
             $codigo = filter_input(INPUT_POST, 'codigo');
-            $codpago = filter_input(INPUT_POST, 'codpago');
-            $tc1 = new ncf_detalle_tipo_pagos();
-            $registro = $tc1->get($codigo,$codpago);
+            $tc1 = new ncf_tipo_pagos();
+            $registro = $tc1->get($codigo);
             if ($registro->delete()) {
-                echo json_encode(array('message'=>'¡Asignación de Forma de pago a Tipo de Pago eliminada con exito!'));
+                $this->new_message('¡Tipo de pago desactivado con exito!');
             } else {
-                echo json_encode(array('message'=>'Ocurrio un error al tratar de eliminar la asignación, por favor verifique los datos'));
+                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de pago, por favor verifique los datos');
             }
         } else {
-            echo json_encode(array('message'=>'No tiene permiso para borrar información'));
+            $this->new_error_msg('No tiene permiso para borrar información');
         }
+    }
+    
+    protected function restaurarNombres()
+    {
+        $ncf_tipo_pagos = new ncf_tipo_pagos();
+        $nombresRestaurados = $ncf_tipo_pagos->restore_names();
+        $this->template = false;
+        $data = array();
+        $data['success']=true;
+        $data['cantidad']=$nombresRestaurados;
+        header('Content-Type: application/json');
+        echo json_encode($data);
     }
 
     public function shared_extensions()
     {
         $extensiones = array(
             array(
-                'name' => 'detalle_tipo_pago_ncf',
+                'name' => 'tipo_pago_ncf',
                 'page_from' => __CLASS__,
-                'page_to' => 'tipo_pagos_ncf',
+                'page_to' => 'ncf',
                 'type' => 'button',
-                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Detalle de los Tipos Pago',
+                'text' => '<span class="fa fa-list-ol"></span>&nbsp;Configurar Tipos de Pago',
                 'params' => ''
             ),
         );
         foreach ($extensiones as $ext) {
             $fsext0 = new fs_extension($ext);
-            if (!$fsext0->delete()) {
+            if (!$fsext0->save()) {
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
             }
         }

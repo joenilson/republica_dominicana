@@ -94,7 +94,9 @@ class rd_controller extends fbase_controller
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
         $this->ncf_tipo_ingresos = new ncf_tipo_ingresos();
         $this->ncf_tipo_pagos = new ncf_tipo_pagos();
+        $this->ncf_tipo_pagos_compras = new ncf_tipo_pagos_compras();
         $this->ncf_detalle_tipo_pagos = new ncf_detalle_tipo_pagos();
+        $this->ncf_detalle_tipo_pagos_compras = new ncf_detalle_tipo_pagos_compras();
         $this->ncf_ventas = new ncf_ventas();
         $this->array_series = \range('A', 'Z');
     }

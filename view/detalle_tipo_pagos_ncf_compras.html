@@ -45,12 +45,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
         <div class="col-sm-6 col-xs-6 text-right">
             <h4>
-                <span class="fa fa-list-ol"></span>&nbsp;Formas de pago de Ventas
+                <span class="fa fa-list-ol"></span>&nbsp;Formas de pago de Compras
             </h4>
         </div>
     </div>
     <div class="row">
-        {loop="$fsc->ncf_tipo_pagos->all()"}
+        {loop="$fsc->ncf_tipo_pagos_compras->all()"}
         <div class="col-sm-4">
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -58,7 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </div>
                 <div class="panel-body">
                     <ul class="list-group">
-                    {loop="$fsc->ncf_detalle_tipo_pagos->get_codpagos($value1->codigo)"}
+                    {loop="$fsc->ncf_detalle_tipo_pagos_compras->get_codpagos($value1->codigo)"}
                     <li class="list-group-item clearfix">{$value2->codpago} - {$value2->descripcion_codpago}<div class="pull-right"><a href="#" class="btn btn-xs btn-danger" onClick="advertenciaEliminarAsingacion('{$value1->codigo}','{$value1->descripcion}','{$value2->codpago}','{$value2->descripcion_codpago}')"><span class="fa fa-trash fa-fw"></span></a></div></li>
                     {else}
                     <li class="list-group-item list-group-item-warning">No hay Formas de pago asociadas a este Tipo de pago</li>
@@ -71,7 +71,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             <div class="col-sm-8">
                                 <input type="hidden" name="codigo" value="{$value->codigo}">
                                 <select class="form-control" name="codpago" required="">
-                                    {loop="$fsc->ncf_detalle_tipo_pagos->get_codpago_libres()"}
+                                    {loop="$fsc->ncf_detalle_tipo_pagos_compras->get_codpago_libres()"}
                                     <option value="{$value2->codpago}">{$value2->descripcion}</option>
                                     {else}
                                     <option value="">No hay Formas de Pago sin asignar</option>

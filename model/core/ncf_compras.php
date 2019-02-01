@@ -35,6 +35,7 @@ class ncf_compras extends \fs_model
     public $fecha;
     public $tipo_comprobante;
     public $tipo_compra;
+    public $tipo_pago;
     public $total_bienes;
     public $total_servicios;
     public $ncf;
@@ -46,9 +47,7 @@ class ncf_compras extends \fs_model
     public $estado;
     public $motivo;
 
-    public $ncf_tipo;
-    public $ncf_tipo_compras;
-    public $factura_proveedor;
+
     public function __construct($data = false)
     {
         parent::__construct('ncf_compras', 'plugins/republica_dominicana/');
@@ -63,6 +62,7 @@ class ncf_compras extends \fs_model
             $this->fecha = $data['fecha'];
             $this->tipo_comprobante = $data['tipo_comprobante'];
             $this->tipo_compra = $data['tipo_compra'];
+            $this->tipo_pago = $data['tipo_pago'];
             $this->ncf = $data['ncf'];
             $this->ncf_modifica = $data['ncf_modifica'];
             $this->usuario_creacion = $data['usuario_creacion'];
@@ -83,6 +83,7 @@ class ncf_compras extends \fs_model
             $this->fecha = Date('d-m-Y');
             $this->tipo_comprobante = null;
             $this->tipo_compra = null;
+            $this->tipo_pago = '1';
             $this->ncf = null;
             $this->ncf_modifica = null;
             $this->usuario_creacion = null;
@@ -95,9 +96,8 @@ class ncf_compras extends \fs_model
             $this->total_bienes = 0;
         }
 
-        $this->ncf_tipo = new \ncf_tipo();
-        $this->ncf_tipo_compras = new \ncf_tipo_compras();
-        $this->factura_proveedor = new \factura_proveedor();
+
+        
     }
 
     protected function install()
@@ -126,6 +126,7 @@ class ncf_compras extends \fs_model
             "fecha = ".$this->var2str($this->fecha).", ".
             "tipo_comprobante = ".$this->var2str($this->tipo_comprobante).", ".
             "tipo_compra = ".$this->var2str($this->tipo_compra).", ".
+            "tipo_pago = ".$this->var2str($this->tipo_pago).", ".
             "total_bienes = ".$this->var2str($this->total_bienes).", ".
             "total_servicios = ".$this->var2str($this->total_servicios).", ".
             "ncf_modifica = ".$this->var2str($this->ncf_modifica).", ".
@@ -139,7 +140,7 @@ class ncf_compras extends \fs_model
             "codalmacen = ".$this->var2str($this->codalmacen). "; ";
             return $this->db->exec($sql);
         } else {
-            $sql = "INSERT INTO ".$this->table_name." (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, tipo_compra, total_bienes, total_servicios, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
+            $sql = "INSERT INTO ".$this->table_name." (idempresa, codalmacen, entidad, cifnif, documento, documento_modifica, fecha, tipo_comprobante, tipo_compra, tipo_pago, total_bienes, total_servicios, ncf, ncf_modifica, estado, usuario_creacion, fecha_creacion ) VALUES ".
                 "(".
                 $this->intval($this->idempresa).", ".
                 $this->var2str($this->codalmacen).", ".
@@ -150,6 +151,7 @@ class ncf_compras extends \fs_model
                 $this->var2str($this->fecha).", ".
                 $this->var2str($this->tipo_comprobante).", ".
                 $this->var2str($this->tipo_compra).", ".
+                $this->var2str($this->tipo_pago).", ".
                 $this->var2str($this->total_bienes).", ".
                 $this->var2str($this->total_servicios).", ".
                 $this->var2str($this->ncf).", ".
@@ -330,12 +332,17 @@ class ncf_compras extends \fs_model
 
     public function info_factura(&$datos)
     {
-        $otros_datos = $this->factura_proveedor->get($datos->documento);
+        $factura_proveedor = new \factura_proveedor();
+        $otros_datos = $factura_proveedor->get($datos->documento);
+        $ncf_tipo = new \ncf_tipo();
+        $ncf_tipo_compras = new \ncf_tipo_compras();
+        $ncf_tipo_pagos_compras = new \ncf_tipo_pagos_compras();
         $datos->neto = (!empty($otros_datos))?$otros_datos->neto:0;
         $datos->totaliva = (!empty($otros_datos))?$otros_datos->totaliva:0;
         $datos->total = (!empty($otros_datos))?$otros_datos->total:0;
-        $datos->tipo_descripcion = $this->ncf_tipo->get($datos->tipo_comprobante);
-        $datos->descripcion_compra = $this->ncf_tipo_compras->get_descripcion($datos->tipo_compra);
+        $datos->tipo_descripcion = $ncf_tipo->get($datos->tipo_comprobante);
+        $datos->descripcion_compra = $ncf_tipo_compras->get_descripcion($datos->tipo_compra);
+        $datos->descripcion_pago = $ncf_tipo_pagos_compras->get_descripcion($datos->tipo_pago);
         $datos->condicion = ($datos->estado)?"Activo":"Anulado";
         $datos->cifnif_len = strlen($datos->cifnif);
         $datos->cifnif_tipo = ($datos->cifnif_len == 9)?1:2;

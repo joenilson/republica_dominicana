@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : ncf_detalle_tipo_pagos_compras.xml
+    Description:
+        Estructura de la tabla ncf_detalle_tipo_pagos_compras.
+-->
+<tabla>
+    <columna>
+        <nombre>codigo</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>codpago</nombre>
+        <tipo>character varying(180)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <restriccion>
+        <nombre>ncf_detalle_tipo_pagos_compras_pkey</nombre>
+        <consulta>PRIMARY KEY (codigo, codpago)</consulta>
+    </restriccion>
+</tabla>

@@ -448,10 +448,10 @@ function fs_documento_compra_post_save(&$documento)
     $usuario = \filter_input(INPUT_COOKIE, 'user');
     require_model('ncf_rango.php');
     require_model('ncf_tipo_compras.php');
+    require_model('ncf_detalle_tipo_pagos_compras.php');
     require_model('ncf_compras.php');
     require_model('empresa.php');
     require_model('fs_var.php');
-
     $empresa = new empresa();
     $ncf_rango = new ncf_rango();
     $ncf_tipo_compras = new ncf_tipo_compras();
@@ -478,7 +478,14 @@ function fs_documento_compra_post_save(&$documento)
      */
     $fact_compras = new factura_proveedor();
     $documento_modifica = $fact_compras->get($documento->idfacturarect);
-    $tipo_compra = $ncf_tipo_compras->get(\filter_input(INPUT_POST, 'tipo_compra'));
+    $tipo_compra = $ncf_tipo_compras->get(\filter_input(INPUT_POST, 'tipo_compra'));    
+    
+    
+    /**
+     * Buscamos el codigo de pago asignado
+     */
+    $ncf_detalle_tipo_pago = new ncf_detalle_tipo_pagos_compras();
+    $tipo_pago = $ncf_detalle_tipo_pago->get_codigo($documento->codpago);
     /** 
      * Guardamos la información de la compra en la tabla NCF Compra
      */
@@ -494,6 +501,7 @@ function fs_documento_compra_post_save(&$documento)
     $ncf_compras->ncf_modifica = $documento_modifica->numproveedor;
     $ncf_compras->tipo_comprobante = \substr($documento->numproveedor, -10,2);
     $ncf_compras->tipo_compra = $tipo_compra->codigo;
+    $ncf_compras->tipo_pago = $tipo_pago;
     $ncf_compras->estado = TRUE;
     $ncf_compras->usuario_creacion = $usuario;
     $ncf_compras->fecha_creacion = \date('Y-m-d H:i:s');

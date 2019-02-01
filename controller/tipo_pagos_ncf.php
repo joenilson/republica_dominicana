@@ -26,6 +26,7 @@ require_model('ncf_tipo_pagos.php');
 class tipo_pagos_ncf extends fs_controller
 {
     public $ncf_tipo_pagos;
+    public $ncf_tipo_pagos_compras;
     public $allow_delete;
 
     public function __construct()
@@ -44,6 +45,7 @@ class tipo_pagos_ncf extends fs_controller
         }
         
         $this->ncf_tipo_pagos = new ncf_tipo_pagos();
+        $this->ncf_tipo_pagos_compras = new ncf_tipo_pagos_compras();
     }
 
     public function tratarTipos($accion)

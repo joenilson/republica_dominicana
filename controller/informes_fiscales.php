@@ -672,11 +672,12 @@ class informes_fiscales extends rd_controller
             . "CASE WHEN fp.coddivisa != 'DOP' THEN round((fp.totaliva / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) ELSE fp.totaliva END as totaliva, "
             . " 0 as totalivaretenido, 0 as totalivasujeto, 0 as totalivallevadocosto, ".
             " 0 as totalivaporadelantar, 0 as totalivapercibidocompras, '' as tiporetencionisr, 0 as totalretencionrenta,0 as totalisrpercibidocompra, 0 as totalisc, ".
-            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, fp.codpago ".
+            " 0 as totalotrosimpuestos, 0 as totalpropinalegal, ncftpc.descripcion as codpago ".
             " FROM facturasprov as fp ".
             " JOIN proveedores as p on (fp.codproveedor = p.codproveedor) ".
             " left JOIN ncf_compras as ncfc on (fp.idfactura = ncfc.documento) ".
             " left JOIN ncf_tipo_compras as ncftc on (ncfc.tipo_compra = ncftc.codigo) ".
+            " left JOIN ncf_tipo_pagos_compras as ncftpc on (ncfc.tipo_pago = ncftpc.codigo) ".
             " left join facturasprov as fp2 on (fp.idfacturarect = fp2.idfactura) ".
             " left join co_asientos as ca on (fp.idasientop = ca.idasiento AND fp.codejercicio = ca.codejercicio) ".
             " WHERE fp.fecha between ".$this->empresa->var2str(\date("Y-m-d", strtotime($this->fecha_inicio))).

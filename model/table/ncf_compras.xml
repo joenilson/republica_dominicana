@@ -71,6 +71,12 @@
         <nulo>NO</nulo>
     </columna>
     <columna>
+        <nombre>tipo_pago</nombre>
+        <tipo>character varying(2)</tipo>
+        <nulo>NO</nulo>
+        <defecto>1</defecto>
+    </columna>
+    <columna>
         <nombre>total_bienes</nombre>
         <tipo>double precision</tipo>
         <nulo>NO</nulo>
