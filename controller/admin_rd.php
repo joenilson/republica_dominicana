@@ -38,48 +38,13 @@ class admin_rd extends rd_controller
     protected function private_core()
     {
         parent::private_core();
-        //creamos las tablas necesarias si no están ya creadas
-        new ncf_tipo();
-        new ncf_entidad_tipo();
-        new ncf_rango();
-        new ncf_tipo_anulacion();
-        new ncf_ventas();
-
         $this->share_extensions();
         $impuesto_empresa = new impuesto();
         $this->init_variables();
-
-        $this->impuestos_rd = array(
-            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>true),
-            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
-            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
-            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false)
-        );
-
-        $opcion = \filter_input(INPUT_GET, 'opcion');
-        switch ($opcion) {
-            case 'moneda':
-                $this->moneda();
-                break;
-            case 'impuestos':
-                $this->impuestos();
-                break;
-            case 'pais':
-                $this->pais();
-                break;
-            case 'configuracion_regional':
-                $this->configuracion_regional();
-                break;
-            case 'impresion':
-                $this->impresion();
-                break;
-            case 'subcuentas_compras':
-                $this->configuracion_subcuentas_compras();
-                break;
-            default:
-                break;
-        }
-
+        $this->init_impuestos();
+        
+        $this->init_router();
+        
         $this->get_config();
 
         $this->conf_divisa = ($this->empresa->coddivisa == 'DOP') ? true : false;
@@ -88,6 +53,16 @@ class admin_rd extends rd_controller
         $this->conf_impuestos = ($impuesto_empresa->get_by_iva(18)) ? true : false;
         //Cargamos el menu
         $this->check_menu();
+    }
+    
+    public function init_models()
+    {
+        parent::init_models();
+        new ncf_tipo();
+        new ncf_entidad_tipo();
+        new ncf_rango();
+        new ncf_tipo_anulacion();
+        new ncf_ventas();
     }
 
     public function init_variables()
@@ -116,6 +91,43 @@ class admin_rd extends rd_controller
         $this->variables['numero2'] = "NCF";
         $this->variables['serie'] = "serie";
         $this->variables['series'] = "series";
+    }
+    
+    public function init_impuestos()
+    {
+        $this->impuestos_rd = array(
+            array('codigo' => 'ITBIS18', 'descripcion' => 'ITBIS 18%', 'porcentaje' => 18, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>true),
+            array('codigo' => 'ITBIS10', 'descripcion' => 'ITBIS 10%', 'porcentaje' => 10, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
+            array('codigo' => 'ITBIS8', 'descripcion' => 'ITBIS 8%', 'porcentaje' => 8, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false),
+            array('codigo' => 'EXENTO', 'descripcion' => 'EXENTO', 'porcentaje' => 0, 'recargo' => 0, 'subcuenta_compras' => '', 'subcuenta_ventas' => '', 'default'=>false)
+        );
+    }
+    
+    public function init_router()
+    {
+        $opcion = \filter_input(INPUT_GET, 'opcion');
+        switch ($opcion) {
+            case 'moneda':
+                $this->moneda();
+                break;
+            case 'impuestos':
+                $this->impuestos();
+                break;
+            case 'pais':
+                $this->pais();
+                break;
+            case 'configuracion_regional':
+                $this->configuracion_regional();
+                break;
+            case 'impresion':
+                $this->impresion();
+                break;
+            case 'subcuentas_compras':
+                $this->configuracion_subcuentas_compras();
+                break;
+            default:
+                break;
+        }
     }
 
     /**
