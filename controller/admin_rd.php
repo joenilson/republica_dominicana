@@ -275,10 +275,23 @@ class admin_rd extends rd_controller
         foreach ($impuestos->all() as $imp) {
             $imp->delete();
         }
-
+        $tratamiento=false;
         //Agregamos los Impuestos de RD
+        $this->agregar_impuestos($tratamiento);
+        
+
+        //Corregimos la información de las Cuentas especiales con los nombres correctos
+        $this->cuentas_especiales();
+        
+        //Cargamos el ejercicio configurando la longitud de cuentas a 8
+        $this->corregir_ejercicio($tratamiento);
+        
+    }
+    
+    public function agregar_impuestos(&$tratamiento)
+    {
+        $impuestos = new impuesto();
         foreach ($this->impuestos_rd as $imp) {
-            $tratamiento=false;
             if (!$impuestos->get_by_iva($imp['porcentaje'])) {
                 $imp0 = new impuesto();
                 $imp0->codimpuesto = $imp['codigo'];
@@ -296,12 +309,10 @@ class admin_rd extends rd_controller
                 }
             }
         }
-
-        //Corregimos la información de las Cuentas especiales con los nombres correctos
-        $this->cuentas_especiales();
-        
-
-        //Cargamos el ejercicio configurando la longitud de cuentas a 8
+    }
+    
+    public function corregir_ejercicio($tratamiento)
+    {
         $cod = $this->empresa->codejercicio;
         $ejer0 = new ejercicio();
         $ejer = $ejer0->get($cod);
