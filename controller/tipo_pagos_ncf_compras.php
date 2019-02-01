@@ -117,7 +117,7 @@ class tipo_pagos_ncf_compras extends fs_controller
         );
         foreach ($extensiones as $ext) {
             $fsext0 = new fs_extension($ext);
-            if (!$fsext0->save()) {
+            if (!$fsext0->delete()) {
                 $this->new_error_msg('Imposible guardar los datos de la extensión ' . $ext['name'] . '.');
             }
         }
