@@ -29,13 +29,13 @@ class ncf_tipo_pagos_compras extends \fs_model
     public $descripcion;
     public $estado;
     public $array_tipos = array(
-        array ('codigo' => '1', 'descripcion' => 'Efectivo'),
-        array ('codigo' => '2', 'descripcion' => 'Cheques/Transferencias/Depósito'),
-        array ('codigo' => '3', 'descripcion' => 'Tarjeta Débito/Crédito'),
-        array ('codigo' => '4', 'descripcion' => 'Compra a crédito'),
-        array ('codigo' => '5', 'descripcion' => 'Permuta'),
-        array ('codigo' => '6', 'descripcion' => 'Notas de crédito'),
-        array ('codigo' => '7', 'descripcion' => 'Mixto')
+        array ('codigo' => '01', 'descripcion' => 'EFECTIVO'),
+        array ('codigo' => '02', 'descripcion' => 'CHEQUES/TRANSFERENCIAS/DEPOSITO'),
+        array ('codigo' => '03', 'descripcion' => 'TARJETA CRÉDITO/DÉBITO'),
+        array ('codigo' => '04', 'descripcion' => 'COMPRA A CREDITO'),
+        array ('codigo' => '05', 'descripcion' => 'PERMUTA'),
+        array ('codigo' => '06', 'descripcion' => 'NOTA DE CREDITO'),
+        array ('codigo' => '07', 'descripcion' => 'MIXTO')
     );
     
     public function __construct($t = false)
@@ -55,13 +55,13 @@ class ncf_tipo_pagos_compras extends \fs_model
     protected function install()
     {
         return "INSERT INTO ".$this->table_name." (codigo, descripcion, estado) VALUES ".
-            "('1','Efectivo',true),
-            ('2','Cheques/Transferencias/Depósito',true),
-            ('3','Tarjeta Débito/Crédito',true),
-            ('4','Compra a crédito',true),
-            ('5','Permuta',true),
-            ('6','Notas de crédito',true),
-            ('7','Mixto',true);";
+            "('01','EFECTIVO',true),
+            ('02','CHEQUES/TRANSFERENCIAS/DEPOSITO',true),
+            ('03','TARJETA CRÉDITO/DÉBITO',true),
+            ('04','COMPRA A CREDITO',true),
+            ('05','PERMUTA',true),
+            ('06','NOTA DE CREDITO',true),
+            ('07','MIXTO',true);";
     }
 
     public function exists()
@@ -144,13 +144,33 @@ class ncf_tipo_pagos_compras extends \fs_model
         $sqlClean = "DELETE FROM ".$this->table_name." WHERE codigo=''";
         $this->db->exec($sqlClean);
         $counter = 0;
-        foreach($this->array_tipos as $tipo) {
-            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($tipo['descripcion']).
-                    " WHERE codigo = ".$this->var2str($tipo['codigo']);
-            if($this->db->exec($sql)) {
-               $counter ++; 
+        $sqlCount = "SELECT COUNT(*) as registros from ".$this->table_name;
+        $cantidad = $this->db->exec($sqlCount);
+        if($cantidad['registros'] > 0) {
+            foreach($this->array_tipos as $tipo) {
+                if($this->get($tipo['codigo'])) {
+                    $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($tipo['descripcion']).
+                            " WHERE codigo = ".$this->var2str($tipo['codigo']);
+                    if($this->db->exec($sql)) {
+                       $counter ++; 
+                    } else {
+                        $this->agregarRegistro($tipo);
+                    }
+                } else {
+                    $this->agregarRegistro($tipo);
+                    $counter ++; 
+                }
             }
         }
         return $counter;  
+    }
+    
+    public function agregarRegistro($tipo)
+    {
+        $ntpc = new ncf_tipo_pagos_compras();
+        $ntpc->codigo = $tipo['codigo'];
+        $ntpc->descripcion = $tipo['descripcion'];
+        $ntpc->estado = TRUE;
+        $ntpc->save();
     }
 }

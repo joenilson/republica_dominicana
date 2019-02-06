@@ -54,8 +54,10 @@ class tipo_pagos_ncf extends fs_controller
             $this->agregar();
         } elseif ($accion == 'eliminar') {
             $this->eliminar();
-        } elseif ($accion == 'restaurar_nombres') {
+        } elseif ($accion == 'restore_names_ventas') {
             $this->restaurarNombres();
+        } elseif ($accion == 'restore_names_compras') {
+            $this->restaurarNombresCompras();
         } else {
             $this->new_error_msg('Se recibió una solicitud incompleta.');
         }
@@ -66,7 +68,8 @@ class tipo_pagos_ncf extends fs_controller
         $codigo = filter_input(INPUT_POST, 'codigo');
         $descripcion = filter_input(INPUT_POST, 'descripcion');
         $estado = filter_input(INPUT_POST, 'estado');
-        $tc0 = new ncf_tipo_pagos();
+        $tipo_pago = filter_input(INPUT_POST, 'tipo_pago');
+        $tc0 = ($tipo_pago == 'ventas')?new ncf_tipo_pagos():new ncf_tipo_pagos_compras();
         $tc0->codigo = $codigo;
         $tc0->descripcion = strtoupper(strip_tags(trim($descripcion)));
         $tc0->estado = ($estado) ? true : false;
@@ -81,12 +84,13 @@ class tipo_pagos_ncf extends fs_controller
     {
         if($this->allow_delete) {
             $codigo = filter_input(INPUT_POST, 'codigo');
-            $tc1 = new ncf_tipo_pagos();
+            $tipo_pago = filter_input(INPUT_POST, 'tipo_pago');
+            $tc1 = ($tipo_pago == 'ventas')?new ncf_tipo_pagos():new ncf_tipo_pagos_compras();
             $registro = $tc1->get($codigo);
             if ($registro->delete()) {
-                $this->new_message('¡Tipo de pago desactivado con exito!');
+                $this->new_message('¡Tipo de pago ELIMINADO con exito!');
             } else {
-                $this->new_error_msg('Ocurrio un error al tratar de desactivar el Tipo de pago, por favor verifique los datos');
+                $this->new_error_msg('Ocurrio un error al tratar de ELIMINAR el Tipo de pago, por favor verifique los datos');
             }
         } else {
             $this->new_error_msg('No tiene permiso para borrar información');
@@ -96,6 +100,18 @@ class tipo_pagos_ncf extends fs_controller
     protected function restaurarNombres()
     {
         $ncf_tipo_pagos = new ncf_tipo_pagos();
+        $nombresRestaurados = $ncf_tipo_pagos->restore_names();
+        $this->template = false;
+        $data = array();
+        $data['success']=true;
+        $data['cantidad']=$nombresRestaurados;
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    }
+    
+    protected function restaurarNombresCompras()
+    {
+        $ncf_tipo_pagos = new ncf_tipo_pagos_compras();
         $nombresRestaurados = $ncf_tipo_pagos->restore_names();
         $this->template = false;
         $data = array();

@@ -175,6 +175,13 @@ class ncf_tipo extends \fs_model
         }
     }
     
+    public function get_descripcion($codigo)
+    {
+        $data = $this->db->select("SELECT descripcion FROM ".$this->table_name." WHERE tipo_comprobante = ".$this->var2str($codigo).";");
+
+        return $data[0]['descripcion'];
+    }
+    
     public function restore_names()
     {
         $sqlClean = "DELETE FROM ".$this->table_name." WHERE tipo_comprobante=''";

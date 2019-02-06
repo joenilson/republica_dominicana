@@ -94,7 +94,7 @@ class ncf_tipo_pagos extends \fs_model
 
     public function delete()
     {
-        return $this->db->exec("UPDATE ".$this->table_name." SET estado = ".$this->var2str($this->estado)." WHERE codigo = ".$this->var2str($this->codigo).";");
+        return $this->db->exec("DELETE FROM ".$this->table_name." WHERE codigo = ".$this->var2str($this->codigo).";");
     }
 
     public function all()
