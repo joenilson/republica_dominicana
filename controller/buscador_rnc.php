@@ -25,6 +25,7 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
  */
 class buscador_rnc extends rd_controller
 {
+
     public $dgii_web;
     public $resultados;
     public $total_resultados;
@@ -36,6 +37,7 @@ class buscador_rnc extends rd_controller
     public $viewstate;
     public $eventvalidation;
     public $offset;
+
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Buscador de RNC', 'contabilidad', false, false, true);
@@ -74,46 +76,69 @@ class buscador_rnc extends rd_controller
 
         $wsdlConn = $this->wdslConnection();
 
-        $this->total_resultados = ($patronBusqueda == 1)?$this->wdslSearchCount($wsdlConn, $paramValue):1;
-        if($this->total_resultados) {
+        $this->total_resultados = ($patronBusqueda == 1) ? $this->wdslSearchCount($wsdlConn, $paramValue) : 1;
+        if ($this->total_resultados) {
             $this->offset = (!empty($offset)) ? $offset : 0;
-            $this->wdslSearch($wsdlConn, $patronBusqueda, $paramValue, ($this->offset+1), (($this->offset)+50));
+            $this->wdslSearch($wsdlConn, $patronBusqueda, $paramValue, ($this->offset + 1), (($this->offset) + 50));
         }
     }
 
     public function paginas()
     {
         $url = $this->url() . "&tipo=buscar"
-            . "&rnc=" . $this->rnc
-            . "&nombre=" . $this->nombre;
+                . "&rnc=" . $this->rnc
+                . "&nombre=" . $this->nombre;
 
         return $this->fbase_paginas($url, $this->total_resultados, $this->offset);
     }
 
     public function wdslConnection()
     {
-        $client =  new \SoapClient('http://www.dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx?WSDL', array('soap_version' => SOAP_1_2));
+        $opts = array(
+            'ssl' => array(
+                'ciphers' => 'RC4-SHA',
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'request_fulluri' => true,
+                'proxy' => FS_PROXY_TYPE."://".FS_PROXY_HOST.":".FS_CACHE_PORT,
+            )
+        );
+
+        $params = array(
+            'encoding' => 'UTF-8',
+            'verifypeer' => false,
+            'verifyhost' => false,
+            'soap_version' => SOAP_1_2,
+            'trace' => 1,
+            'exceptions' => 1,
+            'connection_timeout' => 180,
+            'stream_context' => stream_context_create($opts),
+            'proxy_host'     => FS_PROXY_TYPE."://".FS_PROXY_HOST,
+            'proxy_port'     => FS_CACHE_PORT
+        );
+        
+        $client = new \SoapClient('https://www.dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx?WSDL', array('encoding' => 'UTF-8'));
+
         return $client;
     }
 
     public function wdslSearch($wsdlConn, $patronBusqueda = 0, $paramValue = '', $inicioFilas, $filaFilas)
     {
-        $result = $wsdlConn->__soapCall('GetContribuyentes', array('GetContribuyentes' => array('patronBusqueda'=>$patronBusqueda,'value'=>$paramValue, 'inicioFilas'=>$inicioFilas, 'filaFilas'=>$filaFilas, 'IMEI'=>0)));
+        $result = $wsdlConn->__soapCall('GetContribuyentes', array('GetContribuyentes' => array('patronBusqueda' => $patronBusqueda, 'value' => $paramValue, 'inicioFilas' => $inicioFilas, 'filaFilas' => $filaFilas, 'IMEI' => 0)));
         $list = array();
         $getResult = explode("@@@", $result->GetContribuyentesResult);
-        foreach($getResult as $line) {
+        foreach ($getResult as $line) {
             $item = json_decode($line);
             $this->buscarCliente($item);
             $list[] = $item;
         }
 
         $this->resultados = $list;
-
     }
 
     public function wdslSearchCount($wsdlConn, $paramValue = '')
     {
-        $result = $wsdlConn->__soapCall('GetContribuyentesCount', array('GetContribuyentesCount' => array('value'=>$paramValue, 'IMEI'=>0)));
+        $result = $wsdlConn->__soapCall('GetContribuyentesCount', array('GetContribuyentesCount' => array('value' => $paramValue, 'IMEI' => 0)));
         return $result->GetContribuyentesCountResult;
     }
 
@@ -133,25 +158,26 @@ class buscador_rnc extends rd_controller
         $fsvar = new fs_var();
         $this->nuevocli_setup = $fsvar->array_get(
                 array(
-            'nuevocli_cifnif_req' => 0,
-            'nuevocli_direccion' => 1,
-            'nuevocli_direccion_req' => 0,
-            'nuevocli_codpostal' => 1,
-            'nuevocli_codpostal_req' => 0,
-            'nuevocli_pais' => 0,
-            'nuevocli_pais_req' => 0,
-            'nuevocli_provincia' => 1,
-            'nuevocli_provincia_req' => 0,
-            'nuevocli_ciudad' => 1,
-            'nuevocli_ciudad_req' => 0,
-            'nuevocli_telefono1' => 0,
-            'nuevocli_telefono1_req' => 0,
-            'nuevocli_telefono2' => 0,
-            'nuevocli_telefono2_req' => 0,
-            'nuevocli_email' => 0,
-            'nuevocli_email_req' => 0,
-            'nuevocli_codgrupo' => '',
-            ), FALSE
+                    'nuevocli_cifnif_req' => 0,
+                    'nuevocli_direccion' => 1,
+                    'nuevocli_direccion_req' => 0,
+                    'nuevocli_codpostal' => 1,
+                    'nuevocli_codpostal_req' => 0,
+                    'nuevocli_pais' => 0,
+                    'nuevocli_pais_req' => 0,
+                    'nuevocli_provincia' => 1,
+                    'nuevocli_provincia_req' => 0,
+                    'nuevocli_ciudad' => 1,
+                    'nuevocli_ciudad_req' => 0,
+                    'nuevocli_telefono1' => 0,
+                    'nuevocli_telefono1_req' => 0,
+                    'nuevocli_telefono2' => 0,
+                    'nuevocli_telefono2_req' => 0,
+                    'nuevocli_email' => 0,
+                    'nuevocli_email_req' => 0,
+                    'nuevocli_codgrupo' => '',
+                ), FALSE
         );
     }
+
 }
