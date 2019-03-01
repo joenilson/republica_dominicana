@@ -141,26 +141,12 @@ class ncf_tipo_pagos_compras extends \fs_model
         
     public function restore_names()
     {
-        $sqlClean = "DELETE FROM ".$this->table_name." WHERE codigo=''";
+        $sqlClean = "DELETE FROM ".$this->table_name;
         $this->db->exec($sqlClean);
         $counter = 0;
-        $sqlCount = "SELECT COUNT(*) as registros from ".$this->table_name;
-        $cantidad = $this->db->exec($sqlCount);
-        if($cantidad['registros'] > 0) {
-            foreach($this->array_tipos as $tipo) {
-                if($this->get($tipo['codigo'])) {
-                    $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($tipo['descripcion']).
-                            " WHERE codigo = ".$this->var2str($tipo['codigo']);
-                    if($this->db->exec($sql)) {
-                       $counter ++; 
-                    } else {
-                        $this->agregarRegistro($tipo);
-                    }
-                } else {
-                    $this->agregarRegistro($tipo);
-                    $counter ++; 
-                }
-            }
+        foreach($this->array_tipos as $tipo) {                
+            $this->agregarRegistro($tipo);
+            $counter ++; 
         }
         return $counter;  
     }
