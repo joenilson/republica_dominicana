@@ -93,30 +93,7 @@ class buscador_rnc extends rd_controller
     }
 
     public function wdslConnection()
-    {
-        $opts = array(
-            'ssl' => array(
-                'ciphers' => 'RC4-SHA',
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'request_fulluri' => true,
-                'proxy' => FS_PROXY_TYPE."://".FS_PROXY_HOST.":".FS_CACHE_PORT,
-            )
-        );
-
-        $params = array(
-            'encoding' => 'UTF-8',
-            'verifypeer' => false,
-            'verifyhost' => false,
-            'soap_version' => SOAP_1_2,
-            'trace' => 1,
-            'exceptions' => 1,
-            'connection_timeout' => 180,
-            'stream_context' => stream_context_create($opts),
-            'proxy_host'     => FS_PROXY_TYPE."://".FS_PROXY_HOST,
-            'proxy_port'     => FS_CACHE_PORT
-        );
-        
+    {   
         $client = new \SoapClient('https://www.dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx?WSDL', array('encoding' => 'UTF-8'));
 
         return $client;
