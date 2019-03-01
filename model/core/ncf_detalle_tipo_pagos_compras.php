@@ -29,7 +29,7 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     public $codpago;
 
     
-    public function __construct($t = false)
+        public function __construct($t = FALSE)
     {
         parent::__construct('ncf_detalle_tipo_pagos_compras', 'plugins/republica_dominicana/');
         if ($t) {
@@ -98,7 +98,7 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
 
         if ($data) {
             foreach ($data as $d) {
-                $item = new ncf_detalle_tipo_pagos($d);
+                $item = new ncf_detalle_tipo_pagos_compras($d);
                 $this->info_formapago($item);
                 $lista[] = $item;
             }
@@ -111,13 +111,13 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
      * Get the info for a codigo and codpago params
      * @param string $codigo
      * @param string $codpago
-     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos
+     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos_compras
      */
     public function get($codigo,$codpago)
     {
         $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo)." AND codpago = ".$this->var2str($codpago).";");
 
-        $item = new ncf_detalle_tipo_pagos($data[0]);
+        $item = new ncf_detalle_tipo_pagos_compras($data[0]);
         $this->info_formapago($item);
         return $item;
     }
@@ -125,16 +125,16 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     /**
      * Get the list of codpago for a given codigo
      * @param string $codigo
-     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos
+     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos_compras
      */
     public function get_codpagos($codigo)
     {
-        $data = $this->db->select("SELECT codpago FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
+        $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
         
         $lista = [];
         if($data) {
             foreach($data as $d) {
-                $item = new ncf_detalle_tipo_pagos($d);
+                $item = new ncf_detalle_tipo_pagos_compras($d);
                 $this->info_formapago($item);
                 $lista[] = $item;
             }
@@ -145,7 +145,7 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     /**
      * Get the codigo for a given codpago
      * @param string $codpago
-     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos
+     * @return \FacturaScripts\model\ncf_detalle_tipo_pagos_compras
      */
     public function get_codigo($codpago)
     {

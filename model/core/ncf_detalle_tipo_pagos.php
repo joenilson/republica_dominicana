@@ -25,11 +25,19 @@ namespace FacturaScripts\model;
  */
 class ncf_detalle_tipo_pagos extends \fs_model
 {
+    /**
+     *
+     * @var string
+     */
     public $codigo;
+    /**
+     *
+     * @var string
+     */
     public $codpago;
 
     
-    public function __construct($t = false)
+    public function __construct($t = FALSE)
     {
         parent::__construct('ncf_detalle_tipo_pagos', 'plugins/republica_dominicana/');
         if ($t) {
@@ -129,7 +137,7 @@ class ncf_detalle_tipo_pagos extends \fs_model
      */
     public function get_codpagos($codigo)
     {
-        $data = $this->db->select("SELECT codpago FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
+        $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
         
         $lista = [];
         if($data) {

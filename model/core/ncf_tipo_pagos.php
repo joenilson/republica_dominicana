@@ -25,9 +25,25 @@ namespace FacturaScripts\model;
  */
 class ncf_tipo_pagos extends \fs_model
 {
+    /**
+     *
+     * @var string
+     */
     public $codigo;
+    /**
+     *
+     * @var string
+     */
     public $descripcion;
+    /**
+     *
+     * @var boolean
+     */
     public $estado;
+    /**
+     *
+     * @var array
+     */
     public $array_tipos = array(
         array ('codigo' => '17', 'descripcion' => 'Efectivo'),
         array ('codigo' => '18', 'descripcion' => 'Cheque/Transferencia/Depósito'),

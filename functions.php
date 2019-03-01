@@ -498,7 +498,7 @@ function fs_documento_compra_post_save(&$documento)
     $ncf_compras->documento_modifica = $documento->idfacturarect;
     $ncf_compras->cifnif = $documento->cifnif;
     $ncf_compras->ncf = $documento->numproveedor;
-    $ncf_compras->ncf_modifica = $documento_modifica->numproveedor;
+    $ncf_compras->ncf_modifica = (isset($documento_modifica->numproveedor))?$documento_modifica->numproveedor:null;
     $ncf_compras->tipo_comprobante = \substr($documento->numproveedor, -10,2);
     $ncf_compras->tipo_compra = $tipo_compra->codigo;
     $ncf_compras->tipo_pago = $tipo_pago;
@@ -522,6 +522,9 @@ function fs_documento_compra_post_save(&$documento)
             $ncf_compras->total_bienes += $partida->debe;
         } elseif ($partida->codsubcuenta === $rd_setup['rd_subcuenta_compras_servicios']) {
             $ncf_compras->total_servicios += $partida->debe;
+        } elseif ($proveedor->acreedor === true) {
+            $ncf_compras->total_servicios += $partida->debe;
+            $ncf_compras->total_bienes = 0;
         }
     }
     $ncf_compras->save();   
