@@ -108,7 +108,6 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
 {
     require_model('empresa.php');
     require_model('ncf_rango.php');
-    $ncf_numero = '';
     $empresa = new empresa();
     $prov = new proveedor();
     $proveedor = $prov->get($codproveedor);
