@@ -19,6 +19,24 @@
         usar_divisa();
         recalcular();
     });
+    
+    
+    function getNCF(tipo_comprobante)
+    {
+        var comprobante;
+        var tipo = (tipo_comprobante==='informal')?'proveedor_informal':'gastos_menores';
+        var almacen = document.f_new_albaran.almacen.value;
+        if(tipo_comprobante !== '' && $('#'+tipo).prop('checked')) {
+            $.getJSON('{$fsc->url()}', 'generar_comprobante='+tipo_comprobante+'&codalmacen='+almacen, function(json) {
+                comprobante = json;
+                if(comprobante.ncf_numero !== '') {
+                    document.f_new_albaran.numproveedor.value = comprobante.ncf_numero;
+                } else {
+                    bootbox.alert('No hay un rango de NCF activo para el comprobante tipo '+tipo_comprobante+'. Debe agregar un rango para poder registrar correctamente esta compra.');
+                }
+            });
+        }
+    }
 </script>
 
 <form id="f_new_albaran" class="form" name="f_new_albaran" action="{$fsc->url()}" method="post">
@@ -288,6 +306,18 @@
                         <p class="help-block">
                             Si es una factura debes guardar el número de {#FS_NUMERO2#} del proveedor
                         </p>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="proveedor_informal" name="proveedor_informal" value="TRUE" onclick="getNCF('informal')"/>
+                            Marcar si es un proveedor informal
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="gastos_menores" name="gastos_menores" value="TRUE" onclick="getNCF('gastos')"/>
+                            Marcar si es el registro de <b>gastos menores (Comprobante 13)
+                        </label>
                     </div>
                     <div class="form-group">
                         Tipo de Compra:

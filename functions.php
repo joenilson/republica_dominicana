@@ -109,26 +109,15 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
     require_model('empresa.php');
     require_model('ncf_rango.php');
     $ncf_numero = '';
-    $ncf_rango = new ncf_rango();
     $empresa = new empresa();
     $prov = new proveedor();
-    $fs_log = new fs_core_log();
     $proveedor = $prov->get($codproveedor);
-    $tipo_comprobante = 11;
     //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
-    $funcion_generate = (\strtotime($fecha) < (\strtotime('01-05-2018'))) ? 'generate_old' : 'generate';
-    if ($proveedor->personafisica == true) {
-        $ncf = $ncf_rango->$funcion_generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
-        if ($ncf['NCF'] != 'NO_DISPONIBLE') {
-            $ncf_numero = $ncf['NCF'];
-        } else {
-            $fs_log->new_error('Es una Persona Física pero no hay un <a href="'.FS_PATH.'index.php?page=ncf'.'" target="_blank">Rango de NCF</a> para Proveedores Informales (Tipo NCF 11), debe corregir esta información.');
-        }
+    $tipo_comprobante = verificar_proveedor($proveedor);
+    if ($tipo_comprobante !== '') {
+        $ncf_numero = crear_ncf_compra($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $fecha); 
     } else {
-        $ncf_numero = \filter_input(INPUT_POST, 'numproveedor');
-        if (\filter_input(INPUT_GET, 'numproveedor')) {
-            $ncf_numero = \filter_input(INPUT_GET, 'numproveedor');
-        }
+        $ncf_numero = (\filter_input(INPUT_POST, 'numproveedor'))?\filter_input(INPUT_POST, 'numproveedor'):\filter_input(INPUT_GET, 'numproveedor');
     }
 
     if ($json) {
@@ -140,6 +129,23 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
 }
 
 /**
+ * Verify comprobant type
+ * @return int
+ */
+function verificar_proveedor($proveedor)
+{
+    $proveedor_informal = \filter_input(INPUT_POST,'proveedor_informal');
+    $gastos_menores = \filter_input(INPUT_POST,'gastos_menores');
+    $tipo_comprobante = '';
+    if($proveedor_informal OR $proveedor->personafisica === true) {
+        $tipo_comprobante = 11;
+    } elseif ($gastos_menores) {
+        $tipo_comprobante = 13;
+    }
+    return $tipo_comprobante;
+}
+
+/**
  * Función para Buscar NCF en la tabla de ventas 
  *
  * @param integer $idempresa 
@@ -147,7 +153,8 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
  * 
  * @return void 
  */
-function buscar_ncf($idempresa,$documento){
+function buscar_ncf($idempresa,$documento)
+{
     $ncf_factura = new ncf_ventas();
     $registroFactura = $ncf_factura->get_ncf($idempresa, $documento->idfactura, $documento->codcliente);
     $registroNCF = $ncf_factura->get($idempresa, $documento->numero2);
@@ -155,6 +162,30 @@ function buscar_ncf($idempresa,$documento){
         return true;
     }
     return false;
+}
+
+/**
+ * 
+ * @param int $empresa_id
+ * @param string $codalmacen
+ * @param string $tipo_comprobante
+ * @param string $codpago
+ * @param date $fecha
+ * @return string
+ */
+function crear_ncf_compra($empresa_id, $codalmacen, $tipo_comprobante, $codpago, $fecha)
+{
+    $ncf_numero = '';
+    $ncf_rango = new ncf_rango();
+    $fs_log = new fs_core_log();
+    $funcion_generate = (\strtotime($fecha) < (\strtotime('01-05-2018'))) ? 'generate_old' : 'generate';
+    $ncf = $ncf_rango->$funcion_generate($empresa_id, $codalmacen, $tipo_comprobante, $codpago);
+    if ($ncf['NCF'] != 'NO_DISPONIBLE') {
+        $ncf_numero = $ncf['NCF'];
+    } else {
+        $fs_log->new_error('Es una Persona Física pero no hay un <a href="'.FS_PATH.'index.php?page=ncf'.'" target="_blank">Rango de NCF</a> para Proveedores Informales (Tipo NCF 11), debe corregir esta información.');
+    }
+    return $ncf_numero;
 }
 
 /**
@@ -229,23 +260,8 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
     $usuario = \filter_input(INPUT_COOKIE, 'user');
     if (!empty($numero_ncf)) {
         $ncf_factura = new ncf_ventas();
-        $ncf_factura->idempresa = $idempresa;
-        $ncf_factura->codalmacen = $factura->codalmacen;
-        $ncf_factura->entidad = $factura->codcliente;
-        $ncf_factura->cifnif = $factura->cifnif;
-        $ncf_factura->documento = $factura->idfactura;
-        $ncf_factura->fecha = $factura->fecha;
-        $ncf_factura->fecha_vencimiento = $factura->fecha_vencimiento;
-        $ncf_factura->tipo_comprobante = $tipo_comprobante;
-        $ncf_factura->tipo_ingreso = $factura->tipo_ingreso;
-        $ncf_factura->tipo_pago = (!empty($tipo_pago)) ? $tipo_pago : '17';
-        $ncf_factura->area_impresion = '';
-        $ncf_factura->ncf = $numero_ncf;
-        $ncf_factura->usuario_creacion = $usuario;
-        $ncf_factura->fecha_creacion = \date('d-m-Y H:i:s');
-        $ncf_factura->usuario_modificacion = $usuario;
-        $ncf_factura->fecha_modificacion = \date('d-m-Y H:i:s');
-        $ncf_factura->estado = true;
+        cabecera_ncf_ventas($idempresa, $factura, $tipo_comprobante, $tipo_pago, $numero_ncf, $usuario, $ncf_factura);
+        
         if ($factura->idfacturarect) {
             $ncf_orig = new ncf_ventas();
             $val_ncf = $ncf_orig->get_ncf($idempresa, $factura->idfacturarect, $factura->codcliente);
@@ -263,6 +279,85 @@ function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $moti
 
         $factura->numero2 = $numero_ncf;
         $factura->save();
+    }
+}
+
+function cabecera_ncf_ventas($idempresa, $factura, $tipo_comprobante, $tipo_pago, $numero_ncf, $usuario, &$ncf_factura)
+{
+    $ncf_factura->idempresa = $idempresa;
+    $ncf_factura->codalmacen = $factura->codalmacen;
+    $ncf_factura->entidad = $factura->codcliente;
+    $ncf_factura->cifnif = $factura->cifnif;
+    $ncf_factura->documento = $factura->idfactura;
+    $ncf_factura->fecha = $factura->fecha;
+    $ncf_factura->fecha_vencimiento = $factura->fecha_vencimiento;
+    $ncf_factura->tipo_comprobante = $tipo_comprobante;
+    $ncf_factura->tipo_ingreso = $factura->tipo_ingreso;
+    $ncf_factura->tipo_pago = (!empty($tipo_pago)) ? $tipo_pago : '17';
+    $ncf_factura->area_impresion = '';
+    $ncf_factura->ncf = $numero_ncf;
+    $ncf_factura->usuario_creacion = $usuario;
+    $ncf_factura->fecha_creacion = \date('d-m-Y H:i:s');
+    $ncf_factura->usuario_modificacion = $usuario;
+    $ncf_factura->fecha_modificacion = \date('d-m-Y H:i:s');
+    $ncf_factura->estado = true;
+}
+
+function guardar_ncf_compras($empresa_id, $documento, $documento_modifica, $tipo_compra, $tipo_pago, $usuario)
+{
+    $ncf_compras = new ncf_compras();
+    cabecera_ncf_compras($empresa_id, $documento, $documento_modifica, $tipo_compra, $tipo_pago, $usuario, $ncf_compras);
+    $tipo_proveedor = tipo_proveedor_ncf($documento->codproveedor);
+    sumar_lineas_compras($documento, $ncf_compras, $tipo_proveedor);
+    $ncf_compras->save();
+}
+
+function cabecera_ncf_compras($empresa_id, $documento, $documento_modifica, $tipo_compra, $tipo_pago, $usuario, &$ncf_compras)
+{
+    $ncf_compras->idempresa = $empresa_id;
+    $ncf_compras->entidad = $documento->codproveedor;
+    $ncf_compras->codalmacen = $documento->codalmacen;
+    $ncf_compras->fecha = $documento->fecha;
+    $ncf_compras->documento = $documento->idfactura;
+    $ncf_compras->documento_modifica = $documento->idfacturarect;
+    $ncf_compras->cifnif = $documento->cifnif;
+    $ncf_compras->ncf = $documento->numproveedor;
+    $ncf_compras->ncf_modifica = (isset($documento_modifica->numproveedor))?$documento_modifica->numproveedor:null;
+    $ncf_compras->tipo_comprobante = \substr($documento->numproveedor, -10,2);
+    $ncf_compras->tipo_compra = $tipo_compra->codigo;
+    $ncf_compras->tipo_pago = $tipo_pago;
+    $ncf_compras->estado = TRUE;
+    $ncf_compras->usuario_creacion = $usuario;
+    $ncf_compras->fecha_creacion = \date('Y-m-d H:i:s');
+    $ncf_compras->usuario_modificacion = $usuario;
+    $ncf_compras->fecha_modificacion = \date('Y-m-d H:i:s');
+}
+
+function sumar_lineas_compras($documento, &$ncf_compras, $tipo_proveedor)
+{
+    $ncf_compras->total_bienes = 0;
+    $ncf_compras->total_servicios = 0;
+    if($tipo_proveedor !== 'ACREEDOR') {
+        $art0 = new rd_articulo_clasificacion();
+        foreach($documento->get_lineas() as $linea) {
+            if($linea->referencia) {
+                $art = $art0->get_referencia($linea->referencia);
+                sumar_tipos_compras($art, $linea, $ncf_compras->total_bienes, $ncf_compras->total_servicios);
+            } else {
+                $ncf_compras->total_servicios += $linea->pvptotal;
+            }
+        }
+    } else {
+        $ncf_compras->total_servicios = $documento->neto;
+    }
+}
+
+function sumar_tipos_compras($art, $linea, &$total_bienes, &$total_servicios)
+{
+    if($art->tipo_articulo == '01') {
+        $total_bienes += $linea->pvptotal;
+    } elseif ($art->tipo_articulo == '02') {
+        $total_servicios += $linea->pvptotal;
     }
 }
 
@@ -287,6 +382,19 @@ function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI'
         $net0->save();
     }
     return $tipo_comprobante;
+}
+
+function tipo_proveedor_ncf($codproveedor)
+{
+    $tipo = '';
+    $prov = new proveedor();
+    $proveedor = $prov->get($codproveedor);
+    if($proveedor->acreedor) {
+        $tipo = 'ACREEDOR';
+    } elseif ($proveedor->personafisica) {
+        $tipo = 'INFORMAL';
+    }
+    return $tipo;
 }
 
 /**
@@ -446,88 +554,53 @@ function fs_documento_venta_post_save(&$documento)
 function fs_documento_compra_post_save(&$documento)
 {
     $usuario = \filter_input(INPUT_COOKIE, 'user');
-    require_model('ncf_rango.php');
-    require_model('ncf_tipo_compras.php');
-    require_model('ncf_detalle_tipo_pagos_compras.php');
-    require_model('ncf_compras.php');
-    require_model('empresa.php');
-    require_model('fs_var.php');
     $empresa = new empresa();
-    $ncf_rango = new ncf_rango();
     $ncf_tipo_compras = new ncf_tipo_compras();
-    $fsvar = new fs_var();
     $prov = new proveedor();
     $proveedor = $prov->get($documento->codproveedor);
-    $function_get_solicitud = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_solicitud_old' : 'get_solicitud';
-    $function_update = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'update_old' : 'update';
-    $rd_setup = $fsvar->array_get(
-        array(
-        'rd_subcuenta_compras_bienes' => '',
-        'rd_subcuenta_compras_servicios' => '',
-        ), false
-    );
-    /**
-     * Si el proveedor es persona física actualizamos el NCF de Proveedores informales
-     */
-    if ($proveedor->personafisica) {
-        $solicitud = $ncf_rango->$function_get_solicitud($empresa->id, $documento->codalmacen, $documento->numproveedor);
-        $ncf_rango->$function_update($empresa->id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
-    }
-    /**
-     * Si modifica a otro documento lo buscamos
-     */
+    $tipo_comprobante = verificar_proveedor($proveedor);
+    
+    verificar_numproveedor_ncf($documento, $empresa->id, $tipo_comprobante, $usuario);
+    
+    // Si modifica a otro documento lo buscamos
     $fact_compras = new factura_proveedor();
     $documento_modifica = $fact_compras->get($documento->idfacturarect);
-    $tipo_compra = $ncf_tipo_compras->get(\filter_input(INPUT_POST, 'tipo_compra'));    
-    
-    
-    /**
-     * Buscamos el codigo de pago asignado
-     */
+    $tipo_compra = verificar_tipo_compra_ncf($documento, $empresa->id, $ncf_tipo_compras);
+    // Buscamos el codigo de pago asignado
     $ncf_detalle_tipo_pago = new ncf_detalle_tipo_pagos_compras();
     $tipo_pago = $ncf_detalle_tipo_pago->get_codigo($documento->codpago);
-    /** 
-     * Guardamos la información de la compra en la tabla NCF Compra
-     */
+    // Guardamos la información de la compra en la tabla NCF Compra
+    guardar_ncf_compras($empresa->id,$documento,$documento_modifica, $tipo_compra, $tipo_pago, $usuario);
+}
+
+function verificar_numproveedor_ncf($documento, $empresa_id, $tipo_comprobante, $usuario)
+{
+    $ncf_rango = new ncf_rango();
     $ncf_compras = new ncf_compras();
-    $ncf_compras->idempresa = $empresa->id;
-    $ncf_compras->entidad = $documento->codproveedor;
-    $ncf_compras->codalmacen = $documento->codalmacen;
-    $ncf_compras->fecha = $documento->fecha;
-    $ncf_compras->documento = $documento->idfactura;
-    $ncf_compras->documento_modifica = $documento->idfacturarect;
-    $ncf_compras->cifnif = $documento->cifnif;
-    $ncf_compras->ncf = $documento->numproveedor;
-    $ncf_compras->ncf_modifica = (isset($documento_modifica->numproveedor))?$documento_modifica->numproveedor:null;
-    $ncf_compras->tipo_comprobante = \substr($documento->numproveedor, -10,2);
-    $ncf_compras->tipo_compra = $tipo_compra->codigo;
-    $ncf_compras->tipo_pago = $tipo_pago;
-    $ncf_compras->estado = TRUE;
-    $ncf_compras->usuario_creacion = $usuario;
-    $ncf_compras->fecha_creacion = \date('Y-m-d H:i:s');
-    $ncf_compras->usuario_modificacion = $usuario;
-    $ncf_compras->fecha_modificacion = \date('Y-m-d H:i:s');
-    /**
-     * Calculamos el total de Bienes y Servicios 
-     * para eso buscamos los valores que estén en las cuentas
-     * 05010101 Bienes
-     * 05010102 Servicios
-     */
-    $ncf_compras->total_bienes = 0;
-    $ncf_compras->total_servicios = 0;
-    $asiento = $documento->get_asiento();
-    $partidas = $asiento->get_partidas();
-    foreach ($partidas as $partida) {
-        if($partida->codsubcuenta === $rd_setup['rd_subcuenta_compras_bienes']) {
-            $ncf_compras->total_bienes += $partida->debe;
-        } elseif ($partida->codsubcuenta === $rd_setup['rd_subcuenta_compras_servicios']) {
-            $ncf_compras->total_servicios += $partida->debe;
-        } elseif ($proveedor->acreedor === true) {
-            $ncf_compras->total_servicios += $partida->debe;
-            $ncf_compras->total_bienes = 0;
-        }
+    $function_get_solicitud = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'get_solicitud_old' : 'get_solicitud';
+    $function_update = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'update_old' : 'update';
+    // Si el proveedor es persona física actualizamos el NCF de Proveedores informales (NCF 11)
+    // o si es un ingreso por gastos menores (NCF 13)
+    $documento_registrado = $ncf_compras->get_ncf($empresa_id, $documento->idfactura, $documento->codproveedor);
+    if ($tipo_comprobante != '' and $documento_registrado === false) {
+        $solicitud = $ncf_rango->$function_get_solicitud($empresa_id, $documento->codalmacen, $documento->numproveedor);
+        $ncf_rango->$function_update($empresa_id, $documento->codalmacen, $solicitud, $documento->numproveedor, $usuario);
     }
-    $ncf_compras->save();   
+}
+
+function verificar_tipo_compra_ncf($documento, $empresa_id, $ncf_tipo_compras)
+{
+    $tipo_compra_code = '09';
+    $ncf_compras0 = new ncf_compras();
+    $ncf_compra = $ncf_compras0->get_ncf($empresa_id, $documento->idfactura, $documento->codproveedor);
+    if(\filter_input(INPUT_POST, 'tipo_compra')) {
+        $tipo_compra_code = \filter_input(INPUT_POST, 'tipo_compra');
+    } elseif ($ncf_compra) {
+        $tipo_compra_code = ($ncf_compra->tipo_compra !== '')?$ncf_compra->tipo_compra:'09';
+    }
+    $tipo_compra = $ncf_tipo_compras->get($tipo_compra_code);
+    return $tipo_compra;
+    
 }
 
 /**

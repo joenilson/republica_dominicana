@@ -1,0 +1,178 @@
+{include="header"}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+    });
+   
+   function toogle(tipo = '')
+   {
+       var estatus = $('#toogleCheck'+tipo).val();
+       if(estatus === 'unchecked') {
+           $('#resultados'+tipo+'>tr>td>input:checkbox').prop('checked', true);
+           $('#toogleCheck'+tipo).val('checked');
+       } else {
+           $('#resultados'+tipo+'>tr>td>input:checkbox').prop('checked', false);
+           $('#toogleCheck'+tipo).val('unchecked');
+       }
+   }
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 col-sm-9">
+            <div class="btn-group">
+                <a class="btn btn-sm btn-default" href="index.php?page=ventas_articulos">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    <span class="hidden-xs">&nbsp;Artículos</span>
+                </a>
+                <a class="btn btn-sm btn-default" href="{$fsc->url()}" title="Recargar la página">
+                    <span class="glyphicon glyphicon-refresh"></span>
+                </a>
+            </div>
+            <div class="btn-group">
+                {loop="$fsc->extensions"}
+                {if="$value->type=='button'"}
+                <a href="index.php?page={$value->from}{$value->params}" class="btn btn-sm btn-default">{$value->text}</a>
+                {/if}
+                {/loop}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-header">
+                <h1>
+                    <span class="fa fa-toggle-on fa-fw"></span>
+                    &nbsp;Clasificacion de artículos
+                </h1>
+                <p class="help-block">
+                    Los articulos se clasifican en los que son del tipo Bienes y los que son del tipo Servicios, puede hacer esta asignación en forma masiva.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4 col-lg-3" style="margin-bottom: 5px;">
+            <form name="f_articulos_sin_clasificar" action="{$fsc->url()}" method="POST">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="text-center"><b>Sin asignar</b></th>
+                            </tr>
+                            <tr>
+                                <th><input type="checkbox" name="toogle" id="toogleCheck" onClick="toogle()" value="unchecked"></th>
+                                <th>Artículo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultados">
+                            {loop="$fsc->articulos_sin_clasificar"}
+                            <tr>
+                                <td><input type="checkbox" name="check[]" value="{$value->referencia}"></td>
+                                <td>{$value->descripcion}</td>
+                            </tr>
+                            {/loop}
+                        </tbody>
+                    </table>    
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <select class="form-control" required name="tipo_articulo">
+                            <option value="">Elija un tipo</option>
+                            {loop="$fsc->rd_articulos_clasificacion->tipos"}
+                                <option value="{$value['codigo']}">{$value['descripcion']}</option>
+                            {/loop}
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-block btn-primary" name="accion" value="asignar">Asignar</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-4 col-lg-3" style="margin-bottom: 5px;">
+            <form name="f_articulos_bienes" action="{$fsc->url()}" method="POST">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="text-center"><b>Bienes</b></th>
+                            </tr>
+                            <tr>
+                                <th><input type="checkbox" name="toogle_bienes" id="toogleCheck_bienes" onClick="toogle('_bienes')" value="unchecked"></th>
+                                <th>Artículo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultados_bienes">
+                        {loop="$fsc->resultados_bienes"}
+                            <tr>
+                                <td><input type="checkbox" name="check[]" value="{$value->referencia}"></td>
+                                <td>{$value->descripcion}</td>
+                            </tr>
+                        {else}
+                        <tr>
+                            <td colspan="2">
+                                <div class="alert alert-warning text-justify">
+                                    Ninguna clasificacion encontrada. Del listado de Artículos sin clasificar elija uno o varios 
+                                y luego en el selector elija a que tipo de articlo lo asignará, para proceder presione el botón <b>Asignar</b>.
+                                </div>
+                            </td>
+                        </tr>
+                        {/loop}
+                        </tbody>
+                    </table>
+                </div>
+                {if="$fsc->resultados_bienes"}
+                <div>
+                    <button class="btn btn-block btn-danger" name="accion" value="desasignar">Desasignar</button>
+                </div>
+                {/if}
+            </form>
+        </div>
+        <div class="col-sm-4 col-lg-3" style="margin-bottom: 5px;">
+            <form name="f_articulos_servicios" action="{$fsc->url()}" method="POST">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="text-center"><b>Servicios</b></th>
+                            </tr>
+                            <tr>
+                                <th><input type="checkbox" name="toogle_servicios" id="toogleCheck_servicios" onClick="toogle('_servicios')" value="unchecked"></th>
+                                <th>Artículo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultados_servicios">
+                        {loop="$fsc->resultados_servicios"}
+                            <tr>
+                                <td><input type="checkbox" name="check[]" value="{$value->referencia}"></td>
+                                <td>{$value->descripcion}</td>
+                            </tr>
+                        {else}
+                        <tr>
+                            <td colspan="2">
+                                <div class="alert alert-warning text-justify">
+                                    Ningun articulo encontrado en esta clasificación. Del listado de Artículos sin clasificar elija uno o varios 
+                                y luego en el selector elija a que tipo de articulo lo asignará, para proceder presione el botón <b>Asignar</b>.
+                                </div>
+                            </td>
+                        </tr>
+                        {/loop}
+                        </tbody>
+                    </table>
+                </div>
+                {if="$fsc->resultados_servicios"}
+                <div>
+                    <button class="btn btn-block btn-danger" name="accion" value="desasignar">Desasignar</button>
+                </div>
+                {/if}
+            </form>
+        </div>
+    </div>
+</div>
+
+{include="footer"}

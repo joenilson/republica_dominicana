@@ -37,6 +37,7 @@ class nueva_compra extends fbase_controller
     public $serie;
     public $tipo;
     public $ncf_tipo_compras;
+    public $ncf_rango;
 
     public function __construct()
     {
@@ -53,6 +54,7 @@ class nueva_compra extends fbase_controller
         $this->impuesto = new impuesto();
         $this->proveedor = new proveedor();
         $this->ncf_tipo_compras = new ncf_tipo_compras();
+        $this->ncf_rango = new ncf_rango();
         $this->proveedor_s = FALSE;
         $this->results = array();
         
@@ -63,6 +65,10 @@ class nueva_compra extends fbase_controller
                 $this->tipo = $t['tipo'];
                 break;
             }
+        }
+        
+        if (filter_input(INPUT_GET, 'generar_comprobante')) {
+            $this->generar_ncf(filter_input(INPUT_GET, 'generar_comprobante'));
         }
 
         if (isset($_REQUEST['buscar_proveedor'])) {
@@ -288,6 +294,24 @@ class nueva_compra extends fbase_controller
 
         header('Content-Type: application/json');
         echo json_encode($this->results);
+    }
+    
+    
+    private function generar_ncf($tipo)
+    {
+        /// desactivamos la plantilla HTML
+        $this->template = false;
+        $tipo_comprobante = ($tipo == 'informal')?'11':'13';
+        $codalmacen = \filter_input(INPUT_GET, 'codalmacen');
+        $numero_ncf = $this->ncf_rango->generate($this->empresa->id, $codalmacen, $tipo_comprobante);
+        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
+            $ncf_numero = '';
+        } else {
+            $ncf_numero = $numero_ncf['NCF'];
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante));
     }
 
     private function get_precios_articulo()
