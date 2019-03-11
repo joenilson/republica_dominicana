@@ -1082,7 +1082,7 @@ class nueva_venta extends rd_controller
 
                         /// Función de ejecución de tareas post guardado correcto de la factura
                         fs_documento_post_save($factura);
-
+                        
                         $this->new_message("<a href='" . $factura->url() . "'>Factura</a> guardada correctamente.");
                         $this->new_change('Factura Cliente ' . $factura->codigo, $factura->url(), TRUE);
 

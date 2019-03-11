@@ -85,9 +85,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false,
     $empresa = new empresa();
     $ncf_numero = array();
     $ncf_rango = new ncf_rango();
-    /*
-    * Verificación de disponibilidad del Número de NCF para República Dominicana
-    */
+    // Verificación de disponibilidad del Número de NCF para República Dominicana
     //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
     $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
     //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
@@ -457,7 +455,7 @@ if (!function_exists('fs_generar_numero2')) {
             }
         }
 
-        $documento->numero2 = $numero2;
+        $documento->numero2 = $numero2[0];
         return true;
     }
 }
