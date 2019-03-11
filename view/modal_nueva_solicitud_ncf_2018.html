@@ -27,12 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <div class="col-sm-6">
                             <input type="hidden" name="estado" value="TRUE">
                             <label class="control-label">Nro Solicitud:</label>
-                            <input class="form-control" required type="number" name="solicitud" autocomplete="off" placeholder="Número de solicitud"/>
+                            <input class="form-control" required type="number" name="solicitud" autocomplete="off" placeholder="Número de solicitud" min="1" max="9999999"/>
                             <span class="help-block">Solicitud Oficina Virtual menos los 3 primeros dígitos 800XXXXXXX</span>
                         </div>
                         <div class="col-sm-6">
                             <label class="control-label">Nro Autorización:</label>
-                            <input class="form-control" required type="number" name="autorizacion" autocomplete="off" placeholder="Autorización DGII"/>
+                            <input class="form-control" required type="number" name="autorizacion" autocomplete="off" placeholder="Autorización DGII" min="1" max="9999999"/>
                             <span class="help-block">Autorización de la DGII menos los 3 primeros dígitos 800XXXXXXX</span>
                         </div>
                     </div>
