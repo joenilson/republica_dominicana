@@ -67,30 +67,16 @@ class admin_rd extends rd_controller
 
     public function init_variables()
     {
-        $this->variables = array();
-        $this->variables['zona_horaria'] = "America/Santo_Domingo";
-        $this->variables['nf0'] = "2";
-        $this->variables['nf0_art'] = "4";
-        $this->variables['nf1'] = ".";
-        $this->variables['nf2'] = ",";
-        $this->variables['pos_divisa'] = "left";
-        $this->variables['factura'] = "factura";
-        $this->variables['facturas'] = "facturas";
-        $this->variables['factura_simplificada'] = "factura simplificada";
-        $this->variables['factura_rectificativa'] = "nota de credito";
-        $this->variables['albaran'] = "conduce";
-        $this->variables['albaranes'] = "conduces";
-        $this->variables['pedido'] = "pedido";
-        $this->variables['pedidos'] = "pedidos";
-        $this->variables['presupuesto'] = "presupuesto";
-        $this->variables['presupuestos'] = "presupuestos";
-        $this->variables['provincia'] = "provincia";
-        $this->variables['apartado'] = "apartado";
-        $this->variables['cifnif'] = "Cedula/RNC";
-        $this->variables['iva'] = "ITBIS";
-        $this->variables['numero2'] = "NCF";
-        $this->variables['serie'] = "serie";
-        $this->variables['series'] = "series";
+        $this->variables = array('zona_horaria'=>'America/Santo_Domingo',
+                                'nf0' => "2", 'nf0_art' => "4", 'nf1' => ".", 'nf2' => ",",
+                                'pos_divisa' => "left",
+                                'factura' => "factura", 'facturas' => "facturas",
+                                'factura_simplificada' => "Ticket", 'factura_rectificativa' => "nota de credito",
+                                'albaran' => "conduce", 'albaranes' => "conduces", 
+                                'pedido' => "pedido", 'pedidos' => "pedidos",
+                                'presupuesto' => "presupuesto", 'presupuestos' => "presupuestos",
+                                'provincia' => "provincia", 'apartado' => "apartado", 'cifnif' => "Cedula/RNC",
+                                'iva' => "ITBIS", 'numero2' => "NCF", 'serie' => "serie", 'series' => "series");
     }
     
     public function init_impuestos()
@@ -121,9 +107,6 @@ class admin_rd extends rd_controller
                 break;
             case 'impresion':
                 $this->impresion();
-                break;
-            case 'subcuentas_compras':
-                $this->configuracion_subcuentas_compras();
                 break;
             default:
                 break;
@@ -396,24 +379,6 @@ class admin_rd extends rd_controller
             $this->new_message('Datos de configuracion regional guardados correctamente.');
         }
     }
-    
-    public function configuracion_subcuentas_compras()
-    {           
-        $fsvar = new fs_var();
-        $op_rd_subcuenta_compras_bienes = \filter_input(INPUT_POST, 'rd_subcuenta_compras_bienes');
-        $op_rd_subcuenta_compras_servicios = \filter_input(INPUT_POST, 'rd_subcuenta_compras_servicios');
-
-        $rd_config = array(
-            'rd_subcuenta_compras_bienes' => $this->confirmarValor($op_rd_subcuenta_compras_bienes, ''),
-            'rd_subcuenta_compras_servicios' => $this->confirmarValor($op_rd_subcuenta_compras_servicios, ''),
-        );
-
-        if ($fsvar->array_save($rd_config)) {
-            $this->new_message('Opciones de Subcuentas de Compras actualizadas correctamente.');
-        } else {
-            $this->new_error_msg('Ocurrió un error al intentar actualizar la información de Subcuentas de Compras, por favor revise sus datos.');
-        }
-    }
 
     private function share_extensions()
     {
@@ -424,7 +389,7 @@ class admin_rd extends rd_controller
         $fsext->type = 'fuente';
         $fsext->text = 'Plan Contable República Dominicana <strong>para industrias</strong>';
         $fsext->params = 'plugins/republica_dominicana/extras/rd_completo.xml';
-        $fsext->save();
+        $fsext->delete();
 
         $fsext->name = 'pcgr';
         $fsext->from = __CLASS__;
