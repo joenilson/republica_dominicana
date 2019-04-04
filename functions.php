@@ -102,7 +102,7 @@ function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false,
     }
 }
 
-function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha, $terminal=false, $json = false)
+function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha, $facturarect, $terminal=false, $json = false)
 {
     require_model('empresa.php');
     require_model('ncf_rango.php');
@@ -110,7 +110,7 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
     $prov = new proveedor();
     $proveedor = $prov->get($codproveedor);
     //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
-    $tipo_comprobante = verificar_proveedor($proveedor);
+    $tipo_comprobante = verificar_proveedor($proveedor, $facturarect);
     if ($tipo_comprobante !== '') {
         $ncf_numero = crear_ncf_compra($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $fecha); 
     } else {
@@ -129,7 +129,7 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
  * Verify comprobant type
  * @return int
  */
-function verificar_proveedor($proveedor)
+function verificar_proveedor($proveedor, $facturarect)
 {
     $proveedor_informal = \filter_input(INPUT_POST,'proveedor_informal');
     $gastos_menores = \filter_input(INPUT_POST,'gastos_menores');
@@ -138,6 +138,8 @@ function verificar_proveedor($proveedor)
         $tipo_comprobante = 11;
     } elseif ($gastos_menores) {
         $tipo_comprobante = 13;
+    } elseif ($facturarect) {
+        $tipo_comprobante = '';
     }
     return $tipo_comprobante;
 }
@@ -480,7 +482,7 @@ if (!function_exists('fs_generar_numproveedor')) {
         }
 
         if($tipo_documento == 'factura_proveedor') {
-            $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago, $documento->fecha);
+            $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago, $documento->fecha, $documento->facturarect);
         }
 
         if(!empty($documento->numproveedor) && empty($numproveedor)){
@@ -555,7 +557,7 @@ function fs_documento_compra_post_save(&$documento)
     $ncf_tipo_compras = new ncf_tipo_compras();
     $prov = new proveedor();
     $proveedor = $prov->get($documento->codproveedor);
-    $tipo_comprobante = verificar_proveedor($proveedor);
+    $tipo_comprobante = verificar_proveedor($proveedor, $documento->facturarect);
     
     verificar_numproveedor_ncf($documento, $empresa->id, $tipo_comprobante, $usuario);
     

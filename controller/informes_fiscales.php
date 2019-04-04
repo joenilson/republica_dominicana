@@ -667,9 +667,22 @@ class informes_fiscales extends rd_controller
             " fp.numproveedor as ncf, fp2.numproveedor as ncf_modifica, ".
             " concat(extract(year from fp.fecha),lpad(CAST(extract(month from fp.fecha) as char),2,'0'), lpad(CAST(extract(day from fp.fecha) as char),2,'0')) as fecha, ".
             " concat(extract(year from ca.fecha),lpad(CAST(extract(month from ca.fecha) as char),2,'0'), lpad(CAST(extract(day from ca.fecha) as char),2,'0')) as fechap, ".
-            " ncfc.total_servicios, ncfc.total_bienes, "
-            . "CASE WHEN fp.coddivisa != 'DOP' THEN round((fp.neto / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) ELSE fp.neto END as totalfacturado, "
-            . "CASE WHEN fp.coddivisa != 'DOP' THEN round((fp.totaliva / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) ELSE fp.totaliva END as totaliva, "
+            " CASE WHEN ncfc.total_servicios < 0 THEN  ncfc.total_servicios*-1 ELSE ncfc.total_servicios END AS total_servicios, "
+            . " CASE WHEN ncfc.total_bienes < 0 THEN ncfc.total_bienes*-1 ELSE ncfc.total_bienes END AS total_bienes, "
+            . "CASE WHEN fp.coddivisa != 'DOP' AND fp.neto < 0 "
+                    . "THEN round(((fp.neto)*-1 / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) "
+                . "WHEN fp.coddivisa != 'DOP' AND fp.neto > 0 "
+                    . "THEN round((fp.neto / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) "
+                . "WHEN fp.coddivisa = 'DOP' AND fp.neto < 0 "
+                . " THEN fp.neto*-1 "
+                . "ELSE fp.neto END as totalfacturado, "
+            . "CASE WHEN fp.coddivisa != 'DOP' AND fp.totaliva < 0 "
+                    . "THEN round(((fp.totaliva)*-1 / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) "
+                . "WHEN fp.coddivisa != 'DOP' AND fp.totaliva > 0 "
+                    . "THEN round((fp.totaliva / (select tasaconv from divisas as div1 where div1.coddivisa = fp.coddivisa) * 1) / 1 * (select tasaconv from divisas as div2 where div2.coddivisa = 'DOP'),2) "
+                . "WHEN fp.coddivisa = 'DOP' AND fp.totaliva < 0 "
+                . " THEN fp.totaliva*-1 "
+                . "ELSE fp.totaliva END as totaliva, "
             . " 0 as totalivaretenido, 0 as totalivasujeto, 0 as totalivallevadocosto, ".
             " 0 as totalivaporadelantar, 0 as totalivapercibidocompras, '' as tiporetencionisr, 0 as totalretencionrenta,0 as totalisrpercibidocompra, 0 as totalisc, ".
             " 0 as totalotrosimpuestos, 0 as totalpropinalegal, CONCAT(ncftpc.codigo,' - ',ncftpc.descripcion) as codpago ".
@@ -730,8 +743,12 @@ class informes_fiscales extends rd_controller
             " CASE WHEN nv.tipo_ingreso is null THEN 1 ELSE tipo_ingreso END as tipo_ingreso, ".
             " concat(extract(year from nv.fecha),lpad(CAST(extract(month from nv.fecha) as char),2,'0'),lpad(CAST(extract(day from nv.fecha) as char),2,'0')) as fecha, ".
             " '' as fecha_retencion, ".
-            " CASE WHEN anulada = TRUE THEN 0 else neto END as neto, ".
-            " CASE WHEN anulada = TRUE THEN 0 else totaliva END as totaliva, ".
+            " CASE WHEN anulada = TRUE THEN 0 "
+                . " WHEN anulada = FALSE AND neto < 0 THEN neto*-1 "
+                . "else neto END as neto, ".
+            " CASE WHEN anulada = TRUE THEN 0 "
+                . "WHEN anulada = FALSE AND neto < 0 THEN neto*-1 "
+                . "else totaliva END as totaliva, ".
             " 0 as totalivaretenido, 0 as totalivapercibido, 0 as totalrentencionrenta, 0 as totalisrpercibido, 0 as totalisc, ".
             " 0 as totalotrosimpuestos, 0 as totalpropinalegal, ".
             " CASE WHEN tipo_pago IS NULL OR tipo_pago = '' OR tipo_pago = '17' THEN neto else 0 END as totalefectivo, ".
