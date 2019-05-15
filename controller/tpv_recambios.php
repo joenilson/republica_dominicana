@@ -22,25 +22,124 @@ require_once 'plugins/republica_dominicana/extras/rd_controller.php';
 class tpv_recambios extends rd_controller
 {
 
+    /**
+     *
+     * @var agente
+     */
     public $agente;
+
+    /**
+     *
+     * @var almacen
+     */
     public $almacen;
+
+    /**
+     *
+     * @var articulo|bool
+     */
     public $articulo;
+
+    /**
+     *
+     * @var caja|bool
+     */
     public $caja;
+
+    /**
+     *
+     * @var cliente
+     */
     public $cliente;
+
+    /**
+     *
+     * @var cliente|bool
+     */
     public $cliente_s;
+
+    /**
+     *
+     * @var divisa
+     */
     public $divisa;
+
+    /**
+     *
+     * @var ejercicio
+     */
     public $ejercicio;
+
+    /**
+     *
+     * @var articulo[]
+     */
     public $equivalentes;
+
+    /**
+     *
+     * @var fabricante
+     */
     public $fabricante;
+
+    /**
+     *
+     * @var familia
+     */
     public $familia;
+
+    /**
+     *
+     * @var forma_pago
+     */
     public $forma_pago;
+
+    /**
+     *
+     * @var bool
+     */
     public $imprimir_descripciones;
+
+    /**
+     *
+     * @var bool
+     */
     public $imprimir_observaciones;
+
+    /**
+     *
+     * @var impuesto
+     */
     public $impuesto;
+
+    /**
+     *
+     * @var articulo[]
+     */
     public $results;
+
+    /**
+     *
+     * @var serie
+     */
     public $serie;
+
+    /**
+     *
+     * @var terminal_caja|bool
+     */
     public $terminal;
+
+    /**
+     *
+     * @var array
+     */
     public $ultimas_compras;
+
+    /**
+     *
+     * @var array
+     */
     public $ultimas_ventas;
     public $ncf_numero;
 
@@ -60,7 +159,7 @@ class tpv_recambios extends rd_controller
         $this->fabricante = new fabricante();
         $this->familia = new familia();
         $this->impuesto = new impuesto();
-        $this->results = array();
+        $this->results = [];
 
         if (isset($_REQUEST['buscar_cliente'])) {
             $this->buscar_cliente();
@@ -338,7 +437,7 @@ class tpv_recambios extends rd_controller
 
         $impuestos = $this->impuesto->all();
 
-        $this->results = array();
+        $this->results = [];
         $comb1 = new articulo_combinacion();
         foreach ($comb1->all_from_ref($_POST['referencia4combi']) as $com) {
             if (isset($this->results[$com->codigo])) {
@@ -371,7 +470,7 @@ class tpv_recambios extends rd_controller
 
     public function get_tarifas_articulo($ref)
     {
-        $tarlist = array();
+        $tarlist = [];
         $articulo = new articulo();
         $tarifa = new tarifa();
 
@@ -712,18 +811,11 @@ class tpv_recambios extends rd_controller
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
             $asiento_factura->generar_asiento_venta($factura);
+            return;
+        }
 
-            foreach ($asiento_factura->errors as $err) {
-                $this->new_error_msg($err);
-            }
-
-            foreach ($asiento_factura->messages as $msg) {
-                $this->new_message($msg);
-            }
-        } else {
             /// de todas formas forzamos la generación de las líneas de iva
             $factura->get_lineas_iva();
-        }
     }
     
     private function info_factura_dgii(&$fact)

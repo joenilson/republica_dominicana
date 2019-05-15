@@ -453,7 +453,7 @@ if (!function_exists('fs_generar_numero2')) {
             if(strlen($documento->numero2) != $ncf_length){
                 $documento->numero2 = '';
             }elseif(strlen($documento->numero2) === $ncf_length){
-                $numero2 = $documento->numero2;
+                $numero2[0] = $documento->numero2;
             }
         }
 
