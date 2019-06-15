@@ -21,7 +21,7 @@
         <nulo>YES</nulo>
     </columna>
     <restriccion>
-        <nombre>ncf_tipo_pagos_pkey</nombre>
+        <nombre>ncf_tipo_pagos_compras_pkey</nombre>
         <consulta>PRIMARY KEY (codigo)</consulta>
     </restriccion>
 </tabla>

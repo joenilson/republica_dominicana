@@ -31,15 +31,17 @@ class ncf_tipo extends \fs_model
     public $compras;
     public $contribuyente;
     public $array_comprobantes = array(
-        array ('tipo' => '01', 'descripcion' => 'FACTURA DE CREDITO FISCAL'),
-        array ('tipo' => '02', 'descripcion' => 'FACTURA DE CONSUMO'),
-        array ('tipo' => '03', 'descripcion' => 'NOTA DE DEBITO'),
-        array ('tipo' => '04', 'descripcion' => 'NOTA DE CREDITO'),
-        array ('tipo' => '11', 'descripcion' => 'REGISTRO DE PROVEEDORES INFORMALES'),
-        array ('tipo' => '12', 'descripcion' => 'REGISTRO UNICO DE INGRESOS'),
-        array ('tipo' => '13', 'descripcion' => 'REGISTRO DE GASTOS MENORES'),
-        array ('tipo' => '14', 'descripcion' => 'REGIMEN ESPECIAL DE TRIBUTACION'),
-        array ('tipo' => '15', 'descripcion' => 'COMPROBANTE GUBERNAMENTAL')
+        array ('tipo' => '01', 'descripcion' => 'FACTURA DE CREDITO FISCAL', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>'X'),
+        array ('tipo' => '02', 'descripcion' => 'FACTURA DE CONSUMO', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'', 'contribuyente'=>'X'),
+        array ('tipo' => '03', 'descripcion' => 'NOTA DE DEBITO', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>''),
+        array ('tipo' => '04', 'descripcion' => 'NOTA DE CREDITO', 'clase_movimiento'=>'resta', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>''),
+        array ('tipo' => '11', 'descripcion' => 'COMPROBANTE DE COMPRAS', 'clase_movimiento'=>'suma', 'ventas'=>'', 'compras'=>'X', 'contribuyente'=>'X'),
+        array ('tipo' => '12', 'descripcion' => 'REGISTRO UNICO DE INGRESOS', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'', 'contribuyente'=>''),
+        array ('tipo' => '13', 'descripcion' => 'COMPROBANTE PARA GASTOS MENORES', 'clase_movimiento'=>'suma', 'ventas'=>'', 'compras'=>'X', 'contribuyente'=>''),
+        array ('tipo' => '14', 'descripcion' => 'COMPROBANTE DE REGIMENES ESPECIALES', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>'X'),
+        array ('tipo' => '15', 'descripcion' => 'COMPROBANTE GUBERNAMENTAL', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>'X'),
+        array ('tipo' => '16', 'descripcion' => 'COMPROBANTE PARA EXPORTACIONES', 'clase_movimiento'=>'suma', 'ventas'=>'X', 'compras'=>'X', 'contribuyente'=>'X'),
+        array ('tipo' => '17', 'descripcion' => 'COMPROBANTE PARA PAGOS AL EXTERIOR', 'clase_movimiento'=>'suma', 'ventas'=>'', 'compras'=>'X', 'contribuyente'=>'X'),
     );
     public function __construct($t = false)
     {
@@ -70,11 +72,13 @@ class ncf_tipo extends \fs_model
             "('02','FACTURA DE CONSUMO',TRUE, 'suma','X',null,'X'),".
             "('03','NOTA DE DEBITO',true, 'suma','X','X',null),".
             "('04','NOTA DE CREDITO',TRUE, 'resta','X','X',null),".
-            "('11','REGISTRO DE PROVEEDORES INFORMALES',TRUE, 'suma',null,'X','X'),".
+            "('11','COMPROBANTE DE COMPRAS',TRUE, 'suma',null,'X','X'),".
             "('12','REGISTRO UNICO DE INGRESOS',TRUE, 'suma','X',null,null),".
-            "('13','REGISTRO DE GASTOS MENORES',TRUE, 'suma',null,'X',null),".
-            "('14','REGIMEN ESPECIAL DE TRIBUTACION',TRUE, 'suma','X','X','X'),".
-            "('15','COMPROBANTE GUBERNAMENTAL',TRUE, 'suma','X','X','X');";
+            "('13','COMPROBANTE PARA GASTOS MENORES',TRUE, 'suma',null,'X',null),".
+            "('14','COMPROBANTE DE REGIMENES ESPECIALES',TRUE, 'suma','X','X','X'),".
+            "('15','COMPROBANTE GUBERNAMENTAL',TRUE, 'suma','X','X','X');".
+            "('16','COMPROBANTE PARA EXPORTACIONES',TRUE, 'suma','X','X','X');".
+            "('17','COMPROBANTE PARA PAGOS AL EXTERIOR',TRUE, 'suma',null, 'X','X');";
     }
     
     public function exists()
@@ -188,13 +192,33 @@ class ncf_tipo extends \fs_model
         $this->db->exec($sqlClean);
         $counter = 0;
         foreach($this->array_comprobantes as $comprobante) {
-            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($comprobante['descripcion']).
-                    " WHERE tipo_comprobante = ".$this->var2str($comprobante['tipo']);
-            if($this->db->exec($sql)) {
-               $counter ++; 
-            }
+            $this->restore_name($comprobante, $counter);
         }
         return $counter;
         
+    }
+    
+    public function restore_name($comprobante, &$counter)
+    {
+        if($this->get($comprobante['tipo'])) {
+            $sql = "UPDATE ".$this->table_name." SET descripcion = ".$this->var2str($comprobante['descripcion']).", "." ESTADO = TRUE ".", ".
+                    " clase_movimiento = ".$this->var2str($comprobante['clase_movimiento']).", ".
+                    " ventas = ".$this->var2str($comprobante['ventas']).", ".
+                    " compras = ".$this->var2str($comprobante['compras']).", ".
+                    " contribuyente = ".$this->var2str($comprobante['contribuyente'])." ". 
+                    " WHERE tipo_comprobante = ".$this->var2str($comprobante['tipo']);
+        } else {
+            $sql = "INSERT INTO ".$this->table_name
+                ." (tipo_comprobante, descripcion, estado, clase_movimiento, ventas, compras, contribuyente ) VALUES ".
+                "('".$comprobante['tipo']."','".
+                    $comprobante['descripcion']."',TRUE, '".
+                    $comprobante['clase_movimiento']."','".
+                    $comprobante['ventas']."','".
+                    $comprobante['compras']."','".
+                    $comprobante['contribuyente']."');";
+        }
+        if($this->db->exec($sql)) {
+            $counter ++;
+         }
     }
 }

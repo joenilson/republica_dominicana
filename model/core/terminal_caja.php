@@ -373,6 +373,13 @@ class terminal_caja extends \fs_model
         $this->add_linea(
             $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
         );
+        
+        if ($empresa->telefono != '') {
+            $this->add_linea(
+                $this->center_text($this->sanitize($empresa->telefono)) . "\n"
+            );
+        }
+        
         $this->add_linea($this->center_text(FS_CIFNIF . ": " . $empresa->cifnif));
         $this->add_linea("\n\n");
 
@@ -471,6 +478,13 @@ class terminal_caja extends \fs_model
         $this->add_linea(
             $this->center_text($this->sanitize($empresa->direccion) . " - " . $this->sanitize($empresa->ciudad)) . "\n"
         );
+        
+        if ($empresa->telefono != '') {
+            $this->add_linea(
+                $this->center_text($this->sanitize($empresa->telefono)) . "\n"
+            );
+        }
+        
         $this->add_linea($this->center_text(FS_CIFNIF . ": " . $empresa->cifnif));
         $this->add_linea("\n\n");
 
