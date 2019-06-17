@@ -208,7 +208,7 @@ class informes_fiscales extends rd_controller
             mkdir($this->exportDir);
         }
     }
-
+    
     public function datos_reporte($reporte, $json = false)
     {
         $resultados = array();
@@ -805,9 +805,14 @@ class informes_fiscales extends rd_controller
         $this->generar_excel(
             array('RNC/Cédula','Tipo Id','NCF','NCF Modifica','Tipo de Ingreso','Fecha Comprobante','Fecha Retención','Monto Facturado','ITBIS Facturado','ITBIS Retenido por Terceros','ITBIS Percibido','Retención Renta por Terceros','ISR Percibido','Impuesto Selectivo al Consumo','Otros Impuestos/Tasas','Monto Propina Legal','Efectivo','Cheque/Transferencia/Depósito','Tarjeta Débito/Crédito','Venta a Crédito','Bonos o Certificados de Regalo','Permuta','Otras Formas de Ventas','Estado','F. Pago'),
             $this->resultados_607,
-            array('Total',count($this->resultados_607).' Documentos','','','','','','',''),
+            array('Total',count($this->resultados_607).' Documentos','','','','','','','','','','','','','','','','','','','','','','',''),
             false,
-            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left')),
+            array(array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),
+                array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),
+                array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),
+                array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'right'),
+                array('halign'=>'right'),array('halign'=>'right'),array('halign'=>'left'),array('halign'=>'left'),array('halign'=>'left'),
+                array('halign'=>'left')),
             false
         );
     }
@@ -906,13 +911,14 @@ class informes_fiscales extends rd_controller
             foreach ($datos as $linea) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $linea, $estilo_cuerpo);
             }
+            
             if (!empty($pie)) {
                 $this->writer->writeSheetRow($nombre_hoja, (array) $pie, $estilo_footer);
             }
-            $this->writer->writeToFile($this->archivoXLSXPath);
+            $this->writer->writeToFile($this->archivoXLSX);
         }
     }
-
+    
     private function share_extensions()
     {
         $extensiones = array(
@@ -921,7 +927,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/validator.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/validator.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -929,7 +935,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-select.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/bootstrap-select.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -937,7 +943,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-table.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/bootstrap-table.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -945,7 +951,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/locale/bootstrap-table-es-MX.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/locale/bootstrap-table-es-MX.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -953,7 +959,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-filter.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-filter.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -961,7 +967,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-toolbar.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-toolbar.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -969,7 +975,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-mobile.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-mobile.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -977,7 +983,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-select.min.css"/>',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="' . FS_PATH . 'plugins/republica_dominicana/view/css/bootstrap-select.min.css"/>',
                 'params' => ''
             ),
 
@@ -986,7 +992,7 @@ class informes_fiscales extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-table.min.css"/>',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="' . FS_PATH . 'plugins/republica_dominicana/view/css/bootstrap-table.min.css"/>',
                 'params' => ''
             ),
         );

@@ -224,7 +224,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-table.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/bootstrap-table.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -232,7 +232,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/locale/bootstrap-table-es-MX.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/locale/bootstrap-table-es-MX.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -240,7 +240,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-filter.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-filter.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -248,7 +248,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-toolbar.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-toolbar.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -256,7 +256,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/plugins/bootstrap-table-mobile.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/plugins/bootstrap-table-mobile.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -264,7 +264,7 @@ class informe_estadocuenta extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-table.min.css"/>',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="' . FS_PATH . 'plugins/republica_dominicana/view/css/bootstrap-table.min.css"/>',
                 'params' => ''
             ),
         );

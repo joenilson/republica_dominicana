@@ -405,7 +405,7 @@ class admin_rd extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="plugins/republica_dominicana/view/js/bootstrap-colorpicker.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/bootstrap-colorpicker.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -413,7 +413,7 @@ class admin_rd extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="plugins/republica_dominicana/view/css/bootstrap-colorpicker.min.css"/>',
+                'text' => '<link rel="stylesheet" type="text/css" media="screen" href="' . FS_PATH . 'plugins/republica_dominicana/view/css/bootstrap-colorpicker.min.css"/>',
                 'params' => ''
             ),
         );

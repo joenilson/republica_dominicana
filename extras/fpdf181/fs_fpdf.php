@@ -1298,7 +1298,11 @@ class PDF_MC_Table extends FPDF
         parent::_beginpage($orientation, $size, $rotation);
         if ($this->NewPageGroup) {
             // start a new group
-            $n = sizeof($this->PageGroups)+1;
+            $n = 1;
+            if (is_array($this->PageGroups) && sizeof($this->PageGroups) <= 0) {
+                $n = sizeof($this->PageGroups)+1;
+            }
+            
             $alias = "{nb$n}";
             $this->PageGroups[$alias] = 1;
             $this->CurrPageGroup = $alias;
