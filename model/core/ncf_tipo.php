@@ -76,8 +76,8 @@ class ncf_tipo extends \fs_model
             "('12','REGISTRO UNICO DE INGRESOS',TRUE, 'suma','X',null,null),".
             "('13','COMPROBANTE PARA GASTOS MENORES',TRUE, 'suma',null,'X',null),".
             "('14','COMPROBANTE DE REGIMENES ESPECIALES',TRUE, 'suma','X','X','X'),".
-            "('15','COMPROBANTE GUBERNAMENTAL',TRUE, 'suma','X','X','X');".
-            "('16','COMPROBANTE PARA EXPORTACIONES',TRUE, 'suma','X','X','X');".
+            "('15','COMPROBANTE GUBERNAMENTAL',TRUE, 'suma','X','X','X'),".
+            "('16','COMPROBANTE PARA EXPORTACIONES',TRUE, 'suma','X','X','X'),".
             "('17','COMPROBANTE PARA PAGOS AL EXTERIOR',TRUE, 'suma',null, 'X','X');";
     }
     
