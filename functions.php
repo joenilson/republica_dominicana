@@ -33,35 +33,37 @@ if (!function_exists('fs_tipos_id_fiscal')) {
  * el campo numero2
  * @return string
  */
+if (!function_exists('generar_numero2_old')) {
+    
+    function generar_numero2_old($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
+    {
+        require_model('empresa.php');
+        require_model('ncf_rango.php');
+        $empresa = new empresa();
+        $ncf_numero = array();
+        $ncf_rango = new ncf_rango();
+        /*
+        * Verificación de disponibilidad del Número de NCF para República Dominicana
+        */
+        //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
+        $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
+        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+        if ($terminal) {
+            $numero_ncf = $ncf_rango->generate_terminal($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $terminal->area_impresion);
+        } else {
+            $numero_ncf = $ncf_rango->generate_old($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
+        }
 
-function generar_numero2_old($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
-{
-    require_model('empresa.php');
-    require_model('ncf_rango.php');
-    $empresa = new empresa();
-    $ncf_numero = array();
-    $ncf_rango = new ncf_rango();
-    /*
-    * Verificación de disponibilidad del Número de NCF para República Dominicana
-    */
-    //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-    $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
-    //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-    if ($terminal) {
-        $numero_ncf = $ncf_rango->generate_terminal($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $terminal->area_impresion);
-    } else {
-        $numero_ncf = $ncf_rango->generate_old($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
-    }
+        if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
+            $ncf_numero = $numero_ncf['NCF'];
+        }
 
-    if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
-        $ncf_numero = $numero_ncf['NCF'];
-    }
-
-    if ($json) {
-        header('Content-Type: application/json');
-        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente));
-    } else {
-        return array($ncf_numero, null);
+        if ($json) {
+            header('Content-Type: application/json');
+            echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente));
+        } else {
+            return array($ncf_numero, null);
+        }
     }
 }
 
@@ -78,50 +80,54 @@ function generar_numero2_old($cliente, $codalmacen, $codpago, $rectificativa= fa
  * 
  * @return string 
  */
-function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
-{
-    require_model('empresa.php');
-    require_model('ncf_rango.php');
-    $empresa = new empresa();
-    $ncf_numero = array();
-    $ncf_rango = new ncf_rango();
-    // Verificación de disponibilidad del Número de NCF para República Dominicana
-    //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
-    $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
-    //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-    $numero_ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
-    if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
-        $ncf_numero = $numero_ncf['NCF'];
-    }
+if (!function_exists('generar_numero2')) {
+    function generar_numero2($cliente, $codalmacen, $codpago, $rectificativa= false, $terminal=false, $json = false)
+    {
+        require_model('empresa.php');
+        require_model('ncf_rango.php');
+        $empresa = new empresa();
+        $ncf_numero = array();
+        $ncf_rango = new ncf_rango();
+        // Verificación de disponibilidad del Número de NCF para República Dominicana
+        //Obtenemos el tipo de comprobante a generar para el cliente, si no existe le asignamos tipo 02 por defecto
+        $tipo_comprobante = ($rectificativa)?'04':ncf_tipo_comprobante($empresa->id, $cliente);
+        //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
+        $numero_ncf = $ncf_rango->generate($empresa->id, $codalmacen, $tipo_comprobante, $codpago);
+        if ($numero_ncf['NCF'] !== 'NO_DISPONIBLE') {
+            $ncf_numero = $numero_ncf['NCF'];
+        }
 
-    if ($json) {
-        header('Content-Type: application/json');
-        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente, 'vencimiento' => $numero_ncf['VENCIMIENTO']));
-    } else {
-        return array($ncf_numero, $numero_ncf['VENCIMIENTO']);
+        if ($json) {
+            header('Content-Type: application/json');
+            echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'cliente' => $cliente, 'vencimiento' => $numero_ncf['VENCIMIENTO']));
+        } else {
+            return array($ncf_numero, $numero_ncf['VENCIMIENTO']);
+        }
     }
 }
 
-function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha, $facturarect, $terminal=false, $json = false)
-{
-    require_model('empresa.php');
-    require_model('ncf_rango.php');
-    $empresa = new empresa();
-    $prov = new proveedor();
-    $proveedor = $prov->get($codproveedor);
-    //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
-    $tipo_comprobante = verificar_proveedor($proveedor, $facturarect);
-    if ($tipo_comprobante !== '') {
-        $ncf_numero = crear_ncf_compra($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $fecha); 
-    } else {
-        $ncf_numero = (\filter_input(INPUT_POST, 'numproveedor'))?\filter_input(INPUT_POST, 'numproveedor'):\filter_input(INPUT_GET, 'numproveedor');
-    }
+if (!function_exists('generar_numero2_proveedor')) {
+    function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha, $facturarect, $terminal=false, $json = false)
+    {
+        require_model('empresa.php');
+        require_model('ncf_rango.php');
+        $empresa = new empresa();
+        $prov = new proveedor();
+        $proveedor = $prov->get($codproveedor);
+        //Si el proveedor es una persona física le generamos el comprobante fiscal para personas físicas
+        $tipo_comprobante = verificar_proveedor($proveedor, $facturarect);
+        if ($tipo_comprobante !== '') {
+            $ncf_numero = crear_ncf_compra($empresa->id, $codalmacen, $tipo_comprobante, $codpago, $fecha); 
+        } else {
+            $ncf_numero = (\filter_input(INPUT_POST, 'numproveedor'))?\filter_input(INPUT_POST, 'numproveedor'):\filter_input(INPUT_GET, 'numproveedor');
+        }
 
-    if ($json) {
-        header('Content-Type: application/json');
-        echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'proveedor' => $codproveedor));
-    } else {
-        return $ncf_numero;
+        if ($json) {
+            header('Content-Type: application/json');
+            echo json_encode(array('ncf_numero' => $ncf_numero, 'tipo_comprobante' => $tipo_comprobante, 'terminal' => $terminal, 'proveedor' => $codproveedor));
+        } else {
+            return $ncf_numero;
+        }
     }
 }
 
@@ -129,21 +135,23 @@ function generar_numero2_proveedor($codproveedor, $codalmacen, $codpago, $fecha,
  * Verify comprobant type
  * @return int
  */
-function verificar_proveedor($proveedor, $facturarect)
-{
-    $proveedor_informal = \filter_input(INPUT_POST,'proveedor_informal');
-    $gastos_menores = \filter_input(INPUT_POST,'gastos_menores');
-    $tipo_comprobante = '';
-    if($proveedor_informal OR $proveedor->personafisica === true) {
-        $tipo_comprobante = 11;
-    } elseif ($gastos_menores) {
-        $tipo_comprobante = 13;
-    } elseif ($facturarect) {
-        $tipo_comprobante = '';
-    }
-    return $tipo_comprobante;
-}
+if (!function_exists('verificar_proveedor')) {
 
+    function verificar_proveedor($proveedor, $facturarect)
+    {
+        $proveedor_informal = \filter_input(INPUT_POST,'proveedor_informal');
+        $gastos_menores = \filter_input(INPUT_POST,'gastos_menores');
+        $tipo_comprobante = '';
+        if($proveedor_informal OR $proveedor->personafisica === true) {
+            $tipo_comprobante = 11;
+        } elseif ($gastos_menores) {
+            $tipo_comprobante = 13;
+        } elseif ($facturarect) {
+            $tipo_comprobante = '';
+        }
+        return $tipo_comprobante;
+    }
+}
 /**
  * Función para Buscar NCF en la tabla de ventas 
  *
@@ -152,17 +160,19 @@ function verificar_proveedor($proveedor, $facturarect)
  * 
  * @return void 
  */
-function buscar_ncf($idempresa,$documento)
-{
-    $ncf_factura = new ncf_ventas();
-    $registroFactura = $ncf_factura->get_ncf($idempresa, $documento->idfactura, $documento->codcliente);
-    $registroNCF = $ncf_factura->get($idempresa, $documento->numero2);
-    if (!empty($registroNCF) AND ($registroFactura->ncf === $documento->numero2)) {
-        return true;
-    }
-    return false;
-}
+if (!function_exists('buscar_ncf')) {
 
+    function buscar_ncf($idempresa,$documento)
+    {
+        $ncf_factura = new ncf_ventas();
+        $registroFactura = $ncf_factura->get_ncf($idempresa, $documento->idfactura, $documento->codcliente);
+        $registroNCF = $ncf_factura->get($idempresa, $documento->numero2);
+        if (!empty($registroNCF) AND ($registroFactura->ncf === $documento->numero2)) {
+            return true;
+        }
+        return false;
+    }
+}
 /**
  * 
  * @param int $empresa_id
@@ -172,19 +182,22 @@ function buscar_ncf($idempresa,$documento)
  * @param date $fecha
  * @return string
  */
-function crear_ncf_compra($empresa_id, $codalmacen, $tipo_comprobante, $codpago, $fecha)
-{
-    $ncf_numero = '';
-    $ncf_rango = new ncf_rango();
-    $fs_log = new fs_core_log();
-    $funcion_generate = (\strtotime($fecha) < (\strtotime('01-05-2018'))) ? 'generate_old' : 'generate';
-    $ncf = $ncf_rango->$funcion_generate($empresa_id, $codalmacen, $tipo_comprobante, $codpago);
-    if ($ncf['NCF'] != 'NO_DISPONIBLE') {
-        $ncf_numero = $ncf['NCF'];
-    } else {
-        $fs_log->new_error('Es una Persona Física pero no hay un <a href="'.FS_PATH.'index.php?page=ncf'.'" target="_blank">Rango de NCF</a> para Proveedores Informales (Tipo NCF 11), debe corregir esta información.');
+if (!function_exists('crear_ncf_compra')) {
+
+    function crear_ncf_compra($empresa_id, $codalmacen, $tipo_comprobante, $codpago, $fecha)
+    {
+        $ncf_numero = '';
+        $ncf_rango = new ncf_rango();
+        $fs_log = new fs_core_log();
+        $funcion_generate = (\strtotime($fecha) < (\strtotime('01-05-2018'))) ? 'generate_old' : 'generate';
+        $ncf = $ncf_rango->$funcion_generate($empresa_id, $codalmacen, $tipo_comprobante, $codpago);
+        if ($ncf['NCF'] != 'NO_DISPONIBLE') {
+            $ncf_numero = $ncf['NCF'];
+        } else {
+            $fs_log->new_error('Es una Persona Física pero no hay un <a href="'.FS_PATH.'index.php?page=ncf'.'" target="_blank">Rango de NCF</a> para Proveedores Informales (Tipo NCF 11), debe corregir esta información.');
+        }
+        return $ncf_numero;
     }
-    return $ncf_numero;
 }
 
 /**
@@ -202,7 +215,8 @@ function guardar_ncf_old($idempresa, $factura, $tipo_comprobante, $numero_ncf, $
 {
     require_model('ncf_rango.php');
     $ncf_rango = new ncf_rango();
-    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    $usuario_login = \filter_input(INPUT_COOKIE, 'user');
+    $usuario = ($usuario_login == '') ? 'cron':$usuario_login;
     if (!empty($numero_ncf)) {
         $ncf_factura = new ncf_ventas();
         $ncf_factura->idempresa = $idempresa;
@@ -249,14 +263,15 @@ function guardar_ncf_old($idempresa, $factura, $tipo_comprobante, $numero_ncf, $
  * 
  * @return void 
  */
-function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
+function guardar_ncf($idempresa, &$factura, $tipo_comprobante, $numero_ncf, $motivo = false)
 {
     require_model('ncf_rango.php');
     require_model('ncf_detalle_tipo_pagos.php');
     $ncf_rango = new ncf_rango();
     $ncf_detalle_tipo_pago = new ncf_detalle_tipo_pagos();
     $tipo_pago = $ncf_detalle_tipo_pago->get_codigo($factura->codpago);
-    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    $usuario_login = \filter_input(INPUT_COOKIE, 'user');
+    $usuario = ($usuario_login == '') ? 'cron':$usuario_login;
     if (!empty($numero_ncf)) {
         $ncf_factura = new ncf_ventas();
         cabecera_ncf_ventas($idempresa, $factura, $tipo_comprobante, $tipo_pago, $numero_ncf, $usuario, $ncf_factura);
@@ -364,7 +379,8 @@ function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI'
 {
     require_model('ncf_entidad_tipo.php');
     $net0 = new ncf_entidad_tipo();
-    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    $usuario_login = \filter_input(INPUT_COOKIE, 'user');
+    $usuario = ($usuario_login == '') ? 'cron':$usuario_login;
     $tipo_comprobante = '02';
     $tipo_comprobante_d = $net0->get($idempresa, $codigo_entidad, $tipo_entidad);
     if ($tipo_comprobante_d) {
@@ -447,7 +463,7 @@ if (!function_exists('fs_generar_numero2')) {
         }
         $ncf_length = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 19 : 11;
         $funcion_generar_numero2 = (\strtotime($documento->fecha) < (\strtotime('01-05-2018'))) ? 'generar_numero2_old' : 'generar_numero2';
-        if($tipo_documento == 'factura_cliente') {
+        if(\strpos($tipo_documento, 'factura_cliente') !== false) {
             $rectificativa = ($documento->idfacturarect)?true:false;
             $numero2 = $funcion_generar_numero2($documento->codcliente, $documento->codalmacen, $documento->codpago, $rectificativa);
             if(strlen($documento->numero2) != $ncf_length){
@@ -481,7 +497,7 @@ if (!function_exists('fs_generar_numproveedor')) {
             $numproveedor = \filter_input(INPUT_GET,'numproveedor');
         }
 
-        if($tipo_documento == 'factura_proveedor') {
+        if(\strpos($tipo_documento, 'factura_proveedor') !== false) {
             $numproveedor = generar_numero2_proveedor($documento->codproveedor, $documento->codalmacen, $documento->codpago, $documento->fecha, $documento->facturarect);
         }
 
@@ -507,12 +523,13 @@ if (!function_exists('fs_documento_post_save')) {
     function fs_documento_post_save(&$documento)
     {
         $tipo_documento = \get_class($documento);
-        if ($tipo_documento == 'factura_cliente') {
+        //echo \strpos($tipo_documento, 'factura_cliente')."\n";
+        if (\strpos($tipo_documento, 'factura_cliente') !== false) {
             fs_documento_venta_post_save($documento);
-        } elseif ($tipo_documento == 'factura_proveedor') {
+        } elseif (\strpos($tipo_documento, 'factura_proveedor') !== false) {
             fs_documento_compra_post_save($documento);
         }
-        if (substr($tipo_documento, -(strlen('cliente'))) === 'cliente') {
+        if (\substr($tipo_documento, -(\strlen('cliente'))) === 'cliente') {
             compatibilidad_distribucion($documento);
         }
     }
@@ -552,7 +569,8 @@ function fs_documento_venta_post_save(&$documento)
 
 function fs_documento_compra_post_save(&$documento)
 {
-    $usuario = \filter_input(INPUT_COOKIE, 'user');
+    $usuario_login = \filter_input(INPUT_COOKIE, 'user');
+    $usuario = ($usuario_login == '') ? 'cron':$usuario_login;
     $empresa = new empresa();
     $ncf_tipo_compras = new ncf_tipo_compras();
     $prov = new proveedor();
@@ -572,7 +590,7 @@ function fs_documento_compra_post_save(&$documento)
     guardar_ncf_compras($empresa->id,$documento,$documento_modifica, $tipo_compra, $tipo_pago, $usuario);
 }
 
-function verificar_numproveedor_ncf($documento, $empresa_id, $tipo_comprobante, $usuario)
+function verificar_numproveedor_ncf(&$documento, &$empresa_id, &$tipo_comprobante, &$usuario)
 {
     $ncf_rango = new ncf_rango();
     $ncf_compras = new ncf_compras();
