@@ -611,7 +611,7 @@ class nueva_venta extends rd_controller
 
                     $presupuesto->total = round($presupuesto->neto + $presupuesto->totaliva - $presupuesto->totalirpf + $presupuesto->totalrecargo, FS_NF0);
 
-                    if (abs(floatval($_POST['atotal']) - $presupuesto->total) > .01) {
+                    if (abs(floatval($_POST['atotal']) - $presupuesto->total) >= .02) {
                         $this->new_error_msg("El total difiere entre el controlador y la vista (" .
                                 $presupuesto->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
                         $presupuesto->delete();
@@ -742,7 +742,7 @@ class nueva_venta extends rd_controller
 
                     $pedido->total = round($pedido->neto + $pedido->totaliva - $pedido->totalirpf + $pedido->totalrecargo, FS_NF0);
 
-                    if (abs(floatval($_POST['atotal']) - $pedido->total) > .01) {
+                    if (abs(floatval($_POST['atotal']) - $pedido->total) >= .02) {
                         $this->new_error_msg("El total difiere entre el controlador y la vista ("
                             . $pedido->total . " frente a " . $_POST['atotal'] . "). Debes informar del error.");
                         $pedido->delete();
@@ -896,7 +896,7 @@ class nueva_venta extends rd_controller
 
                     $albaran->total = round($albaran->neto + $albaran->totaliva - $albaran->totalirpf + $albaran->totalrecargo, FS_NF0);
 
-                    if (abs(floatval($_POST['atotal']) - $albaran->total) > .01) {
+                    if (abs(floatval($_POST['atotal']) - $albaran->total) >= .02) {
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" . $_POST['atotal'] .
                                 " frente a " . $albaran->total . "). Debes informar del error.");
                         $albaran->delete();
@@ -1073,7 +1073,7 @@ class nueva_venta extends rd_controller
 
                     $factura->total = round($factura->neto + $factura->totaliva - $factura->totalirpf + $factura->totalrecargo, FS_NF0);
 
-                    if (abs(floatval($_POST['atotal']) - $factura->total) > .01) {
+                    if (abs(floatval($_POST['atotal']) - $factura->total) >= .02) {
                         $this->new_error_msg("El total difiere entre la vista y el controlador (" . $_POST['atotal'] .
                                 " frente a " . $factura->total . "). Debes informar del error.");
                         $factura->delete();

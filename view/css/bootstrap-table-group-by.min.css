@@ -7,4 +7,4 @@
   * @license MIT
   */
 
-.fix-sticky{position:fixed!important;overflow:hidden;z-index:100}.fix-sticky table thead{background:#fff}.fix-sticky table thead.thead-light{background:#e9ecef}.fix-sticky table thead.thead-dark{background:#212529}
+.bootstrap-table .table>tbody>tr.groupBy{cursor:pointer}.bootstrap-table .table>tbody>tr.hidden+tr.detail-view{display:none}

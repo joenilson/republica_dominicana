@@ -587,7 +587,8 @@ class inventarios_balances
         $eje0 = $eje->get_by_fecha('1-1-' . (intval($eje->year()) - 1), FALSE, FALSE);
         if ($eje0) {
             $nivel0 = array('A', 'P');
-            $nivel1 = array('A', 'B', 'C');
+            //$nivel1 = array('A', 'B', 'C');
+            $nivel1 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
             $nivel2 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
             $nivel3 = array('', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X');
             $nivel4 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -616,17 +617,17 @@ class inventarios_balances
                 $desc2 = '';
                 $desc3 = '';
                 foreach ($nivel1 as $nv1) {
-                    foreach ($nivel2 as $nv2) {
-                        foreach ($nivel3 as $nv3) {
-                            foreach ($nivel4 as $nv4) {
+                    //foreach ($nivel2 as $nv2) {
+                        //foreach ($nivel3 as $nv3) {
+                            //foreach ($nivel4 as $nv4) {
                                 foreach ($balances as $bal) {
-                                    if ($bal->naturaleza == $nv0 && $bal->nivel1 == $nv1 && $bal->nivel2 == $nv2 && $bal->nivel3 == $nv3 && $bal->nivel4 == $nv4) {
+                                    if ($bal->naturaleza == $nv0 && $bal->nivel1 == $nv1) {
                                         if ($bal->descripcion1 != $desc1 && $bal->descripcion1 != '') {
                                             $pdf_doc->add_table_row(
                                                 array(
                                                     'descripcion' => "\n<b>" . fs_fix_html($bal->descripcion1) . '</b>',
-                                                    'actual' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-', $eje, $nv0) . '</b>',
-                                                    'anterior' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-', $eje0, $nv0) . '</b>'
+                                                    'actual' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje, $nv0) . '</b>',
+                                                    'anterior' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje0, $nv0) . '</b>'
                                                 )
                                             );
 
@@ -637,8 +638,8 @@ class inventarios_balances
                                             $pdf_doc->add_table_row(
                                                 array(
                                                     'descripcion' => ' <b>' . fs_fix_html($bal->descripcion2) . '</b>',
-                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-', $eje, $nv0),
-                                                    'anterior' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-', $eje0, $nv0)
+                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje, $nv0),
+                                                    'anterior' => $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje0, $nv0)
                                                 )
                                             );
 
@@ -649,8 +650,8 @@ class inventarios_balances
                                             $pdf_doc->add_table_row(
                                                 array(
                                                     'descripcion' => '  ' . fs_fix_html($bal->descripcion3),
-                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-' . $nv3 . '-', $eje, $nv0),
-                                                    'anterior' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-' . $nv3 . '-', $eje0, $nv0)
+                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje, $nv0),
+                                                    'anterior' => $this->get_saldo_balance2($nv0 . '-' . $nv1, $eje0, $nv0)
                                                 )
                                             );
 
@@ -658,9 +659,9 @@ class inventarios_balances
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
+                            //}
+                        //}
+                    //}
                 }
 
                 if ($nv0 == 'A') {
@@ -695,7 +696,8 @@ class inventarios_balances
             }
         } else {
             $nivel0 = array('A', 'P');
-            $nivel1 = array('A', 'B', 'C');
+            //$nivel1 = array('A', 'B', 'C');
+            $nivel1 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
             $nivel2 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
             $nivel3 = array('', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X');
             $nivel4 = array('', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -723,11 +725,11 @@ class inventarios_balances
                 $desc2 = '';
                 $desc3 = '';
                 foreach ($nivel1 as $nv1) {
-                    foreach ($nivel2 as $nv2) {
-                        foreach ($nivel3 as $nv3) {
-                            foreach ($nivel4 as $nv4) {
+                    //foreach ($nivel2 as $nv2) {
+                        //foreach ($nivel3 as $nv3) {
+                            //foreach ($nivel4 as $nv4) {
                                 foreach ($balances as $bal) {
-                                    if ($bal->naturaleza == $nv0 && $bal->nivel1 == $nv1 && $bal->nivel2 == $nv2 && $bal->nivel3 == $nv3 && $bal->nivel4 == $nv4) {
+                                    if ($bal->naturaleza == $nv0 && $bal->nivel1 == $nv1) {
                                         if ($bal->descripcion1 != $desc1 && $bal->descripcion1 != '') {
                                             $pdf_doc->add_table_row(
                                                 array(
@@ -743,7 +745,7 @@ class inventarios_balances
                                             $pdf_doc->add_table_row(
                                                 array(
                                                     'descripcion' => ' <b>' . fs_fix_html($bal->descripcion2) . '</b>',
-                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-', $eje, $nv0)
+                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-', $eje, $nv0)
                                                 )
                                             );
 
@@ -754,7 +756,7 @@ class inventarios_balances
                                             $pdf_doc->add_table_row(
                                                 array(
                                                     'descripcion' => '  ' . fs_fix_html($bal->descripcion3),
-                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' . $nv2 . '-' . $nv3 . '-', $eje, $nv0)
+                                                    'actual' => $this->get_saldo_balance2($nv0 . '-' . $nv1 . '-' , $eje, $nv0)
                                                 )
                                             );
 
@@ -762,23 +764,23 @@ class inventarios_balances
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
+                            //}
+                        //}
+                    //}
                 }
 
                 if ($nv0 == 'A') {
                     $pdf_doc->add_table_row(
                         array(
                             'descripcion' => "\n<b>TOTAL ACTIVO (A+B)</b>",
-                            'actual' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-', $eje, $nv0) . '</b>'
+                            'actual' => "\n<b>" . $this->get_saldo_balance2($nv0, $eje, $nv0) . '</b>'
                         )
                     );
                 } else if ($nv0 == 'P') {
                     $pdf_doc->add_table_row(
                         array(
                             'descripcion' => "\n<b>TOTAL PATRIMONIO NETO Y PASIVO (A+B+C)</b>",
-                            'actual' => "\n<b>" . $this->get_saldo_balance2($nv0 . '-', $eje, $nv0) . '</b>'
+                            'actual' => "\n<b>" . $this->get_saldo_balance2($nv0, $eje, $nv0) . '</b>'
                         )
                     );
                 }

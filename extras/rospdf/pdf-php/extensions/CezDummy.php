@@ -7,12 +7,12 @@
 error_reporting(E_ALL);
 set_time_limit(1800);
 set_include_path('../src/'.PATH_SEPARATOR.get_include_path());
-include 'Cezpdf_DOM.php';
+include 'Cezpdf.php';
 
 /**
  * Dummy class description.
  */
-class CezDummy extends Cezpdf_DOM
+class CezDummy extends Cezpdf
 {
     public $data = array(
                     array('first' => 'John', 'last' => 'Doe'),

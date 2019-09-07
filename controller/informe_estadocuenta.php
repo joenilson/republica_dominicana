@@ -149,8 +149,9 @@ class informe_estadocuenta extends rd_controller
     public function listado_facturas($dias, $offset = 0)
     {
         list($funcion, $separador) = $this->funcionIntervalo();
+        
         $intervalo = $this->intervalo_tiempo($dias);
-        $sql = "SELECT codalmacen, idfactura, codigo, numero2, nombrecliente, fecha, vencimiento, coddivisa, total, pagada, ".$funcion.$this->current_date.$separador."vencimiento) as atraso ".
+        $sql = "SELECT codalmacen, idfactura, codigo, numero2, nombrecliente, direccion, fecha, vencimiento, coddivisa, total, pagada, ".$funcion.$this->current_date.$separador."vencimiento) as atraso ".
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.
             " ORDER BY ".$this->sort.' '.$this->order;
@@ -159,11 +160,32 @@ class informe_estadocuenta extends rd_controller
         }else{
             $data = $this->db->select($sql);
         }
+        foreach($data as $key=>$valores) {
+            $valores['abono'] = 0;
+            $valores['saldo'] = $valores['total'];
+            $this->abonos_factura($valores['idfactura'],$valores);
+            $data[$key]=$valores;
+        }
         $sql_total = "SELECT count(*) as total".
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.";";
         $data_total = $this->db->select($sql_total);
         return array('resultados'=>$data,'total'=>$data_total[0]['total']);
+    }
+    
+    private function abonos_factura($idfactura, &$valores)
+    {
+        
+        if($this->tesoreria === true) {
+            $recibos = new recibo_cliente();
+            $recibos_factura = $recibos->all_from_factura($idfactura);
+            foreach($recibos_factura as $recibo) {
+                if($recibo->estado === 'Pagado') {
+                    $valores['abono'] += $recibo->importe;
+                    $valores['saldo'] -= $recibo->importe;
+                }
+            }
+        }
     }
 
     public function intervalo_tiempo($dias)
@@ -281,6 +303,8 @@ class informe_estadocuenta extends rd_controller
     {
         $this->carpetasPlugin();
         $pdf_doc = new Cezpdf_DOM('letter', 'portrait');
+        $all = $pdf_doc->openObject();
+        $pdf_doc->saveState();
         $pdf_doc->ezStartPageNumbers(590,25,8,'right','{PAGENUM} de {TOTALPAGENUM}',1);
         $this->archivoPDF = $this->exportDir . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";
         $this->archivoPDFPath = $this->publicPath . DIRECTORY_SEPARATOR . $this->archivo . "_" . $this->user->nick . ".pdf";
@@ -289,22 +313,75 @@ class informe_estadocuenta extends rd_controller
         }
         $pdf_doc->selectFont(__DIR__ . "/ezpdf/fonts/Helvetica.afm");
         $pdf_doc->selectFont('Helvetica');
-        $pdf_doc->ezSetMargins (25,25,25,25);
+        //$pdf_doc->ezSetMargins (25,25,25,25);
+        
         $logo = '';
         if(file_exists(FS_PATH.FS_MYDOCS.'images/logo.png')){
             $logo = FS_PATH.FS_MYDOCS.'images/logo.png';
         }elseif(file_exists(FS_PATH.FS_MYDOCS.'images/logo.jpg')){
             $logo = FS_PATH.FS_MYDOCS.'images/logo.jpg';
         }
+        
         if($logo){
             $pdf_doc->ezImage($logo, 0, 80, 'none', 'left');
         }
+        
         $pdf_doc->addText(110,745,9,'<b>'.$this->empresa->nombre.'</b>',0, 'left');
         $pdf_doc->addText(110,730,9,'<b>'.$this->empresa->direccion.'</b>',0, 'left');
         $pdf_doc->addText(580,745,9,'<b>'.'Estado de Cuenta'.'</b>',0, 'right');
         $pdf_doc->addText(580,730,9,'<b>'.'Al: '.'</b>'.\date('d-m-Y'),0, 'right');
+        
+        $pdf_doc->line(30, 670, 580, 670);
+        
+        if($this->cliente) {
+            $cli = new cliente();
+            $datos_cli = $cli->get($this->cliente->codcliente);
+            $direccion = $datos_cli->get_direcciones();
+            $pdf_doc->addText(110, 690, 10, "<b>Estado de cuenta de:</b> ".$this->cliente->razonsocial, 430, 'left'); 
+            $pdf_doc->addText(110, 680, 10, "<b>Dirección:</b> ".$direccion[0]->direccion, 430, 'left'); 
+        } else {
+            $pdf_doc->addText(50, 690, 12, "<b>Estado de cuenta General</b>", 530, 'center');
+        }
+        
+        
+        $pdf_doc->restoreState();
+        $pdf_doc->closeObject();
+        
+        $pdf_doc->ezSetY(660);
 
-        //$pdf_doc->ezStream();
+        $pdf_doc->addObject($all,'all');
+        $pdf_doc->ezSetMargins(130,40,50,50);
+        
+        if($this->cliente) {
+            $columnas = array('numero2' => FS_NUMERO2, 'codigo' => 'Factura', 'total'=> 'Importe', 'abono'=>'Abonos', 'saldo' => 'Saldo', 'vencimiento'=>'Vencimiento', 'atraso' => 'Atraso');
+        } else {
+            $columnas = array('codalmacen' => 'Almacen', 'nombrecliente' => 'Cliente', 'direccion' => 'Dirección', 'numero2' => FS_NUMERO2, 'total'=> 'Importe', 'abono'=>'Abonos', 'saldo' => 'Saldo', 'vencimiento'=>'Vencimiento', 'atraso' => 'Atraso');
+        }
+        
+        $conf = [
+            'evenColumns' => 0,
+            'width' => 550,
+            'shaded' => 1,
+            'fontSize' => 8,
+            'titleFontSize' => 9,
+            'xPos' => 'center',
+            'xOrientation' => 'center',
+            'gridlines' => 31,
+            'cols' => [
+                'total' => ['justification' => 'right'],
+                'abono' => ['justification' => 'right'],
+                'saldo' => ['justification' => 'right'],
+                'atraso' => ['justification' => 'right']
+            ] // global background color for 'num' column
+        ];
+        
+        foreach($this->vencimientos as $dias){            
+            $hoja_nombre = ($dias!==121)?'Facturas a '.$dias.' dias':'Facturas a mas de 120 dias';
+            $datos = $this->listado_facturas($dias);
+            $pdf_doc->ezTable($datos['resultados'], $columnas, "<b>$hoja_nombre</b>", $conf);
+            
+        }
+        
         $this->guardarPDF($this->archivoPDF, $pdf_doc);
         $this->filePDF = $this->archivoPDFPath;
     }
@@ -325,6 +402,7 @@ class informe_estadocuenta extends rd_controller
      */
     public function guardarPDF($filename, $pdf_doc)
     {
+        //$pdf_doc->ezStream();
         if ($filename) {
             if (file_exists($filename)) {
                 unlink($filename);
@@ -353,9 +431,9 @@ class informe_estadocuenta extends rd_controller
             unlink($this->archivoXLSX);
         }
         $style_header = array('border'=>'left,right,top,bottom','font'=>'Arial','font-size'=>10,'font-style'=>'bold');
-        $header = array('Almacén'=>'string','Cliente'=>'string','Factura'=>'string', ucfirst(FS_NUMERO2)=>'string',
-            'Importe'=>'price','Fecha de Emisión'=>'date','Fecha de Vencimiento'=>'date','Días Atraso'=>'integer');
-        $headerText = array('codalmacen'=>'Almacén','nombrecliente'=>'Cliente','codigo'=>'Factura','numero2'=>ucfirst(FS_NUMERO2),'total'=>'Importe','fecha'=>'Fecha de Emisión','vencimiento'=>'Fecha de Vencimiento','atraso'=>'Días Atraso');
+        $header = array('Almacén'=>'string','Cliente'=>'string','direccion'=>'string','Factura'=>'string', ucfirst(FS_NUMERO2)=>'string',
+            'Importe'=>'price','Abono'=>'price','Saldo'=>'price','Fecha de Emisión'=>'date','Fecha de Vencimiento'=>'date','Días Atraso'=>'integer');
+        $headerText = array('codalmacen'=>'Almacén','nombrecliente'=>'Cliente','codigo'=>'Factura','numero2'=>ucfirst(FS_NUMERO2),'total'=>'Importe','abono'=>'Abono','saldo'=>'Saldo','fecha'=>'Fecha de Emisión','vencimiento'=>'Fecha de Vencimiento','atraso'=>'Días Atraso');
         $writer = new XLSXWriter();
         foreach($this->vencimientos as $dias){
             $hoja_nombre = ($dias!==121)?'Facturas a '.$dias.' dias':'Facturas a mas de 120 dias';
@@ -373,24 +451,31 @@ class informe_estadocuenta extends rd_controller
     {
         $style_footer = array('border'=>'left,right,top,bottom','font'=>'Arial','font-size'=>10,'font-style'=>'bold','color'=>'#fff','fill'=>'#000');
         $total_importe = 0;
+        $total_abono = 0;
+        $total_saldo = 0;
         if($datos){
             $total_documentos = count($datos);
             foreach($datos as $linea){
-                $data = $this->prepararDatosXLSX($linea, $indice, $total_importe);
+                $data = $this->prepararDatosXLSX($linea, $indice, $total_importe, $total_abono, $total_saldo);
                 $writer->writeSheetRow($hoja_nombre, $data);
             }
-            $writer->writeSheetRow($hoja_nombre, array('','','',$total_documentos.' Documentos',$total_importe,'','',''), $style_footer);
+            $writer->writeSheetRow($hoja_nombre, array('','','',$total_documentos.' Documentos',$total_importe,$total_abono,$total_saldo,'','',''), $style_footer);
         }
     }
 
-    public function prepararDatosXLSX($linea, $indice, &$total_importe)
+    public function prepararDatosXLSX($linea, $indice, &$total_importe, &$total_abono, &$total_saldo)
     {
-        //var_dump($linea);
         $item = array();
         foreach($indice as $idx=>$desc){
             $item[] = $linea[$idx];
             if($idx == 'total'){
                 $total_importe += $linea['total'];
+            }
+            if($idx == 'abono'){
+                $total_abono += $linea['abono'];
+            }
+            if($idx == 'saldo'){
+                $total_saldo += $linea['saldo'];
             }
         }
         return $item;

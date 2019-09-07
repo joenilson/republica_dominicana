@@ -30,12 +30,12 @@
 error_reporting(E_ALL);
 set_time_limit(1800);
 set_include_path('../src/'.PATH_SEPARATOR.get_include_path());
-include 'Cezpdf_DOM.php';
+include 'Cezpdf.php';
 
 /**
  * cezpdf extension for displaying images in table cells.
  */
-class CezTableImage extends Cezpdf_DOM
+class CezTableImage extends Cezpdf
 {
     /**
      * @param Cezpdf $ezpdf current cezpdf object
@@ -61,7 +61,10 @@ class CezTableImage extends Cezpdf_DOM
         if (!is_array($cols)) {
             // take the columns from the first row of the data set
             reset($data);
-            list($k, $v) = each($data);
+            
+            $k = key($data);
+            $v = current($data);
+
             if (!is_array($v)) {
                 return;
             }

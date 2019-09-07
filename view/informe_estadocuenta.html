@@ -264,154 +264,151 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </div>
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="facturas30">
-            <div class="col-sm-12">
-                <table id="table-reporte-facturas30"
-                    data-mobile-responsive="true"
-                    data-toggle="table"
-                    data-method="POST"
-                    data-height="500"
-                    data-search="false"
-                    {if="$fsc->resultados"}data-ajax="buscarInformacion30"{/if}
-                    data-pagination="true"
-                    data-page-size="100"
-                    data-page-list="[100,150,200,250,500]"
-                    data-show-footer="false"
-                    data-show-refresh="false"
-                    data-side-pagination="server">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
-                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
-                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
-                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
-                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
-                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
-                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
-                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+            <table id="table-reporte-facturas30"
+                data-mobile-responsive="true"
+                data-toggle="table"
+                data-method="POST"
+                data-search="false"
+                {if="$fsc->resultados"}data-ajax="buscarInformacion30"{/if}
+                data-pagination="true"
+                data-page-size="100"
+                data-page-list="[100,150,200,250,500]"
+                data-show-footer="false"
+                data-show-refresh="false"
+                data-side-pagination="server">
+                <thead>
+                    <tr>
+                        <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                        <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                        <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                        <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="abono" class="text-center">Abonos</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="saldo" class="text-center">Saldo</th>
+                        <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                        <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                        <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas60">
-            <div class="col-sm-12">
-                <table id="table-reporte-facturas60"
-                    data-mobile-responsive="true"
-                    data-toggle="table"
-                    data-method="POST"
-                    data-height="500"
-                    data-search="false"
-                    {if="$fsc->resultados"}data-ajax="buscarInformacion60"{/if}
-                    data-pagination="true"
-                    data-page-size="100"
-                    data-page-list="[100,150,200,250,500]"
-                    data-show-footer="false"
-                    data-show-refresh="false"
-                    data-side-pagination="server">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
-                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
-                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
-                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
-                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
-                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
-                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
-                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+            <table id="table-reporte-facturas60"
+                data-mobile-responsive="true"
+                data-toggle="table"
+                data-method="POST"
+                data-search="false"
+                {if="$fsc->resultados"}data-ajax="buscarInformacion60"{/if}
+                data-pagination="true"
+                data-page-size="100"
+                data-page-list="[100,150,200,250,500]"
+                data-show-footer="false"
+                data-show-refresh="false"
+                data-side-pagination="server">
+                <thead>
+                    <tr>
+                        <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                        <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                        <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                        <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                        <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="abono" class="text-center">Abonos</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="saldo" class="text-center">Saldo</th>
+                        <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                        <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                        <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas90">
-            <div class="col-sm-12">
-                <table id="table-reporte-facturas90"
-                    data-mobile-responsive="true"
-                    data-toggle="table"
-                    data-method="POST"
-                    data-height="500"
-                    data-search="false"
-                    {if="$fsc->resultados"}data-ajax="buscarInformacion90"{/if}
-                    data-pagination="true"
-                    data-page-size="100"
-                    data-page-list="[100,150,200,250,500]"
-                    data-show-footer="false"
-                    data-show-refresh="false"
-                    data-side-pagination="server">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
-                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
-                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
-                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
-                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
-                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
-                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
-                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+            <table id="table-reporte-facturas90"
+                data-mobile-responsive="true"
+                data-toggle="table"
+                data-method="POST"
+                data-height="500"
+                data-search="false"
+                {if="$fsc->resultados"}data-ajax="buscarInformacion90"{/if}
+                data-pagination="true"
+                data-page-size="100"
+                data-page-list="[100,150,200,250,500]"
+                data-show-footer="false"
+                data-show-refresh="false"
+                data-side-pagination="server">
+                <thead>
+                    <tr>
+                        <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                        <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                        <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                        <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                        <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="abono" class="text-center">Abonos</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="saldo" class="text-center">Saldo</th>
+                        <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                        <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                        <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturas120">
-            <div class="col-sm-12">
-                <table id="table-reporte-facturas120"
-                    data-mobile-responsive="true"
-                    data-toggle="table"
-                    data-method="POST"
-                    data-height="500"
-                    data-search="false"
-                    {if="$fsc->resultados"}data-ajax="buscarInformacion120"{/if}
-                    data-pagination="true"
-                    data-page-size="100"
-                    data-page-list="[100,150,200,250,500]"
-                    data-show-footer="false"
-                    data-show-refresh="false"
-                    data-side-pagination="server">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
-                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
-                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
-                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
-                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
-                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
-                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
-                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+            <table id="table-reporte-facturas120"
+                data-mobile-responsive="true"
+                data-toggle="table"
+                data-method="POST"
+                data-search="false"
+                {if="$fsc->resultados"}data-ajax="buscarInformacion120"{/if}
+                data-pagination="true"
+                data-page-size="100"
+                data-page-list="[100,150,200,250,500]"
+                data-show-footer="false"
+                data-show-refresh="false"
+                data-side-pagination="server">
+                <thead>
+                    <tr>
+                        <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
+                        <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
+                        <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
+                        <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
+                        <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="abono" class="text-center">Abonos</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="saldo" class="text-center">Saldo</th>
+                        <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
+                        <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
+                        <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="facturasm120">
-            <div class="col-sm-12">
-                <table id="table-reporte-facturasm120"
-                    data-mobile-responsive="true"
-                    data-toggle="table"
-                    data-method="POST"
-                    data-height="500"
-                    data-search="false"
-                    {if="$fsc->resultados"}data-ajax="buscarInformacion121"{/if}
-                    data-pagination="true"
-                    data-page-size="100"
-                    data-page-list="[100,150,200,250,500]"
-                    data-show-footer="false"
-                    data-show-refresh="false"
-                    data-side-pagination="server">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" data-field="codalmacen" class="text-left">Almacén</th>
-                            <th data-sortable="true" data-field="nombrecliente" class="text-left">Cliente</th>
-                            <th data-sortable="true" data-field="codigo" class="text-left">Factura</th>
-                            <th data-sortable="true" data-field="numero2" class="text-left">{#FS_NUMERO2#}</th>
-                            <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
-                            <th data-sortable="true" data-field="fecha" class="text-center">Fecha Emisión</th>
-                            <th data-sortable="true" data-field="vencimiento" class="text-center">Vencimiento</th>
-                            <th data-sortable="true" data-field="atraso" class="text-center">Días de atraso</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+            <table id="table-reporte-facturasm120"
+                data-mobile-responsive="true"
+                data-toggle="table"
+                data-method="POST"
+                data-search="false"
+                {if="$fsc->resultados"}data-ajax="buscarInformacion121"{/if}
+                data-pagination="true"
+                data-page-size="100"
+                data-page-list="[100,150,200,250,500]"
+                data-show-footer="false"
+                data-show-refresh="false"
+                data-side-pagination="server">
+                <thead>
+                    <tr>
+                        <th data-sortable="true" data-field="codalmacen" data-align="left">Almacén</th>
+                        <th data-sortable="true" data-field="nombrecliente" data-align="left">Cliente</th>
+                        <th data-sortable="true" data-field="direccion" data-align="left">Direcci&oacute;n</th>
+                        <th data-sortable="true" data-field="codigo" data-align="left">Factura</th>
+                        <th data-sortable="true" data-field="numero2" data-align="left">{#FS_NUMERO2#}</th>
+                        <th data-sortable="true" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="total" class="text-center">Importe</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="abono" class="text-center">Abonos</th>
+                        <th data-sortable="false" data-falign="right" data-align="right" data-formatter="numberFormatter" data-field="saldo" class="text-center">Saldo</th>
+                        <th data-sortable="true" data-field="fecha" data-align="center">Fecha Emisión</th>
+                        <th data-sortable="true" data-field="vencimiento" data-align="center">Vencimiento</th>
+                        <th data-sortable="true" data-field="atraso" data-align="center">Días de atraso</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
         {loop="$fsc->extensions"}
         {if condition="$value->type=='tab'"}
