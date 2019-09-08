@@ -375,9 +375,24 @@ class informe_estadocuenta extends rd_controller
             ] // global background color for 'num' column
         ];
         
-        foreach($this->vencimientos as $dias){            
+        foreach($this->vencimientos as $dias){
+            $total_importe = 0;
+            $total_abono = 0;
+            $total_saldo = 0;            
             $hoja_nombre = ($dias!==121)?'Facturas a '.$dias.' dias':'Facturas a mas de 120 dias';
             $datos = $this->listado_facturas($dias);
+            $total_documentos = count($datos['resultados']);
+            $lineaFinal = array();
+            foreach($datos['resultados'] as $linea){
+                $total_importe += $linea['total'];
+                $total_abono += $linea['abono'];
+                $total_saldo += $linea['saldo'];
+            }
+            $lineaFinal['numero2'] = "<b>".$total_documentos.' Facturas'."</b>";
+            $lineaFinal['total'] = "<b>".$total_importe."</b>";
+            $lineaFinal['abono'] = "<b>".$total_abono."</b>";
+            $lineaFinal['saldo'] = "<b>".$total_saldo."</b>";
+            $datos['resultados'][] = $lineaFinal;
             $pdf_doc->ezTable($datos['resultados'], $columnas, "<b>$hoja_nombre</b>", $conf);
             
         }
@@ -454,14 +469,14 @@ class informe_estadocuenta extends rd_controller
         if($datos){
             $total_documentos = count($datos);
             foreach($datos as $linea){
-                $data = $this->prepararDatosXLSX($linea, $indice, $total_importe, $total_abono, $total_saldo);
+                $data = $this->prepararDatos($linea, $indice, $total_importe, $total_abono, $total_saldo);
                 $writer->writeSheetRow($hoja_nombre, $data);
             }
             $writer->writeSheetRow($hoja_nombre, array('','','',$total_documentos.' Documentos',$total_importe,$total_abono,$total_saldo,'','',''), $style_footer);
         }
     }
 
-    public function prepararDatosXLSX($linea, $indice, &$total_importe, &$total_abono, &$total_saldo)
+    public function prepararDatos($linea, $indice, &$total_importe, &$total_abono, &$total_saldo)
     {
         $item = array();
         foreach($indice as $idx=>$desc){
