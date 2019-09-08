@@ -402,7 +402,6 @@ class informe_estadocuenta extends rd_controller
      */
     public function guardarPDF($filename, $pdf_doc)
     {
-        //$pdf_doc->ezStream();
         if ($filename) {
             if (file_exists($filename)) {
                 unlink($filename);
@@ -439,7 +438,6 @@ class informe_estadocuenta extends rd_controller
             $hoja_nombre = ($dias!==121)?'Facturas a '.$dias.' dias':'Facturas a mas de 120 dias';
             $writer->writeSheetRow($hoja_nombre, $headerText, $style_header);
             $writer->writeSheetHeader($hoja_nombre, $header, true);
-            //$writer->writeSheetRow($hoja_nombre, $headerText, $style_header);
             $datos = $this->listado_facturas($dias);
             $this->agregarDatosXLSX($writer, $hoja_nombre, $datos['resultados'], $headerText);
         }
