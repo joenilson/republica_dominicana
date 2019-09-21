@@ -178,14 +178,6 @@ class ventas_factura_devolucion extends rd_controller
         if ($this->empresa->contintegrada) {
             $asiento_factura = new asiento_factura();
             $asiento_factura->generar_asiento_venta($factura);
-
-            foreach ($asiento_factura->errors as $err) {
-                $this->new_error_msg($err);
-            }
-
-            foreach ($asiento_factura->messages as $msg) {
-                $this->new_message($msg);
-            }
         } else {
             /// generamos las líneas de IVA de todas formas
             $factura->get_lineas_iva();

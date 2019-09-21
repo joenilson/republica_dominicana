@@ -166,6 +166,7 @@ class informe_estadocuenta extends rd_controller
             $this->abonos_factura($valores['idfactura'],$valores);
             $data[$key]=$valores;
         }
+        
         $sql_total = "SELECT count(*) as total".
             " FROM facturascli ".
             " WHERE anulada = false and pagada = false and idfacturarect IS NULL ".$intervalo.$this->sql_aux.";";
@@ -179,10 +180,34 @@ class informe_estadocuenta extends rd_controller
         if($this->tesoreria === true) {
             $recibos = new recibo_cliente();
             $recibos_factura = $recibos->all_from_factura($idfactura);
-            foreach($recibos_factura as $recibo) {
-                if($recibo->estado === 'Pagado') {
-                    $valores['abono'] += $recibo->importe;
-                    $valores['saldo'] -= $recibo->importe;
+            $this->recibos_factura($recibos_factura, $valores);
+        }
+        
+        $factura = new factura_cliente();
+        if($factura->get($idfactura)) {
+            $factura_actual = $factura->get($idfactura);
+            $this->rectificativas_factura($factura_actual, $valores);
+        }
+    }
+    
+    private function recibos_factura($recibos_factura, &$valores) 
+    {
+        foreach($recibos_factura as $recibo) {
+            if($recibo->estado === 'Pagado') {
+                $valores['abono'] += $recibo->importe;
+                $valores['saldo'] -= $recibo->importe;
+            }
+        }
+    }
+    
+    private function rectificativas_factura($factura, &$valores) 
+    {
+        $rects = $factura->get_rectificativas();
+        if($rects) {
+            foreach($rects as $rect) {
+                if($rect->anulada === false) {
+                    $valores['abono'] += ($rect->total*-1);
+                    $valores['saldo'] -= ($rect->total*-1);
                 }
             }
         }
