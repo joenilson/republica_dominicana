@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of FacturaSctipts
+ * This file is part of FacturaScripts
  * Copyright (C) 2014  Valentín González    valengon@hotmail.com
  * Copyright (C) 2014-2015  Carlos Garcia Gomez  neorazorx@gmail.com
  *
@@ -122,7 +122,7 @@ class factura_ncf extends rd_controller
             $pdf_doc->SetTitle('Facturas de Venta');
             $pdf_doc->SetSubject('Facturas de Venta para clientes');
             $pdf_doc->SetAuthor($this->empresa->nombre);
-            $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
+            $pdf_doc->SetCreator('FacturaScripts V_' . $this->version());
 
             $this->archivo = $archivo;
             $contador = 0;
@@ -131,23 +131,40 @@ class factura_ncf extends rd_controller
                 $this->factura = $factura->get($id);
                 if ($this->factura) {
                     $ncf_datos = new ncf_ventas();
-                    $valores = $ncf_datos->get_ncf($this->empresa->id, $this->factura->idfactura, $this->factura->codcliente, $this->factura->fecha);
+                    $valores = $ncf_datos->get_ncf(
+                        $this->empresa->id,
+                        $this->factura->idfactura,
+                        $this->factura->codcliente
+                    );
                     $ncf_tipo = new ncf_tipo();
                     $ncf_rango = new ncf_rango();
                     $tipo_comprobante = $ncf_tipo->get($valores->tipo_comprobante);
-                    $tipo_comprobante_data = $ncf_rango->get_by_tipo($this->empresa->id, $tipo_comprobante->tipo_comprobante);
+                    $tipo_comprobante_data = $ncf_rango->get_by_tipo(
+                        $this->empresa->id,
+                        $tipo_comprobante->tipo_comprobante
+                    );
                     $this->factura->ncf = $valores->ncf;
                     $this->factura->ncf_afecta = $valores->ncf_modifica;
                     $this->factura->estado = $valores->estado;
                     $this->factura->tipo_comprobante = ($tipo_comprobante)?$tipo_comprobante->descripcion:'';
                     $this->factura->fecha_vencimiento_comprobante = '';
-                    if ($tipo_comprobante->tipo_comprobante == '01') {
-                        $this->factura->fecha_vencimiento_comprobante = $this->checkFechaVencimiento($valores->fecha_vencimiento, $tipo_comprobante_data->fecha_vencimiento);
+                    if (in_array($tipo_comprobante->tipo_comprobante, array('02', '04'), true)===false) {
+                        $this->factura->fecha_vencimiento_comprobante = $this->checkFechaVencimiento(
+                            $valores->fecha_vencimiento,
+                            $tipo_comprobante_data->fecha_vencimiento
+                        );
                     }
                     
                     if ($this->distrib_transporte) {
-                        $transporte = $this->distrib_transporte->get($this->empresa->id, $this->factura->idfactura, $this->factura->codalmacen);
-                        $this->idtransporte = (isset($transporte[0]->idtransporte)) ? str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT) : false;
+                        $transporte = $this->distrib_transporte->get(
+                            $this->empresa->id,
+                            $this->factura->idfactura,
+                            $this->factura->codalmacen
+                        );
+                        $this->idtransporte =
+                            (isset($transporte[0]->idtransporte))?
+                            str_pad($transporte[0]->idtransporte, 10, "0", STR_PAD_LEFT):
+                            false;
                     }
                     $cliente = new cliente();
                     $this->cliente = $cliente->get($this->factura->codcliente);
