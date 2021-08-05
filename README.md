@@ -1,4 +1,8 @@
 #Adaptación republica dominicana
+
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/joenilson/republica_dominicana/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/joenilson/republica_dominicana/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/joenilson/republica_dominicana/badges/build.png?b=master)](https://scrutinizer-ci.com/g/joenilson/republica_dominicana/build-status/master)
+
 Plugin de adaptación de FacturaScripts a República Dominicana<br/>
 Autor: joenilson@gmail.com<br/>
 Para: https://www.facturascripts.com <br/>
@@ -19,3 +23,5 @@ Licencia LGPL 3
 </ul>
 
 ### Se esta generando otro repositorio para el plugin compatible para FacturaScripts 2020
+
+El Repositorio para FS2021 es https://www.github.com/joenilson/fsRepublicaDominicana/
