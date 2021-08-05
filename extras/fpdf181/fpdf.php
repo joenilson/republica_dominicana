@@ -417,17 +417,16 @@ class FPDF
         } else {
             $this->TextColor = sprintf('%.3F %.3F %.3F rg', $r/255, $g/255, $b/255);
         }
-        $this->ColorFlag = ($this->FillColor!=$this->TextColor);
+        $this->ColorFlag = ($this->FillColor !== $this->TextColor);
     }
 
     public function GetStringWidth($s)
     {
-        // Get width of a string in the current font
         $s = (string)$s;
-        $cw = &$this->CurrentFont['cw'];
+        $cw = $this->CurrentFont['cw'];
         $w = 0;
         $l = strlen($s);
-        for ($i=0;$i<$l;$i++) {
+        for ($i=0; $i<$l; $i++) {
             $w += $cw[$s[$i]];
         }
         return $w*$this->FontSize/1000;
@@ -1098,10 +1097,10 @@ class FPDF
             if (ini_get('mbstring.func_overload') & 2) {
                 $this->Error('mbstring overloading must be disabled');
             }
-            // Ensure runtime magic quotes are disabled
-            if (get_magic_quotes_runtime()) {
-                @set_magic_quotes_runtime(0);
-            }
+//            // Ensure runtime magic quotes are disabled
+//            if (get_magic_quotes_runtime()) {
+//                @set_magic_quotes_runtime(0);
+//            }
     }
 
     protected function _checkoutput()
@@ -1287,7 +1286,7 @@ class FPDF
     protected function _dounderline($x, $y, $txt)
     {
         // Underline text
-            $up = $this->CurrentFont['up'];
+        $up = $this->CurrentFont['up'];
         $ut = $this->CurrentFont['ut'];
         $w = $this->GetStringWidth($txt)+$this->ws*substr_count($txt, ' ');
         return sprintf('%.2F %.2F %.2F %.2F re f', $x*$this->k, ($this->h-($y-$up/1000*$this->FontSize))*$this->k, $w*$this->k, -$ut/1000*$this->FontSizePt);

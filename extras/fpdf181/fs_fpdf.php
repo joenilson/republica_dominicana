@@ -63,7 +63,8 @@ class PDF_MC_Table extends FPDF
     public function SetColors($a)
     {
         $contador = count($a);
-        for ($i=0;$i<$contador;$i++) {
+        for ($i=0; $i<$contador; $i++)
+        {
             $datos = explode('|', $a[$i]);
             $this->colores[$i][0] = $datos[0];
             $this->colores[$i][1] = $datos[1];

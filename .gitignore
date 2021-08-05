@@ -1,7 +1,7 @@
 # Created by https://www.gitignore.io/api/netbeans
 
 ### NetBeans ###
-nbproject/private/
+nbproject/
 build/
 nbbuild/
 dist/
@@ -16,3 +16,7 @@ view/img/.DS_Store
 vendor/FacturaScripts/.DS_Store
 .DS_Store
 extras/.DS_Store
+
+.idea/
+.php_cs.cache
+.php-cs-fixer.cache

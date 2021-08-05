@@ -123,7 +123,7 @@ class factura_ncf extends rd_controller
             $pdf_doc->SetSubject('Facturas de Venta para clientes');
             $pdf_doc->SetAuthor($this->empresa->nombre);
             $pdf_doc->SetCreator('FacturaScripts V_' . $this->version());
-
+            $pdf_doc->SetFont('Arial', '', 8);
             $this->archivo = $archivo;
             $contador = 0;
             foreach ($valores_id as $id) {
