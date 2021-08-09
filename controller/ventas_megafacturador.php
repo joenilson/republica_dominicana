@@ -413,14 +413,12 @@ class ventas_megafacturador extends rd_controller
         } elseif (!$eje0->abierto()) {
             $this->new_error_msg("El ejercicio está cerrado.");
         } elseif ($regularizacion->get_fecha_inside($factura->fecha)) {
-            $this->new_error_msg("El " . FS_IVA . " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
+            $this->new_error_msg("El " . FS_IVA .
+                " de ese periodo ya ha sido regularizado. No se pueden añadir más facturas en esa fecha.");
         } elseif ($factura->save()) {
             $continuar = true;
             $this->guardar_ncf($this->empresa->id, $factura, $tipo_comprobante, $numero_ncf);
             if ($this->tesoreria) {
-                require_model('pago_recibo_cliente.php');
-                require_model('recibo_cliente.php');
-                require_model('recibo_factura.php');
                 $this->nuevo_recibo($factura);
             }
             foreach ($albaran->get_lineas() as $l) {
@@ -492,14 +490,23 @@ class ventas_megafacturador extends rd_controller
              */
             //Obtenemos el tipo de comprobante a generar para el cliente
             $tipo_comprobante = $this->ncf_tipo_comprobante($this->empresa->id, $albaran->codcliente);
-            $funcion_generar_numero = (\strtotime($this->fecha_facturas_gen) < (\strtotime('01-05-2018'))) ? 'generar_numero_ncf_old':'generar_numero_ncf';  
+            $funcion_generar_numero = (\strtotime($this->fecha_facturas_gen) < (\strtotime('01-05-2018')))
+                ? 'generar_numero_ncf_old'
+                : 'generar_numero_ncf';
             if (strlen($albaran->cifnif) < 9 and $tipo_comprobante == '01') {
-                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero . ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, por favor corrija esta información!');
-            }else{
+                $this->new_error_msg('El cliente del ' . FS_ALBARAN . ' ' . $albaran->numero .
+                    ' tiene un tipo de comprobante 01 pero no tiene Cédula o RNC Válido, ' .
+                    'por favor corrija esta información!');
+            } else {
                 //Con el codigo del almacen desde donde facturaremos generamos el número de NCF
-                $numero_ncf = $this->$funcion_generar_numero($this->empresa->id, $albaran->codalmacen, $tipo_comprobante, $albaran->codpago);
+                $numero_ncf = $this->$funcion_generar_numero(
+                    $this->empresa->id,
+                    $albaran->codalmacen,
+                    $tipo_comprobante,
+                    $albaran->codpago
+                );
                 $contador++;
-                $this->crear_factura($albaran,$cliente,$numero_ncf,$tipo_comprobante);
+                $this->crear_factura($albaran, $cliente, $numero_ncf, $tipo_comprobante);
             }
         }
         $this->new_message('Se procesaron correctamente ' . $contador . ' de ' . $total . ' ' . FS_ALBARANES);
@@ -526,7 +533,7 @@ class ventas_megafacturador extends rd_controller
         $recibo->fecha = $factura->fecha;
         $recibo->fechav = $factura->vencimiento;
         $recibo->idfactura = $factura->idfactura;
-        $recibo->importe = floatval($factura->total);
+        $recibo->importe = (float)$factura->total;
         $recibo->nombrecliente = $factura->nombrecliente;
         $recibo->provincia = $factura->provincia;
 
@@ -544,7 +551,6 @@ class ventas_megafacturador extends rd_controller
     public function pendientes_venta()
     {
         $alblist = array();
-
         $sql = "SELECT * FROM albaranescli WHERE ptefactura = true";
         if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
@@ -553,21 +559,21 @@ class ventas_megafacturador extends rd_controller
             $series = $this->array_to_text($this->series_elegidas_albaranes);
             $sql .= " AND codserie IN (" . $series . ") ";
         }
-        if ($this->fecha_albaran_desde and empty($this->fechas_elegidas_albaranes)) {
-            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde)))
-                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
+        if ($this->fecha_albaran_desde && empty($this->fechas_elegidas_albaranes)) {
+            $sql .= " AND fecha >= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde))) .
+                " AND fecha <= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
         } elseif (!empty($this->fechas_elegidas_albaranes)) {
             $fechas = $this->date_to_text($this->fechas_elegidas_albaranes);
             $sql .= " AND fecha IN (" . $fechas . ") ";
         }
-
         $data = $this->db->select($sql . ' ORDER BY fecha ASC, hora ASC');
         if ($data) {
             foreach ($data as $d) {
                 $alblist[] = new albaran_cliente($d);
             }
         }
-
         return $alblist;
     }
 
@@ -584,31 +590,28 @@ class ventas_megafacturador extends rd_controller
             $sql .= " AND codserie IN (" . $series . ") ";
         }
         if ($this->fecha_albaran_desde and empty($this->fechas_elegidas_albaranes)) {
-            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde)))
-                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
+            $sql .= " AND fecha >= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_desde))) .
+                " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_albaran_hasta)));
             $sql .= " GROUP BY fecha ORDER BY fecha";
         } elseif ($this->fechas_elegidas_albaranes) {
             $fechas = $this->date_to_text($this->fechas_elegidas_albaranes);
             $sql .= " AND fecha IN (" . $fechas . ") ";
             $sql .= " GROUP BY fecha ORDER BY fecha";
         }
-
         $data_alb = $this->db->select($sql);
         if ($data_alb) {
             foreach ($data_alb as $d) {
-                $total_alb += intval($d['total']);
-                $subtotal_alb[$d['fecha']] = intval($d['total']);
+                $total_alb += (int)$d['total'];
+                $subtotal_alb[$d['fecha']] = (int)$d['total'];
             }
         }
-
-        $resultados = array('total' => $total_alb, 'lista' => $subtotal_alb);
-        return $resultados;
+        return array('total' => $total_alb, 'lista' => $subtotal_alb);
     }
 
     public function pedidos_pendientes()
     {
         $pedlist = array();
-
         $sql = "SELECT * FROM pedidoscli WHERE idalbaran IS NULL AND status = 0 ";
         if (!empty($this->codalmacen)) {
             $sql .= " AND codalmacen = " . $this->empresa->var2str($this->codalmacen) . " ";
@@ -618,8 +621,10 @@ class ventas_megafacturador extends rd_controller
             $sql .= " AND codserie IN (" . $series . ") ";
         }
         if ($this->fecha_pedido_desde and empty($this->fechas_elegidas_pedidos)) {
-            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
-                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
+            $sql .= " AND fecha >= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
+                    . " AND fecha <= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
         } elseif ($this->fechas_elegidas_pedidos) {
             $fechas = $this->date_to_text($this->fechas_elegidas_pedidos);
             $sql .= " AND fecha IN (" . $fechas . ") ";
@@ -650,8 +655,10 @@ class ventas_megafacturador extends rd_controller
             $sql .= " AND codserie IN (" . $series . ") ";
         }
         if ($this->fecha_pedido_desde and empty($this->fechas_elegidas_pedidos)) {
-            $sql .= " AND fecha >= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
-                    . " AND fecha <= " . $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
+            $sql .= " AND fecha >= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_desde)))
+                    . " AND fecha <= " .
+                $this->serie->var2str(\date('Y-m-d', strtotime($this->fecha_pedido_hasta)));
             $sql .= " GROUP BY fecha ORDER BY fecha";
         } elseif ($this->fechas_elegidas_pedidos) {
             $fechas = $this->date_to_text($this->fechas_elegidas_pedidos);
@@ -661,13 +668,11 @@ class ventas_megafacturador extends rd_controller
         $data = $this->db->select($sql);
         if ($data) {
             foreach ($data as $d) {
-                $total_ped += intval($d['total']);
-                $subtotal_ped[$d['fecha']] = intval($d['total']);
+                $total_ped += (int)$d['total'];
+                $subtotal_ped[$d['fecha']] = (int)$d['total'];
             }
         }
-
-        $resultados = array('total' => $total_ped, 'lista' => $subtotal_ped);
-        return $resultados;
+        return array('total' => $total_ped, 'lista' => $subtotal_ped);
     }
 
     private function generar_asiento_cliente($factura, $forzar = false, $soloasiento = false)
@@ -702,7 +707,8 @@ class ventas_megafacturador extends rd_controller
             $ok = false;
         }
         if (!$ok) {
-            $this->new_error_msg('No hay suficiente stock del artículo <a href="'.$articulo->url().'" target="_blank">' . $linea->referencia.'</a>');
+            $this->new_error_msg('No hay suficiente stock del artículo <a href="'.$articulo->url().
+                '" target="_blank">' . $linea->referencia.'</a>');
         }
         return $ok;
     }
@@ -718,10 +724,10 @@ class ventas_megafacturador extends rd_controller
         $stock0 = new stock();
         $art0 = new articulo();
         foreach ($documento->get_lineas() as $linea) {
-            if ($linea->referencia and $art0->get($linea->referencia)) {
+            if ($linea->referencia && $art0->get($linea->referencia)) {
                 $articulo = $art0->get($linea->referencia);
                 $this->comprobar_stock_articulo($articulo, $documento, $linea, $stock0, $ok);
-                if(!$ok){
+                if (!$ok) {
                     break;
                 }
             }
@@ -735,8 +741,7 @@ class ventas_megafacturador extends rd_controller
         foreach ($array as $item) {
             $substring .= "'" . $item . "',";
         }
-        $string = substr($substring, 0, strlen($substring) - 1);
-        return $string;
+        return substr($substring, 0, strlen($substring) - 1);
     }
 
     private function date_to_text(array $array)
@@ -745,8 +750,7 @@ class ventas_megafacturador extends rd_controller
         foreach ($array as $item) {
             $substring .= "'" . \date('Y-m-d', strtotime($item)) . "',";
         }
-        $string = substr($substring, 0, strlen($substring) - 1);
-        return $string;
+        return substr($substring, 0, strlen($substring) - 1);
     }
 
     private function share_extensions()
@@ -757,7 +761,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/2/daterangepicker.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH .
+                'plugins/republica_dominicana/view/js/2/daterangepicker.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -765,7 +770,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/1/moment-with-locales.min.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH .
+                'plugins/republica_dominicana/view/js/1/moment-with-locales.min.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -773,7 +779,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/daterangepicker.min.css" rel="stylesheet" type="text/css"/>',
+                'text' => '<link href="' . FS_PATH .
+                'plugins/republica_dominicana/view/css/daterangepicker.min.css" rel="stylesheet" type="text/css"/>',
                 'params' => ''
             ),
             array(
@@ -781,7 +788,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/rd.css?build=' . rand(1, 1000) . '" rel="stylesheet" type="text/css"/>',
+                'text' => '<link href="' . FS_PATH . 'plugins/republica_dominicana/view/css/rd.css?build=' .
+                    rand(1, 1000) . '" rel="stylesheet" type="text/css"/>',
                 'params' => ''
             ),
             array(
@@ -789,7 +797,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => __CLASS__,
                 'type' => 'head',
-                'text' => '<script src="' . FS_PATH . 'plugins/republica_dominicana/view/js/rd_common.js" type="text/javascript"></script>',
+                'text' => '<script src="' . FS_PATH .
+                    'plugins/republica_dominicana/view/js/rd_common.js" type="text/javascript"></script>',
                 'params' => ''
             ),
             array(
@@ -797,7 +806,8 @@ class ventas_megafacturador extends rd_controller
                 'page_from' => __CLASS__,
                 'page_to' => 'ventas_albaranes',
                 'type' => 'button',
-                'text' => '<i class="fa fa-check-square-o" aria-hidden="true"></i><span class="hidden-xs">&nbsp; Facturación masiva</span>',
+                'text' => '<i class="fa fa-check-square-o" aria-hidden="true"></i>' .
+                    '<span class="hidden-xs">&nbsp; Facturación masiva</span>',
                 'params' => ''
             )
         );

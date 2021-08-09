@@ -146,7 +146,7 @@ class factura_ncf extends rd_controller
                     $this->factura->ncf = $valores->ncf;
                     $this->factura->ncf_afecta = $valores->ncf_modifica;
                     $this->factura->estado = $valores->estado;
-                    $this->factura->tipo_comprobante = ($tipo_comprobante)?$tipo_comprobante->descripcion:'';
+                    $this->factura->tipo_comprobante = ($tipo_comprobante) ? $tipo_comprobante->descripcion : '';
                     $this->factura->fecha_vencimiento_comprobante = '';
                     if (in_array($tipo_comprobante->tipo_comprobante, array('02', '04'), true)===false) {
                         $this->factura->fecha_vencimiento_comprobante = $this->checkFechaVencimiento(
@@ -154,7 +154,6 @@ class factura_ncf extends rd_controller
                             $tipo_comprobante_data->fecha_vencimiento
                         );
                     }
-                    
                     if ($this->distrib_transporte) {
                         $transporte = $this->distrib_transporte->get(
                             $this->empresa->id,

@@ -17,11 +17,6 @@
  *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-require_model('almacen.php');
-require_model('pais.php');
-require_model('ncf_rango.php');
-require_model('ncf_tipo.php');
-require_model('ncf_ventas.php');
 /**
  * Description of ncf
  *
