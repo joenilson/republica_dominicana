@@ -411,7 +411,7 @@ function ncf_tipo_comprobante($idempresa, $codigo_entidad, $tipo_entidad = 'CLI'
 {
     $net0 = new ncf_entidad_tipo();
     $usuario_login = \filter_input(INPUT_COOKIE, 'user');
-    $usuario = ($usuario_login === '') ? 'cron':$usuario_login;
+    $usuario = ($usuario_login === '') ? 'cron' : $usuario_login;
     $tipo_comprobante = '02';
     $tipo_comprobante_d = $net0->get($idempresa, $codigo_entidad, $tipo_entidad);
     if ($tipo_comprobante_d) {
@@ -444,11 +444,11 @@ function tipo_proveedor_ncf($codproveedor)
 }
 
 /**
- * @param string $cliente
+ * @param string|object $cliente
  * @param string $tipo_comprobante
- * @param boolean $terminal
+ * @param boolean|object $terminal
  * @param boolean $json
- * @return array
+ * @return array|type|object
  */
 function generar_comprobante_fiscal($cliente, $tipo_comprobante, $codalmacen, $terminal = false, $json = false)
 {
@@ -517,7 +517,6 @@ if (!function_exists('fs_generar_numero2')) {
                 $numero2[0] = $documento->numero2;
             }
         }
-
         $documento->numero2 = $numero2[0];
         return true;
     }
