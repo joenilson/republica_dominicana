@@ -2010,14 +2010,14 @@ class Cpdf_DOM
                             // use preg_match instead to improve performace
                             // IMPORTANT: if "L i fi ; L l fl ;" is required preg_match must be amended
                             $r = preg_match('/C (-?\d+) ; WX (-?\d+) ; N (\w+) ; B (-?\d+) (-?\d+) (-?\d+) (-?\d+) ;/', $row, $m);
-                            if ($r == 1) {
+                            if ($r === 1) {
                                 //$dtmp = array('C'=> $m[1],'WX'=> $m[2], 'N' => $m[3], 'B' => array($m[4], $m[5], $m[6], $m[7]));
                                 $c = (int) $m[1];
                                 $n = $m[3];
-                                $width = floatval($m[2]);
+                                $width = (float)$m[2];
 
                                 if ($c >= 0) {
-                                    if ($c != hexdec($n)) {
+                                    if ($c !== hexdec($n)) {
                                         $cachedFont['codeToName'][$c] = $n;
                                     }
                                     $cachedFont['C'][$c] = $width;
@@ -2026,7 +2026,7 @@ class Cpdf_DOM
                                     $cachedFont['C'][$n] = $width;
                                 }
 
-                                if (!isset($cachedFont['MissingWidth']) && $c == -1 && $n === '.notdef') {
+                                if (!isset($cachedFont['MissingWidth']) && $c === -1 && $n === '.notdef') {
                                     $cachedFont['MissingWidth'] = $width;
                                 }
                             }
@@ -2383,12 +2383,12 @@ class Cpdf_DOM
         // fill color
         $color = str_replace('#', '', $hex);
         if (strlen($color) == 3) {
-            $color = $color{0}
-            .$color{0}
-            .$color{1}
-            .$color{1}
-            .$color{2}
-            .$color{2};
+            $color = $color[0]
+            .$color[0]
+            .$color[1]
+            .$color[1]
+            .$color[2]
+            .$color[2];
         }
         $r = number_format(hexdec(substr($color, 0, 2)) / 255, 4);
         $g = number_format(hexdec(substr($color, 2, 2)) / 255, 4);
@@ -2404,12 +2404,12 @@ class Cpdf_DOM
         // stroke color
         $color = str_replace('#', '', $hex);
         if (strlen($color) == 3) {
-            $color = $color{0}
-            .$color{0}
-            .$color{1}
-            .$color{1}
-            .$color{2}
-            .$color{2};
+            $color = $color[0]
+                .$color[0]
+                .$color[1]
+                .$color[1]
+                .$color[2]
+                .$color[2];
         }
         $r = number_format(hexdec(substr($color, 0, 2)) / 255, 4);
         $g = number_format(hexdec(substr($color, 2, 2)) / 255, 4);
@@ -2464,10 +2464,10 @@ class Cpdf_DOM
      */
     public function ellipse($x0, $y0, $r1, $r2 = 0, $angle = 0, $nSeg = 8, $astart = 0, $afinish = 360, $close = 1, $fill = 0)
     {
-        if ($r1 == 0) {
+        if ($r1 === 0) {
             return;
         }
-        if ($r2 == 0) {
+        if ($r2 === 0) {
             $r2 = $r1;
         }
         if ($nSeg < 2) {
@@ -2814,7 +2814,7 @@ class Cpdf_DOM
 
         return $text;
     }
-    
+
     private function addTextWithDirectives(&$text, $x, $y, $size, &$width, $justification = 'left', $angle = 0, $wordSpaceAdjust = 0)
     {
         $result = [];
@@ -3088,20 +3088,20 @@ class Cpdf_DOM
      */
     private function uniord($c)
     {
-        $h = ord($c{0});
+        $h = ord($c[0]);
         if ($h <= 0x7F) {
             return $h;
         } elseif ($h < 0xC2) {
             return false;
         } elseif ($h <= 0xDF) {
-            return ($h & 0x1F) << 6 | (ord($c{1}) & 0x3F);
+            return ($h & 0x1F) << 6 | (ord($c[1]) & 0x3F);
         } elseif ($h <= 0xEF) {
-            return ($h & 0x0F) << 12 | (ord($c{1}) & 0x3F) << 6
-            | (ord($c{2}) & 0x3F);
+            return ($h & 0x0F) << 12 | (ord($c[1]) & 0x3F) << 6
+            | (ord($c[2]) & 0x3F);
         } elseif ($h <= 0xF4) {
-            return ($h & 0x0F) << 18 | (ord($c{1}) & 0x3F) << 12
-            | (ord($c{2}) & 0x3F) << 6
-            | (ord($c{3}) & 0x3F);
+            return ($h & 0x0F) << 18 | (ord($c[1]) & 0x3F) << 12
+            | (ord($c[2]) & 0x3F) << 6
+            | (ord($c[3]) & 0x3F);
         } else {
             return false;
         }
@@ -3137,7 +3137,7 @@ class Cpdf_DOM
         for ($i = 0; $i < $len; ++$i) {
             $c = mb_substr($text, $i, 1, 'UTF-8');
             $cOrd = $this->uniord($c);
-            if ($cOrd == 0) {
+            if ($cOrd === 0) {
                 continue;
             }
 

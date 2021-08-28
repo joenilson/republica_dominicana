@@ -48,9 +48,9 @@ class helper_ncf extends fs_controller
 
     public function guardar_ncf($idempresa, $factura, $tipo_comprobante, $numero_ncf, $motivo = false)
     {
-        
-        if ($numero_ncf['NCF'] == 'NO_DISPONIBLE') {
-            return $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante . ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
+        if ($numero_ncf['NCF'] === 'NO_DISPONIBLE') {
+            $this->new_error_msg('No hay números NCF disponibles del tipo ' . $tipo_comprobante .
+                ', la factura ' . $factura->idfactura . ' se creo sin NCF.');
         } else {
             $ncf_factura = new ncf_ventas();
             $ncf_factura->idempresa = $idempresa;
@@ -75,9 +75,16 @@ class helper_ncf extends fs_controller
             if (!$ncf_factura->save()) {
                 $factura->numero2 = '';
                 $factura->save();
-                $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->codigo . ' con el NCF: ' . $numero_ncf['NCF'] . ' Ingrese a la factura y dele al botón corregir NCF.');
+                $this->new_error_msg('Ocurrió un error al grabar la factura ' . $factura->codigo . ' con el NCF: ' .
+                    $numero_ncf['NCF'] . ' Ingrese a la factura y dele al botón corregir NCF.');
             } else {
-                $this->ncf_rango->update($ncf_factura->idempresa, $ncf_factura->codalmacen, $numero_ncf['SOLICITUD'], $numero_ncf['NCF'], $this->user->nick);
+                $this->ncf_rango->update(
+                    $ncf_factura->idempresa,
+                    $ncf_factura->codalmacen,
+                    $numero_ncf['SOLICITUD'],
+                    $numero_ncf['NCF'],
+                    $this->user->nick
+                );
             }
         }
     }
