@@ -239,7 +239,7 @@
          <div class="col-sm-2">
             <div class="form-group">
                Fecha:
-               <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->factura->fecha}" autocomplete="off"/>
+               <input class="form-control {if="$fsc->user->admin"}datepicker{/if}" type="text" name="fecha" value="{$fsc->factura->fecha}" autocomplete="off"/>
             </div>
          </div>
          <div class="col-sm-2">
@@ -266,9 +266,9 @@
             <div class='form-group{if="$fsc->factura->vencida()"} has-warning{/if}'>
                Vencimiento:
                {if="$fsc->factura->pagada || !$fsc->mostrar_boton_pagada"}
-               <input type="text" name="vencimiento" value="{$fsc->factura->vencimiento}" class="form-control datepicker" readonly=""/>
+               <input type="text" name="vencimiento" value="{$fsc->factura->vencimiento}" class="form-control {if="$fsc->user->admin"}datepicker{/if}" readonly=""/>
                {else}
-               <input type="text" name="vencimiento" value="{$fsc->factura->vencimiento}" class="form-control datepicker" autocomplete="off"/>
+               <input type="text" name="vencimiento" value="{$fsc->factura->vencimiento}" class="form-control {if="$fsc->user->admin"}datepicker{/if}" autocomplete="off"/>
                {/if}
             </div>
          </div>

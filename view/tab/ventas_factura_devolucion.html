@@ -132,7 +132,7 @@
                              <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                              </span>
-                             <input type="text" name="fecha" value="{$fsc->today()}" class="form-control datepicker" autocomplete="off"/>
+                             <input type="text" name="fecha" {if="!$fsc->user->admin"}readonly{/if} value="{$fsc->today()}" class="form-control {if="$fsc->user->admin"}datepicker{/if}" autocomplete="off"/>
                           </div>
                        </div>
                     </div>
