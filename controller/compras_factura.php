@@ -34,6 +34,7 @@ class compras_factura extends fbase_controller
     public $rectificativa;
     public $serie;
     public $ncf_tipo_anulacion;
+    public $ncf_tipo_pagos_compras;
     public $impuesto;
 
     public function __construct()
@@ -51,6 +52,7 @@ class compras_factura extends fbase_controller
         $this->divisa = new divisa();
         $this->ejercicio = new ejercicio();
         $this->ncf_tipo_anulacion = new ncf_tipo_anulacion();
+        $this->ncf_tipo_pagos_compras = new ncf_tipo_pagos_compras();
         $factura = new factura_proveedor();
         $this->factura = FALSE;
         $this->forma_pago = new forma_pago();

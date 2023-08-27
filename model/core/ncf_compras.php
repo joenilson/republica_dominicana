@@ -83,7 +83,7 @@ class ncf_compras extends \fs_model
             $this->fecha = Date('d-m-Y');
             $this->tipo_comprobante = null;
             $this->tipo_compra = null;
-            $this->tipo_pago = '1';
+            $this->tipo_pago = '01';
             $this->ncf = null;
             $this->ncf_modifica = null;
             $this->usuario_creacion = null;

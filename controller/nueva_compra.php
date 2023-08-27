@@ -37,6 +37,7 @@ class nueva_compra extends fbase_controller
     public $serie;
     public $tipo;
     public $ncf_tipo_compras;
+    public $ncf_tipo_pagos_compras;
     public $ncf_rango;
 
     public function __construct()
@@ -54,6 +55,7 @@ class nueva_compra extends fbase_controller
         $this->impuesto = new impuesto();
         $this->proveedor = new proveedor();
         $this->ncf_tipo_compras = new ncf_tipo_compras();
+        $this->ncf_tipo_pagos_compras = new ncf_tipo_pagos_compras();
         $this->ncf_rango = new ncf_rango();
         $this->proveedor_s = FALSE;
         $this->results = array();

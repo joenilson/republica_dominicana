@@ -149,9 +149,10 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
      */
     public function get_codigo($codpago)
     {
-        $data = $this->db->select("SELECT codigo FROM ".$this->table_name." WHERE codpago = ".$this->var2str($codpago).";");
+        $data = $this->db->select("SELECT codigo FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codpago).";");
         $item = false;
         if($data) {
+            var_dump($data);
             $item = $data[0]['codigo'];
         }
         return $item;

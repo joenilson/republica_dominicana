@@ -342,6 +342,18 @@
                             {/loop}
                         </select>
                     </div>
+                    <div class="form-group">
+                        <a>Tipo de pago DGII</a>:
+                        <select name="tipo_pago" class="form-control">
+                            {loop="$fsc->ncf_tipo_pagos_compras->all()"}
+                                {if="$value->codigo=='04'"}
+                                <option value="{$value->codigo}" selected="">{$value->descripcion}</option>
+                                {else}
+                                <option value="{$value->codigo}">{$value->descripcion}</option>
+                                {/if}
+                            {/loop}
+                        </select>
+                    </div>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" name="stock" value="TRUE" checked=""/>

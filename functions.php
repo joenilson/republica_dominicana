@@ -402,6 +402,8 @@ function sumar_tipos_compras($art, $linea, &$total_bienes, &$total_servicios)
         $total_bienes += $linea->pvptotal;
     } elseif ($art->tipo_articulo === '02') {
         $total_servicios += $linea->pvptotal;
+    } else {
+        $total_servicios += $linea->pvptotal;
     }
 }
 
@@ -540,7 +542,7 @@ if (!function_exists('fs_generar_numproveedor')) {
                 $documento->codalmacen,
                 $documento->codpago,
                 $documento->fecha,
-                $documento->facturarect
+                $documento->idfacturarect
             );
         }
         if (!empty($documento->numproveedor) && empty($numproveedor)) {
@@ -623,15 +625,13 @@ function fs_documento_compra_post_save(&$documento)
     $ncf_tipo_compras = new ncf_tipo_compras();
     $prov = new proveedor();
     $proveedor = $prov->get($documento->codproveedor);
-    $tipo_comprobante = verificar_proveedor($proveedor, $documento->facturarect);
+    $tipo_comprobante = verificar_proveedor($proveedor, $documento->idfacturarect);
     verificar_numproveedor_ncf($documento, $empresa->id, $tipo_comprobante, $usuario);
     // Si modifica a otro documento lo buscamos
     $fact_compras = new factura_proveedor();
     $documento_modifica = $fact_compras->get($documento->idfacturarect);
     $tipo_compra = verificar_tipo_compra_ncf($documento, $empresa->id, $ncf_tipo_compras);
-    // Buscamos el codigo de pago asignado
-    $ncf_detalle_tipo_pago = new ncf_detalle_tipo_pagos_compras();
-    $tipo_pago = $ncf_detalle_tipo_pago->get_codigo($documento->codpago);
+    $tipo_pago = \filter_input(INPUT_POST, 'tipo_pago');
     // Guardamos la información de la compra en la tabla NCF Compra
     guardar_ncf_compras($empresa->id, $documento, $documento_modifica, $tipo_compra, $tipo_pago, $usuario);
 }
