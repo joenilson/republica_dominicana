@@ -144,11 +144,11 @@ class ncf_tipo_pagos_compras extends \fs_model
         $sqlClean = "DELETE FROM ".$this->table_name;
         $this->db->exec($sqlClean);
         $counter = 0;
-        foreach($this->array_tipos as $tipo) {                
+        foreach ($this->array_tipos as $tipo) {
             $this->agregarRegistro($tipo);
-            $counter ++; 
+            $counter ++;
         }
-        return $counter;  
+        return $counter;
     }
     
     public function agregarRegistro($tipo)
@@ -156,7 +156,7 @@ class ncf_tipo_pagos_compras extends \fs_model
         $ntpc = new ncf_tipo_pagos_compras();
         $ntpc->codigo = $tipo['codigo'];
         $ntpc->descripcion = $tipo['descripcion'];
-        $ntpc->estado = TRUE;
+        $ntpc->estado = true;
         $ntpc->save();
     }
 }

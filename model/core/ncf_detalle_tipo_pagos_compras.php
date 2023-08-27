@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) 2019 Joe Nilson <joenilson@gmail.com>
  *
@@ -28,8 +27,7 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     public $codigo;
     public $codpago;
 
-    
-        public function __construct($t = FALSE)
+    public function __construct($t = false)
     {
         parent::__construct('ncf_detalle_tipo_pagos_compras', 'plugins/republica_dominicana/');
         if ($t) {
@@ -42,7 +40,6 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     }
 
     /**
-     * 
      * @return string
      */
     protected function install()
@@ -51,20 +48,18 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     }
 
     /**
-     * 
      * @return boolean|object
      */
     public function exists()
     {
         if (is_null($this->codigo) AND is_null($this->codpago)) {
             return false;
-        } else {
-            return $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($this->codigo)." and codpago = ".$this->var2str($this->codpago).";");
         }
+
+        return $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($this->codigo)." and codpago = ".$this->var2str($this->codpago).";");
     }
 
     /**
-     * 
      * @return boolean
      */
     public function save()
@@ -83,7 +78,6 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     }
 
     /**
-     * 
      * @return boolean
      */
     public function delete()
@@ -116,7 +110,6 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     public function get($codigo,$codpago)
     {
         $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo)." AND codpago = ".$this->var2str($codpago).";");
-
         $item = new ncf_detalle_tipo_pagos_compras($data[0]);
         $this->info_formapago($item);
         return $item;
@@ -130,10 +123,9 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     public function get_codpagos($codigo)
     {
         $data = $this->db->select("SELECT * FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codigo).";");
-        
         $lista = [];
-        if($data) {
-            foreach($data as $d) {
+        if ($data) {
+            foreach ($data as $d) {
                 $item = new ncf_detalle_tipo_pagos_compras($d);
                 $this->info_formapago($item);
                 $lista[] = $item;
@@ -151,8 +143,7 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
     {
         $data = $this->db->select("SELECT codigo FROM ".$this->table_name." WHERE codigo = ".$this->var2str($codpago).";");
         $item = false;
-        if($data) {
-            var_dump($data);
+        if ($data) {
             $item = $data[0]['codigo'];
         }
         return $item;
@@ -171,8 +162,8 @@ class ncf_detalle_tipo_pagos_compras extends \fs_model
         $data = $this->db->select($sql);
         $this->new_error_msg($sql);
         $lista = [];
-        if($data) {
-            foreach($data as $d) {
+        if ($data) {
+            foreach ($data as $d) {
                 $item = new \forma_pago($d);
                 $lista[] = $item;
             }

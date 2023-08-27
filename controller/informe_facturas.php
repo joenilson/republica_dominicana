@@ -24,10 +24,11 @@ require_once 'plugins/facturacion_base/controller/informe_albaranes.php';
  */
 class informe_facturas extends informe_albaranes
 {
-
     public $pais;
     public $estado;
-
+    public $nombre_docs;
+    public $table_compras;
+    public $table_ventas;
     public function __construct()
     {
         parent::__construct(__CLASS__, 'Facturas', 'informes');
@@ -98,7 +99,7 @@ class informe_facturas extends informe_albaranes
         $stats = array();
 
         $where = $this->where_compras;
-        if ($tabla == $this->table_ventas) {
+        if ($tabla === $this->table_ventas) {
             $where = $this->where_ventas;
         }
 
@@ -171,7 +172,6 @@ class informe_facturas extends informe_albaranes
                 }
             }
         }
-
         return $doclist;
     }
 
@@ -751,7 +751,7 @@ class informe_facturas extends informe_albaranes
         parent::set_where();
 
         if ($this->estado) {
-            $estado = $this->estado == 'pagada' ? true : false;
+            $estado = $this->estado === 'pagada' ? true : false;
             $this->where_compras .= " AND pagada = " . $this->empresa->var2str($estado);
             $this->where_ventas .= " AND pagada = " . $this->empresa->var2str($estado);
         }
@@ -770,7 +770,7 @@ class informe_facturas extends informe_albaranes
         $cliente = 'Proveedor';
         $num2 = 'Num. proveedor';
         $tabla = $this->table_compras;
-        if ($tipo == 'venta') {
+        if ($tipo === 'venta') {
             $cliente = 'Cliente';
             $num2 = FS_NUMERO2;
             $tabla = $this->table_ventas;
