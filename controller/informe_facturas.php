@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-require_once 'plugins/facturacion_base/controller/informe_albaranes.php';
+require_once 'plugins/republica_dominicana/controller/informe_albaranes.php';
 
 /**
  * Heredamos del controlador de informe_albaranes, para reaprovechar el código.
@@ -56,7 +56,7 @@ class informe_facturas extends informe_albaranes
             } else {
                 $this->informe_compras();
             }
-        } else if ($_POST['generar'] === 'informe_ventas') {
+        } elseif ($_POST['generar'] === 'informe_ventas') {
             if ($_POST['unidades'] === 'TRUE') {
                 $this->informe_ventas_unidades();
             } else {
@@ -106,7 +106,7 @@ class informe_facturas extends informe_albaranes
         /// aprobados
         $sql = "select sum(neto) as total from " . $tabla;
         $sql .= $where;
-        $sql .= " and idfactura is not null order by total desc;";
+        $sql .= " and idfactura is not null and anulada = false order by total desc;";
 
         $data = $this->db->select($sql);
         if ($data && (float)$data[0]['total']) {
@@ -119,7 +119,7 @@ class informe_facturas extends informe_albaranes
         /// pendientes
         $sql = "select sum(neto) as total from " . $tabla;
         $sql .= $where;
-        $sql .= " and idfactura is null order by total desc;";
+        $sql .= " and idfactura is null and anulada = false order by total desc;";
 
         $data = $this->db->select($sql);
         if ($data && (float)$data[0]['total']) {
@@ -289,6 +289,7 @@ class informe_facturas extends informe_albaranes
     {
         $sql = "SELECT codproveedor,fecha,SUM(neto) as total FROM facturasprov"
             . " WHERE fecha >= " . $this->empresa->var2str($this->desde)
+            . " AND anulada = false "
             . " AND fecha <= " . $this->empresa->var2str($this->hasta);
 
         if ($this->codserie) {
@@ -401,6 +402,7 @@ class informe_facturas extends informe_albaranes
     {
         $sql = "SELECT codalmacen,codcliente,fecha,SUM(neto) as total FROM facturascli"
             . " WHERE fecha >= " . $this->empresa->var2str($this->desde)
+            . " AND anulada = false "
             . " AND fecha <= " . $this->empresa->var2str($this->hasta);
 
         if ($_POST['codpais']) {
@@ -524,7 +526,7 @@ class informe_facturas extends informe_albaranes
     {
         $sql = "SELECT f.codalmacen,f.codproveedor,f.fecha,l.referencia,l.descripcion,SUM(l.cantidad) as total"
             . " FROM facturasprov f, lineasfacturasprov l"
-            . " WHERE f.idfactura = l.idfactura AND l.referencia IS NOT NULL"
+            . " WHERE f.idfactura = l.idfactura AND l.referencia IS NOT NULL AND anulada = false "
             . " AND f.fecha >= " . $this->empresa->var2str($this->desde)
             . " AND f.fecha <= " . $this->empresa->var2str($this->hasta);
 
@@ -627,7 +629,7 @@ class informe_facturas extends informe_albaranes
     {
         $sql = "SELECT f.codalmacen,f.codcliente,f.fecha,l.referencia,l.descripcion,SUM(l.cantidad) as total"
             . " FROM facturascli f, lineasfacturascli l"
-            . " WHERE f.idfactura = l.idfactura AND l.referencia IS NOT NULL"
+            . " WHERE f.idfactura = l.idfactura AND l.referencia IS NOT NULL AND anulada = false "
             . " AND f.fecha >= " . $this->empresa->var2str($this->desde)
             . " AND f.fecha <= " . $this->empresa->var2str($this->hasta);
 
